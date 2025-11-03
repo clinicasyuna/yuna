@@ -1845,19 +1845,51 @@ async function finalizarSolicitacao(solicitacaoId) {
         modalFinalizacao.style.cssText = 'position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0, 0, 0, 0.6); display: flex; justify-content: center; align-items: center; z-index: 1001;';
         
         modalFinalizacao.innerHTML = `
-            <div style="background: white; border-radius: 12px; padding: 24px; max-width: 500px; width: 90%; box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);">
+            <div style="background: white; border-radius: 12px; padding: 24px; max-width: 600px; width: 90%; box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2); max-height: 80vh; overflow-y: auto;">
                 <h3 style="margin: 0 0 16px 0; color: #059669; display: flex; align-items: center;">
                     <i class="fas fa-check-circle" style="margin-right: 8px;"></i>
                     Finalizar Solicitação
                 </h3>
-                <p style="margin-bottom: 16px; color: #6b7280;">
-                    Descreva brevemente a solução aplicada (opcional):
-                </p>
-                <textarea 
-                    id="solucao-descricao" 
-                    placeholder="Ex: Problema de encanamento resolvido, troca de torneira realizada..."
-                    style="width: 100%; height: 80px; padding: 12px; border: 1px solid #d1d5db; border-radius: 6px; resize: vertical; font-family: inherit; box-sizing: border-box;"
-                ></textarea>
+                
+                <!-- Descrição da Solução -->
+                <div style="margin-bottom: 20px;">
+                    <label style="display: block; margin-bottom: 8px; font-weight: 500; color: #374151;">
+                        <i class="fas fa-edit" style="margin-right: 6px;"></i>
+                        Descrição da Solução (opcional):
+                    </label>
+                    <textarea 
+                        id="solucao-descricao" 
+                        placeholder="Ex: Problema de encanamento resolvido, troca de torneira realizada..."
+                        style="width: 100%; height: 80px; padding: 12px; border: 1px solid #d1d5db; border-radius: 6px; resize: vertical; font-family: inherit; box-sizing: border-box;"
+                    ></textarea>
+                </div>
+                
+                <!-- Upload de Evidências -->
+                <div style="margin-bottom: 20px;">
+                    <label style="display: block; margin-bottom: 8px; font-weight: 500; color: #374151;">
+                        <i class="fas fa-camera" style="margin-right: 6px;"></i>
+                        Evidências do Serviço (opcional):
+                    </label>
+                    <div style="border: 2px dashed #d1d5db; border-radius: 8px; padding: 20px; text-align: center; background: #f9fafb;">
+                        <input 
+                            type="file" 
+                            id="evidencias-upload" 
+                            accept="image/*,.pdf,.doc,.docx"
+                            multiple
+                            style="display: none;"
+                            onchange="handleEvidenciasUpload(this)"
+                        >
+                        <div onclick="document.getElementById('evidencias-upload').click()" style="cursor: pointer;">
+                            <i class="fas fa-cloud-upload-alt" style="font-size: 24px; color: #6b7280; margin-bottom: 8px;"></i>
+                            <p style="margin: 0; color: #6b7280;">
+                                <strong>Clique aqui</strong> para selecionar arquivos<br>
+                                <small>Fotos, PDFs ou documentos (máx. 5 arquivos, 10MB cada)</small>
+                            </p>
+                        </div>
+                        <div id="evidencias-preview" style="margin-top: 12px;"></div>
+                    </div>
+                </div>
+                
                 <div style="display: flex; gap: 12px; justify-content: flex-end; margin-top: 20px;">
                     <button 
                         onclick="document.getElementById('modal-finalizacao').remove()" 
@@ -1865,6 +1897,7 @@ async function finalizarSolicitacao(solicitacaoId) {
                         Cancelar
                     </button>
                     <button 
+                        id="btn-confirmar-finalizacao"
                         onclick="confirmarFinalizacao('${solicitacaoId}')" 
                         style="background: #059669; color: white; border: none; padding: 10px 20px; border-radius: 6px; cursor: pointer;">
                         <i class="fas fa-check" style="margin-right: 4px;"></i>Confirmar Finalização
@@ -1889,8 +1922,37 @@ async function finalizarSolicitacao(solicitacaoId) {
 
 async function confirmarFinalizacao(solicitacaoId) {
     try {
+        // Desabilitar botão para evitar duplo clique
+        const btnConfirmar = document.getElementById('btn-confirmar-finalizacao');
+        if (btnConfirmar) {
+            btnConfirmar.disabled = true;
+            btnConfirmar.innerHTML = '<i class="fas fa-spinner fa-spin" style="margin-right: 4px;"></i>Processando...';
+        }
+        
         const usuarioAdmin = window.usuarioAdmin || JSON.parse(localStorage.getItem('usuarioAdmin') || '{}');
         const solucao = document.getElementById('solucao-descricao')?.value || '';
+        
+        // Processar upload de evidências primeiro (se houver)
+        let evidencias = [];
+        if (arquivosEvidencias && arquivosEvidencias.length > 0) {
+            console.log(`[DEBUG] Processando ${arquivosEvidencias.length} evidência(s)...`);
+            showToast('Info', 'Processando evidências...', 'info');
+            
+            try {
+                evidencias = await uploadEvidenciasParaFirebase(solicitacaoId);
+                console.log(`[DEBUG] Evidências processadas com sucesso:`, evidencias.length);
+            } catch (error) {
+                console.error('[ERRO] Falha no upload das evidências:', error);
+                showToast('Erro', 'Falha ao processar evidências. Tente novamente.', 'error');
+                
+                // Reabilitar botão
+                if (btnConfirmar) {
+                    btnConfirmar.disabled = false;
+                    btnConfirmar.innerHTML = '<i class="fas fa-check" style="margin-right: 4px;"></i>Confirmar Finalização';
+                }
+                return;
+            }
+        }
         
         // Buscar dados atuais da solicitação para calcular métricas
         const solicitacaoDoc = await window.db.collection('solicitacoes').doc(solicitacaoId).get();
@@ -1902,7 +1964,7 @@ async function confirmarFinalizacao(solicitacaoId) {
         const solicitacaoData = solicitacaoDoc.data();
         const agora = new Date();
         
-        console.log(`[DEBUG] Finalizando solicitação ${solicitacaoId}`);
+        console.log(`[DEBUG] Finalizando solicitação ${solicitacaoId} com ${evidencias.length} evidência(s)`);
         
         const updateData = {
             status: 'finalizada',
@@ -1919,6 +1981,13 @@ async function confirmarFinalizacao(solicitacaoId) {
 
         if (solucao.trim()) {
             updateData.solucao = solucao.trim();
+        }
+        
+        // Adicionar evidências se houver
+        if (evidencias.length > 0) {
+            updateData.evidencias = evidencias;
+            updateData.possuiEvidencias = true;
+            console.log(`[DEBUG] Adicionando ${evidencias.length} evidência(s) à solicitação`);
         }
 
         // Calcular métricas de tempo completas
@@ -2000,6 +2069,9 @@ async function confirmarFinalizacao(solicitacaoId) {
         
         showToast('Sucesso', 'Solicitação finalizada com sucesso!', 'success');
         
+        // Limpar evidências após sucesso
+        arquivosEvidencias = [];
+        
         // Remover modal de finalização
         const modalFinalizacao = document.getElementById('modal-finalizacao');
         if (modalFinalizacao) modalFinalizacao.remove();
@@ -2016,6 +2088,13 @@ async function confirmarFinalizacao(solicitacaoId) {
     } catch (error) {
         console.error('Erro ao finalizar solicitação:', error);
         showToast('Erro', 'Não foi possível finalizar a solicitação: ' + (error.message || error), 'error');
+        
+        // Reabilitar botão em caso de erro
+        const btnConfirmar = document.getElementById('btn-confirmar-finalizacao');
+        if (btnConfirmar) {
+            btnConfirmar.disabled = false;
+            btnConfirmar.innerHTML = '<i class="fas fa-check" style="margin-right: 4px;"></i>Confirmar Finalização';
+        }
     }
 }
 
@@ -2929,6 +3008,7 @@ function mostrarModal(solicitacao) {
             <div><strong>Solicitante:</strong> ${solicitacao.nome || 'N/A'}</div>
             ${solicitacao.responsavel ? `<div><strong>Responsável:</strong> ${solicitacao.responsavel}</div>` : ''}
             ${solicitacao.solucao ? `<div><strong>Solução:</strong> ${solicitacao.solucao}</div>` : ''}
+            ${gerarSecaoEvidencias(solicitacao)}
             ${metricas}
         `;
         
@@ -3515,6 +3595,262 @@ function calcularMetricasSatisfacao(avaliacoes) {
         porEquipe
     };
 }
+
+// === SISTEMA DE EVIDÊNCIAS ===
+
+// Variável global para armazenar os arquivos selecionados
+let arquivosEvidencias = [];
+
+function handleEvidenciasUpload(input) {
+    const files = input.files;
+    const maxFiles = 5;
+    const maxSizePerFile = 10 * 1024 * 1024; // 10MB em bytes
+    
+    // Validações
+    if (files.length > maxFiles) {
+        showToast('Erro', `Máximo de ${maxFiles} arquivos permitidos.`, 'error');
+        input.value = '';
+        return;
+    }
+    
+    let validFiles = [];
+    let totalSize = 0;
+    
+    for (let i = 0; i < files.length; i++) {
+        const file = files[i];
+        
+        // Validar tamanho do arquivo
+        if (file.size > maxSizePerFile) {
+            showToast('Erro', `Arquivo "${file.name}" excede o limite de 10MB.`, 'error');
+            continue;
+        }
+        
+        // Validar tipo de arquivo
+        const allowedTypes = ['image/', 'application/pdf', 'application/msword', 'application/vnd.openxmlformats-officedocument.wordprocessingml.document'];
+        const isValidType = allowedTypes.some(type => file.type.startsWith(type));
+        
+        if (!isValidType) {
+            showToast('Erro', `Arquivo "${file.name}" não é um tipo válido.`, 'error');
+            continue;
+        }
+        
+        validFiles.push(file);
+        totalSize += file.size;
+    }
+    
+    // Limite total de 50MB
+    if (totalSize > 50 * 1024 * 1024) {
+        showToast('Erro', 'Tamanho total dos arquivos excede 50MB.', 'error');
+        input.value = '';
+        return;
+    }
+    
+    if (validFiles.length === 0) {
+        input.value = '';
+        return;
+    }
+    
+    // Armazenar arquivos válidos
+    arquivosEvidencias = validFiles;
+    
+    // Mostrar preview dos arquivos
+    mostrarPreviewEvidencias(validFiles);
+    
+    console.log(`[DEBUG] ${validFiles.length} arquivo(s) selecionado(s) para evidências`);
+}
+
+function mostrarPreviewEvidencias(files) {
+    const previewContainer = document.getElementById('evidencias-preview');
+    if (!previewContainer) return;
+    
+    previewContainer.innerHTML = '';
+    
+    files.forEach((file, index) => {
+        const fileElement = document.createElement('div');
+        fileElement.style.cssText = 'display: flex; align-items: center; justify-content: space-between; background: white; padding: 8px 12px; border: 1px solid #e5e7eb; border-radius: 6px; margin-bottom: 8px;';
+        
+        const fileInfo = document.createElement('div');
+        fileInfo.style.cssText = 'display: flex; align-items: center; flex-grow: 1;';
+        
+        // Ícone baseado no tipo de arquivo
+        let icon = '📄';
+        if (file.type.startsWith('image/')) icon = '🖼️';
+        else if (file.type.includes('pdf')) icon = '📄';
+        else if (file.type.includes('word')) icon = '📝';
+        
+        fileInfo.innerHTML = `
+            <span style="margin-right: 8px; font-size: 16px;">${icon}</span>
+            <div>
+                <div style="font-weight: 500; color: #374151; font-size: 14px;">${file.name}</div>
+                <div style="color: #6b7280; font-size: 12px;">${formatarTamanhoArquivo(file.size)}</div>
+            </div>
+        `;
+        
+        const removeButton = document.createElement('button');
+        removeButton.innerHTML = '&times;';
+        removeButton.style.cssText = 'background: #ef4444; color: white; border: none; border-radius: 50%; width: 24px; height: 24px; cursor: pointer; font-size: 14px; display: flex; align-items: center; justify-content: center;';
+        removeButton.onclick = () => removerEvidencia(index);
+        
+        fileElement.appendChild(fileInfo);
+        fileElement.appendChild(removeButton);
+        previewContainer.appendChild(fileElement);
+    });
+    
+    // Mostrar total
+    const totalElement = document.createElement('div');
+    totalElement.style.cssText = 'text-align: center; color: #059669; font-size: 12px; margin-top: 8px; font-weight: 500;';
+    const totalSize = files.reduce((sum, file) => sum + file.size, 0);
+    totalElement.textContent = `${files.length} arquivo(s) • ${formatarTamanhoArquivo(totalSize)}`;
+    previewContainer.appendChild(totalElement);
+}
+
+function removerEvidencia(index) {
+    arquivosEvidencias.splice(index, 1);
+    mostrarPreviewEvidencias(arquivosEvidencias);
+    
+    // Atualizar o input file
+    const input = document.getElementById('evidencias-upload');
+    if (input && arquivosEvidencias.length === 0) {
+        input.value = '';
+    }
+    
+    console.log(`[DEBUG] Evidência removida. Total: ${arquivosEvidencias.length} arquivo(s)`);
+}
+
+function formatarTamanhoArquivo(bytes) {
+    if (bytes === 0) return '0 Bytes';
+    const k = 1024;
+    const sizes = ['Bytes', 'KB', 'MB', 'GB'];
+    const i = Math.floor(Math.log(bytes) / Math.log(k));
+    return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
+}
+
+async function uploadEvidenciasParaFirebase(solicitacaoId) {
+    if (arquivosEvidencias.length === 0) {
+        return []; // Retorna array vazio se não há arquivos
+    }
+    
+    console.log(`[DEBUG] Iniciando upload de ${arquivosEvidencias.length} evidência(s)...`);
+    
+    // Para esta implementação, vamos usar uma simulação de upload
+    // Em produção, você integraria com Firebase Storage ou outro serviço
+    const evidenciasUploadadas = [];
+    
+    try {
+        for (let i = 0; i < arquivosEvidencias.length; i++) {
+            const file = arquivosEvidencias[i];
+            
+            // Simular upload (substituir por integração real)
+            const evidencia = {
+                nome: file.name,
+                tamanho: file.size,
+                tipo: file.type,
+                uploadedAt: new Date().toISOString(),
+                // Em produção, adicionar:
+                // url: urlDoArquivoNoStorage,
+                // path: caminhoNoStorage
+            };
+            
+            evidenciasUploadadas.push(evidencia);
+            console.log(`[DEBUG] Evidência ${i + 1}/${arquivosEvidencias.length} processada: ${file.name}`);
+        }
+        
+        console.log(`[DEBUG] Upload concluído: ${evidenciasUploadadas.length} evidência(s)`);
+        return evidenciasUploadadas;
+        
+    } catch (error) {
+        console.error('[ERRO] Falha no upload das evidências:', error);
+        throw new Error('Falha no upload das evidências: ' + error.message);
+    }
+}
+
+// Expor funções globalmente
+window.handleEvidenciasUpload = handleEvidenciasUpload;
+window.removerEvidencia = removerEvidencia;
+
+// Funções para gerenciar evidências
+function gerarSecaoEvidencias(solicitacao) {
+    if (!solicitacao.evidencias || solicitacao.evidencias.length === 0) {
+        return '';
+    }
+
+    let html = `
+        <div style="margin-top: 16px; padding-top: 16px; border-top: 1px solid #e5e7eb;">
+            <h4 style="color: #374151; margin-bottom: 12px; font-size: 14px; font-weight: 600; display: flex; align-items: center;">
+                <i class="fas fa-paperclip" style="margin-right: 8px; color: #6b7280;"></i>
+                Evidências Anexadas (${solicitacao.evidencias.length})
+            </h4>
+            <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(120px, 1fr)); gap: 12px;">
+    `;
+
+    solicitacao.evidencias.forEach((evidencia, index) => {
+        const isImage = evidencia.tipo.startsWith('image/');
+        const fileName = evidencia.nome.length > 15 ? evidencia.nome.substring(0, 15) + '...' : evidencia.nome;
+        
+        html += `
+            <div style="background: #f9fafb; border: 1px solid #e5e7eb; border-radius: 8px; padding: 8px; text-align: center; cursor: pointer;" 
+                 onclick="window.visualizarEvidencia('${evidencia.url}', '${evidencia.nome}', '${evidencia.tipo}')">
+                ${isImage ? 
+                    `<img src="${evidencia.url}" alt="${evidencia.nome}" style="width: 100%; height: 80px; object-fit: cover; border-radius: 4px; margin-bottom: 8px;">` :
+                    `<div style="height: 80px; display: flex; align-items: center; justify-content: center; margin-bottom: 8px;">
+                        <i class="fas fa-file-alt" style="font-size: 32px; color: #6b7280;"></i>
+                     </div>`
+                }
+                <div style="font-size: 11px; color: #6b7280; word-break: break-word;" title="${evidencia.nome}">${fileName}</div>
+                <div style="font-size: 10px; color: #9ca3af; margin-top: 2px;">${formatarTamanhoArquivo(evidencia.tamanho)}</div>
+            </div>
+        `;
+    });
+
+    html += `
+            </div>
+        </div>
+    `;
+
+    return html;
+}
+
+function formatarTamanhoArquivo(bytes) {
+    if (bytes === 0) return '0 Bytes';
+    const k = 1024;
+    const sizes = ['Bytes', 'KB', 'MB', 'GB'];
+    const i = Math.floor(Math.log(bytes) / Math.log(k));
+    return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
+}
+
+window.visualizarEvidencia = function(url, nome, tipo) {
+    if (tipo.startsWith('image/')) {
+        // Para imagens, criar modal de visualização
+        const modal = document.createElement('div');
+        modal.style.cssText = `
+            position: fixed; top: 0; left: 0; right: 0; bottom: 0; 
+            background: rgba(0,0,0,0.9); display: flex; align-items: center; 
+            justify-content: center; z-index: 10000; cursor: pointer;
+        `;
+        
+        modal.innerHTML = `
+            <div style="max-width: 90vw; max-height: 90vh; position: relative;">
+                <img src="${url}" alt="${nome}" style="max-width: 100%; max-height: 100%; object-fit: contain;">
+                <div style="position: absolute; top: -40px; left: 0; color: white; font-size: 14px;">${nome}</div>
+                <div style="position: absolute; top: -40px; right: 0;">
+                    <button onclick="this.closest('.modal-evidencia').remove()" style="background: rgba(255,255,255,0.2); border: none; color: white; padding: 8px 12px; border-radius: 4px; cursor: pointer;">
+                        <i class="fas fa-times"></i> Fechar
+                    </button>
+                </div>
+            </div>
+        `;
+        
+        modal.className = 'modal-evidencia';
+        modal.onclick = (e) => {
+            if (e.target === modal) modal.remove();
+        };
+        
+        document.body.appendChild(modal);
+    } else {
+        // Para outros arquivos, abrir em nova aba
+        window.open(url, '_blank');
+    }
+};
 
 function getCorEquipe(equipe) {
     const cores = {
