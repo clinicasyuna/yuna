@@ -1,14 +1,20 @@
-# 🏥 YUNA - Sistema de Solicitações
+# 🏥 YUNA - Sistema de Solicitações para Clínicas
 
-Sistema de gerenciamento de solicitações para clínicas YUNA com duas interfaces:
-- **Portal dos Acompanhantes** - PWA para solicitações de serviços
-- **Painel Administrativo** - Dashboard para equipe e administradores
+[![Deploy Status](https://img.shields.io/badge/Deploy-Vercel-black?logo=vercel)](https://yuna-healthcare-system.vercel.app)
+[![PWA](https://img.shields.io/badge/PWA-Ready-purple?logo=pwa)](https://yuna-healthcare-system.vercel.app/acompanhantes)
 
-## 📱 Progressive Web App (PWA)
+Sistema completo de gerenciamento de solicitações para clínicas YUNA.
 
-O portal dos acompanhantes é uma PWA completa que pode ser instalada como app nativo:
+## 🌐 **Acesso Online**
+- 🏠 **Homepage:** [yuna-healthcare-system.vercel.app](https://yuna-healthcare-system.vercel.app)
+- 📱 **Portal Acompanhantes:** [/acompanhantes](https://yuna-healthcare-system.vercel.app/acompanhantes)
+- 👨‍💼 **Painel Admin:** [/admin](https://yuna-healthcare-system.vercel.app/admin)
 
-### Como instalar no celular:
+## 📱 **App Mobile (PWA)**
+
+### Como instalar
+**Android:** Chrome → "Instalar App"
+**iOS:** Safari → Compartilhar → "Adicionar à Tela de Início"
 
 **Android:**
 1. Acesse a URL no Chrome

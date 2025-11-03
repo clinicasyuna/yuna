@@ -1,6 +1,6 @@
 {
   "version": 2,
-  "name": "yuna-solicitacoes",
+  "name": "yuna-healthcare-system",
   "builds": [
     {
       "src": "**/*",
@@ -30,7 +30,7 @@
     },
     {
       "src": "/",
-      "dest": "/admin/index.html"
+      "dest": "/acompanhantes/index.html"
     }
   ],
   "headers": [
