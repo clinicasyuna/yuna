@@ -7,10 +7,10 @@ Sistema completo de gerenciamento de solicitações para clínicas YUNA com PWA 
 
 ## 🌐 **ACESSO ONLINE - DOMÍNIO PROFISSIONAL**
 
-**✅ NOVO DOMÍNIO ATIVO:**
-- **🏠 Sistema Principal:** https://samukajr.github.io/clinicasyuna/
-- **👥 Portal Acompanhantes:** https://samukajr.github.io/clinicasyuna/acompanhantes/
-- **👨‍💼 Painel Admin:** https://samukajr.github.io/clinicasyuna/admin/
+**✅ DOMÍNIO YUNA ATIVO:**
+- **🏠 Sistema Principal:** https://samukajr.github.io/yuna/
+- **👥 Portal Acompanhantes:** https://samukajr.github.io/yuna/acompanhantes/
+- **👨‍💼 Painel Admin:** https://samukajr.github.io/yuna/admin/
 
 ## 🚀 **DEPLOY AUTOMÁTICO - SIGA ESTES PASSOS**
 
@@ -20,7 +20,7 @@ Sistema completo de gerenciamento de solicitações para clínicas YUNA com PWA 
 2. **Faça login** com sua conta GitHub
 3. **Clique em "New site from Git"**
 4. **Escolha "GitHub"** e autorize a conexão
-5. **Selecione o repositório:** `Samukajr/clinicasyuna`
+5. **Selecione o repositório:** `Samukajr/yuna`
 6. **Configure:**
    - Build command: `echo "Static site"`
    - Publish directory: `.` (ponto)
@@ -31,7 +31,7 @@ Sistema completo de gerenciamento de solicitações para clínicas YUNA com PWA 
 
 1. **Acesse:** https://vercel.com/new
 2. **Conecte** com GitHub
-3. **Selecione:** `Samukajr/clinicasyuna`
+3. **Selecione:** `Samukajr/yuna`
 4. **Configure:**
    - Framework Preset: `Other`
    - Build Command: Deixe vazio
@@ -40,7 +40,7 @@ Sistema completo de gerenciamento de solicitações para clínicas YUNA com PWA 
 
 ### **📚 Opção 3: GitHub Pages**
 
-1. **No GitHub,** vá para: github.com/Samukajr/clinicasyuna
+1. **No GitHub,** vá para: github.com/Samukajr/yuna
 2. **Pages** → Source: Deploy from branch
 3. **Branch:** main, folder: / (root)
 4. **Save**
@@ -115,7 +115,7 @@ O sistema é um **Progressive Web App** que pode ser instalado:
 
 - **Desenvolvedor:** Samuel Lacerda
 - **GitHub:** [@Samukajr](https://github.com/Samukajr)
-- **Repositório:** [clinicasyuna](https://github.com/Samukajr/clinicasyuna)
+- **Repositório:** [yuna](https://github.com/Samukajr/yuna)
 
 ---
 
