@@ -1,56 +1,9 @@
 {
-  "version": 2,
-  "name": "yuna-healthcare-system",
-  "builds": [
-    {
-      "src": "**/*",
-      "use": "@vercel/static"
-    }
-  ],
-  "routes": [
-    {
-      "src": "/api/(.*)",
-      "dest": "https://api.yuna.com.br/$1"
-    },
-    {
-      "src": "/admin",
-      "dest": "/admin/index.html"
-    },
-    {
-      "src": "/admin/(.*)",
-      "dest": "/admin/$1"
-    },
-    {
-      "src": "/acompanhantes",
-      "dest": "/acompanhantes/index.html"
-    },
-    {
-      "src": "/acompanhantes/(.*)",
-      "dest": "/acompanhantes/$1"
-    },
-    {
-      "src": "/",
-      "dest": "/acompanhantes/index.html"
-    }
-  ],
-  "headers": [
-    {
-      "source": "/service-worker.js",
-      "headers": [
-        {
-          "key": "Cache-Control",
-          "value": "no-cache"
-        }
-      ]
-    },
-    {
-      "source": "/manifest.json",
-      "headers": [
-        {
-          "key": "Content-Type",
-          "value": "application/manifest+json"
-        }
-      ]
-    }
+  "rewrites": [
+    { "source": "/admin", "destination": "/admin/index.html" },
+    { "source": "/admin/(.*)", "destination": "/admin/$1" },
+    { "source": "/acompanhantes", "destination": "/acompanhantes/index.html" },
+    { "source": "/acompanhantes/(.*)", "destination": "/acompanhantes/$1" },
+    { "source": "/", "destination": "/index.html" }
   ]
 }

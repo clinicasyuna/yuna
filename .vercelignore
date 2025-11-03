@@ -1,0 +1,5 @@
+# Deploy YUNA Healthcare System
+node_modules
+.git
+.DS_Store
+*.log
