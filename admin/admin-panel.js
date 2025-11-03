@@ -2004,9 +2004,10 @@ async function confirmarFinalizacao(solicitacaoId) {
         const modalFinalizacao = document.getElementById('modal-finalizacao');
         if (modalFinalizacao) modalFinalizacao.remove();
         
-        // CORREÇÃO: NÃO abrir pesquisa no admin - ela deve ir para o acompanhante!
+        // CORREÇÃO APLICADA: NÃO abrir pesquisa no admin - ela deve ir para o acompanhante!
         // O listener no portal dos acompanhantes detectará a finalização e abrirá a pesquisa
-        console.log('✅ Solicitação finalizada - pesquisa será enviada ao acompanhante automaticamente');
+        // Atualização forçada: pesquisa vai para o solicitante via listener em tempo real
+        console.log('✅ Solicitação finalizada - pesquisa será enviada ao acompanhante automaticamente via listener');
         
         // Fechar modal principal e recarregar dados
         fecharSolicitacaoModal();
