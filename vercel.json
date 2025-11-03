@@ -1,0 +1,64 @@
+{
+  "version": 2,
+  "name": "yuna-solicitacoes",
+  "builds": [
+    {
+      "src": "**/*",
+      "use": "@vercel/static"
+    }
+  ],
+  "routes": [
+    {
+      "src": "/api/(.*)",
+      "dest": "https://api.yuna.com.br/$1"
+    },
+    {
+      "src": "/admin",
+      "dest": "/admin/index.html"
+    },
+    {
+      "src": "/admin/(.*)",
+      "dest": "/admin/$1"
+    },
+    {
+      "src": "/acompanhantes",
+      "dest": "/acompanhantes/index.html"
+    },
+    {
+      "src": "/acompanhantes/(.*)",
+      "dest": "/acompanhantes/$1"
+    },
+    {
+      "src": "/",
+      "dest": "/admin/index.html"
+    }
+  ],
+  "headers": [
+    {
+      "source": "/service-worker.js",
+      "headers": [
+        {
+          "key": "Cache-Control",
+          "value": "no-cache"
+        }
+      ]
+    },
+    {
+      "source": "/manifest.json",
+      "headers": [
+        {
+          "key": "Content-Type",
+          "value": "application/manifest+json"
+        }
+      ]
+    }
+  ],
+  "functions": {
+    "acompanhantes/**": {
+      "includeFiles": "acompanhantes/**/*"
+    },
+    "admin/**": {
+      "includeFiles": "admin/**/*"
+    }
+  }
+}

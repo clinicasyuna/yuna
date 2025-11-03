@@ -1,0 +1,77 @@
+{
+  "name": "YUNA - Painel Acompanhantes",
+  "short_name": "YUNA App",
+  "description": "Sistema de Solicitações para Acompanhantes das Clínicas YUNA",
+  "start_url": "/acompanhantes/",
+  "display": "standalone",
+  "background_color": "#f8fafc",
+  "theme_color": "#2563eb",
+  "orientation": "portrait-primary",
+  "scope": "/acompanhantes/",
+  "lang": "pt-BR",
+  "categories": ["healthcare", "medical", "productivity"],
+  "prefer_related_applications": false,
+  "related_applications": [],
+  "edge_side_panel": {},
+  "launch_handler": {
+    "client_mode": ["navigate-existing", "auto"]
+  },
+  "icons": [
+    {
+      "src": "data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 192 192'%3e%3cdefs%3e%3clinearGradient id='bg' x1='0%25' y1='0%25' x2='100%25' y2='100%25'%3e%3cstop offset='0%25' style='stop-color:%232563eb'/%3e%3cstop offset='100%25' style='stop-color:%236366f1'/%3e%3c/linearGradient%3e%3c/defs%3e%3crect width='192' height='192' fill='url(%23bg)' rx='35'/%3e%3cg fill='white'%3e%3ctext x='96' y='50' text-anchor='middle' font-size='20' font-family='Arial' font-weight='bold'%3eYUNA%3c/text%3e%3crect x='50' y='70' width='92' height='8' rx='4'/%3e%3crect x='40' y='90' width='35' height='6' rx='3'/%3e%3crect x='40' y='105' width='45' height='6' rx='3'/%3e%3crect x='40' y='120' width='25' height='6' rx='3'/%3e%3crect x='100' y='90' width='52' height='60' rx='8'/%3e%3ccircle cx='126' cy='110' r='8'/%3e%3crect x='115' y='125' width='22' height='4' rx='2'/%3e%3crect x='115' y='135' width='22' height='4' rx='2'/%3e%3c/g%3e%3c/svg%3e",
+      "sizes": "192x192",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 512 512'%3e%3cdefs%3e%3clinearGradient id='bg' x1='0%25' y1='0%25' x2='100%25' y2='100%25'%3e%3cstop offset='0%25' style='stop-color:%232563eb'/%3e%3cstop offset='100%25' style='stop-color:%236366f1'/%3e%3c/linearGradient%3e%3c/defs%3e%3crect width='512' height='512' fill='url(%23bg)' rx='95'/%3e%3cg fill='white'%3e%3ctext x='256' y='140' text-anchor='middle' font-size='54' font-family='Arial' font-weight='bold'%3eYUNA%3c/text%3e%3crect x='130' y='180' width='252' height='20' rx='10'/%3e%3crect x='100' y='220' width='90' height='15' rx='7'/%3e%3crect x='100' y='250' width='120' height='15' rx='7'/%3e%3crect x='100' y='280' width='70' height='15' rx='7'/%3e%3crect x='270' y='220' width='142' height='162' rx='20'/%3e%3ccircle cx='341' cy='280' r='20'/%3e%3crect x='310' y='320' width='62' height='12' rx='6'/%3e%3crect x='310' y='345' width='62' height='12' rx='6'/%3e%3c/g%3e%3c/svg%3e",
+      "sizes": "512x512",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ],
+  "shortcuts": [
+    {
+      "name": "Manutenção",
+      "short_name": "Manutenção",
+      "description": "Solicitar serviços de manutenção",
+      "url": "/index.html?service=manutencao",
+      "icons": [
+        {
+          "src": "data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3e%3crect width='100' height='100' fill='%232563eb' rx='15'/%3e%3cpath fill='white' d='M30 30h40v5h-40zM35 40h30v5h-30zM25 50h20v20h-20zM55 50h20v20h-20z'/%3e%3c/svg%3e",
+          "sizes": "96x96",
+          "type": "image/svg+xml"
+        }
+      ]
+    },
+    {
+      "name": "Hotelaria",
+      "short_name": "Hotelaria",
+      "description": "Solicitar serviços de hotelaria",
+      "url": "/index-moderno.html?service=hotelaria",
+      "icons": [
+        {
+          "src": "data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3e%3crect width='100' height='100' fill='%2306b6d4' rx='15'/%3e%3cpath fill='white' d='M20 40h60v30h-60zM25 25h10v10h-10zM40 25h10v10h-10zM55 25h10v10h-10z'/%3e%3c/svg%3e",
+          "sizes": "96x96",
+          "type": "image/svg+xml"
+        }
+      ]
+    }
+  ],
+  "screenshots": [
+    {
+      "src": "data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 390 844'%3e%3crect width='390' height='844' fill='%23f8fafc'/%3e%3cdefs%3e%3clinearGradient id='header' x1='0%25' y1='0%25' x2='100%25' y2='100%25'%3e%3cstop offset='0%25' style='stop-color:%232563eb'/%3e%3cstop offset='100%25' style='stop-color:%236366f1'/%3e%3c/linearGradient%3e%3c/defs%3e%3crect x='0' y='0' width='390' height='140' fill='url(%23header)'/%3e%3ctext x='195' y='70' text-anchor='middle' fill='white' font-size='28' font-family='Arial' font-weight='bold'%3eYUNA%3c/text%3e%3ctext x='195' y='95' text-anchor='middle' fill='white' font-size='14' opacity='0.9'%3ePortal dos Acompanhantes%3c/text%3e%3crect x='20' y='170' width='350' height='80' fill='white' rx='15' stroke='%23e5e7eb' stroke-width='1'/%3e%3ctext x='40' y='200' fill='%23374151' font-size='16' font-weight='bold'%3eQuarto 101%3c/text%3e%3ctext x='40' y='220' fill='%236b7280' font-size='12'%3ePaciente: João Silva%3c/text%3e%3ctext x='40' y='235' fill='%236b7280' font-size='12'%3eAcompanhante: Maria Silva%3c/text%3e%3ctext x='20' y='290' fill='%23374151' font-size='18' font-weight='bold'%3eServiços Disponíveis%3c/text%3e%3crect x='20' y='310' width='170' height='140' fill='white' rx='15' stroke='%23e5e7eb' stroke-width='1'/%3e%3ccircle cx='105' cy='350' r='20' fill='%232563eb'/%3e%3cpath d='M95 350h20M105 340v20' stroke='white' stroke-width='2'/%3e%3ctext x='105' y='385' text-anchor='middle' fill='%23374151' font-size='14' font-weight='bold'%3eManutenção%3c/text%3e%3ctext x='105' y='400' text-anchor='middle' fill='%236b7280' font-size='10'%3eReparos e Ajustes%3c/text%3e%3ctext x='105' y='425' text-anchor='middle' fill='%2310b981' font-size='12' font-weight='bold'%3eSolicitar%3c/text%3e%3crect x='200' y='310' width='170' height='140' fill='white' rx='15' stroke='%23e5e7eb' stroke-width='1'/%3e%3ccircle cx='285' cy='350' r='20' fill='%2306b6d4'/%3e%3cpath d='M275 345h20v10h-20z' fill='white'/%3e%3ctext x='285' y='385' text-anchor='middle' fill='%23374151' font-size='14' font-weight='bold'%3eHotelaria%3c/text%3e%3ctext x='285' y='400' text-anchor='middle' fill='%236b7280' font-size='10'%3eConforto e Amenidades%3c/text%3e%3ctext x='285' y='425' text-anchor='middle' fill='%2310b981' font-size='12' font-weight='bold'%3eSolicitar%3c/text%3e%3c/svg%3e",
+      "sizes": "390x844",
+      "type": "image/svg+xml",
+      "form_factor": "narrow",
+      "label": "Tela principal do aplicativo YUNA"
+    },
+    {
+      "src": "data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 390 844'%3e%3crect width='390' height='844' fill='%23f8fafc'/%3e%3cdefs%3e%3clinearGradient id='header' x1='0%25' y1='0%25' x2='100%25' y2='100%25'%3e%3cstop offset='0%25' style='stop-color:%232563eb'/%3e%3cstop offset='100%25' style='stop-color:%236366f1'/%3e%3c/linearGradient%3e%3c/defs%3e%3crect x='0' y='0' width='390' height='120' fill='url(%23header)'/%3e%3ctext x='195' y='65' text-anchor='middle' fill='white' font-size='20' font-family='Arial' font-weight='bold'%3eSolicitações%3c/text%3e%3ctext x='20' y='160' fill='%23374151' font-size='18' font-weight='bold'%3eHistórico de Solicitações%3c/text%3e%3crect x='20' y='180' width='350' height='70' fill='white' rx='12' stroke='%23e5e7eb' stroke-width='1'/%3e%3ccircle cx='50' cy='205' r='8' fill='%23fbbf24'/%3e%3ctext x='70' y='200' fill='%23374151' font-size='14' font-weight='bold'%3eManutenção - Ar condicionado%3c/text%3e%3ctext x='70' y='215' fill='%236b7280' font-size='12'%3e15:30 - Em andamento%3c/text%3e%3ctext x='70' y='230' fill='%236b7280' font-size='10'%3eEquipe: Manutenção%3c/text%3e%3crect x='20' y='260' width='350' height='70' fill='white' rx='12' stroke='%23e5e7eb' stroke-width='1'/%3e%3ccircle cx='50' cy='285' r='8' fill='%2310b981'/%3e%3ctext x='70' y='280' fill='%23374151' font-size='14' font-weight='bold'%3eHotelaria - Travesseiros extras%3c/text%3e%3ctext x='70' y='295' fill='%236b7280' font-size='12'%3e14:20 - Finalizada%3c/text%3e%3ctext x='70' y='310' fill='%236b7280' font-size='10'%3eEquipe: Hotelaria%3c/text%3e%3crect x='20' y='340' width='350' height='70' fill='white' rx='12' stroke='%23e5e7eb' stroke-width='1'/%3e%3ccircle cx='50' cy='365' r='8' fill='%2310b981'/%3e%3ctext x='70' y='360' fill='%23374151' font-size='14' font-weight='bold'%3eNutrição - Cardápio especial%3c/text%3e%3ctext x='70' y='375' fill='%236b7280' font-size='12'%3e12:45 - Finalizada%3c/text%3e%3ctext x='70' y='390' fill='%236b7280' font-size='10'%3eEquipe: Nutrição%3c/text%3e%3c/svg%3e",
+      "sizes": "390x844",
+      "type": "image/svg+xml",
+      "form_factor": "narrow",
+      "label": "Histórico de solicitações e acompanhamento"
+    }
+  ]
+}

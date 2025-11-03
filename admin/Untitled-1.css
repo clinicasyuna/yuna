@@ -1,0 +1,31 @@
+/* CORREÇÃO DASHBOARD ESPECÍFICA */
+.MuiGrid-container {
+  max-width: 100% !important;
+  overflow-x: hidden !important;
+}
+
+.MuiCard-root {
+  max-width: 100% !important;
+  word-wrap: break-word !important;
+}
+
+/* Forçar visibilidade */
+main * {
+  max-width: 100% !important;
+  overflow-x: visible !important;
+}/* CORREÇÃO DASHBOARD ESPECÍFICA */
+.MuiGrid-container {
+  max-width: 100% !important;
+  overflow-x: hidden !important;
+}
+
+.MuiCard-root {
+  max-width: 100% !important;
+  word-wrap: break-word !important;
+}
+
+/* Forçar visibilidade */
+main * {
+  max-width: 100% !important;
+  overflow-x: visible !important;
+}

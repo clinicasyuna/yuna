@@ -1,0 +1,20 @@
+{
+  "name": "yuna-solicitacoes",
+  "version": "1.0.0",
+  "description": "Sistema de gerenciamento de solicitações para clínicas YUNA - PWA e Admin Panel",
+  "main": "index.html",
+  "scripts": {
+    "dev": "python -m http.server 3000",
+    "build": "echo 'Projeto pronto para deploy'",
+    "start": "echo 'Deploy no Vercel - acesse: https://vercel.com'"
+  },
+  "keywords": ["healthcare", "pwa", "solicitacoes", "yuna", "progressive-web-app"],
+  "author": "Clínicas YUNA",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/usuario/yuna-app.git"
+  },
+  "dependencies": {},
+  "devDependencies": {}
+}

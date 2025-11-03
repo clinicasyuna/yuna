@@ -1,0 +1,8 @@
+[build]
+  publish = "admin"
+  command = "echo Deploy YUNA Painel Admin"
+
+[[redirects]]
+  from = "/api/*"
+  to = "https://api.yuna.com.br/:splat"
+  status = 200
