@@ -4508,10 +4508,91 @@ function gerarRelatorioPesquisas() {
     abrirDashboardSatisfacao();
 }
 
+// === FUNÇÃO PARA EXPORTAR PESQUISAS DE SATISFAÇÃO PARA EXCEL ===
+async function exportarRelatorioPesquisasExcel() {
+    console.log('[DEBUG] exportarRelatorioPesquisasExcel: iniciando exportação');
+    
+    // Verificar permissões (apenas super_admin)
+    const usuarioAdmin = window.usuarioAdmin || JSON.parse(localStorage.getItem('usuarioAdmin') || '{}');
+    const userRole = window.userRole || usuarioAdmin.role;
+    
+    if (!userRole || userRole !== 'super_admin') {
+        showToast('Erro', 'Acesso negado. Apenas super administradores podem exportar relatórios de satisfação.', 'error');
+        return;
+    }
+
+    try {
+        showToast('Info', 'Gerando relatório Excel... Por favor aguarde.', 'info');
+        
+        // Buscar todas as avaliações
+        const avaliacoesSnapshot = await window.db.collection('avaliacoes_satisfacao')
+            .orderBy('dataAvaliacao', 'desc')
+            .get();
+
+        const avaliacoes = [];
+        avaliacoesSnapshot.forEach(doc => {
+            const avaliacao = { id: doc.id, ...doc.data() };
+            avaliacoes.push({
+                'Data': avaliacao.dataAvaliacao ? new Date(avaliacao.dataAvaliacao.toDate()).toLocaleString('pt-BR') : 'N/A',
+                'Solicitação ID': avaliacao.solicitacaoId || 'N/A',
+                'Avaliação (1-5)': avaliacao.avaliacao || 'N/A',
+                'Comentário': avaliacao.comentario || 'Sem comentário',
+                'Departamento': avaliacao.departamento || 'N/A',
+                'Acompanhante': avaliacao.nomeAcompanhante || 'N/A',
+                'Quarto': avaliacao.quarto || 'N/A'
+            });
+        });
+
+        if (avaliacoes.length === 0) {
+            showToast('Info', 'Nenhuma avaliação encontrada para exportar.', 'info');
+            return;
+        }
+
+        // Criar planilha Excel
+        const wb = XLSX.utils.book_new();
+        const ws = XLSX.utils.json_to_sheet(avaliacoes);
+        
+        // Ajustar largura das colunas
+        const colWidths = [
+            { wch: 20 }, // Data
+            { wch: 15 }, // Solicitação ID
+            { wch: 15 }, // Avaliação
+            { wch: 40 }, // Comentário
+            { wch: 15 }, // Departamento
+            { wch: 20 }, // Acompanhante
+            { wch: 10 }  // Quarto
+        ];
+        ws['!cols'] = colWidths;
+
+        XLSX.utils.book_append_sheet(wb, ws, 'Pesquisas de Satisfação');
+        
+        // Gerar nome do arquivo com data atual
+        const agora = new Date();
+        const dataFormatada = agora.toISOString().split('T')[0];
+        const nomeArquivo = `relatorio_pesquisas_satisfacao_${dataFormatada}.xlsx`;
+        
+        // Download do arquivo
+        XLSX.writeFile(wb, nomeArquivo);
+        
+        showToast('Sucesso', `Relatório exportado com sucesso! (${avaliacoes.length} avaliações)`, 'success');
+        console.log(`[DEBUG] exportarRelatorioPesquisasExcel: ${avaliacoes.length} avaliações exportadas`);
+        
+    } catch (error) {
+        console.error('[ERRO] exportarRelatorioPesquisasExcel:', error);
+        showToast('Erro', 'Erro ao exportar relatório de pesquisas: ' + error.message, 'error');
+    }
+}
+
 // Expor funções globalmente
 window.cadastrarAcompanhante = cadastrarAcompanhante;
 window.carregarAcompanhantes = carregarAcompanhantes;
 window.removerAcompanhante = removerAcompanhante;
 window.editarAcompanhante = editarAcompanhante;
 window.gerarRelatorioPesquisas = gerarRelatorioPesquisas;
+window.exportarRelatorioPesquisasExcel = exportarRelatorioPesquisasExcel;
+
+// Debug: Verificar se funções estão carregadas
+console.log('[DEBUG] Funções de pesquisas de satisfação carregadas:');
+console.log('[DEBUG] gerarRelatorioPesquisas:', typeof window.gerarRelatorioPesquisas);
+console.log('[DEBUG] exportarRelatorioPesquisasExcel:', typeof window.exportarRelatorioPesquisasExcel);
 
