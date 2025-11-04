@@ -15,12 +15,94 @@ window.alterarTipoAcesso = function() {
     }
 };
 
+// === FUNÇÕES DE LIMPEZA E RESET ===
+
+// Função para limpeza completa da interface (logout, erro, etc.)
+window.limparInterfaceCompleta = function() {
+    console.log('[DEBUG] Iniciando limpeza completa da interface...');
+    
+    try {
+        // Limpar dados do usuário
+        localStorage.removeItem('usuarioAdmin');
+        localStorage.removeItem('userRole');
+        window.usuarioAdmin = null;
+        window.userRole = null;
+        
+        // Lista completa de elementos para ocultar
+        const elementosParaOcultar = [
+            // Seções principais
+            'admin-panel',
+            'relatorios-section',
+            'acompanhantes-section',
+            'metricas-gerais',
+            'teams-grid',
+            
+            // Modais
+            'manage-users-modal',
+            'modal-novo-usuario',
+            'edit-user-modal',
+            'solicitacao-modal',
+            'finalizar-solicitacao-modal',
+            
+            // Outros elementos
+            'section-content',
+            'filtros',
+            'relatorio-container'
+        ];
+        
+        // Ocultar por ID
+        elementosParaOcultar.forEach(id => {
+            const elemento = document.getElementById(id);
+            if (elemento) {
+                elemento.classList.add('hidden');
+                elemento.style.display = 'none';
+                elemento.style.visibility = 'hidden';
+            }
+        });
+        
+        // Ocultar por classe
+        const classesParaOcultar = [
+            '.teams-grid',
+            '.section-content',
+            '.modal',
+            '.modal-content',
+            '.filtros',
+            '.relatorio-container'
+        ];
+        
+        classesParaOcultar.forEach(classe => {
+            const elementos = document.querySelectorAll(classe);
+            elementos.forEach(el => {
+                el.classList.add('hidden');
+                el.style.display = 'none';
+                el.style.visibility = 'hidden';
+            });
+        });
+        
+        // Mostrar apenas a tela de login
+        const authSection = document.getElementById('auth-section');
+        if (authSection) {
+            authSection.classList.remove('hidden');
+            authSection.style.display = 'block';
+            authSection.style.visibility = 'visible';
+        }
+        
+        console.log('[DEBUG] Limpeza completa da interface realizada');
+        
+    } catch (error) {
+        console.error('[ERRO] Falha na limpeza da interface:', error);
+    }
+};
+
 // Função de emergência para resetar o sistema
 window.emergencyReset = function() {
     console.log('🚨 EMERGENCY RESET INICIADO');
     
     // Limpar localStorage
     localStorage.clear();
+    
+    // Limpar interface
+    limparInterfaceCompleta();
     
     // Forçar logout
     if (window.auth) {
@@ -498,18 +580,73 @@ window.addEventListener('DOMContentLoaded', async function() {
     if (logoutBtn) {
         logoutBtn.onclick = async function() {
             try {
+                console.log('[DEBUG] Iniciando processo de logout...');
+                
+                // Registrar logout em auditoria
+                if (window.registrarLogAuditoria) {
+                    window.registrarLogAuditoria('USER_LOGOUT', {
+                        userId: window.usuarioAdmin?.uid || 'unknown',
+                        userEmail: window.usuarioAdmin?.email || 'unknown'
+                    });
+                }
+                
+                // Fazer logout do Firebase
                 await window.auth.signOut();
-                showToast('Sucesso', 'Logout realizado!', 'success');
-                const authSection3 = document.getElementById('auth-section');
-                const adminPanel3 = document.getElementById('admin-panel');
-                if (authSection3) authSection3.classList.remove('hidden');
-                if (adminPanel3) adminPanel3.classList.add('hidden');
+                
+                // Usar função de limpeza completa
+                limparInterfaceCompleta();
+                
+                // Limpar campos de login
+                const emailField = document.getElementById('login-email');
+                const passwordField = document.getElementById('login-password');
+                if (emailField) emailField.value = '';
+                if (passwordField) passwordField.value = '';
+                
+                // Focar no campo de email
+                setTimeout(() => {
+                    if (emailField) emailField.focus();
+                }, 100);
+                
+                showToast('Sucesso', 'Logout realizado com sucesso!', 'success');
+                console.log('[DEBUG] Logout completo realizado');
+                
             } catch (err) {
-                showToast('Erro', 'Erro ao fazer logout.', 'error');
+                console.error('[ERRO] Falha no logout:', err);
+                showToast('Erro', 'Erro ao fazer logout: ' + err.message, 'error');
+                
+                // Em caso de erro, forçar reload da página
+                setTimeout(() => {
+                    window.location.reload();
+                }, 2000);
             }
         };
     }
 });
+
+// === LISTENERS PARA PROBLEMAS DE CONECTIVIDADE ===
+
+// Detectar erros de QUIC Protocol e outros problemas de rede
+window.addEventListener('error', function(event) {
+    if (event.message && event.message.includes('ERR_QUIC_PROTOCOL_ERROR')) {
+        console.warn('[AVISO] Erro de protocolo QUIC detectado - possível problema de conectividade');
+        // Não fazer logout automático, apenas registrar
+        if (window.registrarLogAuditoria) {
+            window.registrarLogAuditoria('CONNECTIVITY_ERROR', {
+                error: 'ERR_QUIC_PROTOCOL_ERROR',
+                url: event.filename
+            });
+        }
+    }
+});
+
+// Listener para problemas com o Firebase
+window.addEventListener('firebase-error', function(event) {
+    console.warn('[AVISO] Erro do Firebase detectado:', event.detail);
+    if (event.detail && event.detail.code === 'unavailable') {
+        showToast('Aviso', 'Problemas de conectividade detectados', 'warning');
+    }
+});
+
 window.handleLogin = async function(event) {
     const email = document.getElementById('login-email')?.value;
     
