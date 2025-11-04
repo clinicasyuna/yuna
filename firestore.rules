@@ -1,0 +1,147 @@
+rules_version = '2';
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+    
+    // === REGRAS GERAIS ===
+    // Negar acesso por padrão - apenas usuários autenticados
+    match /{document=**} {
+      allow read, write: if false;
+    }
+    
+    // === USUÁRIOS ADMINISTRADORES ===
+    match /usuarios_admin/{userId} {
+      // Leitura: apenas o próprio usuário ou super_admins
+      allow read: if request.auth != null && 
+                     (request.auth.uid == userId || 
+                      resource.data.role == 'super_admin' ||
+                      request.auth.token.role == 'super_admin');
+      
+      // Criação/Edição: apenas super_admins
+      allow create, update: if request.auth != null && 
+                              request.auth.token.role == 'super_admin';
+      
+      // Exclusão: apenas super_admins (com proteção extra)
+      allow delete: if request.auth != null && 
+                       request.auth.token.role == 'super_admin' &&
+                       resource.data.role != 'super_admin'; // Não pode deletar outro super_admin
+    }
+    
+    // === USUÁRIOS DA EQUIPE ===
+    match /usuarios_equipe/{userId} {
+      // Leitura: usuários do mesmo departamento ou admins
+      allow read: if request.auth != null && (
+        request.auth.uid == userId ||
+        request.auth.token.role in ['super_admin', 'admin'] ||
+        (request.auth.token.departamento == resource.data.departamento)
+      );
+      
+      // Criação/Edição: apenas admins e super_admins
+      allow create, update: if request.auth != null && 
+                              request.auth.token.role in ['super_admin', 'admin'];
+      
+      // Exclusão: apenas super_admins
+      allow delete: if request.auth != null && 
+                       request.auth.token.role == 'super_admin';
+    }
+    
+    // === USUÁRIOS ACOMPANHANTES ===
+    match /usuarios_acompanhantes/{userId} {
+      // Leitura: apenas o próprio usuário ou equipe/admins
+      allow read: if request.auth != null && (
+        request.auth.uid == userId ||
+        request.auth.token.role in ['super_admin', 'admin', 'equipe']
+      );
+      
+      // Criação: admins podem criar (cadastro)
+      allow create: if request.auth != null && 
+                       request.auth.token.role in ['super_admin', 'admin'];
+      
+      // Edição: o próprio usuário ou admins
+      allow update: if request.auth != null && (
+        request.auth.uid == userId ||
+        request.auth.token.role in ['super_admin', 'admin']
+      );
+      
+      // Exclusão: apenas admins
+      allow delete: if request.auth != null && 
+                       request.auth.token.role in ['super_admin', 'admin'];
+    }
+    
+    // === SOLICITAÇÕES ===
+    match /solicitacoes/{solicitacaoId} {
+      // Leitura: criador da solicitação, equipe do departamento ou admins
+      allow read: if request.auth != null && (
+        request.auth.uid == resource.data.usuarioId ||
+        request.auth.token.role in ['super_admin', 'admin'] ||
+        (request.auth.token.role == 'equipe' && 
+         request.auth.token.departamento == resource.data.departamento)
+      );
+      
+      // Criação: apenas acompanhantes autenticados
+      allow create: if request.auth != null && 
+                       request.auth.uid == request.resource.data.usuarioId;
+      
+      // Edição: criador, equipe responsável ou admins
+      allow update: if request.auth != null && (
+        request.auth.uid == resource.data.usuarioId ||
+        request.auth.token.role in ['super_admin', 'admin'] ||
+        (request.auth.token.role == 'equipe' && 
+         request.auth.token.departamento == resource.data.departamento)
+      );
+      
+      // Exclusão: apenas admins
+      allow delete: if request.auth != null && 
+                       request.auth.token.role in ['super_admin', 'admin'];
+    }
+    
+    // === AVALIAÇÕES DE SATISFAÇÃO ===
+    match /avaliacoes_satisfacao/{avaliacaoId} {
+      // Leitura: apenas admins e super_admins
+      allow read: if request.auth != null && 
+                     request.auth.token.role in ['super_admin', 'admin'];
+      
+      // Criação: acompanhantes podem criar suas próprias avaliações
+      allow create: if request.auth != null && 
+                       request.auth.uid == request.resource.data.usuarioId;
+      
+      // Edição: apenas o criador (dentro de 24h) ou admins
+      allow update: if request.auth != null && (
+        (request.auth.uid == resource.data.usuarioId && 
+         request.time < resource.data.dataAvaliacao + duration.fromHours(24)) ||
+        request.auth.token.role in ['super_admin', 'admin']
+      );
+      
+      // Exclusão: apenas super_admins
+      allow delete: if request.auth != null && 
+                       request.auth.token.role == 'super_admin';
+    }
+    
+    // === QUARTOS OCUPADOS ===
+    match /quartos_ocupados/{quartoId} {
+      // Leitura: todos os usuários autenticados
+      allow read: if request.auth != null;
+      
+      // Criação/Edição: apenas admins
+      allow create, update: if request.auth != null && 
+                              request.auth.token.role in ['super_admin', 'admin'];
+      
+      // Exclusão: apenas admins
+      allow delete: if request.auth != null && 
+                       request.auth.token.role in ['super_admin', 'admin'];
+    }
+    
+    // === LOGS DE AUDITORIA (Nova coleção) ===
+    match /logs_auditoria/{logId} {
+      // Leitura: apenas super_admins
+      allow read: if request.auth != null && 
+                     request.auth.token.role == 'super_admin';
+      
+      // Criação: sistema pode criar logs
+      allow create: if request.auth != null;
+      
+      // Exclusão/Edição: proibida (logs são imutáveis)
+      allow update, delete: if false;
+    }
+  }
+}

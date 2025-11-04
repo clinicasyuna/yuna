@@ -511,16 +511,25 @@ window.addEventListener('DOMContentLoaded', async function() {
     }
 });
 window.handleLogin = async function(event) {
+    const email = document.getElementById('login-email')?.value;
+    
     try {
         console.log('[DEBUG] handleLogin: login iniciado...');
         event.preventDefault();
-        const email = document.getElementById('login-email').value;
         const senha = document.getElementById('login-password').value;
         
         if (!email || !senha) {
             showToast('Erro', 'Preencha email e senha.', 'error');
             console.warn('[AVISO] handleLogin: email ou senha não preenchidos!');
+            if (window.registrarLogAuditoria) {
+                window.registrarLogAuditoria('LOGIN_ATTEMPT_INVALID', { email, motivo: 'Campos vazios' });
+            }
             return;
+        }
+        
+        // Verificar tentativas de login
+        if (window.verificarTentativasLogin) {
+            window.verificarTentativasLogin(email);
         }
         
         console.log('[DEBUG] Tentando login com email:', email);
@@ -529,6 +538,9 @@ window.handleLogin = async function(event) {
         if (!window.auth) {
             console.error('[ERRO] Firebase Auth não disponível');
             showToast('Erro', 'Sistema de autenticação não disponível. Ativando modo desenvolvimento...', 'warning');
+            if (window.registrarLogAuditoria) {
+                window.registrarLogAuditoria('FIREBASE_AUTH_ERROR', { email });
+            }
             // Ativar modo desenvolvimento
             setTimeout(() => {
                 window.loginDesenvolvimento(email);
@@ -539,6 +551,11 @@ window.handleLogin = async function(event) {
         const userCredential = await window.auth.signInWithEmailAndPassword(email, senha);
         showToast('Sucesso', 'Login realizado!', 'success');
         console.log('[DEBUG] handleLogin: login realizado com sucesso!');
+        
+        // Registrar login bem-sucedido
+        if (window.registrarTentativaLogin) {
+            window.registrarTentativaLogin(email, true);
+        }
         
         // Oculta tela de login e mostra painel principal
         document.getElementById('auth-section')?.classList.add('hidden');
@@ -568,6 +585,21 @@ window.handleLogin = async function(event) {
         
     } catch (error) {
         console.error('[ERRO] handleLogin: falha no login:', error);
+        
+        // Registrar tentativa de login falhada
+        if (window.registrarTentativaLogin) {
+            window.registrarTentativaLogin(email, false);
+        }
+        
+        // Registrar log de auditoria detalhado
+        if (window.registrarLogAuditoria) {
+            window.registrarLogAuditoria('LOGIN_FAILED', { 
+                email, 
+                errorCode: error.code, 
+                errorMessage: error.message,
+                timestamp: new Date().toISOString()
+            });
+        }
         
         // Tratamento específico de diferentes tipos de erro
         let mensagemErro = 'Erro desconhecido no login';
