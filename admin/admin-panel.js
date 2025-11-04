@@ -4502,9 +4502,16 @@ function editarAcompanhante(acompanhanteId) {
     console.log('[DEBUG] editarAcompanhante:', acompanhanteId);
 }
 
+// === FUNÇÃO PARA RELATÓRIOS DE PESQUISAS DE SATISFAÇÃO ===
+function gerarRelatorioPesquisas() {
+    console.log('[DEBUG] gerarRelatorioPesquisas: chamando abrirDashboardSatisfacao');
+    abrirDashboardSatisfacao();
+}
+
 // Expor funções globalmente
 window.cadastrarAcompanhante = cadastrarAcompanhante;
 window.carregarAcompanhantes = carregarAcompanhantes;
 window.removerAcompanhante = removerAcompanhante;
 window.editarAcompanhante = editarAcompanhante;
+window.gerarRelatorioPesquisas = gerarRelatorioPesquisas;
 
