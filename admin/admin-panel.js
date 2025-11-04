@@ -921,6 +921,256 @@ async function carregarUsuarios() {
     }
 }
 
+// === FUNÇÕES DE GERENCIAMENTO DE USUÁRIOS ===
+
+// Função para editar usuário
+window.editarUsuario = async function(userId) {
+    console.log('[DEBUG] Editando usuário:', userId);
+    
+    if (!userId) {
+        showToast('Erro', 'ID do usuário não fornecido', 'error');
+        return;
+    }
+    
+    try {
+        // Verificar permissões
+        const usuarioAdmin = window.usuarioAdmin || JSON.parse(localStorage.getItem('usuarioAdmin') || '{}');
+        if (!usuarioAdmin || usuarioAdmin.role !== 'super_admin') {
+            showToast('Erro', 'Apenas super administradores podem editar usuários', 'error');
+            return;
+        }
+        
+        // Buscar o usuário nas diferentes coleções
+        let userData = null;
+        let userCollection = null;
+        
+        // Tentar em usuarios_equipe
+        try {
+            const equipeDoc = await window.db.collection('usuarios_equipe').doc(userId).get();
+            if (equipeDoc.exists) {
+                userData = { id: equipeDoc.id, ...equipeDoc.data() };
+                userCollection = 'usuarios_equipe';
+            }
+        } catch (error) {
+            console.log('[DEBUG] Usuário não encontrado em usuarios_equipe');
+        }
+        
+        // Tentar em usuarios_admin se não encontrou
+        if (!userData) {
+            try {
+                const adminDoc = await window.db.collection('usuarios_admin').doc(userId).get();
+                if (adminDoc.exists) {
+                    userData = { id: adminDoc.id, ...adminDoc.data() };
+                    userCollection = 'usuarios_admin';
+                }
+            } catch (error) {
+                console.log('[DEBUG] Usuário não encontrado em usuarios_admin');
+            }
+        }
+        
+        // Tentar em usuarios_acompanhantes se não encontrou
+        if (!userData) {
+            try {
+                const acompDoc = await window.db.collection('usuarios_acompanhantes').doc(userId).get();
+                if (acompDoc.exists) {
+                    userData = { id: acompDoc.id, ...acompDoc.data() };
+                    userCollection = 'usuarios_acompanhantes';
+                }
+            } catch (error) {
+                console.log('[DEBUG] Usuário não encontrado em usuarios_acompanhantes');
+            }
+        }
+        
+        if (!userData) {
+            showToast('Erro', 'Usuário não encontrado', 'error');
+            return;
+        }
+        
+        // Criar modal de edição
+        const editModal = document.createElement('div');
+        editModal.id = 'edit-user-modal';
+        editModal.style.cssText = `
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0,0,0,0.5); z-index: 100000; display: flex;
+            align-items: center; justify-content: center;
+        `;
+        
+        editModal.innerHTML = `
+            <div style="background: white; border-radius: 12px; padding: 24px; max-width: 500px; width: 90%; max-height: 80vh; overflow-y: auto;">
+                <h3 style="margin: 0 0 20px 0; color: #374151;">Editar Usuário</h3>
+                
+                <div style="margin-bottom: 16px;">
+                    <label style="display: block; margin-bottom: 4px; color: #374151; font-weight: 500;">Nome:</label>
+                    <input type="text" id="edit-nome" value="${userData.nome || ''}" 
+                           style="width: 100%; padding: 8px 12px; border: 1px solid #d1d5db; border-radius: 6px;">
+                </div>
+                
+                <div style="margin-bottom: 16px;">
+                    <label style="display: block; margin-bottom: 4px; color: #374151; font-weight: 500;">Email:</label>
+                    <input type="email" id="edit-email" value="${userData.email || ''}" 
+                           style="width: 100%; padding: 8px 12px; border: 1px solid #d1d5db; border-radius: 6px;">
+                </div>
+                
+                ${userCollection === 'usuarios_equipe' ? `
+                <div style="margin-bottom: 16px;">
+                    <label style="display: block; margin-bottom: 4px; color: #374151; font-weight: 500;">Departamento:</label>
+                    <select id="edit-departamento" style="width: 100%; padding: 8px 12px; border: 1px solid #d1d5db; border-radius: 6px;">
+                        <option value="manutencao" ${userData.departamento === 'manutencao' ? 'selected' : ''}>Manutenção</option>
+                        <option value="nutricao" ${userData.departamento === 'nutricao' ? 'selected' : ''}>Nutrição</option>
+                        <option value="higienizacao" ${userData.departamento === 'higienizacao' ? 'selected' : ''}>Higienização</option>
+                        <option value="hotelaria" ${userData.departamento === 'hotelaria' ? 'selected' : ''}>Hotelaria</option>
+                    </select>
+                </div>
+                ` : ''}
+                
+                ${userCollection === 'usuarios_admin' ? `
+                <div style="margin-bottom: 16px;">
+                    <label style="display: block; margin-bottom: 4px; color: #374151; font-weight: 500;">Tipo de Acesso:</label>
+                    <select id="edit-role" style="width: 100%; padding: 8px 12px; border: 1px solid #d1d5db; border-radius: 6px;">
+                        <option value="super_admin" ${userData.role === 'super_admin' ? 'selected' : ''}>Super Administrador</option>
+                        <option value="admin" ${userData.role === 'admin' ? 'selected' : ''}>Administrador</option>
+                        <option value="equipe" ${userData.role === 'equipe' ? 'selected' : ''}>Equipe</option>
+                    </select>
+                </div>
+                ` : ''}
+                
+                <div style="display: flex; gap: 12px; justify-content: flex-end; margin-top: 24px;">
+                    <button onclick="fecharModalEditarUsuario()" 
+                            style="padding: 8px 16px; border: 1px solid #d1d5db; background: white; color: #374151; border-radius: 6px; cursor: pointer;">
+                        Cancelar
+                    </button>
+                    <button onclick="salvarUsuarioEditado('${userId}', '${userCollection}')" 
+                            style="padding: 8px 16px; border: none; background: #3b82f6; color: white; border-radius: 6px; cursor: pointer;">
+                        Salvar
+                    </button>
+                </div>
+            </div>
+        `;
+        
+        document.body.appendChild(editModal);
+        
+    } catch (error) {
+        console.error('[ERRO] Falha ao editar usuário:', error);
+        showToast('Erro', 'Não foi possível carregar dados do usuário', 'error');
+    }
+};
+
+// Função para fechar modal de edição
+window.fecharModalEditarUsuario = function() {
+    const modal = document.getElementById('edit-user-modal');
+    if (modal) {
+        modal.remove();
+    }
+};
+
+// Função para salvar usuário editado
+window.salvarUsuarioEditado = async function(userId, collection) {
+    try {
+        const nome = document.getElementById('edit-nome').value.trim();
+        const email = document.getElementById('edit-email').value.trim();
+        
+        if (!nome || !email) {
+            showToast('Erro', 'Nome e email são obrigatórios', 'error');
+            return;
+        }
+        
+        const updateData = { nome, email };
+        
+        // Adicionar campos específicos da coleção
+        if (collection === 'usuarios_equipe') {
+            const departamento = document.getElementById('edit-departamento').value;
+            updateData.departamento = departamento;
+            updateData.equipe = departamento; // Para compatibilidade
+        } else if (collection === 'usuarios_admin') {
+            const role = document.getElementById('edit-role').value;
+            updateData.role = role;
+        }
+        
+        // Atualizar no Firestore
+        await window.db.collection(collection).doc(userId).update(updateData);
+        
+        showToast('Sucesso', 'Usuário atualizado com sucesso', 'success');
+        
+        // Fechar modal e recarregar lista
+        fecharModalEditarUsuario();
+        await carregarUsuarios();
+        
+        // Registrar auditoria
+        if (window.registrarLogAuditoria) {
+            window.registrarLogAuditoria('USER_EDIT', {
+                userId,
+                collection,
+                updateData: Object.keys(updateData)
+            });
+        }
+        
+    } catch (error) {
+        console.error('[ERRO] Falha ao salvar usuário:', error);
+        showToast('Erro', 'Não foi possível salvar as alterações', 'error');
+    }
+};
+
+// Função para remover usuário
+window.removerUsuario = async function(userId) {
+    console.log('[DEBUG] Removendo usuário:', userId);
+    
+    if (!userId) {
+        showToast('Erro', 'ID do usuário não fornecido', 'error');
+        return;
+    }
+    
+    // Verificar permissões
+    const usuarioAdmin = window.usuarioAdmin || JSON.parse(localStorage.getItem('usuarioAdmin') || '{}');
+    if (!usuarioAdmin || usuarioAdmin.role !== 'super_admin') {
+        showToast('Erro', 'Apenas super administradores podem remover usuários', 'error');
+        return;
+    }
+    
+    // Confirmar remoção
+    if (!confirm('Tem certeza que deseja remover este usuário? Esta ação não pode ser desfeita.')) {
+        return;
+    }
+    
+    try {
+        // Buscar e remover o usuário nas diferentes coleções
+        let removido = false;
+        const collections = ['usuarios_equipe', 'usuarios_admin', 'usuarios_acompanhantes'];
+        
+        for (const collection of collections) {
+            try {
+                const doc = await window.db.collection(collection).doc(userId).get();
+                if (doc.exists) {
+                    await window.db.collection(collection).doc(userId).delete();
+                    removido = true;
+                    
+                    // Registrar auditoria
+                    if (window.registrarLogAuditoria) {
+                        window.registrarLogAuditoria('USER_DELETE', {
+                            userId,
+                            collection,
+                            userData: doc.data()
+                        });
+                    }
+                    break;
+                }
+            } catch (error) {
+                console.log(`[DEBUG] Usuário não encontrado em ${collection}`);
+            }
+        }
+        
+        if (removido) {
+            showToast('Sucesso', 'Usuário removido com sucesso', 'success');
+            await carregarUsuarios(); // Recarregar lista
+        } else {
+            showToast('Erro', 'Usuário não encontrado', 'error');
+        }
+        
+    } catch (error) {
+        console.error('[ERRO] Falha ao remover usuário:', error);
+        showToast('Erro', 'Não foi possível remover o usuário', 'error');
+    }
+};
+
 // --- Firestore: Solicitações & Renderização dos Cards ---
 
 // Sistema de debounce para evitar chamadas múltiplas
