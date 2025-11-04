@@ -4,13 +4,19 @@
 // Função para registrar logs de auditoria
 async function registrarLogAuditoria(acao, detalhes = {}) {
     try {
-        const usuario = window.usuarioAdmin || window.usuarioLogado || {};
+        // Verificar se o usuário está autenticado
+        if (!window.auth || !window.auth.currentUser) {
+            console.warn('[AUDITORIA] Usuário não autenticado - log não registrado:', acao);
+            return;
+        }
+        
+        const usuario = window.usuarioAdmin || window.usuarioLogado || window.auth.currentUser || {};
         const timestamp = new Date();
         
         const logData = {
             acao: acao,
-            usuarioId: usuario.uid || 'anonimo',
-            usuarioEmail: usuario.email || 'desconhecido',
+            usuarioId: usuario.uid || window.auth.currentUser?.uid || 'anonimo',
+            usuarioEmail: usuario.email || window.auth.currentUser?.email || 'desconhecido',
             userRole: usuario.role || window.userRole || 'indefinido',
             timestamp: timestamp,
             ip: await obterIP(),
@@ -20,11 +26,22 @@ async function registrarLogAuditoria(acao, detalhes = {}) {
             sessionId: obterSessionId()
         };
         
-        await window.db.collection('logs_auditoria').add(logData);
-        console.log(`[AUDITORIA] ${acao}:`, logData);
+        // Tentar registrar o log com timeout
+        const timeoutPromise = new Promise((_, reject) => 
+            setTimeout(() => reject(new Error('Timeout')), 5000)
+        );
+        
+        await Promise.race([
+            window.db.collection('logs_auditoria').add(logData),
+            timeoutPromise
+        ]);
+        
+        console.log(`[AUDITORIA] ${acao}:`, { acao, usuarioId: logData.usuarioId });
         
     } catch (error) {
-        console.error('[ERRO] Falha ao registrar log de auditoria:', error);
+        // Log local em caso de falha
+        console.warn('[AUDITORIA] Falha ao registrar - salvando localmente:', acao, error.message);
+        salvarLogLocal(acao, detalhes);
     }
 }
 
@@ -145,6 +162,28 @@ function verificarIntegridadeSessao() {
     }
     
     localStorage.setItem('yuna_session_info', JSON.stringify(sessionInfo));
+}
+
+// Função para salvar logs localmente quando o Firestore falha
+function salvarLogLocal(acao, detalhes) {
+    try {
+        const logs = JSON.parse(localStorage.getItem('yuna_logs_locais') || '[]');
+        logs.push({
+            acao,
+            detalhes,
+            timestamp: new Date().toISOString(),
+            url: window.location.href
+        });
+        
+        // Manter apenas os últimos 50 logs locais
+        if (logs.length > 50) {
+            logs.splice(0, logs.length - 50);
+        }
+        
+        localStorage.setItem('yuna_logs_locais', JSON.stringify(logs));
+    } catch (error) {
+        console.warn('[AUDITORIA] Falha ao salvar log local:', error);
+    }
 }
 
 // Exportar funções para uso global

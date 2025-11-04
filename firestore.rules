@@ -54,8 +54,17 @@ service cloud.firestore {
     
     // === LOGS DE AUDITORIA ===
     match /logs_auditoria/{logId} {
-      // Permitir leitura e criação para usuários autenticados
-      allow read, create: if request.auth != null;
+      // Permitir leitura para usuários autenticados
+      allow read: if request.auth != null;
+      
+      // Permitir criação apenas se o usuário está incluindo seu próprio UID
+      allow create: if request.auth != null 
+        && request.auth.uid != null
+        && (
+          !('usuarioId' in resource.data) || 
+          resource.data.usuarioId == request.auth.uid ||
+          resource.data.usuarioId == 'anonimo'
+        );
       
       // Exclusão/Edição: proibida (logs são imutáveis)
       allow update, delete: if false;

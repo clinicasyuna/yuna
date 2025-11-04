@@ -603,6 +603,25 @@ window.handleLogin = async function(event) {
         
         // Tratamento específico de diferentes tipos de erro
         let mensagemErro = 'Erro desconhecido no login';
+        
+        if (error.code === 'auth/invalid-login-credentials' || 
+            error.code === 'auth/user-not-found' || 
+            error.code === 'auth/wrong-password') {
+            mensagemErro = 'Email ou senha incorretos';
+        } else if (error.code === 'auth/too-many-requests') {
+            mensagemErro = 'Muitas tentativas. Tente novamente mais tarde';
+        } else if (error.code === 'auth/network-request-failed') {
+            mensagemErro = 'Erro de conexão. Verifique sua internet';
+        } else if (error.code === 'auth/invalid-email') {
+            mensagemErro = 'Email inválido';
+        }
+        
+        showToast('Erro de Login', mensagemErro, 'error');
+        console.warn('[AVISO] handleLogin: erro detalhado:', { 
+            code: error.code, 
+            message: error.message,
+            email: email
+        });
         let mostrarModoDesenvolvimento = false;
         
         if (error.code) {
@@ -903,7 +922,18 @@ async function carregarUsuarios() {
 }
 
 // --- Firestore: Solicitações & Renderização dos Cards ---
+
+// Sistema de debounce para evitar chamadas múltiplas
+let carregandoSolicitacoes = false;
+let timeoutRecarregar = null;
+
 async function carregarSolicitacoes() {
+    // Evitar chamadas múltiplas simultâneas
+    if (carregandoSolicitacoes) {
+        console.log('[DEBUG] Carregamento já em andamento - aguardando...');
+        return;
+    }
+    
     if (!window.db) {
         showToast('Erro', 'Firestore não inicializado!', 'error');
         console.error('Firestore não inicializado!');
@@ -911,6 +941,7 @@ async function carregarSolicitacoes() {
     }
     
     try {
+        carregandoSolicitacoes = true;
         console.log('[DEBUG] Buscando solicitações da coleção "solicitacoes"...');
         
         // Mostrar indicador de carregamento
@@ -1032,18 +1063,33 @@ async function carregarSolicitacoes() {
         ocultarIndicadorCarregamento();
         
     } catch (error) {
-        console.error('Erro ao buscar solicitações:', error);
+        console.error('[ERRO] Falha ao buscar solicitações:', error);
         ocultarIndicadorCarregamento();
         
         if (error.code === 'unavailable' || error.message.includes('offline')) {
-            showToast('Aviso', 'Modo offline - Carregando dados locais', 'success');
+            showToast('Aviso', 'Modo offline - Carregando dados locais', 'warning');
             carregarDadosOffline();
+        } else if (error.code === 'permission-denied') {
+            showToast('Erro', 'Acesso negado. Verifique suas permissões', 'error');
         } else {
-            showToast('Erro', 'Não foi possível carregar as solicitações: ' + (error.message || error), 'error');
+            showToast('Erro', 'Não foi possível carregar as solicitações', 'error');
             // Carregar dados simulados como fallback
             criarDadosExemplo();
         }
+    } finally {
+        carregandoSolicitacoes = false;
     }
+}
+
+// Função para recarregar com debounce
+function recarregarSolicitacoes(delay = 1000) {
+    if (timeoutRecarregar) {
+        clearTimeout(timeoutRecarregar);
+    }
+    
+    timeoutRecarregar = setTimeout(() => {
+        carregarSolicitacoesAgrupadas();
+    }, delay);
 }
 
 function mostrarIndicadorCarregamento() {
@@ -1762,6 +1808,11 @@ async function alterarStatusSolicitacao(solicitacaoId, novoStatus) {
     }
 
     try {
+        console.log(`[DEBUG] Iniciando alteração de status: ${solicitacaoId} -> ${novoStatus}`);
+        
+        // Mostrar loading
+        const loadingToast = showToast('Aguarde', 'Atualizando status...', 'info');
+        
         const usuarioAdmin = window.usuarioAdmin || JSON.parse(localStorage.getItem('usuarioAdmin') || '{}');
         
         // Verificar se o usuário pode alterar esta solicitação
@@ -1777,6 +1828,13 @@ async function alterarStatusSolicitacao(solicitacaoId, novoStatus) {
         if (!podeVerSolicitacaoJS(usuarioAdmin, solicitacaoData)) {
             showToast('Erro', 'Você não tem permissão para alterar esta solicitação', 'error');
             console.warn('[AVISO] alterarStatusSolicitacao: acesso negado para equipe:', usuarioAdmin.equipe, 'solicitação equipe:', solicitacaoData.equipe);
+            return;
+        }
+        
+        // Verificar se o status é válido
+        const statusValidos = ['pendente', 'em-andamento', 'finalizada'];
+        if (!statusValidos.includes(novoStatus)) {
+            showToast('Erro', 'Status inválido', 'error');
             return;
         }
         
@@ -1836,14 +1894,47 @@ async function alterarStatusSolicitacao(solicitacaoId, novoStatus) {
         await window.db.collection('solicitacoes').doc(solicitacaoId).update(updateData);
         
         showToast('Sucesso', `Status alterado para: ${novoStatus}`, 'success');
+        console.log(`[DEBUG] Status alterado com sucesso: ${solicitacaoId} -> ${novoStatus}`);
         
-        // Fechar modal e recarregar dados
-        fecharSolicitacaoModal();
-        carregarSolicitacoes();
+        // Registrar auditoria
+        if (window.registrarLogAuditoria) {
+            window.registrarLogAuditoria('STATUS_CHANGE', {
+                solicitacaoId,
+                statusAnterior: solicitacaoData.status,
+                novoStatus,
+                responsavel: usuarioAdmin.nome || usuarioAdmin.email
+            });
+        }
+        
+        // Fechar modal e recarregar dados (com delay para garantir que o update foi processado)
+        setTimeout(() => {
+            fecharSolicitacaoModal();
+            recarregarSolicitacoes(500);
+        }, 500);
         
     } catch (error) {
-        console.error('Erro ao alterar status:', error);
-        showToast('Erro', 'Não foi possível alterar o status: ' + (error.message || error), 'error');
+        console.error('[ERRO] Falha ao alterar status:', error);
+        
+        let mensagemErro = 'Não foi possível alterar o status';
+        if (error.code === 'permission-denied') {
+            mensagemErro = 'Você não tem permissão para esta ação';
+        } else if (error.code === 'unavailable') {
+            mensagemErro = 'Serviço temporariamente indisponível. Tente novamente';
+        } else if (error.code === 'not-found') {
+            mensagemErro = 'Solicitação não encontrada';
+        }
+        
+        showToast('Erro', mensagemErro, 'error');
+        
+        // Registrar erro em auditoria
+        if (window.registrarLogAuditoria) {
+            window.registrarLogAuditoria('STATUS_CHANGE_ERROR', {
+                solicitacaoId,
+                novoStatus,
+                error: error.message,
+                errorCode: error.code
+            });
+        }
     }
 }
 
@@ -3136,8 +3227,11 @@ function preencherDetalhesModal(solicitacao, nomeAcompanhante) {
     }
 
     // Mostrar modal
-    modal.classList.remove('hidden');
-    modal.style.display = 'flex';
+    const modal = document.getElementById('solicitacao-modal');
+    if (modal) {
+        modal.classList.remove('hidden');
+        modal.style.display = 'flex';
+    }
 }
 
 function fecharSolicitacaoModal() {
@@ -3145,6 +3239,15 @@ function fecharSolicitacaoModal() {
     if (modal) {
         modal.classList.add('hidden');
         modal.style.display = 'none';
+        
+        // Limpar conteúdo do modal para evitar problemas de estado
+        const detalhesEl = document.getElementById('modal-detalhes');
+        const acoesEl = document.getElementById('modal-acoes');
+        
+        if (detalhesEl) detalhesEl.innerHTML = '';
+        if (acoesEl) acoesEl.innerHTML = '';
+        
+        console.log('[DEBUG] Modal fechado e limpo');
     }
 }
 
@@ -3154,16 +3257,25 @@ function adicionarEventosSolicitacoes() {
         card.onclick = function(e) {
             e.preventDefault();
             e.stopPropagation();
-            if (card.dataset.solicitacao) {
-                try {
-                    const solicitacao = JSON.parse(card.dataset.solicitacao.replace(/&apos;/g, "'"));
-                    abrirSolicitacaoModal(solicitacao);
-                } catch (error) {
-                    console.error('Erro ao parsear solicitação:', error);
-                }
+            
+            if (!card.dataset.solicitacao) {
+                console.error('[ERRO] Card sem dados de solicitação');
+                showToast('Erro', 'Dados da solicitação não encontrados', 'error');
+                return;
+            }
+            
+            try {
+                const solicitacao = JSON.parse(card.dataset.solicitacao.replace(/&apos;/g, "'"));
+                console.log('[DEBUG] Abrindo modal para solicitação:', solicitacao.id);
+                abrirSolicitacaoModal(solicitacao);
+            } catch (error) {
+                console.error('[ERRO] Falha ao parsear dados da solicitação:', error);
+                showToast('Erro', 'Erro ao carregar dados da solicitação', 'error');
             }
         };
     });
+    
+    console.log(`[DEBUG] Eventos adicionados a ${document.querySelectorAll('.solicitacao-card').length} cards`);
 }
 
 // === SISTEMA DE PESQUISA DE SATISFAÇÃO ===
