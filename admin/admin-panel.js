@@ -2931,7 +2931,45 @@ function mostrarModal(solicitacao) {
         document.body.appendChild(modal);
     }
 
-    // Preencher detalhes
+    // Buscar nome do acompanhante baseado no usuarioId
+    buscarNomeAcompanhante(solicitacao).then(nomeAcompanhante => {
+        preencherDetalhesModal(solicitacao, nomeAcompanhante);
+    });
+
+    // Mostrar modal imediatamente
+    modal.classList.remove('hidden');
+}
+
+// Função para buscar nome do acompanhante
+async function buscarNomeAcompanhante(solicitacao) {
+    if (!solicitacao.usuarioId && !solicitacao.solicitanteId) {
+        return solicitacao.nome || 'Acompanhante não identificado';
+    }
+
+    try {
+        // Tentar buscar nas duas possíveis coleções
+        const userId = solicitacao.usuarioId || solicitacao.solicitanteId;
+        
+        // Primeiro tentar na coleção usuarios_acompanhantes
+        const acompanhanteRef = await window.db.collection('usuarios_acompanhantes').doc(userId).get();
+        
+        if (acompanhanteRef.exists) {
+            const data = acompanhanteRef.data();
+            return data.nome || data.nomeCompleto || 'Acompanhante';
+        }
+        
+        // Se não encontrar, tentar buscar pelo email na Auth (fallback)
+        // Retornar nome da solicitação se existir
+        return solicitacao.nome || solicitacao.nomeAcompanhante || 'Acompanhante não identificado';
+        
+    } catch (error) {
+        console.warn('[DEBUG] Erro ao buscar nome do acompanhante:', error);
+        return solicitacao.nome || solicitacao.nomeAcompanhante || 'Acompanhante não identificado';
+    }
+}
+
+// Função para preencher detalhes do modal
+function preencherDetalhesModal(solicitacao, nomeAcompanhante) {
     const detalhesEl = document.getElementById('modal-detalhes');
     const acoesEl = document.getElementById('modal-acoes');
     
@@ -3038,7 +3076,7 @@ function mostrarModal(solicitacao) {
             <div><strong>Equipe:</strong> ${solicitacao.equipe || 'N/A'}</div>
             <div><strong>Descrição:</strong> ${solicitacao.descricao || 'N/A'}</div>
             <div><strong>Quarto:</strong> ${solicitacao.quarto || 'N/A'}</div>
-            <div><strong>Solicitante:</strong> ${solicitacao.nome || 'N/A'}</div>
+            <div><strong>Solicitante:</strong> ${solicitacao.usuarioNome || solicitacao.nome || 'N/A'}</div>
             ${solicitacao.responsavel ? `<div><strong>Responsável:</strong> ${solicitacao.responsavel}</div>` : ''}
             ${solicitacao.solucao ? `<div><strong>Solução:</strong> ${solicitacao.solucao}</div>` : ''}
             ${gerarSecaoEvidencias(solicitacao)}
@@ -4121,7 +4159,7 @@ async function exportarDados() {
             'Equipe': sol.equipe || '--',
             'Status': sol.status || '--',
             'Quarto': sol.quarto || '--',
-            'Solicitante': sol.nome || '--',
+            'Solicitante': sol.usuarioNome || sol.nome || '--',
             'Descrição': sol.descricao || '--',
             'Responsável': sol.responsavel || '--',
             'Solução': sol.solucao || '--',
