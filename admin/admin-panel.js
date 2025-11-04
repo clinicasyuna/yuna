@@ -155,6 +155,7 @@ async function initFirebaseApp() {
 // Funções importadas do admin-permissions.js
 // window.verificarUsuarioAdminJS, window.temPermissaoJS, window.podeVerSolicitacaoJS
 function showToast(titulo, mensagem, tipo) {
+    console.log(`[DEBUG] showToast chamado: ${titulo} - ${mensagem} (${tipo})`);
     var toast = document.createElement('div');
     toast.className = 'toast ' + tipo;
     toast.innerHTML = `<strong>${titulo}:</strong> ${mensagem}`;
@@ -4240,8 +4241,10 @@ async function cadastrarAcompanhante() {
         console.log(`[DEBUG] cadastrarAcompanhante: quarto ${quarto} ocupado?`, quartoOcupado);
         
         if (quartoOcupado) {
+            console.log(`[DEBUG] cadastrarAcompanhante: EXIBINDO TOAST DE ERRO para quarto ${quarto}`);
             showToast('Erro', `O quarto ${quarto} já possui um acompanhante cadastrado!`, 'error');
             console.warn(`[AVISO] cadastrarAcompanhante: tentativa de cadastro em quarto ocupado: ${quarto}`);
+            console.log(`[DEBUG] cadastrarAcompanhante: RETORNANDO após mostrar erro`);
             return;
         }
 
