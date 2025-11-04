@@ -2009,15 +2009,45 @@
             btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Entrando...';
             
             try {
-                await firebase.auth().signInWithEmailAndPassword(email, password);
-                showToast('Sucesso!', 'Login realizado com sucesso!', 'success');
+                // PRIMEIRO: Verificar se é um pré-cadastro
+                const preCadastro = await verificarPreCadastro(email, password);
+                
+                if (preCadastro) {
+                    console.log('[DEBUG] handleLogin: encontrado pré-cadastro, ativando conta...');
+                    showToast('Ativando...', 'Ativando sua conta pela primeira vez...', 'info');
+                    
+                    // Criar usuário no Firebase Auth
+                    const userCredential = await firebase.auth().createUserWithEmailAndPassword(email, password);
+                    const user = userCredential.user;
+                    
+                    // Atualizar documento removendo pré-cadastro e adicionando UID
+                    await window.db.collection('usuarios_acompanhantes').doc(preCadastro.id).update({
+                        uid: user.uid,
+                        preCadastro: false,
+                        ativadoEm: new Date().toISOString()
+                    });
+                    
+                    // Atualizar referência na coleção de quartos ocupados
+                    await window.db.collection('quartos_ocupados').doc(preCadastro.quarto).update({
+                        acompanhanteId: user.uid
+                    });
+                    
+                    console.log('[DEBUG] handleLogin: conta ativada com sucesso');
+                    showToast('Sucesso!', 'Conta ativada e login realizado com sucesso!', 'success');
+                    
+                } else {
+                    // Login normal
+                    await firebase.auth().signInWithEmailAndPassword(email, password);
+                    showToast('Sucesso!', 'Login realizado com sucesso!', 'success');
+                }
+                
             } catch (error) {
                 console.error('Erro no login:', error);
                 let mensagem = 'Email ou senha incorretos.';
                 
                 switch (error.code) {
                     case 'auth/user-not-found':
-                        mensagem = 'Usuário não encontrado.';
+                        mensagem = 'Usuário não encontrado. Verifique se sua conta foi ativada pelo administrador.';
                         break;
                     case 'auth/wrong-password':
                         mensagem = 'Senha incorreta.';
@@ -2025,12 +2055,43 @@
                     case 'auth/invalid-email':
                         mensagem = 'Email inválido.';
                         break;
+                    case 'auth/email-already-in-use':
+                        mensagem = 'Este email já possui uma conta ativa. Use a opção de login normal.';
+                        break;
                 }
                 
                 showToast('Erro', mensagem, 'error');
             } finally {
                 btn.disabled = false;
                 btn.innerHTML = '<i class="fas fa-sign-in-alt"></i> Entrar';
+            }
+        }
+
+        // Função para verificar se é um pré-cadastro
+        async function verificarPreCadastro(email, senha) {
+            try {
+                const snapshot = await window.db.collection('usuarios_acompanhantes')
+                    .where('email', '==', email)
+                    .where('preCadastro', '==', true)
+                    .get();
+                
+                if (snapshot.empty) {
+                    return null;
+                }
+                
+                const doc = snapshot.docs[0];
+                const dados = doc.data();
+                
+                // Verificar se a senha confere
+                if (dados.senha === senha) {
+                    return { id: doc.id, ...dados };
+                }
+                
+                return null;
+                
+            } catch (error) {
+                console.error('[ERRO] verificarPreCadastro:', error);
+                return null;
             }
         }
 

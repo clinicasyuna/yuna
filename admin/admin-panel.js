@@ -4241,35 +4241,39 @@ async function cadastrarAcompanhante() {
             return;
         }
 
-        // Criar usuário no Firebase Auth
-        const userCredential = await window.auth.createUserWithEmailAndPassword(email, senha);
-        const user = userCredential.user;
+        // SOLUÇÃO ALTERNATIVA: Criar apenas no Firestore, não no Firebase Auth
+        // O usuário criará sua conta quando fizer o primeiro login no portal dos acompanhantes
+        
+        // Gerar um ID único para o acompanhante
+        const acompanhanteId = window.db.collection('usuarios_acompanhantes').doc().id;
+        
+        console.log('[DEBUG] cadastrarAcompanhante: criando acompanhante com ID:', acompanhanteId);
 
-        console.log('[DEBUG] cadastrarAcompanhante: usuário criado no Auth:', user.uid);
-
-        // Criar documento no Firestore
+        // Criar documento no Firestore com dados de pre-cadastro
         const dadosAcompanhante = {
             nome: nome,
             email: email,
             quarto: quarto,
+            senha: senha, // Armazenar temporariamente para primeiro login
             tipo: 'acompanhante',
             ativo: true,
+            preCadastro: true, // Flag indicando que ainda não foi ativado no Firebase Auth
             criadoEm: new Date().toISOString(),
             criadoPor: usuarioAdmin.nome,
-            uid: user.uid
+            id: acompanhanteId
         };
 
-        await window.db.collection('usuarios_acompanhantes').doc(user.uid).set(dadosAcompanhante);
+        await window.db.collection('usuarios_acompanhantes').doc(acompanhanteId).set(dadosAcompanhante);
 
         // Registrar ocupação do quarto
         await window.db.collection('quartos_ocupados').doc(quarto).set({
-            acompanhanteId: user.uid,
+            acompanhanteId: acompanhanteId,
             acompanhanteNome: nome,
             acompanhanteEmail: email,
             ocupadoEm: new Date().toISOString()
         });
 
-        console.log('[DEBUG] cadastrarAcompanhante: acompanhante salvo no Firestore');
+        console.log('[DEBUG] cadastrarAcompanhante: acompanhante salvo no Firestore (pre-cadastro)');
 
         // Limpar formulário
         document.getElementById('form-cadastro-acompanhante').reset();
@@ -4360,13 +4364,19 @@ async function carregarAcompanhantes() {
         }
 
         // Gerar HTML da lista
-        const htmlLista = acompanhantes.map(acomp => `
+        const htmlLista = acompanhantes.map(acomp => {
+            const statusBadge = acomp.preCadastro ? 
+                '<span style="background: #fbbf24; color: white; padding: 2px 6px; border-radius: 4px; font-size: 10px;">AGUARDANDO ATIVAÇÃO</span>' :
+                '<span style="background: #10b981; color: white; padding: 2px 6px; border-radius: 4px; font-size: 10px;">ATIVO</span>';
+            
+            return `
             <div class="acompanhante-card" style="background: white; border: 1px solid #e5e7eb; border-radius: 8px; padding: 16px; margin-bottom: 12px;">
                 <div style="display: flex; justify-content: space-between; align-items: start;">
                     <div style="flex: 1;">
-                        <h4 style="margin: 0 0 8px 0; color: #374151; font-size: 16px;">
-                            <i class="fas fa-user" style="color: #6b7280; margin-right: 8px;"></i>
+                        <h4 style="margin: 0 0 8px 0; color: #374151; font-size: 16px; display: flex; align-items: center; gap: 8px;">
+                            <i class="fas fa-user" style="color: #6b7280;"></i>
                             ${acomp.nome}
+                            ${statusBadge}
                         </h4>
                         <div style="font-size: 14px; color: #6b7280;">
                             <div style="margin-bottom: 4px;">
@@ -4381,6 +4391,10 @@ async function carregarAcompanhantes() {
                                 <i class="fas fa-calendar" style="width: 16px; margin-right: 8px;"></i>
                                 Cadastrado em: ${acomp.criadoEm ? new Date(acomp.criadoEm).toLocaleDateString('pt-BR') : '--'}
                             </div>
+                            ${acomp.preCadastro ? 
+                                '<div style="font-size: 12px; color: #f59e0b; margin-top: 4px;"><i class="fas fa-info-circle"></i> Aguardando primeiro login do acompanhante</div>' : 
+                                ''
+                            }
                         </div>
                     </div>
                     <div style="display: flex; gap: 8px;">
@@ -4397,7 +4411,7 @@ async function carregarAcompanhantes() {
                     </div>
                 </div>
             </div>
-        `).join('');
+        `}).join('');
 
         listaElement.innerHTML = htmlLista;
 
