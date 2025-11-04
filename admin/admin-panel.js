@@ -4235,9 +4235,13 @@ async function cadastrarAcompanhante() {
         }
 
         // Verificar se o quarto já está ocupado
+        console.log(`[DEBUG] cadastrarAcompanhante: verificando ocupação do quarto ${quarto}...`);
         const quartoOcupado = await verificarQuartoOcupado(quarto);
+        console.log(`[DEBUG] cadastrarAcompanhante: quarto ${quarto} ocupado?`, quartoOcupado);
+        
         if (quartoOcupado) {
-            showToast('Erro', 'Este quarto já possui um acompanhante cadastrado!', 'error');
+            showToast('Erro', `O quarto ${quarto} já possui um acompanhante cadastrado!`, 'error');
+            console.warn(`[AVISO] cadastrarAcompanhante: tentativa de cadastro em quarto ocupado: ${quarto}`);
             return;
         }
 
@@ -4329,10 +4333,45 @@ async function verificarEmailExistente(email) {
 // Função para verificar se quarto já está ocupado
 async function verificarQuartoOcupado(quarto) {
     try {
-        const quartoDoc = await window.db.collection('quartos_ocupados').doc(quarto).get();
-        return quartoDoc.exists;
+        console.log(`[DEBUG] verificarQuartoOcupado: verificando quarto ${quarto}...`);
+        
+        if (!quarto || !quarto.trim()) {
+            console.warn('[AVISO] verificarQuartoOcupado: quarto vazio ou inválido');
+            return false;
+        }
+        
+        // Verificar na coleção quartos_ocupados
+        const quartoDoc = await window.db.collection('quartos_ocupados').doc(quarto.trim()).get();
+        const quartoExiste = quartoDoc.exists;
+        
+        console.log(`[DEBUG] verificarQuartoOcupado: quarto ${quarto} existe na coleção quartos_ocupados?`, quartoExiste);
+        
+        if (quartoExiste) {
+            const dadosQuarto = quartoDoc.data();
+            console.log(`[DEBUG] verificarQuartoOcupado: dados do quarto ocupado:`, dadosQuarto);
+        }
+        
+        // Verificar também na coleção de usuários acompanhantes como backup
+        const acompSnap = await window.db.collection('usuarios_acompanhantes')
+            .where('quarto', '==', quarto.trim()).get();
+        
+        const temAcompanhante = !acompSnap.empty;
+        console.log(`[DEBUG] verificarQuartoOcupado: quarto ${quarto} tem acompanhante na coleção usuarios_acompanhantes?`, temAcompanhante);
+        
+        if (temAcompanhante) {
+            const acompanhantes = acompSnap.docs.map(doc => doc.data());
+            console.log(`[DEBUG] verificarQuartoOcupado: acompanhantes encontrados no quarto:`, acompanhantes);
+        }
+        
+        // Retornar true se encontrou em qualquer uma das verificações
+        const ocupado = quartoExiste || temAcompanhante;
+        console.log(`[DEBUG] verificarQuartoOcupado: resultado final para quarto ${quarto}:`, ocupado);
+        
+        return ocupado;
+        
     } catch (error) {
-        console.error('[ERRO] verificarQuartoOcupado:', error);
+        console.error(`[ERRO] verificarQuartoOcupado: erro ao verificar quarto ${quarto}:`, error);
+        // Em caso de erro, assumir que o quarto não está ocupado para não bloquear cadastros
         return false;
     }
 }
