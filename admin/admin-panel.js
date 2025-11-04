@@ -4181,3 +4181,274 @@ window.gerarRelatorioAdmin = gerarRelatorioAdmin;
 window.exportarDados = exportarDados;
 window.imprimirRelatorio = imprimirRelatorio;
 
+// =============== SISTEMA DE ACOMPANHANTES ===============
+
+// Função para cadastrar acompanhante
+async function cadastrarAcompanhante() {
+    try {
+        console.log('[DEBUG] cadastrarAcompanhante: iniciando cadastro...');
+        
+        if (!window.db || !window.auth) {
+            showToast('Erro', 'Firebase não inicializado!', 'error');
+            return;
+        }
+
+        // Verificar permissões
+        const usuarioAdmin = window.usuarioAdmin || JSON.parse(localStorage.getItem('usuarioAdmin') || '{}');
+        if (!usuarioAdmin.role || usuarioAdmin.role !== 'super_admin') {
+            showToast('Erro', 'Acesso negado. Apenas super administradores podem cadastrar acompanhantes.', 'error');
+            return;
+        }
+
+        // Coletar dados do formulário
+        const nome = document.getElementById('acomp-nome')?.value?.trim();
+        const email = document.getElementById('acomp-email')?.value?.trim();
+        const quarto = document.getElementById('acomp-quarto')?.value?.trim();
+        const senha = document.getElementById('acomp-senha')?.value?.trim();
+
+        // Validações
+        if (!nome || !email || !quarto || !senha) {
+            showToast('Erro', 'Todos os campos são obrigatórios!', 'error');
+            return;
+        }
+
+        if (senha.length < 6) {
+            showToast('Erro', 'A senha deve ter pelo menos 6 caracteres!', 'error');
+            return;
+        }
+
+        // Validar formato do email
+        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+        if (!emailRegex.test(email)) {
+            showToast('Erro', 'E-mail em formato inválido!', 'error');
+            return;
+        }
+
+        // Mostrar loading
+        showToast('Cadastrando...', 'Criando conta do acompanhante...', 'info');
+
+        // Verificar se o email já existe
+        const emailExiste = await verificarEmailExistente(email);
+        if (emailExiste) {
+            showToast('Erro', 'Este e-mail já está cadastrado no sistema!', 'error');
+            return;
+        }
+
+        // Verificar se o quarto já está ocupado
+        const quartoOcupado = await verificarQuartoOcupado(quarto);
+        if (quartoOcupado) {
+            showToast('Erro', 'Este quarto já possui um acompanhante cadastrado!', 'error');
+            return;
+        }
+
+        // Criar usuário no Firebase Auth
+        const userCredential = await window.auth.createUserWithEmailAndPassword(email, senha);
+        const user = userCredential.user;
+
+        console.log('[DEBUG] cadastrarAcompanhante: usuário criado no Auth:', user.uid);
+
+        // Criar documento no Firestore
+        const dadosAcompanhante = {
+            nome: nome,
+            email: email,
+            quarto: quarto,
+            tipo: 'acompanhante',
+            ativo: true,
+            criadoEm: new Date().toISOString(),
+            criadoPor: usuarioAdmin.nome,
+            uid: user.uid
+        };
+
+        await window.db.collection('usuarios_acompanhantes').doc(user.uid).set(dadosAcompanhante);
+
+        // Registrar ocupação do quarto
+        await window.db.collection('quartos_ocupados').doc(quarto).set({
+            acompanhanteId: user.uid,
+            acompanhanteNome: nome,
+            acompanhanteEmail: email,
+            ocupadoEm: new Date().toISOString()
+        });
+
+        console.log('[DEBUG] cadastrarAcompanhante: acompanhante salvo no Firestore');
+
+        // Limpar formulário
+        document.getElementById('form-cadastro-acompanhante').reset();
+
+        // Recarregar lista
+        await carregarAcompanhantes();
+
+        showToast('Sucesso', `Acompanhante ${nome} cadastrado com sucesso!`, 'success');
+
+    } catch (error) {
+        console.error('[ERRO] cadastrarAcompanhante:', error);
+        
+        let mensagem = 'Erro ao cadastrar acompanhante: ';
+        switch (error.code) {
+            case 'auth/email-already-in-use':
+                mensagem += 'Este e-mail já está em uso.';
+                break;
+            case 'auth/weak-password':
+                mensagem += 'Senha muito fraca. Use pelo menos 6 caracteres.';
+                break;
+            case 'auth/invalid-email':
+                mensagem += 'E-mail em formato inválido.';
+                break;
+            default:
+                mensagem += error.message || 'Erro desconhecido.';
+        }
+        
+        showToast('Erro', mensagem, 'error');
+    }
+}
+
+// Função para verificar se email já existe
+async function verificarEmailExistente(email) {
+    try {
+        // Verificar em acompanhantes
+        const acompSnap = await window.db.collection('usuarios_acompanhantes')
+            .where('email', '==', email).get();
+        
+        if (!acompSnap.empty) return true;
+
+        // Verificar em equipe
+        const equipeSnap = await window.db.collection('usuarios_equipe')
+            .where('email', '==', email).get();
+        
+        return !equipeSnap.empty;
+
+    } catch (error) {
+        console.error('[ERRO] verificarEmailExistente:', error);
+        return false;
+    }
+}
+
+// Função para verificar se quarto já está ocupado
+async function verificarQuartoOcupado(quarto) {
+    try {
+        const quartoDoc = await window.db.collection('quartos_ocupados').doc(quarto).get();
+        return quartoDoc.exists;
+    } catch (error) {
+        console.error('[ERRO] verificarQuartoOcupado:', error);
+        return false;
+    }
+}
+
+// Função para carregar lista de acompanhantes
+async function carregarAcompanhantes() {
+    try {
+        console.log('[DEBUG] carregarAcompanhantes: carregando lista...');
+        
+        if (!window.db) {
+            console.warn('[AVISO] carregarAcompanhantes: Firestore não inicializado');
+            return;
+        }
+
+        const snapshot = await window.db.collection('usuarios_acompanhantes').get();
+        const acompanhantes = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+
+        console.log(`[DEBUG] carregarAcompanhantes: ${acompanhantes.length} acompanhantes encontrados`);
+
+        const listaElement = document.getElementById('lista-acompanhantes');
+        if (!listaElement) {
+            console.warn('[AVISO] carregarAcompanhantes: elemento lista-acompanhantes não encontrado');
+            return;
+        }
+
+        if (acompanhantes.length === 0) {
+            listaElement.innerHTML = '<p style="color: #6b7280; text-align: center; padding: 20px;">Nenhum acompanhante cadastrado ainda.</p>';
+            return;
+        }
+
+        // Gerar HTML da lista
+        const htmlLista = acompanhantes.map(acomp => `
+            <div class="acompanhante-card" style="background: white; border: 1px solid #e5e7eb; border-radius: 8px; padding: 16px; margin-bottom: 12px;">
+                <div style="display: flex; justify-content: space-between; align-items: start;">
+                    <div style="flex: 1;">
+                        <h4 style="margin: 0 0 8px 0; color: #374151; font-size: 16px;">
+                            <i class="fas fa-user" style="color: #6b7280; margin-right: 8px;"></i>
+                            ${acomp.nome}
+                        </h4>
+                        <div style="font-size: 14px; color: #6b7280;">
+                            <div style="margin-bottom: 4px;">
+                                <i class="fas fa-envelope" style="width: 16px; margin-right: 8px;"></i>
+                                ${acomp.email}
+                            </div>
+                            <div style="margin-bottom: 4px;">
+                                <i class="fas fa-bed" style="width: 16px; margin-right: 8px;"></i>
+                                Quarto: ${acomp.quarto}
+                            </div>
+                            <div style="font-size: 12px; color: #9ca3af;">
+                                <i class="fas fa-calendar" style="width: 16px; margin-right: 8px;"></i>
+                                Cadastrado em: ${acomp.criadoEm ? new Date(acomp.criadoEm).toLocaleDateString('pt-BR') : '--'}
+                            </div>
+                        </div>
+                    </div>
+                    <div style="display: flex; gap: 8px;">
+                        <button onclick="editarAcompanhante('${acomp.id}')" 
+                                style="background: #3b82f6; color: white; border: none; padding: 6px 12px; border-radius: 4px; cursor: pointer; font-size: 12px;"
+                                title="Editar acompanhante">
+                            <i class="fas fa-edit"></i>
+                        </button>
+                        <button onclick="removerAcompanhante('${acomp.id}', '${acomp.quarto}')" 
+                                style="background: #ef4444; color: white; border: none; padding: 6px 12px; border-radius: 4px; cursor: pointer; font-size: 12px;"
+                                title="Remover acompanhante">
+                            <i class="fas fa-trash"></i>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        `).join('');
+
+        listaElement.innerHTML = htmlLista;
+
+    } catch (error) {
+        console.error('[ERRO] carregarAcompanhantes:', error);
+        showToast('Erro', 'Falha ao carregar lista de acompanhantes', 'error');
+    }
+}
+
+// Função para remover acompanhante
+async function removerAcompanhante(acompanhanteId, quarto) {
+    try {
+        if (!confirm('Tem certeza que deseja remover este acompanhante? Esta ação não pode ser desfeita.')) {
+            return;
+        }
+
+        console.log(`[DEBUG] removerAcompanhante: removendo ${acompanhanteId}`);
+
+        showToast('Removendo...', 'Removendo acompanhante...', 'info');
+
+        // Remover do Firestore
+        await window.db.collection('usuarios_acompanhantes').doc(acompanhanteId).delete();
+
+        // Liberar quarto
+        if (quarto) {
+            await window.db.collection('quartos_ocupados').doc(quarto).delete();
+        }
+
+        // TODO: Opcionalmente remover do Firebase Auth também
+        // Isso requer Admin SDK no backend
+
+        // Recarregar lista
+        await carregarAcompanhantes();
+
+        showToast('Sucesso', 'Acompanhante removido com sucesso!', 'success');
+
+    } catch (error) {
+        console.error('[ERRO] removerAcompanhante:', error);
+        showToast('Erro', `Falha ao remover acompanhante: ${error.message}`, 'error');
+    }
+}
+
+// Função para editar acompanhante (placeholder para implementação futura)
+function editarAcompanhante(acompanhanteId) {
+    showToast('Info', 'Funcionalidade de edição será implementada em breve', 'info');
+    console.log('[DEBUG] editarAcompanhante:', acompanhanteId);
+}
+
+// Expor funções globalmente
+window.cadastrarAcompanhante = cadastrarAcompanhante;
+window.carregarAcompanhantes = carregarAcompanhantes;
+window.removerAcompanhante = removerAcompanhante;
+window.editarAcompanhante = editarAcompanhante;
+
