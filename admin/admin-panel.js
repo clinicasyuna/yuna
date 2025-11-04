@@ -3888,3 +3888,296 @@ function fecharDashboardSatisfacao() {
 window.abrirDashboardSatisfacao = abrirDashboardSatisfacao;
 window.fecharDashboardSatisfacao = fecharDashboardSatisfacao;
 
+// =============== SISTEMA DE RELATÓRIOS ===============
+
+// Função para gerar relatório visual/dashboard
+async function gerarRelatorioAdmin() {
+    try {
+        console.log('[DEBUG] gerarRelatorioAdmin: iniciando geração de relatório...');
+        
+        if (!window.db) {
+            showToast('Erro', 'Firestore não inicializado!', 'error');
+            return;
+        }
+
+        // Mostrar loading
+        showToast('Gerando...', 'Coletando dados para o relatório...', 'info');
+
+        // Coletar todas as solicitações
+        const snapshot = await window.db.collection('solicitacoes').get();
+        const solicitacoes = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+
+        console.log(`[DEBUG] gerarRelatorioAdmin: ${solicitacoes.length} solicitações encontradas`);
+
+        if (solicitacoes.length === 0) {
+            showToast('Aviso', 'Nenhuma solicitação encontrada para gerar relatório', 'warning');
+            return;
+        }
+
+        // Gerar relatório HTML
+        gerarRelatorioHTML(solicitacoes);
+        
+        showToast('Sucesso', 'Relatório gerado com sucesso!', 'success');
+
+    } catch (error) {
+        console.error('[ERRO] gerarRelatorioAdmin:', error);
+        showToast('Erro', `Falha ao gerar relatório: ${error.message}`, 'error');
+    }
+}
+
+// Função para gerar relatório visual em HTML
+function gerarRelatorioHTML(solicitacoes) {
+    const agora = new Date();
+    const dataRelatorio = agora.toLocaleDateString('pt-BR');
+    const horaRelatorio = agora.toLocaleTimeString('pt-BR');
+
+    // Calcular estatísticas
+    const stats = calcularEstatisticas(solicitacoes);
+
+    // Criar modal de relatório
+    const modalRelatorio = document.createElement('div');
+    modalRelatorio.id = 'modal-relatorio';
+    modalRelatorio.style.cssText = `
+        position: fixed; top: 0; left: 0; width: 100%; height: 100%; 
+        background: rgba(0, 0, 0, 0.7); display: flex; justify-content: center; 
+        align-items: center; z-index: 1001; padding: 20px; box-sizing: border-box;
+    `;
+
+    modalRelatorio.innerHTML = `
+        <div style="background: white; border-radius: 12px; padding: 24px; max-width: 90vw; max-height: 90vh; overflow-y: auto; box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; border-bottom: 2px solid #e5e7eb; padding-bottom: 15px;">
+                <div>
+                    <h2 style="margin: 0; color: #1f2937;">📊 Relatório de Solicitações</h2>
+                    <p style="margin: 5px 0 0 0; color: #6b7280; font-size: 14px;">Gerado em ${dataRelatorio} às ${horaRelatorio}</p>
+                </div>
+                <button onclick="document.getElementById('modal-relatorio').remove()" 
+                        style="background: #ef4444; color: white; border: none; padding: 8px 12px; border-radius: 6px; cursor: pointer;">
+                    <i class="fas fa-times"></i> Fechar
+                </button>
+            </div>
+
+            <!-- Resumo Executivo -->
+            <div style="background: #f8fafc; padding: 20px; border-radius: 8px; margin-bottom: 20px;">
+                <h3 style="margin: 0 0 15px 0; color: #374151;">📈 Resumo Executivo</h3>
+                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px;">
+                    <div style="background: white; padding: 15px; border-radius: 6px; border-left: 4px solid #3b82f6;">
+                        <div style="font-size: 24px; font-weight: bold; color: #3b82f6;">${stats.total}</div>
+                        <div style="color: #6b7280;">Total de Solicitações</div>
+                    </div>
+                    <div style="background: white; padding: 15px; border-radius: 6px; border-left: 4px solid #10b981;">
+                        <div style="font-size: 24px; font-weight: bold; color: #10b981;">${stats.finalizadas}</div>
+                        <div style="color: #6b7280;">Finalizadas</div>
+                    </div>
+                    <div style="background: white; padding: 15px; border-radius: 6px; border-left: 4px solid #f59e0b;">
+                        <div style="font-size: 24px; font-weight: bold; color: #f59e0b;">${stats.emAndamento}</div>
+                        <div style="color: #6b7280;">Em Andamento</div>
+                    </div>
+                    <div style="background: white; padding: 15px; border-radius: 6px; border-left: 4px solid #ef4444;">
+                        <div style="font-size: 24px; font-weight: bold; color: #ef4444;">${stats.pendentes}</div>
+                        <div style="color: #6b7280;">Pendentes</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Estatísticas por Equipe -->
+            <div style="margin-bottom: 20px;">
+                <h3 style="margin: 0 0 15px 0; color: #374151;">👥 Desempenho por Equipe</h3>
+                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 15px;">
+                    ${Object.entries(stats.porEquipe).map(([equipe, dados]) => `
+                        <div style="background: #f8fafc; padding: 15px; border-radius: 8px; border: 1px solid #e5e7eb;">
+                            <h4 style="margin: 0 0 10px 0; color: ${getCorEquipe(equipe)}; text-transform: capitalize;">
+                                <i class="fas fa-users"></i> ${equipe}
+                            </h4>
+                            <div style="font-size: 14px; color: #6b7280;">
+                                <div>Total: <strong>${dados.total}</strong></div>
+                                <div>Finalizadas: <strong style="color: #10b981;">${dados.finalizadas}</strong></div>
+                                <div>Taxa Conclusão: <strong>${dados.total > 0 ? Math.round((dados.finalizadas / dados.total) * 100) : 0}%</strong></div>
+                                <div>TMA: <strong>${dados.tmaMedia || '--'}</strong></div>
+                            </div>
+                        </div>
+                    `).join('')}
+                </div>
+            </div>
+
+            <!-- Botões de Ação -->
+            <div style="display: flex; gap: 10px; justify-content: center; border-top: 1px solid #e5e7eb; padding-top: 20px;">
+                <button onclick="imprimirRelatorio()" style="background: #6366f1; color: white; border: none; padding: 10px 20px; border-radius: 6px; cursor: pointer;">
+                    <i class="fas fa-print"></i> Imprimir
+                </button>
+                <button onclick="exportarDados()" style="background: #10b981; color: white; border: none; padding: 10px 20px; border-radius: 6px; cursor: pointer;">
+                    <i class="fas fa-download"></i> Exportar Excel
+                </button>
+            </div>
+        </div>
+    `;
+
+    document.body.appendChild(modalRelatorio);
+}
+
+// Função para calcular estatísticas
+function calcularEstatisticas(solicitacoes) {
+    const stats = {
+        total: solicitacoes.length,
+        finalizadas: 0,
+        emAndamento: 0,
+        pendentes: 0,
+        porEquipe: {}
+    };
+
+    solicitacoes.forEach(sol => {
+        // Contar por status
+        if (sol.status === 'finalizada') stats.finalizadas++;
+        else if (sol.status === 'em-andamento') stats.emAndamento++;
+        else stats.pendentes++;
+
+        // Agrupar por equipe
+        const equipe = sol.equipe || 'sem-equipe';
+        if (!stats.porEquipe[equipe]) {
+            stats.porEquipe[equipe] = { total: 0, finalizadas: 0, tempos: [] };
+        }
+        
+        stats.porEquipe[equipe].total++;
+        if (sol.status === 'finalizada') {
+            stats.porEquipe[equipe].finalizadas++;
+        }
+
+        // Calcular TMA se disponível
+        if (sol.tempoAtendimentoMinutos) {
+            stats.porEquipe[equipe].tempos.push(sol.tempoAtendimentoMinutos);
+        }
+    });
+
+    // Calcular TMA médio por equipe
+    Object.keys(stats.porEquipe).forEach(equipe => {
+        const tempos = stats.porEquipe[equipe].tempos;
+        if (tempos.length > 0) {
+            const media = tempos.reduce((a, b) => a + b, 0) / tempos.length;
+            stats.porEquipe[equipe].tmaMedia = Math.round(media) + ' min';
+        }
+    });
+
+    return stats;
+}
+
+// Função para exportar dados para Excel
+async function exportarDados() {
+    try {
+        console.log('[DEBUG] exportarDados: iniciando exportação...');
+        
+        if (!window.XLSX) {
+            showToast('Erro', 'Biblioteca XLSX não carregada!', 'error');
+            return;
+        }
+
+        showToast('Exportando...', 'Preparando dados para exportação...', 'info');
+
+        // Coletar dados
+        const snapshot = await window.db.collection('solicitacoes').get();
+        const solicitacoes = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+
+        if (solicitacoes.length === 0) {
+            showToast('Aviso', 'Nenhuma solicitação para exportar', 'warning');
+            return;
+        }
+
+        // Preparar dados para Excel
+        const dadosExcel = solicitacoes.map(sol => ({
+            'ID': sol.id,
+            'Data/Hora': sol.criadoEm ? new Date(sol.criadoEm).toLocaleString('pt-BR') : '--',
+            'Tipo': sol.tipo || '--',
+            'Equipe': sol.equipe || '--',
+            'Status': sol.status || '--',
+            'Quarto': sol.quarto || '--',
+            'Solicitante': sol.nome || '--',
+            'Descrição': sol.descricao || '--',
+            'Responsável': sol.responsavel || '--',
+            'Solução': sol.solucao || '--',
+            'TMA (min)': sol.tempoAtendimentoMinutos || '--',
+            'Avaliação': sol.avaliacaoNota ? `${sol.avaliacaoNota}/5 estrelas` : '--'
+        }));
+
+        // Criar workbook
+        const workbook = XLSX.utils.book_new();
+        const worksheet = XLSX.utils.json_to_sheet(dadosExcel);
+
+        // Ajustar largura das colunas
+        const colWidths = [
+            { wch: 15 }, // ID
+            { wch: 20 }, // Data/Hora
+            { wch: 15 }, // Tipo
+            { wch: 15 }, // Equipe
+            { wch: 12 }, // Status
+            { wch: 10 }, // Quarto
+            { wch: 20 }, // Solicitante
+            { wch: 30 }, // Descrição
+            { wch: 20 }, // Responsável
+            { wch: 30 }, // Solução
+            { wch: 12 }, // TMA
+            { wch: 15 }  // Avaliação
+        ];
+        worksheet['!cols'] = colWidths;
+
+        // Adicionar ao workbook
+        XLSX.utils.book_append_sheet(workbook, worksheet, 'Solicitações');
+
+        // Gerar nome do arquivo
+        const agora = new Date();
+        const nomeArquivo = `relatorio-solicitacoes-${agora.getFullYear()}-${(agora.getMonth() + 1).toString().padStart(2, '0')}-${agora.getDate().toString().padStart(2, '0')}.xlsx`;
+
+        // Fazer download
+        XLSX.writeFile(workbook, nomeArquivo);
+
+        showToast('Sucesso', `Arquivo ${nomeArquivo} baixado com sucesso!`, 'success');
+
+        console.log(`[DEBUG] exportarDados: ${solicitacoes.length} registros exportados`);
+
+    } catch (error) {
+        console.error('[ERRO] exportarDados:', error);
+        showToast('Erro', `Falha na exportação: ${error.message}`, 'error');
+    }
+}
+
+// Função para imprimir relatório
+function imprimirRelatorio() {
+    const conteudoModal = document.querySelector('#modal-relatorio > div').cloneNode(true);
+    
+    // Remover botão de fechar e botões de ação para impressão
+    const botaoFechar = conteudoModal.querySelector('button');
+    if (botaoFechar) botaoFechar.remove();
+    
+    const botoesAcao = conteudoModal.querySelector('div:last-child');
+    if (botoesAcao) botoesAcao.remove();
+
+    // Criar janela de impressão
+    const janelaImpressao = window.open('', '_blank');
+    janelaImpressao.document.write(`
+        <!DOCTYPE html>
+        <html>
+        <head>
+            <title>Relatório de Solicitações - YUNA</title>
+            <style>
+                body { font-family: Arial, sans-serif; margin: 20px; }
+                @media print { body { margin: 0; } }
+            </style>
+        </head>
+        <body>
+            ${conteudoModal.outerHTML}
+        </body>
+        </html>
+    `);
+    
+    janelaImpressao.document.close();
+    
+    // Aguardar carregamento e imprimir
+    setTimeout(() => {
+        janelaImpressao.focus();
+        janelaImpressao.print();
+        janelaImpressao.close();
+    }, 250);
+}
+
+// Expor funções globalmente
+window.gerarRelatorioAdmin = gerarRelatorioAdmin;
+window.exportarDados = exportarDados;
+window.imprimirRelatorio = imprimirRelatorio;
+
