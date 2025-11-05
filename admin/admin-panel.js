@@ -3685,6 +3685,9 @@ function abrirPesquisaSatisfacao(solicitacaoId, solicitacaoData) {
         align-items: center; 
         z-index: 10000;
         animation: fadeIn 0.3s ease-in;
+        overflow-y: auto;
+        padding: 20px;
+        box-sizing: border-box;
     `;
     
     modalSatisfacao.innerHTML = `
@@ -3699,12 +3702,12 @@ function abrirPesquisaSatisfacao(solicitacaoId, solicitacaoData) {
             }
             .star-rating {
                 display: flex;
-                gap: 5px;
+                gap: 8px;
                 justify-content: center;
-                margin: 20px 0;
+                margin: 12px 0;
             }
             .star {
-                font-size: 40px;
+                font-size: 32px;
                 color: #d1d5db;
                 cursor: pointer;
                 transition: all 0.2s ease;
@@ -3717,16 +3720,34 @@ function abrirPesquisaSatisfacao(solicitacaoId, solicitacaoData) {
             .star.selected {
                 color: #f59e0b;
             }
+            .aspect-rating {
+                display: flex;
+                gap: 2px;
+            }
+            .aspect-star {
+                font-size: 14px;
+                cursor: pointer;
+                color: #d1d5db;
+                transition: color 0.2s ease;
+                user-select: none;
+            }
+            .aspect-star:hover,
+            .aspect-star.selected {
+                color: #f59e0b;
+            }
             .satisfaction-modal {
                 background: white;
                 border-radius: 16px;
-                padding: 32px;
+                padding: 24px;
                 max-width: 500px;
                 width: 90%;
+                max-height: 90vh;
+                overflow-y: auto;
                 box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
                 text-align: center;
                 position: relative;
                 animation: slideIn 0.3s ease-out;
+                margin: auto;
             }
             @keyframes slideIn {
                 from { transform: translateY(-50px); opacity: 0; }
@@ -3738,22 +3759,32 @@ function abrirPesquisaSatisfacao(solicitacaoId, solicitacaoData) {
                 <button onclick="fecharPesquisaSatisfacao()" style="background: none; border: none; font-size: 24px; color: #9ca3af; cursor: pointer; padding: 4px;">&times;</button>
             </div>
             
-            <div style="background: linear-gradient(135deg, #3b82f6 0%, #1e40af 100%); margin: -32px -32px 24px -32px; padding: 24px; border-radius: 16px 16px 0 0; color: white;">
-                <h2 style="margin: 0; font-size: 24px; font-weight: 600;">
+            <div style="background: linear-gradient(135deg, #3b82f6 0%, #1e40af 100%); margin: -24px -24px 20px -24px; padding: 20px; border-radius: 16px 16px 0 0; color: white;">
+                <h2 style="margin: 0; font-size: 20px; font-weight: 600;">
                     <i class="fas fa-star" style="margin-right: 8px;"></i>
-                    Pesquisa de Satisfação
+                    Avalie nosso atendimento
                 </h2>
-                <p style="margin: 8px 0 0 0; opacity: 0.9; font-size: 14px;">
-                    Como você avalia o atendimento da equipe ${solicitacaoData.equipe || 'responsável'}?
+                <p style="margin: 6px 0 0 0; opacity: 0.9; font-size: 13px;">
+                    Sua opinião é muito importante para nós!
                 </p>
             </div>
             
-            <div style="margin-bottom: 24px;">
-                <p style="margin: 0 0 8px 0; color: #374151; font-weight: 500;">
-                    <strong>Solicitação:</strong> ${solicitacaoData.descricao || solicitacaoData.titulo || 'Serviço realizado'}
+            <div style="margin-bottom: 16px; padding: 12px; background: #f8fafc; border-radius: 8px; border-left: 4px solid #3b82f6;">
+                <div style="display: flex; align-items: center; margin-bottom: 6px;">
+                    <i class="fas fa-tools" style="color: #3b82f6; margin-right: 8px;"></i>
+                    <strong style="color: #374151;">${solicitacaoData.equipe || 'Manutenção'}</strong>
+                </div>
+                <p style="margin: 0; color: #6b7280; font-size: 13px;">
+                    ${solicitacaoData.descricao || solicitacaoData.titulo || 'Teste elétrico'} | Quarto: ${solicitacaoData.quarto || '04/11'}
                 </p>
-                <p style="margin: 0; color: #6b7280; font-size: 14px;">
-                    Quarto: ${solicitacaoData.quarto || 'N/A'} | Equipe: ${solicitacaoData.equipe || 'N/A'}
+                <p style="margin: 4px 0 0 0; color: #10b981; font-size: 12px; font-weight: 500;">
+                    <i class="fas fa-check-circle" style="margin-right: 4px;"></i>Finalizado há 12 horas
+                </p>
+            </div>
+            
+            <div style="margin-bottom: 16px;">
+                <p style="margin: 0 0 12px 0; color: #374151; font-weight: 500; font-size: 14px;">
+                    Como você avalia o atendimento?
                 </p>
             </div>
             
@@ -3765,18 +3796,58 @@ function abrirPesquisaSatisfacao(solicitacaoId, solicitacaoData) {
                 <span class="star" data-rating="5">⭐</span>
             </div>
             
-            <div id="rating-text" style="font-weight: 500; color: #6b7280; margin-bottom: 20px; min-height: 20px;">
+            <div id="rating-text" style="font-weight: 500; color: #6b7280; margin-bottom: 16px; min-height: 20px; font-size: 14px;">
                 Selecione uma nota de 1 a 5 estrelas
             </div>
             
-            <div style="margin-bottom: 24px;">
-                <label style="display: block; text-align: left; margin-bottom: 8px; color: #374151; font-weight: 500;">
-                    Comentários adicionais (opcional):
-                </label>
+            <div style="margin-bottom: 20px;">
+                <div style="display: flex; align-items: center; margin-bottom: 8px; justify-content: flex-start;">
+                    <i class="fas fa-comment-alt" style="color: #6b7280; margin-right: 8px; font-size: 14px;"></i>
+                    <label style="color: #374151; font-weight: 500; font-size: 14px;">
+                        Avalie aspectos específicos:
+                    </label>
+                </div>
+                
+                <!-- Rapidez -->
+                <div style="display: flex; justify-content: space-between; align-items: center; padding: 8px 12px; background: #f8fafc; border-radius: 6px; margin-bottom: 8px;">
+                    <span style="color: #374151; font-size: 13px;">Rapidez</span>
+                    <div class="aspect-rating" data-aspect="rapidez">
+                        <span class="aspect-star" data-rating="1">⭐</span>
+                        <span class="aspect-star" data-rating="2">⭐</span>
+                        <span class="aspect-star" data-rating="3">⭐</span>
+                        <span class="aspect-star" data-rating="4">⭐</span>
+                        <span class="aspect-star" data-rating="5">⭐</span>
+                    </div>
+                </div>
+                
+                <!-- Qualidade -->
+                <div style="display: flex; justify-content: space-between; align-items: center; padding: 8px 12px; background: #f8fafc; border-radius: 6px; margin-bottom: 8px;">
+                    <span style="color: #374151; font-size: 13px;">Qualidade</span>
+                    <div class="aspect-rating" data-aspect="qualidade">
+                        <span class="aspect-star" data-rating="1">⭐</span>
+                        <span class="aspect-star" data-rating="2">⭐</span>
+                        <span class="aspect-star" data-rating="3">⭐</span>
+                        <span class="aspect-star" data-rating="4">⭐</span>
+                        <span class="aspect-star" data-rating="5">⭐</span>
+                    </div>
+                </div>
+                
+                <!-- Atendimento -->
+                <div style="display: flex; justify-content: space-between; align-items: center; padding: 8px 12px; background: #f8fafc; border-radius: 6px; margin-bottom: 12px;">
+                    <span style="color: #374151; font-size: 13px;">Atendimento</span>
+                    <div class="aspect-rating" data-aspect="atendimento">
+                        <span class="aspect-star" data-rating="1">⭐</span>
+                        <span class="aspect-star" data-rating="2">⭐</span>
+                        <span class="aspect-star" data-rating="3">⭐</span>
+                        <span class="aspect-star" data-rating="4">⭐</span>
+                        <span class="aspect-star" data-rating="5">⭐</span>
+                    </div>
+                </div>
+                
                 <textarea 
                     id="comentario-satisfacao" 
                     placeholder="Conte-nos sobre sua experiência ou deixe sugestões..."
-                    style="width: 100%; height: 80px; padding: 12px; border: 1px solid #d1d5db; border-radius: 8px; resize: vertical; font-family: inherit; box-sizing: border-box; font-size: 14px;"
+                    style="width: 100%; height: 60px; padding: 10px; border: 1px solid #d1d5db; border-radius: 6px; resize: vertical; font-family: inherit; box-sizing: border-box; font-size: 13px; margin-top: 8px;"
                 ></textarea>
             </div>
             
@@ -3870,6 +3941,56 @@ function abrirPesquisaSatisfacao(solicitacaoId, solicitacaoData) {
         });
     });
     
+    // Funcionalidade para avaliações por aspectos
+    const aspectRatings = {};
+    const aspectContainers = document.querySelectorAll('.aspect-rating');
+    
+    aspectContainers.forEach(container => {
+        const aspect = container.dataset.aspect;
+        const aspectStars = container.querySelectorAll('.aspect-star');
+        aspectRatings[aspect] = 0;
+        
+        aspectStars.forEach((star, index) => {
+            star.addEventListener('click', () => {
+                const rating = parseInt(star.dataset.rating);
+                aspectRatings[aspect] = rating;
+                
+                // Atualizar visual das estrelas do aspecto
+                aspectStars.forEach((s, i) => {
+                    if (i < rating) {
+                        s.classList.add('selected');
+                        s.style.color = '#f59e0b';
+                    } else {
+                        s.classList.remove('selected');
+                        s.style.color = '#d1d5db';
+                    }
+                });
+                
+                console.log('[DEBUG] Avaliação do aspecto', aspect + ':', rating);
+            });
+            
+            // Efeito hover para aspectos
+            star.addEventListener('mouseenter', () => {
+                const rating = parseInt(star.dataset.rating);
+                aspectStars.forEach((s, i) => {
+                    if (i < rating) {
+                        s.style.color = '#fbbf24';
+                    }
+                });
+            });
+            
+            star.addEventListener('mouseleave', () => {
+                aspectStars.forEach((s, i) => {
+                    if (i < aspectRatings[aspect]) {
+                        s.style.color = '#f59e0b';
+                    } else {
+                        s.style.color = '#d1d5db';
+                    }
+                });
+            });
+        });
+    });
+    
     // Salvar referência global para acesso nas funções onclick
     window.avaliacaoAtual = {
         solicitacaoId: solicitacaoId,
@@ -3900,8 +4021,18 @@ async function enviarAvaliacao(solicitacaoId) {
         const comentario = document.getElementById('comentario-satisfacao')?.value || '';
         const usuarioAdmin = window.usuarioAdmin || JSON.parse(localStorage.getItem('usuarioAdmin') || '{}');
         
+        // Capturar avaliações por aspectos
+        const aspectosAvaliacao = {};
+        const aspectContainers = document.querySelectorAll('.aspect-rating');
+        aspectContainers.forEach(container => {
+            const aspect = container.dataset.aspect;
+            const stars = container.querySelectorAll('.aspect-star.selected');
+            aspectosAvaliacao[aspect] = stars.length;
+        });
+        
         console.log('[DEBUG] Dados da avaliação:', {
             avaliacao,
+            aspectos: aspectosAvaliacao,
             comentario: comentario.slice(0, 50) + '...',
             avaliadoPor: usuarioAdmin.nome
         });
@@ -3909,6 +4040,7 @@ async function enviarAvaliacao(solicitacaoId) {
         const avaliacaoData = {
             solicitacaoId: solicitacaoId,
             avaliacao: avaliacao,
+            aspectos: aspectosAvaliacao,
             comentario: comentario.trim(),
             dataAvaliacao: new Date().toISOString(),
             avaliadoPor: usuarioAdmin.nome || 'Equipe',
@@ -3931,6 +4063,7 @@ async function enviarAvaliacao(solicitacaoId) {
         await window.db.collection('solicitacoes').doc(solicitacaoId).update({
             avaliacaoSatisfacao: {
                 nota: avaliacao,
+                aspectos: aspectosAvaliacao,
                 comentario: comentario.trim(),
                 dataAvaliacao: new Date().toISOString(),
                 avaliado: true
@@ -3946,7 +4079,7 @@ async function enviarAvaliacao(solicitacaoId) {
             });
         }
         
-        showToast('Sucesso', `Obrigado! Sua avaliação de ${avaliacao} estrela${avaliacao > 1 ? 's' : ''} foi registrada.`, 'success');
+        showToast('Sucesso', `Obrigado! Sua avaliação foi registrada com sucesso.`, 'success');
         
         console.log('✅ Avaliação de satisfação salva com sucesso:', avaliacaoData);
         
