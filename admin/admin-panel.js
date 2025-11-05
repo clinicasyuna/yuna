@@ -4,63 +4,32 @@
 (function() {
     'use strict';
     
-    // Capturar e isolar erros de extensões que podem interferir com nossa aplicação
     const originalErrorHandler = window.onerror;
+    const extensionPatterns = [
+        'PIN Company Discounts Provider',
+        'chrome-extension',
+        'pinComponent.js',
+        'Invalid data',
+        'Empty token!',
+        'Failed to fetch',
+        'net::ERR_FAILED',
+        'favicon.ico'
+    ];
+    
     window.onerror = function(message, source, lineno, colno, error) {
-        // Filtrar erros conhecidos de extensões que não devem afetar nossa aplicação
-        const extensionErrors = [
-            'PIN Company Discounts Provider',
-            'chrome-extension://',
-            'moz-extension://',
-            'safari-extension://',
-            'Invalid data',
-            'Extension context invalidated',
-            'Empty token!',
-            'Failed to fetch',
-            'ERR_FAILED',
-            'pinComponent.js',
-            'Denying load of chrome-extension',
-            'web_accessible_resources',
-            'favicon.ico',
-            'net::ERR_FAILED'
-        ];
-        
-        // Verificar se o erro vem de uma extensão
-        if (extensionErrors.some(pattern => 
+        if (extensionPatterns.some(pattern => 
             (message && message.includes(pattern)) ||
             (source && source.includes(pattern))
         )) {
-            console.log('[EXTENSION_ERROR] Erro de extensão isolado:', {
-                message: message?.substring(0, 100),
-                source: source?.substring(0, 50)
-            });
-            return true; // Impedir que o erro continue se propagando
+            return true; // Silenciar erro de extensão
         }
-        
-        // Se não for erro de extensão, chamar handler original se existir
-        if (originalErrorHandler) {
-            return originalErrorHandler.apply(this, arguments);
-        }
-        
-        return false;
+        return originalErrorHandler ? originalErrorHandler.apply(this, arguments) : false;
     };
     
-    // Também capturar promises rejeitadas de extensões
     window.addEventListener('unhandledrejection', function(event) {
-        const error = event.reason;
-        const errorString = error?.toString() || '';
-        
-        const extensionErrors = [
-            'PIN Company Discounts Provider',
-            'chrome-extension',
-            'Empty token!',
-            'Failed to fetch',
-            'Extension context invalidated'
-        ];
-        
-        if (extensionErrors.some(pattern => errorString.includes(pattern))) {
-            console.log('[EXTENSION_PROMISE] Promise de extensão rejeitada isolada:', errorString.substring(0, 100));
-            event.preventDefault(); // Impedir que apareça no console
+        const errorStr = event.reason?.toString() || '';
+        if (extensionPatterns.some(pattern => errorStr.includes(pattern))) {
+            event.preventDefault();
         }
     });
 })();
@@ -5538,6 +5507,7 @@ let ultimoClickEditar = 0;
 
 // Função para editar acompanhante
 async function editarAcompanhante(acompanhanteId) {
+    console.log('🔧 BOTÃO EDITAR CLICADO! ID:', acompanhanteId);
     console.log('[DEBUG] === INICIANDO editarAcompanhante ===');
     console.log('[DEBUG] acompanhanteId recebido:', acompanhanteId);
     console.log('[DEBUG] typeof acompanhanteId:', typeof acompanhanteId);
