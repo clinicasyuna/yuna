@@ -904,62 +904,6 @@ window.carregarSolicitacoesAgrupadas = async function() {
     await carregarSolicitacoes();
 }
 
-window.showManageUsersModal = function() {
-    console.log('[DEBUG] showManageUsersModal: iniciando...');
-    
-    // Verifica se o usuário está autenticado e tem permissões
-    const usuarioAdmin = window.usuarioAdmin || JSON.parse(localStorage.getItem('usuarioAdmin') || '{}');
-    const userRole = window.userRole || usuarioAdmin.role;
-    
-    console.log('[DEBUG] showManageUsersModal: usuarioAdmin:', usuarioAdmin);
-    console.log('[DEBUG] showManageUsersModal: userRole:', userRole);
-    
-    // Permite APENAS para super_admin
-    if (!userRole || userRole !== 'super_admin') {
-        showToast('Erro', 'Acesso negado. Apenas super administradores podem gerenciar usuários.', 'error');
-        console.warn('[AVISO] showManageUsersModal: acesso negado, role:', userRole);
-        return;
-    }
-    
-    // Busca o modal
-    const modal = document.getElementById('manage-users-modal');
-    console.log('[DEBUG] showManageUsersModal: modal encontrado:', !!modal);
-    
-    if (modal) {
-        console.log('[DEBUG] showManageUsersModal: exibindo modal');
-        
-        // Garantir que o modal esteja anexado ao body
-        if (modal.parentElement !== document.body) {
-            console.log('[DEBUG] showManageUsersModal: modal não está no body, movendo...');
-            document.body.appendChild(modal);
-        }
-        
-        // IMPORTANTE: Remover a classe .hidden PRIMEIRO (que tem !important)
-        modal.classList.remove('hidden');
-        
-        // Depois configurar os estilos
-        modal.style.display = 'flex';
-        modal.style.position = 'fixed';
-        modal.style.top = '0';
-        modal.style.left = '0';
-        modal.style.width = '100vw';
-        modal.style.height = '100vh';
-        modal.style.zIndex = '999999';
-        modal.style.visibility = 'visible';
-        modal.style.opacity = '1';
-        
-        console.log('[DEBUG] showManageUsersModal: modal configurado com sucesso');
-        
-        // Carregar usuários se necessário
-        if (typeof carregarUsuariosGerenciar === 'function') {
-            carregarUsuariosGerenciar();
-        }
-    } else {
-        console.error('[ERRO] showManageUsersModal: modal não encontrado!');
-        showToast('Erro', 'Modal de gerenciar usuários não encontrado', 'error');
-    }
-};
-
 window.showCreateUserModal = function() {
     console.log('[DEBUG] showCreateUserModal: iniciando...');
     
@@ -1219,29 +1163,40 @@ function preencherTabelaUsuarios(listaUsuarios) {
     if (totalCount) totalCount.textContent = listaUsuarios.length;
 }
 async function carregarUsuarios() {
+    console.log('[DEBUG] carregarUsuarios: iniciando (APENAS equipe e admin)...');
+    
     if (!window.db) {
         showToast('Erro', 'Firestore não inicializado!', 'error');
         return;
     }
+    
     try {
         // Busca usuários de equipe
+        console.log('[DEBUG] carregarUsuarios: buscando usuarios_equipe...');
         const equipeSnap = await window.db.collection('usuarios_equipe').get();
         const listaEquipe = [];
         equipeSnap.forEach(doc => {
             listaEquipe.push({ id: doc.id, ...doc.data(), tipo: 'Equipe' });
         });
-        // Busca usuários acompanhantes
-        const acompSnap = await window.db.collection('usuarios_acompanhantes').get();
-        const listaAcompanhantes = [];
-        acompSnap.forEach(doc => {
-            listaAcompanhantes.push({ id: doc.id, ...doc.data(), tipo: 'Acompanhante' });
+        console.log('[DEBUG] carregarUsuarios: encontrados', listaEquipe.length, 'usuários de equipe');
+        
+        // Busca usuários admin
+        console.log('[DEBUG] carregarUsuarios: buscando usuarios_admin...');
+        const adminSnap = await window.db.collection('usuarios_admin').get();
+        const listaAdmin = [];
+        adminSnap.forEach(doc => {
+            listaAdmin.push({ id: doc.id, ...doc.data(), tipo: 'Admin' });
         });
-        // Junta tudo para exibir
-        const listaUsuarios = [...listaEquipe, ...listaAcompanhantes];
+        console.log('[DEBUG] carregarUsuarios: encontrados', listaAdmin.length, 'usuários admin');
+        
+        // Junta APENAS equipe e admin (SEM acompanhantes)
+        const listaUsuarios = [...listaEquipe, ...listaAdmin];
+        console.log('[DEBUG] carregarUsuarios: total de usuários para tabela:', listaUsuarios.length);
+        
         preencherTabelaUsuarios(listaUsuarios);
-        console.log('Usuários carregados do Firestore:', listaUsuarios);
+        console.log('[SUCCESS] Usuários de equipe e admin carregados:', listaUsuarios);
     } catch (error) {
-        console.error('Erro ao buscar usuários:', error);
+        console.error('[ERRO] carregarUsuarios:', error);
         showToast('Erro', 'Não foi possível carregar os usuários.', 'error');
     }
 }
