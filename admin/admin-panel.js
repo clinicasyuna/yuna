@@ -3780,17 +3780,18 @@ function abrirPesquisaSatisfacao(solicitacaoId, solicitacaoData) {
                 ></textarea>
             </div>
             
-            <div style="display: flex; gap: 12px; justify-content: center;">
+            <div style="display: flex; gap: 12px; justify-content: center; margin-top: 20px;">
                 <button 
                     onclick="fecharPesquisaSatisfacao()" 
-                    style="background: #f3f4f6; color: #374151; border: none; padding: 12px 24px; border-radius: 8px; cursor: pointer; font-weight: 500;">
+                    style="background: #f3f4f6; color: #374151; border: none; padding: 12px 24px; border-radius: 8px; cursor: pointer; font-weight: 500; min-width: 120px;">
                     Pular Pesquisa
                 </button>
                 <button 
                     id="btn-enviar-avaliacao"
                     onclick="enviarAvaliacao('${solicitacaoId}')" 
-                    style="background: #3b82f6; color: white; border: none; padding: 12px 24px; border-radius: 8px; cursor: pointer; font-weight: 500; opacity: 0.5; pointer-events: none;">
-                    <i class="fas fa-paper-plane" style="margin-right: 4px;"></i>Enviar Avaliação
+                    disabled
+                    style="background: #6b7280; color: white; border: none; padding: 12px 24px; border-radius: 8px; cursor: not-allowed; font-weight: 500; min-width: 160px; transition: all 0.3s ease;">
+                    <i class="fas fa-paper-plane" style="margin-right: 6px;"></i>Enviar Avaliação
                 </button>
             </div>
         </div>
@@ -3804,6 +3805,12 @@ function abrirPesquisaSatisfacao(solicitacaoId, solicitacaoData) {
     const ratingText = modalSatisfacao.querySelector('#rating-text');
     const btnEnviar = modalSatisfacao.querySelector('#btn-enviar-avaliacao');
     
+    console.log('[DEBUG] Sistema de estrelas configurado:', {
+        stars: stars.length,
+        ratingText: !!ratingText,
+        btnEnviar: !!btnEnviar
+    });
+    
     const textoAvaliacoes = {
         1: '😞 Muito insatisfeito',
         2: '😐 Insatisfeito', 
@@ -3815,6 +3822,7 @@ function abrirPesquisaSatisfacao(solicitacaoId, solicitacaoData) {
     stars.forEach((star, index) => {
         star.addEventListener('click', () => {
             avaliacaoSelecionada = parseInt(star.dataset.rating);
+            console.log('[DEBUG] Estrela selecionada:', avaliacaoSelecionada);
             
             // Atualizar visual das estrelas
             stars.forEach((s, i) => {
@@ -3829,9 +3837,14 @@ function abrirPesquisaSatisfacao(solicitacaoId, solicitacaoData) {
             ratingText.textContent = textoAvaliacoes[avaliacaoSelecionada];
             
             // Habilitar botão enviar
-            btnEnviar.style.opacity = '1';
-            btnEnviar.style.pointerEvents = 'auto';
-            btnEnviar.style.background = '#10b981';
+            if (btnEnviar) {
+                btnEnviar.disabled = false;
+                btnEnviar.style.background = '#10b981';
+                btnEnviar.style.cursor = 'pointer';
+                console.log('[DEBUG] Botão habilitado para avaliação:', avaliacaoSelecionada);
+            } else {
+                console.error('[ERRO] Botão enviar não encontrado!');
+            }
         });
         
         // Efeito hover
@@ -3866,15 +3879,32 @@ function abrirPesquisaSatisfacao(solicitacaoId, solicitacaoData) {
 }
 
 async function enviarAvaliacao(solicitacaoId) {
+    console.log('[DEBUG] Iniciando envio de avaliação para:', solicitacaoId);
+    
     if (!window.avaliacaoAtual || window.avaliacaoAtual.getAvaliacao() === 0) {
         showToast('Aviso', 'Por favor, selecione uma avaliação primeiro!', 'warning');
+        console.warn('[AVISO] Tentativa de envio sem avaliação selecionada');
         return;
+    }
+    
+    // Desabilitar botão para evitar múltiplos envios
+    const btnEnviar = document.getElementById('btn-enviar-avaliacao');
+    if (btnEnviar) {
+        btnEnviar.disabled = true;
+        btnEnviar.innerHTML = '<i class="fas fa-spinner fa-spin" style="margin-right: 4px;"></i>Enviando...';
+        btnEnviar.style.background = '#6b7280';
     }
     
     try {
         const avaliacao = window.avaliacaoAtual.getAvaliacao();
         const comentario = document.getElementById('comentario-satisfacao')?.value || '';
         const usuarioAdmin = window.usuarioAdmin || JSON.parse(localStorage.getItem('usuarioAdmin') || '{}');
+        
+        console.log('[DEBUG] Dados da avaliação:', {
+            avaliacao,
+            comentario: comentario.slice(0, 50) + '...',
+            avaliadoPor: usuarioAdmin.nome
+        });
         
         const avaliacaoData = {
             solicitacaoId: solicitacaoId,
@@ -3887,10 +3917,17 @@ async function enviarAvaliacao(solicitacaoId) {
             quarto: window.avaliacaoAtual.solicitacaoData.quarto
         };
         
+        // Verificar se Firebase está disponível
+        if (!window.db) {
+            throw new Error('Firebase não está disponível');
+        }
+        
         // Salvar no Firestore
+        console.log('[DEBUG] Salvando avaliação no Firestore...');
         await window.db.collection('avaliacoes_satisfacao').add(avaliacaoData);
         
         // Atualizar solicitação com referência à avaliação
+        console.log('[DEBUG] Atualizando solicitação com dados da avaliação...');
         await window.db.collection('solicitacoes').doc(solicitacaoId).update({
             avaliacaoSatisfacao: {
                 nota: avaliacao,
@@ -3900,15 +3937,42 @@ async function enviarAvaliacao(solicitacaoId) {
             }
         });
         
+        // Registrar auditoria
+        if (window.registrarLogAuditoria) {
+            window.registrarLogAuditoria('SATISFACTION_RATING', {
+                solicitacaoId,
+                avaliacao,
+                equipaAvaliada: avaliacaoData.equipaAvaliada
+            });
+        }
+        
         showToast('Sucesso', `Obrigado! Sua avaliação de ${avaliacao} estrela${avaliacao > 1 ? 's' : ''} foi registrada.`, 'success');
         
-        fecharPesquisaSatisfacao();
+        console.log('✅ Avaliação de satisfação salva com sucesso:', avaliacaoData);
         
-        console.log('✅ Avaliação de satisfação salva:', avaliacaoData);
+        // Fechar modal após 2 segundos para que o usuário veja a mensagem
+        setTimeout(() => {
+            fecharPesquisaSatisfacao();
+        }, 2000);
         
     } catch (error) {
-        console.error('Erro ao salvar avaliação:', error);
-        showToast('Erro', 'Não foi possível salvar sua avaliação. Tente novamente.', 'error');
+        console.error('[ERRO] Falha ao salvar avaliação:', error);
+        
+        // Reabilitar botão em caso de erro
+        if (btnEnviar) {
+            btnEnviar.disabled = false;
+            btnEnviar.innerHTML = '<i class="fas fa-paper-plane" style="margin-right: 4px;"></i>Enviar Avaliação';
+            btnEnviar.style.background = '#10b981';
+        }
+        
+        let mensagemErro = 'Não foi possível salvar sua avaliação. Tente novamente.';
+        if (error.code === 'permission-denied') {
+            mensagemErro = 'Acesso negado. Verifique suas permissões.';
+        } else if (error.code === 'unavailable') {
+            mensagemErro = 'Serviço temporariamente indisponível. Tente novamente em alguns instantes.';
+        }
+        
+        showToast('Erro', mensagemErro, 'error');
     }
 }
 
@@ -3931,6 +3995,19 @@ function fecharPesquisaSatisfacao() {
 window.abrirPesquisaSatisfacao = abrirPesquisaSatisfacao;
 window.enviarAvaliacao = enviarAvaliacao;
 window.fecharPesquisaSatisfacao = fecharPesquisaSatisfacao;
+
+// Função de teste para debugar a pesquisa de satisfação
+window.testarPesquisaSatisfacao = function() {
+    console.log('[DEBUG] Testando pesquisa de satisfação...');
+    const dadosTeste = {
+        id: 'teste-123',
+        descricao: 'Solicitação de teste para avaliação',
+        quarto: '101',
+        equipe: 'manutencao',
+        tipo: 'manutencao'
+    };
+    abrirPesquisaSatisfacao('teste-123', dadosTeste);
+};
 
 // === DASHBOARD DE SATISFAÇÃO ===
 
