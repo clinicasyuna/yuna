@@ -349,6 +349,16 @@ function mostrarSecaoPainel(secao) {
             document.getElementById('admin-panel')?.classList.remove('hidden');
             document.getElementById('acompanhantes-section')?.classList.remove('hidden');
             console.log('[DEBUG] mostrarSecaoPainel: exibindo acompanhantes-section');
+            
+            // Inicializar listener de tempo real para acompanhantes
+            setTimeout(() => {
+                if (typeof configurarListenerAcompanhantes === 'function') {
+                    console.log('[DEBUG] Inicializando listener de acompanhantes...');
+                    configurarListenerAcompanhantes();
+                } else {
+                    console.warn('[AVISO] configurarListenerAcompanhantes não encontrada');
+                }
+            }, 500);
         } else if (secao === 'relatorios') {
             document.getElementById('admin-panel')?.classList.remove('hidden');
             document.getElementById('relatorios-section')?.classList.remove('hidden');
@@ -5528,6 +5538,10 @@ let ultimoClickEditar = 0;
 
 // Função para editar acompanhante
 async function editarAcompanhante(acompanhanteId) {
+    console.log('[DEBUG] === INICIANDO editarAcompanhante ===');
+    console.log('[DEBUG] acompanhanteId recebido:', acompanhanteId);
+    console.log('[DEBUG] typeof acompanhanteId:', typeof acompanhanteId);
+    
     try {
         // Debounce para evitar cliques duplos muito rápidos
         const agora = Date.now();
@@ -5554,9 +5568,12 @@ async function editarAcompanhante(acompanhanteId) {
             return;
         }
         
-        console.log('[DEBUG] Modal encontrado no DOM, classes atuais:', modalElement.className);
+        console.log('[DEBUG] Modal encontrado no DOM');
+        console.log('[DEBUG] Modal classList antes:', modalElement.classList.toString());
+        console.log('[DEBUG] Modal style.display antes:', modalElement.style.display);
         
         // Buscar dados do acompanhante no Firestore
+        console.log('[DEBUG] Buscando dados no Firestore...');
         const doc = await window.db.collection('usuarios_acompanhantes').doc(acompanhanteId).get();
         
         if (!doc.exists) {
@@ -5577,15 +5594,35 @@ async function editarAcompanhante(acompanhanteId) {
         
         // Mostrar o modal
         const modalToShow = document.getElementById('modal-editar-acompanhante');
-        console.log('[DEBUG] Removendo classe hidden e definindo display flex...');
+        console.log('[DEBUG] === MOSTRANDO MODAL ===');
+        console.log('[DEBUG] Modal antes de remover hidden:', modalToShow.classList.toString());
+        
         modalToShow.classList.remove('hidden');
+        console.log('[DEBUG] Modal após remover hidden:', modalToShow.classList.toString());
+        
         modalToShow.style.display = 'flex';
         modalToShow.style.visibility = 'visible';
         modalToShow.style.opacity = '1';
+        modalToShow.style.zIndex = '9999';
         
-        console.log('[DEBUG] Modal configurado. Classes após mostrar:', modalToShow.className);
-        console.log('[DEBUG] Modal style display:', modalToShow.style.display);
-        console.log('[DEBUG] Modal de edição aberto com sucesso');
+        console.log('[DEBUG] Modal style final:', {
+            display: modalToShow.style.display,
+            visibility: modalToShow.style.visibility,
+            opacity: modalToShow.style.opacity,
+            zIndex: modalToShow.style.zIndex
+        });
+        
+        // Verificar se o modal está realmente visível
+        const computed = window.getComputedStyle(modalToShow);
+        console.log('[DEBUG] Modal computed style:', {
+            display: computed.display,
+            visibility: computed.visibility,
+            opacity: computed.opacity,
+            zIndex: computed.zIndex
+        });
+        
+        console.log('[DEBUG] Modal de edição configurado com sucesso');
+        console.log('[DEBUG] === FIM MOSTRAR MODAL ===');
         
         // Foco no primeiro campo
         setTimeout(() => {
