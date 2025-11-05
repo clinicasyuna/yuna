@@ -1877,6 +1877,49 @@
         window.selecionarNota = selecionarNota;
         window.selecionarRecomendacao = selecionarRecomendacao;
         window.enviarAvaliacao = enviarAvaliacao;
+        
+        // FUNÇÃO AUXILIAR: Buscar dados do usuário de forma robusta
+        async function buscarDadosUsuarioRobusta(user) {
+            try {
+                console.log('[DEBUG] buscarDadosUsuarioRobusta: iniciando busca para UID:', user.uid);
+                
+                // PRIMEIRA TENTATIVA: Buscar por UID
+                let userDoc = await window.db.collection('usuarios_acompanhantes').doc(user.uid).get();
+                
+                if (userDoc.exists) {
+                    console.log('[DEBUG] buscarDadosUsuarioRobusta: encontrado por UID');
+                    return { docId: user.uid, data: userDoc.data() };
+                }
+                
+                // SEGUNDA TENTATIVA: Buscar por email
+                console.log('[DEBUG] buscarDadosUsuarioRobusta: buscando por email:', user.email);
+                const emailQuery = await window.db.collection('usuarios_acompanhantes')
+                    .where('email', '==', user.email)
+                    .limit(1)
+                    .get();
+                
+                if (!emailQuery.empty) {
+                    const doc = emailQuery.docs[0];
+                    console.log('[DEBUG] buscarDadosUsuarioRobusta: encontrado por email, ID:', doc.id);
+                    
+                    // Corrigir UID no documento
+                    await window.db.collection('usuarios_acompanhantes').doc(doc.id).update({
+                        uid: user.uid,
+                        ultimaCorrecaoUID: new Date().toISOString()
+                    });
+                    
+                    return { docId: doc.id, data: doc.data() };
+                }
+                
+                console.error('[ERRO] buscarDadosUsuarioRobusta: usuário não encontrado');
+                return null;
+                
+            } catch (error) {
+                console.error('[ERRO] buscarDadosUsuarioRobusta:', error);
+                return null;
+            }
+        }
+        
         // As funções internas continuam normalmente abaixo
         // Função para alternar abas de autenticação (login/cadastro)
         function showTab(tab) {
@@ -1903,20 +1946,27 @@
         // Função para carregar dados do usuário
         async function carregarDadosUsuario(user) {
             try {
-                const userDoc = await window.db.collection('usuarios_acompanhantes').doc(user.uid).get();
-                if (userDoc.exists) {
-                    const userData = userDoc.data();
+                console.log('[DEBUG] carregarDadosUsuario: iniciando...');
+                
+                const resultado = await buscarDadosUsuarioRobusta(user);
+                
+                if (resultado && resultado.data) {
+                    const userData = resultado.data;
                     document.getElementById('user-name').textContent = userData.nome || user.displayName || 'Usuário';
                     document.getElementById('user-room').textContent = userData.quarto || '---';
-                    
-                    // Carregar métricas do usuário
-
+                    console.log('[SUCCESS] carregarDadosUsuario: interface atualizada com sucesso');
                     
                     // Verificar avaliações pendentes após carregar dados
                     setTimeout(() => verificarAvaliacoesPendentes(user.uid), 3000);
+                } else {
+                    console.error('[ERRO] carregarDadosUsuario: dados não encontrados');
+                    document.getElementById('user-name').textContent = 'Usuário não encontrado';
+                    document.getElementById('user-room').textContent = '---';
                 }
             } catch (error) {
-                console.error('Erro ao carregar dados do usuário:', error);
+                console.error('[ERRO] carregarDadosUsuario:', error);
+                document.getElementById('user-name').textContent = 'Erro ao carregar';
+                document.getElementById('user-room').textContent = '---';
             }
         }
 

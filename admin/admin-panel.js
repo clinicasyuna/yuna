@@ -5522,18 +5522,40 @@ async function removerAcompanhante(acompanhanteId, quarto) {
 
         console.log(`[DEBUG] removerAcompanhante: removendo ${acompanhanteId}`);
 
-        showToast('Removendo...', 'Removendo acompanhante...', 'info');
+        showToast('Removendo...', 'Removendo acompanhante e limpando dados...', 'info');
+
+        // Buscar dados do acompanhante antes de remover
+        const docSnapshot = await window.db.collection('usuarios_acompanhantes').doc(acompanhanteId).get();
+        const acompanhanteData = docSnapshot.exists ? docSnapshot.data() : null;
+        
+        console.log('[DEBUG] removerAcompanhante: dados do acompanhante:', acompanhanteData);
 
         // Remover do Firestore
         await window.db.collection('usuarios_acompanhantes').doc(acompanhanteId).delete();
+        console.log('[DEBUG] removerAcompanhante: removido do Firestore');
 
         // Liberar quarto
         if (quarto) {
             await window.db.collection('quartos_ocupados').doc(quarto).delete();
+            console.log('[DEBUG] removerAcompanhante: quarto liberado');
         }
 
-        // TODO: Opcionalmente remover do Firebase Auth também
-        // Isso requer Admin SDK no backend
+        // Se tem UID (conta foi ativada), também remover registros órfãos
+        if (acompanhanteData && acompanhanteData.uid) {
+            console.log('[DEBUG] removerAcompanhante: removendo registros órfãos com UID:', acompanhanteData.uid);
+            
+            // Remover possível documento duplicado com UID
+            try {
+                await window.db.collection('usuarios_acompanhantes').doc(acompanhanteData.uid).delete();
+                console.log('[DEBUG] removerAcompanhante: documento UID removido');
+            } catch (error) {
+                console.log('[DEBUG] removerAcompanhante: documento UID não existe (normal)');
+            }
+            
+            // Nota: Remoção do Firebase Auth requer Admin SDK no backend
+            // Por enquanto, a conta Firebase Auth permanecerá ativa mas sem dados no Firestore
+            console.warn('[AVISO] removerAcompanhante: conta Firebase Auth não foi removida (requer backend Admin SDK)');
+        }
 
         // Recarregar lista
         await carregarAcompanhantes();
