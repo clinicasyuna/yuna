@@ -336,18 +336,46 @@ function mostrarSecaoPainel(secao) {
             const modal = document.getElementById('modal-novo-usuario');
             document.getElementById('admin-panel')?.classList.remove('hidden');
             if (modal) {
+                // Garantir que o modal esteja anexado ao body
+                if (modal.parentElement !== document.body) {
+                    console.log('[DEBUG] Modal criar usuário não está no body, movendo...');
+                    document.body.appendChild(modal);
+                }
+                
                 modal.classList.remove('hidden');
                 modal.style.display = 'flex';
-                modal.style.zIndex = '9999';
+                modal.style.zIndex = '999999';
                 modal.style.visibility = 'visible';
                 modal.style.opacity = '1';
+                modal.style.position = 'fixed';
+                modal.style.top = '0';
+                modal.style.left = '0';
+                modal.style.width = '100vw';
+                modal.style.height = '100vh';
             }
             setTimeout(() => document.getElementById('usuario-nome')?.focus(), 300);
             console.log('[DEBUG] mostrarSecaoPainel: exibindo modal-novo-usuario');
         } else if (secao === 'manage-users') {
+            const modal = document.getElementById('manage-users-modal');
             document.getElementById('admin-panel')?.classList.remove('hidden');
-            document.getElementById('manage-users-modal')?.classList.remove('hidden');
-            document.getElementById('manage-users-modal').style.display = 'flex';
+            if (modal) {
+                // Garantir que o modal esteja anexado ao body
+                if (modal.parentElement !== document.body) {
+                    console.log('[DEBUG] Modal gerenciar usuários não está no body, movendo...');
+                    document.body.appendChild(modal);
+                }
+                
+                modal.classList.remove('hidden');
+                modal.style.display = 'flex';
+                modal.style.zIndex = '999999';
+                modal.style.visibility = 'visible';
+                modal.style.opacity = '1';
+                modal.style.position = 'fixed';
+                modal.style.top = '0';
+                modal.style.left = '0';
+                modal.style.width = '100vw';
+                modal.style.height = '100vh';
+            }
             console.log('[DEBUG] mostrarSecaoPainel: exibindo manage-users-modal');
         } else {
             console.warn(`[AVISO] mostrarSecaoPainel: seção desconhecida: ${secao}`);
@@ -903,6 +931,12 @@ window.showCreateUserModal = function() {
     if (modal) {
         console.log('[DEBUG] showCreateUserModal: exibindo modal');
         
+        // Garantir que o modal esteja anexado ao body
+        if (modal.parentElement !== document.body) {
+            console.log('[DEBUG] showCreateUserModal: modal não está no body, movendo...');
+            document.body.appendChild(modal);
+        }
+        
         // IMPORTANTE: Remover a classe .hidden PRIMEIRO (que tem !important)
         modal.classList.remove('hidden');
         
@@ -911,10 +945,11 @@ window.showCreateUserModal = function() {
         modal.style.position = 'fixed';
         modal.style.top = '0';
         modal.style.left = '0';
-        modal.style.width = '100%';
-        modal.style.height = '100%';
-        modal.style.zIndex = '99999';
-        modal.style.backgroundColor = 'rgba(0, 0, 0, 0.5)';
+        modal.style.width = '100vw';
+        modal.style.height = '100vh';
+        modal.style.zIndex = '999999';
+        modal.style.visibility = 'visible';
+        modal.style.opacity = '1';
         modal.style.visibility = 'visible';
         modal.style.opacity = '1';
         modal.style.alignItems = 'center';

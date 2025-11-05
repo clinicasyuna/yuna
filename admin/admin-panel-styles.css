@@ -1325,6 +1325,19 @@ h2.finalizar-solicitacao {
   pointer-events: auto !important;
 }
 
+/* Aplicar mesma correção para outros modais */
+#modal-novo-usuario {
+  z-index: 999999 !important;
+  pointer-events: auto !important;
+  position: fixed !important;
+}
+
+#manage-users-modal {
+  z-index: 999999 !important;
+  pointer-events: auto !important;
+  position: fixed !important;
+}
+
 #modal-editar-acompanhante .modal-content {
   background: white;
   border-radius: 8px;
