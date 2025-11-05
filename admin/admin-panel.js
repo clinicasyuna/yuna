@@ -5857,3 +5857,83 @@ window.removerAcompanhante = removerAcompanhante;
 window.editarAcompanhante = editarAcompanhante;
 window.fecharModalEditarAcompanhante = fecharModalEditarAcompanhante;
 window.salvarEdicaoAcompanhante = salvarEdicaoAcompanhante;
+
+// === FUNÇÕES DE INTERFACE ===
+
+// Função para alternar tipo de acesso (que estava faltando)
+window.alterarTipoAcesso = function() {
+    console.log('[DEBUG] alterarTipoAcesso: função chamada');
+    
+    const tipoSelect = document.getElementById('tipo-acesso');
+    const departamentoSection = document.getElementById('departamento-section');
+    const departamentoSelect = document.getElementById('departamento');
+    
+    if (!tipoSelect || !departamentoSection) {
+        console.error('[ERRO] alterarTipoAcesso: elementos não encontrados');
+        return;
+    }
+    
+    const tipo = tipoSelect.value;
+    console.log('[DEBUG] alterarTipoAcesso: tipo selecionado =', tipo);
+    
+    if (tipo === 'equipe') {
+        // Mostrar seção de departamento para equipe
+        departamentoSection.classList.remove('hidden');
+        console.log('[DEBUG] alterarTipoAcesso: mostrando departamento-section');
+    } else {
+        // Ocultar seção de departamento para admin
+        departamentoSection.classList.add('hidden');
+        if (departamentoSelect) {
+            departamentoSelect.value = ''; // Limpar seleção
+        }
+        console.log('[DEBUG] alterarTipoAcesso: ocultando departamento-section');
+    }
+};
+
+// Função melhorada para logout com limpeza completa
+window.logout = async function() {
+    try {
+        console.log('[DEBUG] Iniciando processo de logout...');
+        
+        // 1. Logout do Firebase
+        await window.auth.signOut();
+        
+        // 2. Limpar dados do localStorage
+        localStorage.removeItem('usuarioAdmin');
+        
+        // 3. Limpar variáveis globais
+        window.usuarioAdmin = null;
+        window.userEmail = null;
+        window.userRole = null;
+        
+        // 4. Resetar campos de login
+        const tipoSelect = document.getElementById('tipo-acesso');
+        const departamentoSection = document.getElementById('departamento-section');
+        const departamentoSelect = document.getElementById('departamento');
+        const emailInput = document.getElementById('login-email');
+        const passwordInput = document.getElementById('login-password');
+        
+        if (tipoSelect) tipoSelect.value = '';
+        if (departamentoSelect) departamentoSelect.value = '';
+        if (emailInput) emailInput.value = '';
+        if (passwordInput) passwordInput.value = '';
+        
+        // 5. Ocultar seção de departamento
+        if (departamentoSection) {
+            departamentoSection.classList.add('hidden');
+        }
+        
+        // 6. Limpar interface completamente
+        limparInterfaceCompleta();
+        
+        console.log('[DEBUG] Logout concluído com sucesso');
+        showToast('Sucesso', 'Logout realizado com sucesso!', 'success');
+        
+    } catch (error) {
+        console.error('[ERRO] Erro no logout:', error);
+        showToast('Erro', 'Erro ao fazer logout.', 'error');
+        
+        // Mesmo com erro, limpar interface
+        limparInterfaceCompleta();
+    }
+};
