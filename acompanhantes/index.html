@@ -1705,12 +1705,20 @@
             }
             
             // Monitorar mudanças nas solicitações do usuário
+            console.log('[DEBUG] Iniciando listener de satisfação para usuário:', userId);
             unsubscribeSatisfacao = window.db.collection('solicitacoes')
                 .where('userId', '==', userId)
                 .where('status', '==', 'finalizada')
                 .where('avaliada', '==', false)  // Apenas não avaliadas
                 .onSnapshot(snapshot => {
+                    console.log('[DEBUG] Listener de satisfação ativado. Documentos encontrados:', snapshot.size);
                     snapshot.docChanges().forEach(change => {
+                        console.log('[DEBUG] Mudança detectada:', {
+                            type: change.type,
+                            docId: change.doc.id,
+                            data: change.doc.data()
+                        });
+                        
                         if (change.type === 'added' || change.type === 'modified') {
                             const doc = change.doc;
                             const data = doc.data();
@@ -1721,11 +1729,22 @@
                                 const finalizado = data.finalizadoEm.toDate();
                                 const minutosDecorridos = (agora - finalizado) / (1000 * 60);
                                 
+                                console.log('[DEBUG] Verificando tempo de finalização:', {
+                                    agora: agora.toISOString(),
+                                    finalizado: finalizado.toISOString(),
+                                    minutosDecorridos: minutosDecorridos
+                                });
+                                
                                 if (minutosDecorridos <= 5) {
+                                    console.log('[DEBUG] Solicitação finalizada recentemente, agendando notificação');
                                     setTimeout(() => {
                                         mostrarNotificacaoSatisfacao(doc.id, data);
                                     }, 2000); // Aguarda 2 segundos para dar tempo do admin atualizar
+                                } else {
+                                    console.log('[DEBUG] Solicitação finalizada há mais de 5 minutos, não mostrando notificação');
                                 }
+                            } else {
+                                console.log('[DEBUG] Solicitação sem data de finalização');
                             }
                         }
                     });
@@ -2534,6 +2553,7 @@
                         duracao: null
                     },
                     avaliacaoSolicitada: false,
+                    avaliada: false,  // Campo necessário para o filtro de satisfação
                     criadoEm: firebase.firestore.FieldValue.serverTimestamp()
                 };
                 
@@ -3047,6 +3067,7 @@
                 
                 // Marcar solicitação como avaliada
                 if (solicitacaoParaAvaliar) {
+                    console.log('[DEBUG] Marcando solicitação como avaliada:', solicitacaoParaAvaliar);
                     await window.db.collection('solicitacoes').doc(solicitacaoParaAvaliar).update({
                         avaliada: true,
                         avaliadoEm: firebase.firestore.FieldValue.serverTimestamp(),
@@ -3054,6 +3075,9 @@
                         recomendacao: avaliacaoAtual.recomendacao,
                         status: 'finalizada' // Garante status correto para o filtro
                     });
+                    console.log('[DEBUG] Solicitação marcada como avaliada com sucesso');
+                } else {
+                    console.error('[ERRO] ID da solicitação não encontrado para marcar como avaliada');
                 }
                 
                 // Feedback personalizado baseado na nota
