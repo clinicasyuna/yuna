@@ -2117,12 +2117,15 @@
             const email = document.getElementById('login-email').value;
             const password = document.getElementById('login-password').value;
             
+            console.log('[DEBUG] handleLogin: iniciando login para email:', email);
+            
             const btn = document.getElementById('login-btn');
             btn.disabled = true;
             btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Entrando...';
             
             try {
-                // PRIMEIRO: Verificar se é um pré-cadastro
+                // PRIMEIRO: Verificar se é um pré-cadastro (primeira vez)
+                console.log('[DEBUG] handleLogin: verificando pré-cadastro...');
                 const preCadastro = await verificarPreCadastro(email, password);
                 
                 if (preCadastro) {
@@ -2130,10 +2133,13 @@
                     showToast('Ativando...', 'Ativando sua conta pela primeira vez...', 'info');
                     
                     // Criar usuário no Firebase Auth
+                    console.log('[DEBUG] handleLogin: criando usuário no Firebase Auth...');
                     const userCredential = await firebase.auth().createUserWithEmailAndPassword(email, password);
                     const user = userCredential.user;
+                    console.log('[DEBUG] handleLogin: usuário criado no Firebase Auth com UID:', user.uid);
                     
                     // Atualizar documento removendo pré-cadastro e adicionando UID
+                    console.log('[DEBUG] handleLogin: atualizando documento no Firestore...');
                     await window.db.collection('usuarios_acompanhantes').doc(preCadastro.id).update({
                         uid: user.uid,
                         preCadastro: false,
@@ -2141,36 +2147,70 @@
                     });
                     
                     // Atualizar referência na coleção de quartos ocupados
+                    console.log('[DEBUG] handleLogin: atualizando quarto ocupado...');
                     await window.db.collection('quartos_ocupados').doc(preCadastro.quarto).update({
                         acompanhanteId: user.uid
                     });
                     
-                    console.log('[DEBUG] handleLogin: conta ativada com sucesso');
+                    console.log('[SUCCESS] handleLogin: conta ativada com sucesso');
                     showToast('Sucesso!', 'Conta ativada e login realizado com sucesso!', 'success');
                     
                 } else {
-                    // Login normal
-                    await firebase.auth().signInWithEmailAndPassword(email, password);
-                    showToast('Sucesso!', 'Login realizado com sucesso!', 'success');
+                    // SEGUNDO: Verificar se é usuário já ativo no Firestore
+                    console.log('[DEBUG] handleLogin: não é pré-cadastro, verificando usuário ativo...');
+                    
+                    const usuarioAtivoQuery = await window.db.collection('usuarios_acompanhantes')
+                        .where('email', '==', email)
+                        .where('preCadastro', '==', false)
+                        .get();
+                    
+                    if (!usuarioAtivoQuery.empty) {
+                        console.log('[DEBUG] handleLogin: usuário ativo encontrado no Firestore, tentando login no Firebase Auth...');
+                        // Usuário existe e está ativo - fazer login normal
+                        await firebase.auth().signInWithEmailAndPassword(email, password);
+                        console.log('[SUCCESS] handleLogin: login normal realizado com sucesso');
+                        showToast('Sucesso!', 'Login realizado com sucesso!', 'success');
+                    } else {
+                        // TERCEIRO: Verificar se é senha incorreta para pré-cadastro
+                        console.log('[DEBUG] handleLogin: verificando se existe pré-cadastro com senha diferente...');
+                        const preCadastroQualquerSenha = await window.db.collection('usuarios_acompanhantes')
+                            .where('email', '==', email)
+                            .where('preCadastro', '==', true)
+                            .get();
+                        
+                        if (!preCadastroQualquerSenha.empty) {
+                            console.log('[DEBUG] handleLogin: pré-cadastro existe mas senha incorreta');
+                            throw new Error('SENHA_INCORRETA_PRECADASTRO');
+                        } else {
+                            console.log('[DEBUG] handleLogin: usuário não encontrado em lugar nenhum');
+                            throw new Error('USER_NOT_FOUND');
+                        }
+                    }
                 }
                 
             } catch (error) {
-                console.error('Erro no login:', error);
+                console.error('[ERRO] handleLogin:', error);
                 let mensagem = 'Email ou senha incorretos.';
                 
-                switch (error.code) {
-                    case 'auth/user-not-found':
-                        mensagem = 'Usuário não encontrado. Verifique se sua conta foi ativada pelo administrador.';
-                        break;
-                    case 'auth/wrong-password':
-                        mensagem = 'Senha incorreta.';
-                        break;
-                    case 'auth/invalid-email':
-                        mensagem = 'Email inválido.';
-                        break;
-                    case 'auth/email-already-in-use':
-                        mensagem = 'Este email já possui uma conta ativa. Use a opção de login normal.';
-                        break;
+                if (error.message === 'SENHA_INCORRETA_PRECADASTRO') {
+                    mensagem = 'Senha incorreta. Utilize a senha fornecida pela equipe administrativa.';
+                } else if (error.message === 'USER_NOT_FOUND') {
+                    mensagem = 'Usuário não encontrado. Verifique se sua conta foi criada pelo administrador.';
+                } else {
+                    switch (error.code) {
+                        case 'auth/user-not-found':
+                            mensagem = 'Usuário não encontrado. Verifique se sua conta foi ativada pelo administrador.';
+                            break;
+                        case 'auth/wrong-password':
+                            mensagem = 'Senha incorreta.';
+                            break;
+                        case 'auth/invalid-email':
+                            mensagem = 'Email inválido.';
+                            break;
+                        case 'auth/email-already-in-use':
+                            mensagem = 'Este email já possui uma conta ativa. Use a opção de login normal.';
+                            break;
+                    }
                 }
                 
                 showToast('Erro', mensagem, 'error');
@@ -2183,24 +2223,38 @@
         // Função para verificar se é um pré-cadastro
         async function verificarPreCadastro(email, senha) {
             try {
+                console.log('[DEBUG] verificarPreCadastro: buscando por email:', email);
+                
                 const snapshot = await window.db.collection('usuarios_acompanhantes')
                     .where('email', '==', email)
                     .where('preCadastro', '==', true)
                     .get();
                 
+                console.log('[DEBUG] verificarPreCadastro: documentos encontrados com preCadastro=true:', snapshot.size);
+                
                 if (snapshot.empty) {
+                    console.log('[DEBUG] verificarPreCadastro: nenhum pré-cadastro encontrado');
                     return null;
                 }
                 
                 const doc = snapshot.docs[0];
                 const dados = doc.data();
                 
+                console.log('[DEBUG] verificarPreCadastro: dados encontrados:', { 
+                    id: doc.id, 
+                    email: dados.email, 
+                    preCadastro: dados.preCadastro,
+                    senhaCorreta: dados.senha === senha
+                });
+                
                 // Verificar se a senha confere
                 if (dados.senha === senha) {
+                    console.log('[SUCCESS] verificarPreCadastro: pré-cadastro válido encontrado');
                     return { id: doc.id, ...dados };
+                } else {
+                    console.log('[DEBUG] verificarPreCadastro: senha não confere');
+                    return null;
                 }
-                
-                return null;
                 
             } catch (error) {
                 console.error('[ERRO] verificarPreCadastro:', error);
