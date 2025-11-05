@@ -5445,12 +5445,12 @@ function atualizarListaAcompanhantes(acompanhantes) {
                     </div>
                 </div>
                 <div style="display: flex; gap: 8px;">
-                    <button onclick="editarAcompanhante('${acomp.id}')" 
+                    <button onclick="event.stopPropagation(); editarAcompanhante('${acomp.id}')" 
                             style="background: #3b82f6; color: white; border: none; padding: 6px 12px; border-radius: 4px; cursor: pointer; font-size: 12px;"
                             title="Editar acompanhante">
                         <i class="fas fa-edit"></i>
                     </button>
-                    <button onclick="removerAcompanhante('${acomp.id}', '${acomp.quarto}')" 
+                    <button onclick="event.stopPropagation(); removerAcompanhante('${acomp.id}', '${acomp.quarto}')" 
                             style="background: #ef4444; color: white; border: none; padding: 6px 12px; border-radius: 4px; cursor: pointer; font-size: 12px;"
                             title="Remover acompanhante">
                         <i class="fas fa-trash"></i>
@@ -5522,21 +5522,41 @@ async function removerAcompanhante(acompanhanteId, quarto) {
 }
 
 // Função para editar acompanhante (placeholder para implementação futura)
+// Variável para controlar se o modal está sendo processado
+let editandoAcompanhante = false;
+let ultimoClickEditar = 0;
+
 // Função para editar acompanhante
 async function editarAcompanhante(acompanhanteId) {
     try {
-        console.log('[DEBUG] editarAcompanhante:', acompanhanteId);
+        // Debounce para evitar cliques duplos muito rápidos
+        const agora = Date.now();
+        if (agora - ultimoClickEditar < 500) {
+            console.log('[DEBUG] editarAcompanhante: clique muito rápido, ignorando');
+            return;
+        }
+        ultimoClickEditar = agora;
+        
+        // Prevenir múltiplas execuções simultâneas
+        if (editandoAcompanhante) {
+            console.log('[DEBUG] editarAcompanhante: já está processando, ignorando chamada duplicada');
+            return;
+        }
+        
+        editandoAcompanhante = true;
+        console.log('[DEBUG] editarAcompanhante: iniciando edição para ID:', acompanhanteId);
         
         // Buscar dados do acompanhante no Firestore
         const doc = await window.db.collection('usuarios_acompanhantes').doc(acompanhanteId).get();
         
         if (!doc.exists) {
             showToast('Erro', 'Acompanhante não encontrado', 'error');
+            editandoAcompanhante = false;
             return;
         }
         
         const acompanhante = doc.data();
-        console.log('[DEBUG] Dados do acompanhante:', acompanhante);
+        console.log('[DEBUG] Dados carregados, preenchendo modal para:', acompanhante.nome);
         
         // Preencher o modal com os dados atuais
         document.getElementById('edit-acomp-id').value = acompanhanteId;
@@ -5550,6 +5570,8 @@ async function editarAcompanhante(acompanhanteId) {
         modal.classList.remove('hidden');
         modal.style.display = 'flex';
         
+        console.log('[DEBUG] Modal de edição aberto com sucesso');
+        
         // Foco no primeiro campo
         setTimeout(() => {
             document.getElementById('edit-acomp-nome').focus();
@@ -5558,11 +5580,16 @@ async function editarAcompanhante(acompanhanteId) {
     } catch (error) {
         console.error('[ERRO] editarAcompanhante:', error);
         showToast('Erro', 'Erro ao carregar dados do acompanhante', 'error');
+    } finally {
+        // Sempre resetar a variável de controle
+        editandoAcompanhante = false;
     }
 }
 
 // Função para fechar modal de edição
 function fecharModalEditarAcompanhante() {
+    console.log('[DEBUG] Fechando modal de edição');
+    
     const modal = document.getElementById('modal-editar-acompanhante');
     modal.classList.add('hidden');
     modal.style.display = 'none';
@@ -5570,6 +5597,9 @@ function fecharModalEditarAcompanhante() {
     // Limpar formulário
     document.getElementById('form-editar-acompanhante').reset();
     document.getElementById('edit-acomp-id').value = '';
+    
+    // Resetar variável de controle
+    editandoAcompanhante = false;
 }
 
 // Função para salvar edição do acompanhante
