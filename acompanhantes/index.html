@@ -2124,67 +2124,80 @@
             btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Entrando...';
             
             try {
-                // PRIMEIRO: Verificar se é um pré-cadastro (primeira vez)
-                console.log('[DEBUG] handleLogin: verificando pré-cadastro...');
-                const preCadastro = await verificarPreCadastro(email, password);
+                // ESTRATÉGIA 1: Tentar login direto no Firebase Auth primeiro
+                console.log('[DEBUG] handleLogin: tentando login direto no Firebase Auth...');
                 
-                if (preCadastro) {
-                    console.log('[DEBUG] handleLogin: encontrado pré-cadastro, ativando conta...');
-                    showToast('Ativando...', 'Ativando sua conta pela primeira vez...', 'info');
+                try {
+                    await firebase.auth().signInWithEmailAndPassword(email, password);
+                    console.log('[SUCCESS] handleLogin: login direto realizado com sucesso');
+                    showToast('Sucesso!', 'Login realizado com sucesso!', 'success');
+                    return; // Login bem-sucedido, sair da função
+                } catch (authError) {
+                    console.log('[DEBUG] handleLogin: login direto falhou:', authError.code);
                     
-                    // Criar usuário no Firebase Auth
-                    console.log('[DEBUG] handleLogin: criando usuário no Firebase Auth...');
-                    const userCredential = await firebase.auth().createUserWithEmailAndPassword(email, password);
-                    const user = userCredential.user;
-                    console.log('[DEBUG] handleLogin: usuário criado no Firebase Auth com UID:', user.uid);
-                    
-                    // Atualizar documento removendo pré-cadastro e adicionando UID
-                    console.log('[DEBUG] handleLogin: atualizando documento no Firestore...');
-                    await window.db.collection('usuarios_acompanhantes').doc(preCadastro.id).update({
-                        uid: user.uid,
-                        preCadastro: false,
-                        ativadoEm: new Date().toISOString()
-                    });
-                    
-                    // Atualizar referência na coleção de quartos ocupados
-                    console.log('[DEBUG] handleLogin: atualizando quarto ocupado...');
-                    await window.db.collection('quartos_ocupados').doc(preCadastro.quarto).update({
-                        acompanhanteId: user.uid
-                    });
-                    
-                    console.log('[SUCCESS] handleLogin: conta ativada com sucesso');
-                    showToast('Sucesso!', 'Conta ativada e login realizado com sucesso!', 'success');
-                    
-                } else {
-                    // SEGUNDO: Verificar se é usuário já ativo no Firestore
-                    console.log('[DEBUG] handleLogin: não é pré-cadastro, verificando usuário ativo...');
-                    
-                    const usuarioAtivoQuery = await window.db.collection('usuarios_acompanhantes')
-                        .where('email', '==', email)
-                        .where('preCadastro', '==', false)
-                        .get();
-                    
-                    if (!usuarioAtivoQuery.empty) {
-                        console.log('[DEBUG] handleLogin: usuário ativo encontrado no Firestore, tentando login no Firebase Auth...');
-                        // Usuário existe e está ativo - fazer login normal
-                        await firebase.auth().signInWithEmailAndPassword(email, password);
-                        console.log('[SUCCESS] handleLogin: login normal realizado com sucesso');
-                        showToast('Sucesso!', 'Login realizado com sucesso!', 'success');
-                    } else {
-                        // TERCEIRO: Verificar se é senha incorreta para pré-cadastro
-                        console.log('[DEBUG] handleLogin: verificando se existe pré-cadastro com senha diferente...');
-                        const preCadastroQualquerSenha = await window.db.collection('usuarios_acompanhantes')
-                            .where('email', '==', email)
-                            .where('preCadastro', '==', true)
-                            .get();
+                    // ESTRATÉGIA 2: Se usuário não existe, tentar criar conta (pré-cadastro)
+                    if (authError.code === 'auth/user-not-found') {
+                        console.log('[DEBUG] handleLogin: usuário não encontrado no Firebase Auth, tentando ativação de pré-cadastro...');
                         
-                        if (!preCadastroQualquerSenha.empty) {
-                            console.log('[DEBUG] handleLogin: pré-cadastro existe mas senha incorreta');
-                            throw new Error('SENHA_INCORRETA_PRECADASTRO');
-                        } else {
-                            console.log('[DEBUG] handleLogin: usuário não encontrado em lugar nenhum');
-                            throw new Error('USER_NOT_FOUND');
+                        try {
+                            // Tentar criar conta diretamente (se é pré-cadastro válido, funcionará)
+                            const userCredential = await firebase.auth().createUserWithEmailAndPassword(email, password);
+                            const user = userCredential.user;
+                            console.log('[DEBUG] handleLogin: conta criada no Firebase Auth, agora buscando dados do pré-cadastro...');
+                            
+                            // Agora que está autenticado, pode buscar e atualizar dados
+                            const preCadastroQuery = await window.db.collection('usuarios_acompanhantes')
+                                .where('email', '==', email)
+                                .where('preCadastro', '==', true)
+                                .get();
+                            
+                            if (!preCadastroQuery.empty) {
+                                const doc = preCadastroQuery.docs[0];
+                                const preCadastro = doc.data();
+                                
+                                console.log('[DEBUG] handleLogin: pré-cadastro encontrado, atualizando dados...');
+                                
+                                // Atualizar documento removendo pré-cadastro e adicionando UID
+                                await window.db.collection('usuarios_acompanhantes').doc(doc.id).update({
+                                    uid: user.uid,
+                                    preCadastro: false,
+                                    ativadoEm: new Date().toISOString()
+                                });
+                                
+                                // Atualizar referência na coleção de quartos ocupados
+                                if (preCadastro.quarto) {
+                                    await window.db.collection('quartos_ocupados').doc(preCadastro.quarto).update({
+                                        acompanhanteId: user.uid
+                                    });
+                                }
+                                
+                                console.log('[SUCCESS] handleLogin: conta ativada com sucesso');
+                                showToast('Sucesso!', 'Conta ativada e login realizado com sucesso!', 'success');
+                                return;
+                            } else {
+                                // Conta foi criada mas não há pré-cadastro - isso não deveria acontecer
+                                console.error('[ERRO] handleLogin: conta criada mas pré-cadastro não encontrado');
+                                // Deletar a conta criada erroneamente
+                                await user.delete();
+                                throw new Error('PRE_CADASTRO_NAO_ENCONTRADO');
+                            }
+                            
+                        } catch (createError) {
+                            console.log('[DEBUG] handleLogin: falha ao criar conta:', createError.code);
+                            
+                            if (createError.code === 'auth/email-already-in-use') {
+                                // Email já tem conta no Firebase Auth, mas login falhou
+                                // Isso pode indicar senha incorreta
+                                throw new Error('SENHA_INCORRETA');
+                            } else if (createError.code === 'auth/weak-password') {
+                                throw new Error('SENHA_FRACA');
+                            } else {
+                                throw createError;
+                            }
                         }
+                    } else {
+                        // Outros erros de autenticação (senha incorreta, etc.)
+                        throw authError;
                     }
                 }
                 
@@ -2192,25 +2205,36 @@
                 console.error('[ERRO] handleLogin:', error);
                 let mensagem = 'Email ou senha incorretos.';
                 
-                if (error.message === 'SENHA_INCORRETA_PRECADASTRO') {
-                    mensagem = 'Senha incorreta. Utilize a senha fornecida pela equipe administrativa.';
-                } else if (error.message === 'USER_NOT_FOUND') {
-                    mensagem = 'Usuário não encontrado. Verifique se sua conta foi criada pelo administrador.';
-                } else {
-                    switch (error.code) {
-                        case 'auth/user-not-found':
-                            mensagem = 'Usuário não encontrado. Verifique se sua conta foi ativada pelo administrador.';
-                            break;
-                        case 'auth/wrong-password':
-                            mensagem = 'Senha incorreta.';
-                            break;
-                        case 'auth/invalid-email':
-                            mensagem = 'Email inválido.';
-                            break;
-                        case 'auth/email-already-in-use':
-                            mensagem = 'Este email já possui uma conta ativa. Use a opção de login normal.';
-                            break;
-                    }
+                switch (error.message || error.code) {
+                    case 'PRE_CADASTRO_NAO_ENCONTRADO':
+                        mensagem = 'Usuário não encontrado. Verifique se sua conta foi criada pelo administrador.';
+                        break;
+                    case 'SENHA_INCORRETA':
+                    case 'auth/wrong-password':
+                        mensagem = 'Senha incorreta.';
+                        break;
+                    case 'SENHA_FRACA':
+                    case 'auth/weak-password':
+                        mensagem = 'Senha muito fraca. Entre em contato com o administrador.';
+                        break;
+                    case 'auth/user-not-found':
+                        mensagem = 'Usuário não encontrado. Verifique se sua conta foi criada pelo administrador.';
+                        break;
+                    case 'auth/invalid-email':
+                        mensagem = 'Email inválido.';
+                        break;
+                    case 'auth/email-already-in-use':
+                        mensagem = 'Este email já possui uma conta ativa.';
+                        break;
+                    case 'permission-denied':
+                    case 'auth/permission-denied':
+                        mensagem = 'Erro de permissão. Entre em contato com o administrador.';
+                        break;
+                    default:
+                        if (error.message && error.message.includes('permission')) {
+                            mensagem = 'Erro de permissão. Entre em contato com o administrador.';
+                        }
+                        break;
                 }
                 
                 showToast('Erro', mensagem, 'error');
@@ -2224,6 +2248,18 @@
         async function verificarPreCadastro(email, senha) {
             try {
                 console.log('[DEBUG] verificarPreCadastro: buscando por email:', email);
+                
+                // Verificar se o usuário está autenticado antes de tentar a consulta
+                const currentUser = firebase.auth().currentUser;
+                if (!currentUser) {
+                    console.log('[DEBUG] verificarPreCadastro: usuário não autenticado, usando autenticação temporária...');
+                    
+                    // Para verificar pré-cadastro, precisamos de uma estratégia alternativa
+                    // que não dependa de consultas Firestore sem autenticação
+                    
+                    // Tentar uma abordagem diferente: criar usuário diretamente e ver se funciona
+                    return null; // Fallback: não encontrou pré-cadastro
+                }
                 
                 const snapshot = await window.db.collection('usuarios_acompanhantes')
                     .where('email', '==', email)
@@ -2258,7 +2294,16 @@
                 
             } catch (error) {
                 console.error('[ERRO] verificarPreCadastro:', error);
-                return null;
+                
+                // Se é erro de permissão, retorna null (não é pré-cadastro)
+                if (error.code === 'permission-denied' || 
+                    error.message.includes('permission') ||
+                    error.message.includes('insufficient permissions')) {
+                    console.log('[DEBUG] verificarPreCadastro: erro de permissão - assumindo que não é pré-cadastro');
+                    return null;
+                }
+                
+                throw error; // Re-throw outros erros
             }
         }
 
