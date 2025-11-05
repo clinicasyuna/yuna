@@ -5500,6 +5500,24 @@ async function removerAcompanhante(acompanhanteId, quarto) {
     }
 }
 
+// Função de teste para modal
+window.testarModal = function() {
+    console.log('[TEST] Testando modal...');
+    const modal = document.getElementById('modal-editar-acompanhante');
+    if (modal) {
+        modal.style.display = 'block';
+        modal.style.position = 'fixed';
+        modal.style.top = '50px';
+        modal.style.left = '50px';
+        modal.style.width = '300px';
+        modal.style.height = '200px';
+        modal.style.backgroundColor = 'red';
+        modal.style.zIndex = '99999';
+        modal.classList.remove('hidden');
+        console.log('[TEST] Modal configurado para teste. Deveria aparecer uma caixa vermelha.');
+    }
+};
+
 // Função para editar acompanhante (placeholder para implementação futura)
 // Variável para controlar se o modal está sendo processado
 let editandoAcompanhante = false;
@@ -5588,9 +5606,48 @@ async function editarAcompanhante(acompanhanteId) {
             display: computed.display,
             visibility: computed.visibility,
             opacity: computed.opacity,
-            zIndex: computed.zIndex
+            zIndex: computed.zIndex,
+            position: computed.position,
+            top: computed.top,
+            left: computed.left
         });
         
+        // Verificar se há elementos pai que podem estar interferindo
+        let parent = modalToShow.parentElement;
+        let level = 0;
+        while (parent && level < 5) {
+            const parentComputed = window.getComputedStyle(parent);
+            console.log(`[DEBUG] Parent ${level} (${parent.tagName}):`, {
+                display: parentComputed.display,
+                visibility: parentComputed.visibility,
+                opacity: parentComputed.opacity,
+                overflow: parentComputed.overflow,
+                className: parent.className
+            });
+            parent = parent.parentElement;
+            level++;
+        }
+        
+        // Verificar se o modal está realmente na viewport
+        const rect = modalToShow.getBoundingClientRect();
+        console.log('[DEBUG] Modal getBoundingClientRect:', {
+            top: rect.top,
+            left: rect.left,
+            width: rect.width,
+            height: rect.height,
+            visible: rect.width > 0 && rect.height > 0
+        });
+        
+        // Tentar forçar ainda mais a visibilidade
+        modalToShow.style.position = 'fixed';
+        modalToShow.style.top = '0';
+        modalToShow.style.left = '0';
+        modalToShow.style.width = '100vw';
+        modalToShow.style.height = '100vh';
+        modalToShow.style.zIndex = '99999';
+        modalToShow.style.backgroundColor = 'rgba(0, 0, 0, 0.8)';
+        
+        console.log('[DEBUG] Modal forçado com estilos inline');
         console.log('[DEBUG] Modal de edição configurado com sucesso');
         console.log('[DEBUG] === FIM MOSTRAR MODAL ===');
         
