@@ -5585,13 +5585,24 @@ async function editarAcompanhante(acompanhanteId) {
         console.log('[DEBUG] === MOSTRANDO MODAL ===');
         console.log('[DEBUG] Modal antes de remover hidden:', modalToShow.classList.toString());
         
+        // Garantir que o modal esteja anexado ao body (não dentro de uma seção)
+        if (modalToShow.parentElement !== document.body) {
+            console.log('[DEBUG] Modal não está no body, movendo...');
+            document.body.appendChild(modalToShow);
+        }
+        
         modalToShow.classList.remove('hidden');
         console.log('[DEBUG] Modal após remover hidden:', modalToShow.classList.toString());
         
         modalToShow.style.display = 'flex';
         modalToShow.style.visibility = 'visible';
         modalToShow.style.opacity = '1';
-        modalToShow.style.zIndex = '9999';
+        modalToShow.style.zIndex = '999999';
+        modalToShow.style.position = 'fixed';
+        modalToShow.style.top = '0';
+        modalToShow.style.left = '0';
+        modalToShow.style.width = '100vw';
+        modalToShow.style.height = '100vh';
         
         console.log('[DEBUG] Modal style final:', {
             display: modalToShow.style.display,

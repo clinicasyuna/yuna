@@ -948,6 +948,8 @@ h2.finalizar-solicitacao {
 
 #acompanhantes-section {
   margin-top: 2rem;
+  position: relative;
+  z-index: 1;
 }
 
 #acompanhantes-section .section-content {
@@ -955,6 +957,7 @@ h2.finalizar-solicitacao {
   border-radius: 16px;
   padding: 2rem;
   box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+  position: relative;
 }
 
 #acompanhantes-section .section-header {
@@ -1309,11 +1312,17 @@ h2.finalizar-solicitacao {
   display: flex;
   justify-content: center;
   align-items: center;
-  z-index: 9999;
+  z-index: 999999;
 }
 
 #modal-editar-acompanhante.hidden {
   display: none !important;
+}
+
+/* Garantir que o modal sempre apareça por cima de tudo */
+#modal-editar-acompanhante {
+  z-index: 999999 !important;
+  pointer-events: auto !important;
 }
 
 #modal-editar-acompanhante .modal-content {
