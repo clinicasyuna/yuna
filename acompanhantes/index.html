@@ -2977,16 +2977,16 @@
                     solicitacaoId: solicitacaoParaAvaliar,
                     usuarioId: currentUser.uid,
                     usuarioEmail: currentUser.email,
-                    usuarioNome: dadosSolicitacaoAvaliar.nomeUsuario || 'Usuário',
+                    usuarioNome: dadosSolicitacaoAvaliar.nomeUsuario || dadosSolicitacaoAvaliar.nome || 'Usuário',
                     
-                    // Dados do serviço
-                    tipoServico: dadosSolicitacaoAvaliar.tipoServico,
-                    descricaoServico: dadosSolicitacaoAvaliar.descricao,
-                    equipeResponsavel: dadosSolicitacaoAvaliar.equipeDepartamento || dadosSolicitacaoAvaliar.tipoServico,
+                    // Dados do serviço - com fallbacks para compatibilidade
+                    tipoServico: dadosSolicitacaoAvaliar.tipoServico || dadosSolicitacaoAvaliar.equipe || dadosSolicitacaoAvaliar.tipo || 'manutencao',
+                    descricaoServico: dadosSolicitacaoAvaliar.descricao || dadosSolicitacaoAvaliar.titulo || 'Sem descrição',
+                    equipeResponsavel: dadosSolicitacaoAvaliar.equipeDepartamento || dadosSolicitacaoAvaliar.equipe || dadosSolicitacaoAvaliar.tipoServico || 'manutencao',
                     
                     // Avaliação principal
                     nota: avaliacaoAtual.nota,
-                    comentarios: avaliacaoAtual.comentarios,
+                    comentarios: avaliacaoAtual.comentarios || '',
                     recomendacao: avaliacaoAtual.recomendacao,
                     
                     // Aspectos específicos
@@ -3001,11 +3001,15 @@
                     criadoEm: firebase.firestore.FieldValue.serverTimestamp(),
                     status: 'enviada',
                     
-                    // Dados para análise
-                    tempoResposta: dadosSolicitacaoAvaliar.finalizadoEm && dadosSolicitacaoAvaliar.criadoEm ? 
+                    // Dados para análise (com verificações de existência)
+                    tempoResposta: (dadosSolicitacaoAvaliar.finalizadoEm && dadosSolicitacaoAvaliar.criadoEm) ? 
                         (dadosSolicitacaoAvaliar.finalizadoEm.toDate() - dadosSolicitacaoAvaliar.criadoEm.toDate()) / (1000 * 60) : null,
-                    prioridadeOriginal: dadosSolicitacaoAvaliar.prioridade
+                    prioridadeOriginal: dadosSolicitacaoAvaliar.prioridade || 'normal'
                 };
+                
+                // Debug para verificar os dados antes do envio
+                console.log('[DEBUG] Dados da avaliação antes do envio:', avaliacaoData);
+                console.log('[DEBUG] Dados originais da solicitação:', dadosSolicitacaoAvaliar);
                 
                 await window.db.collection('avaliacoes_satisfacao').add(avaliacaoData);
                 
