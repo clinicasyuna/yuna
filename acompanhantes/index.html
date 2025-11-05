@@ -324,6 +324,9 @@
             font-weight: 700;
             position: relative;
             z-index: 1;
+            text-align: center;
+            width: 100%;
+            display: block;
         }
 
         .service-card p {
@@ -332,6 +335,9 @@
             line-height: 1.4;
             position: relative;
             z-index: 1;
+            text-align: center;
+            width: 100%;
+            display: block;
         }
 
         .toast {
@@ -877,6 +883,32 @@
 
             .quick-action-btn {
                 padding: 1rem;
+            }
+
+            /* Correção específica para service cards em mobile */
+            .service-card {
+                padding: 1.5rem 1rem;
+                text-align: center !important;
+            }
+
+            .service-card h3 {
+                text-align: center !important;
+                margin: 0 auto 0.5rem auto;
+                display: block;
+                width: 100%;
+            }
+
+            .service-card p {
+                text-align: center !important;
+                margin: 0 auto;
+                display: block;
+                width: 100%;
+            }
+
+            .service-card .icon {
+                margin: 0 auto 1rem auto;
+                display: block;
+            }
             }
         }
 
