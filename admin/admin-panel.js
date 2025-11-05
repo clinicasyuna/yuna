@@ -1,82 +1,94 @@
 // admin-panel.js - Painel Administrativo YUNA
 
-// Função para alterar tipo de acesso (precisa estar disponível imediatamente)
-window.alterarTipoAcesso = function() {
-    var tipo = document.getElementById('tipo-acesso')?.value;
-    var departamentoSection = document.getElementById('departamento-section');
-    if (!departamentoSection) return;
+// === PROTEÇÃO CONTRA ERROS DE EXTENSÕES ===
+(function() {
+    'use strict';
     
-    if (tipo === 'equipe') {
-        departamentoSection.classList.remove('hidden');
-        console.log('[DEBUG] Tipo de acesso: equipe - mostrando departamento');
-    } else {
-        departamentoSection.classList.add('hidden');
-        console.log('[DEBUG] Tipo de acesso: admin - ocultando departamento');
-    }
-};
-
-// === FUNÇÕES DE LIMPEZA E RESET ===
-
-// Função para limpeza completa da interface (logout, erro, etc.)
-window.limparInterfaceCompleta = function() {
-    console.log('[DEBUG] Iniciando limpeza completa da interface...');
+    // Capturar e isolar erros de extensões que podem interferir com nossa aplicação
+    const originalErrorHandler = window.onerror;
+    window.onerror = function(message, source, lineno, colno, error) {
+        // Filtrar erros conhecidos de extensões que não devem afetar nossa aplicação
+        const extensionErrors = [
+            'PIN Company Discounts Provider',
+            'chrome-extension://',
+            'moz-extension://',
+            'safari-extension://',
+            'Invalid data',
+            'Extension context invalidated',
+            'Empty token!',
+            'Failed to fetch',
+            'ERR_FAILED',
+            'pinComponent.js',
+            'Denying load of chrome-extension',
+            'web_accessible_resources',
+            'favicon.ico',
+            'net::ERR_FAILED'
+        ];
+        
+        // Verificar se o erro vem de uma extensão
+        if (extensionErrors.some(pattern => 
+            (message && message.includes(pattern)) ||
+            (source && source.includes(pattern))
+        )) {
+            console.log('[EXTENSION_ERROR] Erro de extensão isolado:', {
+                message: message?.substring(0, 100),
+                source: source?.substring(0, 50)
+            });
+            return true; // Impedir que o erro continue se propagando
+        }
+        
+        // Se não for erro de extensão, chamar handler original se existir
+        if (originalErrorHandler) {
+            return originalErrorHandler.apply(this, arguments);
+        }
+        
+        return false;
+    };
     
+    // Também capturar promises rejeitadas de extensões
+    window.addEventListener('unhandledrejection', function(event) {
+        const error = event.reason;
+        const errorString = error?.toString() || '';
+        
+        const extensionErrors = [
+            'PIN Company Discounts Provider',
+            'chrome-extension',
+            'Empty token!',
+            'Failed to fetch',
+            'Extension context invalidated'
+        ];
+        
+        if (extensionErrors.some(pattern => errorString.includes(pattern))) {
+            console.log('[EXTENSION_PROMISE] Promise de extensão rejeitada isolada:', errorString.substring(0, 100));
+            event.preventDefault(); // Impedir que apareça no console
+        }
+    });
+})();
+
+// === FUNÇÕES PRINCIPAIS ===
+
+// Função para limpar completamente a interface
+function limparInterfaceCompleta() {
     try {
-        // Limpar dados do usuário
-        localStorage.removeItem('usuarioAdmin');
-        localStorage.removeItem('userRole');
-        window.usuarioAdmin = null;
-        window.userRole = null;
+        console.log('[DEBUG] Iniciando limpeza completa da interface...');
         
-        // Lista completa de elementos para ocultar
+        // Ocultar todos os elementos principais
         const elementosParaOcultar = [
-            // Seções principais
             'admin-panel',
+            'manage-users-section',
+            'usuarios-section',
+            'painel-section',
             'relatorios-section',
-            'acompanhantes-section',
-            'metricas-gerais',
-            'teams-grid',
-            
-            // Modais
-            'manage-users-modal',
-            'modal-novo-usuario',
-            'edit-user-modal',
-            'solicitacao-modal',
-            'finalizar-solicitacao-modal',
-            
-            // Outros elementos
-            'section-content',
-            'filtros',
-            'relatorio-container'
+            'configuracoes-section'
         ];
         
-        // Ocultar por ID
         elementosParaOcultar.forEach(id => {
-            const elemento = document.getElementById(id);
-            if (elemento) {
-                elemento.classList.add('hidden');
-                elemento.style.display = 'none';
-                elemento.style.visibility = 'hidden';
-            }
-        });
-        
-        // Ocultar por classe
-        const classesParaOcultar = [
-            '.teams-grid',
-            '.section-content',
-            '.modal',
-            '.modal-content',
-            '.filtros',
-            '.relatorio-container'
-        ];
-        
-        classesParaOcultar.forEach(classe => {
-            const elementos = document.querySelectorAll(classe);
-            elementos.forEach(el => {
+            const el = document.getElementById(id);
+            if (el) {
                 el.classList.add('hidden');
                 el.style.display = 'none';
                 el.style.visibility = 'hidden';
-            });
+            }
         });
         
         // Remover estilos específicos do painel logado que podem interferir
@@ -874,6 +886,13 @@ window.handleLogin = async function(event) {
     }
 }
 window.carregarSolicitacoesAgrupadas = async function() {
+    // Verificar se usuário está logado antes de carregar
+    const usuarioAdmin = window.usuarioAdmin || JSON.parse(localStorage.getItem('usuarioAdmin') || '{}');
+    if (!usuarioAdmin || !usuarioAdmin.uid) {
+        console.warn('[AVISO] carregarSolicitacoesAgrupadas: usuário não logado');
+        return;
+    }
+    
     // Chama a função que atualiza os cards de métricas e equipes
     await carregarSolicitacoes();
 }
@@ -1015,35 +1034,67 @@ window.showManageUsersModal = async function() {
 };
 
 window.mostrarRelatorios = function() {
-    // Verificar se é super_admin
-    const usuarioAdmin = window.usuarioAdmin || JSON.parse(localStorage.getItem('usuarioAdmin') || '{}');
-    const userRole = window.userRole || usuarioAdmin.role;
-    
-    if (!userRole || userRole !== 'super_admin') {
-        showToast('Erro', 'Acesso negado. Apenas super administradores podem acessar relatórios.', 'error');
-        console.warn('[AVISO] mostrarRelatorios: acesso negado, role:', userRole);
-        return;
+    try {
+        console.log('[DEBUG] ===== INÍCIO MOSTRAR RELATÓRIOS =====');
+        
+        // Verificar se é super_admin
+        const usuarioAdmin = window.usuarioAdmin || JSON.parse(localStorage.getItem('usuarioAdmin') || '{}');
+        const userRole = window.userRole || usuarioAdmin.role;
+        
+        console.log('[DEBUG] mostrarRelatorios: usuário:', { email: usuarioAdmin?.email, role: userRole });
+        
+        if (!userRole || userRole !== 'super_admin') {
+            showToast('Erro', 'Acesso negado. Apenas super administradores podem acessar relatórios.', 'error');
+            console.warn('[AVISO] mostrarRelatorios: acesso negado, role:', userRole);
+            return;
+        }
+        
+        console.log('[DEBUG] mostrarRelatorios: acesso autorizado, mostrando seção relatórios');
+        
+        // Permite acesso para super_admin autenticado
+        mostrarSecaoPainel('relatorios');
+        
+        console.log('[DEBUG] mostrarRelatorios: seção mostrada, configurando filtros');
+        
+        var filtroPeriodo = document.getElementById('filtro-periodo');
+        if (filtroPeriodo && !filtroPeriodo.dataset.listenerAdded) {
+            filtroPeriodo.addEventListener('change', function() {
+                var customDateRange = document.getElementById('custom-date-range');
+                customDateRange.style.display = this.value === 'custom' ? 'grid' : 'none';
+            });
+            filtroPeriodo.dataset.listenerAdded = 'true';
+        }
+        
+        console.log('[DEBUG] mostrarRelatorios: verificando se deve carregar solicitações');
+        
+        // Carrega solicitações do Firestore ao abrir relatórios (apenas se usuário válido)
+        if (usuarioAdmin && usuarioAdmin.uid && usuarioAdmin.email) {
+            console.log('[DEBUG] mostrarRelatorios: carregando solicitações...');
+            carregarSolicitacoes();
+        } else {
+            console.warn('[AVISO] mostrarRelatorios: usuário não válido, não carregando solicitações');
+        }
+        
+        // Garantir que os botões estejam configurados corretamente
+        setTimeout(() => {
+            console.log('[DEBUG] mostrarRelatorios: reconfigurando botões...');
+            atualizarVisibilidadeBotoes();
+            configurarEventosBotoes();
+        }, 150);
+        
+        console.log('[DEBUG] ===== FIM MOSTRAR RELATÓRIOS =====');
+        
+    } catch (error) {
+        console.error('[ERRO] mostrarRelatorios: falha na execução:', error);
+        showToast('Erro', 'Erro ao carregar relatórios. Tente novamente.', 'error');
+        
+        // Em caso de erro, não deixar o usuário em estado inconsistente
+        setTimeout(() => {
+            console.log('[RECOVERY] Tentando recuperar estado após erro...');
+            atualizarVisibilidadeBotoes();
+            configurarEventosBotoes();
+        }, 500);
     }
-    
-    // Permite acesso para super_admin autenticado
-    mostrarSecaoPainel('relatorios');
-    var filtroPeriodo = document.getElementById('filtro-periodo');
-    if (filtroPeriodo && !filtroPeriodo.dataset.listenerAdded) {
-        filtroPeriodo.addEventListener('change', function() {
-            var customDateRange = document.getElementById('custom-date-range');
-            customDateRange.style.display = this.value === 'custom' ? 'grid' : 'none';
-        });
-        filtroPeriodo.dataset.listenerAdded = 'true';
-    }
-    // Carrega solicitações do Firestore ao abrir relatórios
-    carregarSolicitacoes();
-    
-    // Garantir que os botões estejam configurados corretamente
-    setTimeout(() => {
-        console.log('[DEBUG] mostrarRelatorios: reconfigurando botões...');
-        atualizarVisibilidadeBotoes();
-        configurarEventosBotoes();
-    }, 100);
 };
 
 window.abrirAcompanhantesSection = function() {
@@ -1062,6 +1113,9 @@ window.abrirAcompanhantesSection = function() {
 };
 
 window.voltarPainelPrincipal = function() {
+    console.log('[DEBUG] ===== VOLTANDO AO PAINEL PRINCIPAL =====');
+    console.trace('[DEBUG] Stack trace do voltarPainelPrincipal:');
+    
     mostrarSecaoPainel('painel');
     
     // Garantir que os botões estejam configurados ao voltar ao painel
@@ -1391,9 +1445,40 @@ async function carregarSolicitacoes() {
         return;
     }
     
-    if (!window.usuarioAdmin) {
-        console.error('[ERRO] Usuário admin não definido!');
-        showToast('Erro', 'Dados do usuário não carregados!', 'error');
+    // Verificação mais robusta do usuário
+    const usuarioAdmin = window.usuarioAdmin || JSON.parse(localStorage.getItem('usuarioAdmin') || '{}');
+    if (!usuarioAdmin || !usuarioAdmin.uid || !usuarioAdmin.email) {
+        console.warn('[AVISO] Usuário admin não completamente carregado, aguardando...');
+        console.log('[DEBUG] Estado atual do usuário:', { window: !!window.usuarioAdmin, localStorage: !!localStorage.getItem('usuarioAdmin') });
+        
+        // Tentar aguardar carregamento do usuário por até 3 segundos
+        let tentativas = 0;
+        const maxTentativas = 6; // 6 tentativas * 500ms = 3 segundos
+        
+        const aguardarUsuario = setInterval(() => {
+            tentativas++;
+            const usuarioAtualizado = window.usuarioAdmin || JSON.parse(localStorage.getItem('usuarioAdmin') || '{}');
+            
+            if (usuarioAtualizado && usuarioAtualizado.uid && usuarioAtualizado.email) {
+                clearInterval(aguardarUsuario);
+                console.log('[DEBUG] Usuário carregado, continuando...');
+                // Reiniciar função com usuário válido
+                carregarSolicitacoes();
+                return;
+            }
+            
+            if (tentativas >= maxTentativas) {
+                clearInterval(aguardarUsuario);
+                console.error('[ERRO] Timeout aguardando dados do usuário');
+                // Não mostrar erro se ainda estiver na tela de login
+                const authSection = document.getElementById('auth-section');
+                if (!authSection || authSection.classList.contains('hidden')) {
+                    showToast('Erro', 'Dados do usuário não carregados!', 'error');
+                }
+                return;
+            }
+        }, 500);
+        
         return;
     }
     
@@ -5281,38 +5366,58 @@ async function verificarQuartoOcupado(quarto) {
     }
 }
 
-// Função para carregar lista de acompanhantes
-async function carregarAcompanhantes() {
+// Listener para atualizações em tempo real dos acompanhantes
+let acompanhantesListener = null;
+
+// Função para configurar listener em tempo real para acompanhantes
+function configurarListenerAcompanhantes() {
+    console.log('[DEBUG] configurarListenerAcompanhantes: configurando listener...');
+    
+    if (!window.db) {
+        console.warn('[AVISO] configurarListenerAcompanhantes: Firestore não inicializado');
+        return;
+    }
+
+    // Remover listener anterior se existir
+    if (acompanhantesListener) {
+        acompanhantesListener();
+        acompanhantesListener = null;
+    }
+
+    // Configurar listener em tempo real
+    acompanhantesListener = window.db.collection('usuarios_acompanhantes').onSnapshot((snapshot) => {
+        try {
+            console.log('[DEBUG] Listener acompanhantes: atualização detectada');
+            const acompanhantes = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+            atualizarListaAcompanhantes(acompanhantes);
+        } catch (error) {
+            console.error('[ERRO] Listener acompanhantes:', error);
+        }
+    }, (error) => {
+        console.error('[ERRO] Listener acompanhantes (erro):', error);
+    });
+}
+
+// Função para atualizar a exibição da lista de acompanhantes
+function atualizarListaAcompanhantes(acompanhantes) {
     try {
-        console.log('[DEBUG] carregarAcompanhantes: carregando lista...');
-        
-        if (!window.db) {
-            console.warn('[AVISO] carregarAcompanhantes: Firestore não inicializado');
-            return;
-        }
-
-        const snapshot = await window.db.collection('usuarios_acompanhantes').get();
-        const acompanhantes = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-
-        console.log(`[DEBUG] carregarAcompanhantes: ${acompanhantes.length} acompanhantes encontrados`);
-
         const listaElement = document.getElementById('lista-acompanhantes');
-        if (!listaElement) {
-            console.warn('[AVISO] carregarAcompanhantes: elemento lista-acompanhantes não encontrado');
-            return;
-        }
+        if (!listaElement) return;
 
-        if (acompanhantes.length === 0) {
+        if (!Array.isArray(acompanhantes) || acompanhantes.length === 0) {
             listaElement.innerHTML = '<p style="color: #6b7280; text-align: center; padding: 20px;">Nenhum acompanhante cadastrado ainda.</p>';
             return;
         }
 
-        // Gerar HTML da lista
         const htmlLista = acompanhantes.map(acomp => {
-            const statusBadge = acomp.preCadastro ? 
+            const statusBadge = acomp.preCadastro ?
                 '<span style="background: #fbbf24; color: white; padding: 2px 6px; border-radius: 4px; font-size: 10px;">AGUARDANDO ATIVAÇÃO</span>' :
                 '<span style="background: #10b981; color: white; padding: 2px 6px; border-radius: 4px; font-size: 10px;">ATIVO</span>';
-            
+
+            const ativadoHtml = acomp.preCadastro ?
+                '<div style="font-size: 12px; color: #f59e0b; margin-top: 4px;"><i class="fas fa-info-circle"></i> Aguardando primeiro login do acompanhante</div>' :
+                (acomp.ativadoEm ? `<div style="font-size: 12px; color: #10b981; margin-top: 4px;"><i class="fas fa-check-circle"></i> Ativado em: ${new Date(acomp.ativadoEm).toLocaleDateString('pt-BR')}</div>` : '');
+
             return `
             <div class="acompanhante-card" style="background: white; border: 1px solid #e5e7eb; border-radius: 8px; padding: 16px; margin-bottom: 12px;">
                 <div style="display: flex; justify-content: space-between; align-items: start;">
@@ -5335,29 +5440,47 @@ async function carregarAcompanhantes() {
                                 <i class="fas fa-calendar" style="width: 16px; margin-right: 8px;"></i>
                                 Cadastrado em: ${acomp.criadoEm ? new Date(acomp.criadoEm).toLocaleDateString('pt-BR') : '--'}
                             </div>
-                            ${acomp.preCadastro ? 
-                                '<div style="font-size: 12px; color: #f59e0b; margin-top: 4px;"><i class="fas fa-info-circle"></i> Aguardando primeiro login do acompanhante</div>' : 
-                                ''
-                            }
+                            ${ativadoHtml}
                         </div>
                     </div>
-                    <div style="display: flex; gap: 8px;">
-                        <button onclick="editarAcompanhante('${acomp.id}')" 
-                                style="background: #3b82f6; color: white; border: none; padding: 6px 12px; border-radius: 4px; cursor: pointer; font-size: 12px;"
-                                title="Editar acompanhante">
-                            <i class="fas fa-edit"></i>
-                        </button>
-                        <button onclick="removerAcompanhante('${acomp.id}', '${acomp.quarto}')" 
-                                style="background: #ef4444; color: white; border: none; padding: 6px 12px; border-radius: 4px; cursor: pointer; font-size: 12px;"
-                                title="Remover acompanhante">
-                            <i class="fas fa-trash"></i>
-                        </button>
-                    </div>
+                </div>
+                <div style="display: flex; gap: 8px;">
+                    <button onclick="editarAcompanhante('${acomp.id}')" 
+                            style="background: #3b82f6; color: white; border: none; padding: 6px 12px; border-radius: 4px; cursor: pointer; font-size: 12px;"
+                            title="Editar acompanhante">
+                        <i class="fas fa-edit"></i>
+                    </button>
+                    <button onclick="removerAcompanhante('${acomp.id}', '${acomp.quarto}')" 
+                            style="background: #ef4444; color: white; border: none; padding: 6px 12px; border-radius: 4px; cursor: pointer; font-size: 12px;"
+                            title="Remover acompanhante">
+                        <i class="fas fa-trash"></i>
+                    </button>
                 </div>
             </div>
         `}).join('');
 
         listaElement.innerHTML = htmlLista;
+        console.log(`[DEBUG] Lista de acompanhantes atualizada: ${acompanhantes.length} itens`);
+
+    } catch (error) {
+        console.error('[ERRO] atualizarListaAcompanhantes:', error);
+    }
+}
+
+// Função para carregar lista de acompanhantes
+async function carregarAcompanhantes() {
+    try {
+        console.log('[DEBUG] carregarAcompanhantes: iniciando...');
+        
+        if (!window.db) {
+            console.warn('[AVISO] carregarAcompanhantes: Firestore não inicializado');
+            return;
+        }
+
+        // Configurar listener em tempo real se ainda não foi configurado
+        if (!acompanhantesListener) {
+            configurarListenerAcompanhantes();
+        }
 
     } catch (error) {
         console.error('[ERRO] carregarAcompanhantes:', error);
@@ -5399,14 +5522,150 @@ async function removerAcompanhante(acompanhanteId, quarto) {
 }
 
 // Função para editar acompanhante (placeholder para implementação futura)
-function editarAcompanhante(acompanhanteId) {
-    showToast('Info', 'Funcionalidade de edição será implementada em breve', 'info');
-    console.log('[DEBUG] editarAcompanhante:', acompanhanteId);
+// Função para editar acompanhante
+async function editarAcompanhante(acompanhanteId) {
+    try {
+        console.log('[DEBUG] editarAcompanhante:', acompanhanteId);
+        
+        // Buscar dados do acompanhante no Firestore
+        const doc = await window.db.collection('usuarios_acompanhantes').doc(acompanhanteId).get();
+        
+        if (!doc.exists) {
+            showToast('Erro', 'Acompanhante não encontrado', 'error');
+            return;
+        }
+        
+        const acompanhante = doc.data();
+        console.log('[DEBUG] Dados do acompanhante:', acompanhante);
+        
+        // Preencher o modal com os dados atuais
+        document.getElementById('edit-acomp-id').value = acompanhanteId;
+        document.getElementById('edit-acomp-nome').value = acompanhante.nome || '';
+        document.getElementById('edit-acomp-email').value = acompanhante.email || '';
+        document.getElementById('edit-acomp-quarto').value = acompanhante.quarto || '';
+        document.getElementById('edit-acomp-senha').value = ''; // Sempre vazio por segurança
+        
+        // Mostrar o modal
+        const modal = document.getElementById('modal-editar-acompanhante');
+        modal.classList.remove('hidden');
+        modal.style.display = 'flex';
+        
+        // Foco no primeiro campo
+        setTimeout(() => {
+            document.getElementById('edit-acomp-nome').focus();
+        }, 100);
+        
+    } catch (error) {
+        console.error('[ERRO] editarAcompanhante:', error);
+        showToast('Erro', 'Erro ao carregar dados do acompanhante', 'error');
+    }
+}
+
+// Função para fechar modal de edição
+function fecharModalEditarAcompanhante() {
+    const modal = document.getElementById('modal-editar-acompanhante');
+    modal.classList.add('hidden');
+    modal.style.display = 'none';
+    
+    // Limpar formulário
+    document.getElementById('form-editar-acompanhante').reset();
+    document.getElementById('edit-acomp-id').value = '';
+}
+
+// Função para salvar edição do acompanhante
+async function salvarEdicaoAcompanhante(event) {
+    event.preventDefault();
+    
+    try {
+        const acompanhanteId = document.getElementById('edit-acomp-id').value;
+        const nome = document.getElementById('edit-acomp-nome').value.trim();
+        const email = document.getElementById('edit-acomp-email').value.trim();
+        const quarto = document.getElementById('edit-acomp-quarto').value.trim();
+        const novaSenha = document.getElementById('edit-acomp-senha').value.trim();
+        
+        if (!nome || !email || !quarto) {
+            showToast('Erro', 'Todos os campos obrigatórios devem ser preenchidos', 'error');
+            return;
+        }
+        
+        console.log('[DEBUG] Salvando edição do acompanhante:', { acompanhanteId, nome, email, quarto });
+        
+        showToast('Atualizando...', 'Salvando alterações...', 'info');
+        
+        // Buscar dados atuais para comparar quarto
+        const docAtual = await window.db.collection('usuarios_acompanhantes').doc(acompanhanteId).get();
+        const dadosAtuais = docAtual.data();
+        const quartoAtual = dadosAtuais.quarto;
+        
+        // Preparar dados para atualização
+        const updateData = {
+            nome,
+            email,
+            quarto,
+            atualizadoEm: firebase.firestore.Timestamp.now()
+        };
+        
+        // Se uma nova senha foi fornecida, atualizar no Firebase Auth
+        if (novaSenha) {
+            console.log('[DEBUG] Nova senha fornecida, atualizando autenticação...');
+            // Nota: Para atualizar senha no Firebase Auth seria necessário Admin SDK no backend
+            // Por enquanto, apenas log que a funcionalidade precisa ser implementada
+            console.warn('[AVISO] Atualização de senha requer implementação no backend');
+            showToast('Aviso', 'Senha não pode ser alterada nesta versão. Contate o administrador.', 'warning');
+        }
+        
+        // Verificar se o quarto mudou para atualizar a tabela de quartos ocupados
+        if (quartoAtual !== quarto) {
+            console.log('[DEBUG] Quarto alterado de', quartoAtual, 'para', quarto);
+            
+            // Verificar se o novo quarto já está ocupado
+            const quartoOcupado = await window.db.collection('quartos_ocupados').doc(quarto).get();
+            if (quartoOcupado.exists) {
+                showToast('Erro', `Quarto ${quarto} já está ocupado por outro acompanhante`, 'error');
+                return;
+            }
+            
+            // Transação para atualizar quarto
+            await window.db.runTransaction(async (transaction) => {
+                // Remover ocupação do quarto antigo
+                if (quartoAtual) {
+                    transaction.delete(window.db.collection('quartos_ocupados').doc(quartoAtual));
+                }
+                
+                // Adicionar ocupação do novo quarto
+                transaction.set(window.db.collection('quartos_ocupados').doc(quarto), {
+                    acompanhanteId: acompanhanteId,
+                    email: email,
+                    nome: nome,
+                    criadoEm: firebase.firestore.Timestamp.now()
+                });
+                
+                // Atualizar dados do acompanhante
+                transaction.update(window.db.collection('usuarios_acompanhantes').doc(acompanhanteId), updateData);
+            });
+        } else {
+            // Apenas atualizar dados do acompanhante (quarto não mudou)
+            await window.db.collection('usuarios_acompanhantes').doc(acompanhanteId).update(updateData);
+        }
+        
+        showToast('Sucesso', 'Acompanhante atualizado com sucesso!', 'success');
+        
+        // Fechar modal e recarregar lista
+        fecharModalEditarAcompanhante();
+        await carregarAcompanhantes();
+        
+    } catch (error) {
+        console.error('[ERRO] salvarEdicaoAcompanhante:', error);
+        showToast('Erro', `Erro ao salvar alterações: ${error.message}`, 'error');
+    }
 }
 
 // Expor funções globalmente
 window.cadastrarAcompanhante = cadastrarAcompanhante;
 window.carregarAcompanhantes = carregarAcompanhantes;
+window.configurarListenerAcompanhantes = configurarListenerAcompanhantes;
+window.atualizarListaAcompanhantes = atualizarListaAcompanhantes;
 window.removerAcompanhante = removerAcompanhante;
 window.editarAcompanhante = editarAcompanhante;
-
+window.fecharModalEditarAcompanhante = fecharModalEditarAcompanhante;
+window.salvarEdicaoAcompanhante = salvarEdicaoAcompanhante;

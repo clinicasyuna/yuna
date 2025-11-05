@@ -530,6 +530,45 @@
     <!-- <script src="diagnostico-urgente.js"></script> -->
     <!-- Correção imediata para execução (carrega após correção) -->
     <!-- <script src="correcao-imediata.js"></script> -->
+    <!-- Modal de Edição de Acompanhante -->
+    <div id="modal-editar-acompanhante" class="modal hidden">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2><i class="fas fa-user-edit"></i> Editar Acompanhante</h2>
+                <span class="close" onclick="fecharModalEditarAcompanhante()">&times;</span>
+            </div>
+            <div class="modal-body">
+                <form id="form-editar-acompanhante" onsubmit="salvarEdicaoAcompanhante(event)">
+                    <input type="hidden" id="edit-acomp-id" value="">
+                    <div>
+                        <label class="form-label">Nome do Acompanhante</label>
+                        <input type="text" id="edit-acomp-nome" class="form-input" required placeholder="Nome do acompanhante" title="Nome do acompanhante">
+                    </div>
+                    <div>
+                        <label class="form-label">E-mail</label>
+                        <input type="email" id="edit-acomp-email" class="form-input" required placeholder="E-mail do acompanhante" title="E-mail do acompanhante">
+                    </div>
+                    <div>
+                        <label class="form-label">Quarto/Paciente</label>
+                        <input type="text" id="edit-acomp-quarto" class="form-input" required autocomplete="username" placeholder="Quarto/Paciente" title="Quarto ou paciente">
+                    </div>
+                    <div>
+                        <label class="form-label">Nova Senha (deixe em branco para manter atual)</label>
+                        <input type="password" id="edit-acomp-senha" class="form-input" minlength="6" placeholder="Nova senha (opcional)" autocomplete="new-password" title="Nova senha (opcional)">
+                    </div>
+                    <div class="modal-actions">
+                        <button type="button" class="btn btn-secondary" onclick="fecharModalEditarAcompanhante()">
+                            <i class="fas fa-times"></i> Cancelar
+                        </button>
+                        <button type="submit" class="btn btn-primary">
+                            <i class="fas fa-save"></i> Salvar Alterações
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
     <script src="admin-panel.js"></script>
     <!-- Verificar usuários existentes no Firestore -->
     <script src="verificar-usuarios-existentes.js"></script>
