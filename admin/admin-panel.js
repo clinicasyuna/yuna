@@ -79,13 +79,47 @@ window.limparInterfaceCompleta = function() {
             });
         });
         
+        // Remover estilos específicos do painel logado que podem interferir
+        const adminPanel = document.getElementById('admin-panel');
+        if (adminPanel) {
+            adminPanel.style.display = 'none';
+            adminPanel.classList.add('hidden');
+        }
+        
+        // Remover container principal se existir
+        const container = document.querySelector('.container');
+        if (container) {
+            container.style.display = 'none';
+        }
+        
+        // Resetar estilo da página principal
+        const main = document.querySelector('main');
+        if (main) {
+            main.style.display = 'none';
+        }
+
         // Mostrar apenas a tela de login
         const authSection = document.getElementById('auth-section');
         if (authSection) {
             authSection.classList.remove('hidden');
-            authSection.style.display = 'block';
+            authSection.style.display = 'flex';
             authSection.style.visibility = 'visible';
         }
+        
+        // Restaurar estilo do body para centralização
+        document.body.style.margin = '0';
+        document.body.style.padding = '0';
+        document.body.style.minHeight = '100vh';
+        document.body.style.display = 'flex';
+        document.body.style.flexDirection = 'column';
+        document.body.style.alignItems = 'center';
+        document.body.style.justifyContent = 'center';
+        document.body.style.background = '#f1f5f9';
+        
+        // Garantir que o html também tenha altura total
+        document.documentElement.style.height = '100%';
+        document.documentElement.style.margin = '0';
+        document.documentElement.style.padding = '0';
         
         console.log('[DEBUG] Limpeza completa da interface realizada');
         
