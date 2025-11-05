@@ -1312,6 +1312,10 @@ h2.finalizar-solicitacao {
   z-index: 9999;
 }
 
+#modal-editar-acompanhante.hidden {
+  display: none !important;
+}
+
 #modal-editar-acompanhante .modal-content {
   background: white;
   border-radius: 8px;

@@ -5531,7 +5531,7 @@ async function editarAcompanhante(acompanhanteId) {
     try {
         // Debounce para evitar cliques duplos muito rápidos
         const agora = Date.now();
-        if (agora - ultimoClickEditar < 500) {
+        if (agora - ultimoClickEditar < 1000) { // Aumentei para 1 segundo
             console.log('[DEBUG] editarAcompanhante: clique muito rápido, ignorando');
             return;
         }
@@ -5545,6 +5545,16 @@ async function editarAcompanhante(acompanhanteId) {
         
         editandoAcompanhante = true;
         console.log('[DEBUG] editarAcompanhante: iniciando edição para ID:', acompanhanteId);
+        
+        // Verificar se o modal existe no DOM
+        const modalElement = document.getElementById('modal-editar-acompanhante');
+        if (!modalElement) {
+            console.error('[ERRO] Modal modal-editar-acompanhante não encontrado no DOM');
+            editandoAcompanhante = false;
+            return;
+        }
+        
+        console.log('[DEBUG] Modal encontrado no DOM, classes atuais:', modalElement.className);
         
         // Buscar dados do acompanhante no Firestore
         const doc = await window.db.collection('usuarios_acompanhantes').doc(acompanhanteId).get();
@@ -5566,10 +5576,15 @@ async function editarAcompanhante(acompanhanteId) {
         document.getElementById('edit-acomp-senha').value = ''; // Sempre vazio por segurança
         
         // Mostrar o modal
-        const modal = document.getElementById('modal-editar-acompanhante');
-        modal.classList.remove('hidden');
-        modal.style.display = 'flex';
+        const modalToShow = document.getElementById('modal-editar-acompanhante');
+        console.log('[DEBUG] Removendo classe hidden e definindo display flex...');
+        modalToShow.classList.remove('hidden');
+        modalToShow.style.display = 'flex';
+        modalToShow.style.visibility = 'visible';
+        modalToShow.style.opacity = '1';
         
+        console.log('[DEBUG] Modal configurado. Classes após mostrar:', modalToShow.className);
+        console.log('[DEBUG] Modal style display:', modalToShow.style.display);
         console.log('[DEBUG] Modal de edição aberto com sucesso');
         
         // Foco no primeiro campo
