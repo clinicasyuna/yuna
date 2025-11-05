@@ -480,13 +480,34 @@ window.addEventListener('DOMContentLoaded', async function() {
                         // Configurar interface baseada no tipo de usuário
                         if (dadosAdmin.role === 'super_admin' || dadosAdmin.isSuperAdmin) {
                             console.log('[DEBUG] Usuário SUPER ADMIN - mostrando painel completo');
-                            // Super admin vê tudo
-                            document.getElementById('auth-section')?.classList.add('hidden');
-                            document.getElementById('admin-panel')?.classList.remove('hidden');
+                            
+                            // Esconder login e mostrar painel
+                            const authSection = document.getElementById('auth-section');
+                            const adminPanel = document.getElementById('admin-panel');
+                            
+                            if (authSection) {
+                                authSection.classList.add('hidden');
+                                authSection.style.display = 'none';
+                            }
+                            
+                            if (adminPanel) {
+                                adminPanel.classList.remove('hidden');
+                                adminPanel.style.display = 'block';
+                                adminPanel.style.visibility = 'visible';
+                            }
                             
                             // Mostrar todos os cards para super admin
                             const teamsGrid = document.querySelector('.teams-grid');
-                            if (teamsGrid) teamsGrid.classList.remove('hidden');
+                            if (teamsGrid) {
+                                teamsGrid.classList.remove('hidden');
+                                teamsGrid.style.display = 'grid';
+                            }
+                            
+                            // Garantir que elementos críticos estão visíveis
+                            document.body.style.display = 'block';
+                            document.body.style.visibility = 'visible';
+                            
+                            console.log('[DEBUG] Interface configurada para super admin');
                             
                         } else if (dadosAdmin.isEquipe && dadosAdmin.equipe) {
                             console.log('[DEBUG] Usuário EQUIPE - mostrando apenas cards do departamento:', dadosAdmin.equipe);
@@ -558,8 +579,17 @@ window.addEventListener('DOMContentLoaded', async function() {
                             }
                         }, 1000);
                         
-                        // Carregar dados da aplicação
-                        await carregarSolicitacoes();
+                        // Carregar dados da aplicação com timeout aumentado
+                        console.log('[DEBUG] Iniciando carregamento de solicitações...');
+                        setTimeout(async () => {
+                            try {
+                                await carregarSolicitacoes();
+                                console.log('[DEBUG] Solicitações carregadas com sucesso');
+                            } catch (error) {
+                                console.error('[ERRO] Falha no carregamento de solicitações:', error);
+                                showToast('Erro', 'Falha ao carregar dados. Recarregue a página.', 'error');
+                            }
+                        }, 500);
                         
                     } else {
                         console.log('[DEBUG] Usuário sem permissões - mantendo na tela de login');
@@ -1356,13 +1386,20 @@ async function carregarSolicitacoes() {
     }
     
     if (!window.db) {
+        console.error('[ERRO] Firestore não inicializado!');
         showToast('Erro', 'Firestore não inicializado!', 'error');
-        console.error('Firestore não inicializado!');
+        return;
+    }
+    
+    if (!window.usuarioAdmin) {
+        console.error('[ERRO] Usuário admin não definido!');
+        showToast('Erro', 'Dados do usuário não carregados!', 'error');
         return;
     }
     
     try {
         carregandoSolicitacoes = true;
+        console.log('[DEBUG] === INÍCIO DO CARREGAMENTO DE SOLICITAÇÕES ===');
         console.log('[DEBUG] Buscando solicitações da coleção "solicitacoes"...');
         
         // Mostrar indicador de carregamento
@@ -1374,15 +1411,27 @@ async function carregarSolicitacoes() {
         const isSuperAdmin = usuarioAdmin && usuarioAdmin.role === 'super_admin';
         
         console.log('[DEBUG] Carregando para usuário:', { 
+            email: usuarioAdmin?.email,
             role: usuarioAdmin?.role, 
             isEquipe, 
             isSuperAdmin, 
             equipe: usuarioAdmin?.equipe 
         });
         
-        // Buscar todas as solicitações (ordenação será feita no lado cliente)
-        const snapshot = await window.db.collection('solicitacoes').get();
+        // Timeout de segurança para a consulta do Firestore
+        const timeoutPromise = new Promise((_, reject) => {
+            setTimeout(() => reject(new Error('Timeout ao carregar solicitações')), 10000);
+        });
+        
+        const firestorePromise = window.db.collection('solicitacoes').get();
+        
+        // Buscar todas as solicitações com timeout
+        const snapshot = await Promise.race([firestorePromise, timeoutPromise]);
         console.log('[DEBUG] Snapshot recebido:', snapshot.size, 'documentos');
+        
+        if (snapshot.empty) {
+            console.warn('[AVISO] Nenhuma solicitação encontrada');
+        }
         
         const solicitacoes = [];
         let pendentes = 0;
@@ -1485,9 +1534,29 @@ async function carregarSolicitacoes() {
         
     } catch (error) {
         console.error('[ERRO] Falha ao buscar solicitações:', error);
+        console.error('[ERRO] Stack trace:', error.stack);
         ocultarIndicadorCarregamento();
         
-        if (error.code === 'unavailable' || error.message.includes('offline')) {
+        // Tentar novamente após falha (uma vez)
+        if (!window.tentativaRecarga) {
+            window.tentativaRecarga = true;
+            console.log('[DEBUG] Tentando recarregar automaticamente em 3 segundos...');
+            
+            showToast('Aviso', 'Falha no carregamento. Tentando novamente...', 'warning');
+            
+            setTimeout(async () => {
+                try {
+                    carregandoSolicitacoes = false; // Reset flag
+                    await carregarSolicitacoes();
+                } catch (retryError) {
+                    console.error('[ERRO] Falha na segunda tentativa:', retryError);
+                    showToast('Erro', 'Falha ao carregar dados. Recarregue a página (Ctrl+F5)', 'error');
+                    // Carregar dados simulados como fallback
+                    criarDadosExemplo();
+                }
+            }, 3000);
+            
+        } else if (error.code === 'unavailable' || error.message.includes('offline')) {
             showToast('Aviso', 'Modo offline - Carregando dados locais', 'warning');
             carregarDadosOffline();
         } else if (error.code === 'permission-denied') {
@@ -1499,6 +1568,26 @@ async function carregarSolicitacoes() {
         }
     } finally {
         carregandoSolicitacoes = false;
+        
+        // Garantir que a interface está visível após carregamento
+        setTimeout(() => {
+            const adminPanel = document.getElementById('admin-panel');
+            const teamsGrid = document.querySelector('.teams-grid');
+            
+            if (adminPanel && window.usuarioAdmin?.role === 'super_admin') {
+                adminPanel.style.display = 'block';
+                adminPanel.style.visibility = 'visible';
+                adminPanel.classList.remove('hidden');
+                
+                if (teamsGrid) {
+                    teamsGrid.style.display = 'grid';
+                    teamsGrid.style.visibility = 'visible';
+                    teamsGrid.classList.remove('hidden');
+                }
+                
+                console.log('[DEBUG] Interface forçadamente atualizada após carregamento');
+            }
+        }, 100);
     }
 }
 
