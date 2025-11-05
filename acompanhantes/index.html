@@ -2944,11 +2944,12 @@
             
             try {
                 console.log('📄 Buscando dados do usuário no Firestore...');
-                // Carregar dados do usuário do Firestore
-                const userDoc = await window.db.collection('usuarios_acompanhantes').doc(currentUser.uid).get();
                 
-                if (userDoc.exists) {
-                    const userData = userDoc.data();
+                // USAR A MESMA ESTRATÉGIA ROBUSTA DO LOGIN
+                const resultado = await buscarDadosUsuarioRobusta(currentUser);
+                
+                if (resultado && resultado.data) {
+                    const userData = resultado.data;
                     console.log('✅ Dados do usuário encontrados:', userData);
                     
                     // Preencher formulário com dados atuais
@@ -2970,6 +2971,15 @@
                     console.log('✅ Modal de perfil aberto com sucesso');
                 } else {
                     console.log('❌ Documento do usuário não encontrado no Firestore');
+                    // Tentar buscar também nas outras coleções para debug
+                    console.log('🔍 Buscando em outras coleções para debug...');
+                    
+                    const adminCheck = await window.db.collection('usuarios_admin').doc(currentUser.uid).get();
+                    const equipeCheck = await window.db.collection('usuarios_equipe').doc(currentUser.uid).get();
+                    
+                    console.log('📋 Admin encontrado:', adminCheck.exists);
+                    console.log('📋 Equipe encontrado:', equipeCheck.exists);
+                    
                     showToast('Erro', 'Dados do usuário não encontrados! Tente fazer logout e login novamente.', 'error');
                 }
             } catch (error) {
