@@ -885,6 +885,9 @@
             max-width: 600px;
             padding: 0;
             overflow: hidden;
+            max-height: 90vh;
+            display: flex;
+            flex-direction: column;
         }
 
         .satisfaction-header {
@@ -937,6 +940,9 @@
 
         .satisfaction-content {
             padding: 2rem;
+            overflow-y: auto;
+            flex: 1;
+            max-height: calc(90vh - 140px);
         }
 
         .service-info {
@@ -1228,12 +1234,17 @@
             .satisfaction-modal {
                 max-width: 95vw;
                 margin: 1rem;
+                max-height: 95vh;
             }
 
             .satisfaction-header,
             .satisfaction-content,
             .satisfaction-actions {
                 padding: 1.5rem;
+            }
+
+            .satisfaction-content {
+                max-height: calc(95vh - 200px);
             }
 
             .stars-container {
