@@ -378,6 +378,16 @@ function mostrarSecaoPainel(secao) {
             document.getElementById('metricas-gerais')?.classList.remove('hidden');
             document.querySelector('.teams-grid')?.classList.remove('hidden');
             console.log('[DEBUG] mostrarSecaoPainel: exibindo painel principal');
+            
+            // Recarregar solicitações ao voltar ao painel
+            setTimeout(() => {
+                console.log('[DEBUG] mostrarSecaoPainel: recarregando dados do painel...');
+                if (typeof carregarSolicitacoes === 'function') {
+                    carregarSolicitacoes();
+                } else {
+                    console.warn('[AVISO] carregarSolicitacoes não encontrada');
+                }
+            }, 100);
         } else if (secao === 'acompanhantes') {
             document.getElementById('admin-panel')?.classList.remove('hidden');
             document.getElementById('acompanhantes-section')?.classList.remove('hidden');
