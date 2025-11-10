@@ -2644,33 +2644,26 @@ function configurarEventosBotoes() {
                 btnGerenciarUsuarios.disabled = false;
             }, 1000);
             
-            // Debug completo do estado
-            console.log('[LOG] Estado da aplicação:', {
-                userRole: window.userRole,
-                usuarioAdmin: !!window.usuarioAdmin,
-                showManageUsersModal: typeof window.showManageUsersModal
-            });
-            
             e.preventDefault();
             e.stopPropagation();
             
             try {
-                debugLog('[DEBUG] Verificando função showManageUsersModal...');
+                debugLog('[DEBUG] Chamando mostrarSecaoPainel para gerenciar-usuarios...');
                 
-                if (typeof window.showManageUsersModal !== 'function') {
-                    console.error('[ERRO] showManageUsersModal não está definida!');
-                    debugLog('[DEBUG] Funções disponíveis no window:', Object.keys(window).filter(k => k.includes('show')));
-                    alert('Erro: Função showManageUsersModal não encontrada!');
-                    return;
+                // Usar a função de navegação existente em vez da modal diretamente
+                if (typeof window.mostrarSecaoPainel === 'function') {
+                    window.mostrarSecaoPainel('gerenciar-usuarios');
+                } else if (typeof window.showManageUsersModal === 'function') {
+                    window.showManageUsersModal();
+                } else {
+                    throw new Error('Nenhuma função de gerenciamento de usuários encontrada');
                 }
                 
-                debugLog('[DEBUG] Chamando showManageUsersModal...');
-                window.showManageUsersModal();
-                debugLog('[DEBUG] showManageUsersModal chamada com sucesso');
+                debugLog('[DEBUG] Gerenciar usuários aberto com sucesso');
                 
             } catch (err) {
-                console.error('[ERRO] Falha ao abrir modal Gerenciar Usuários:', err);
-                alert('Erro ao abrir modal Gerenciar Usuários: ' + err.message);
+                console.error('[ERRO] Falha ao abrir gerenciar usuários:', err);
+                showToast('Erro', 'Erro ao abrir gerenciamento de usuários: ' + err.message, 'error');
                 
                 // Debug adicional
                 debugLog('[DEBUG] Estado após erro:', {
@@ -6599,33 +6592,72 @@ window.salvarEdicaoAcompanhante = salvarEdicaoAcompanhante;
 
 // Função para limpar dados de teste
 window.limparDadosTeste = async function() {
-    if (!confirm('⚠️ ATENÇÃO: Esta ação irá remover TODAS as solicitações e pesquisas de satisfação do sistema.\n\nEsta ação é IRREVERSÍVEL!\n\nDeseja continuar?')) {
+    // Verificar permissões primeiro
+    const usuarioAdmin = window.usuarioAdmin || JSON.parse(localStorage.getItem('usuarioAdmin') || '{}');
+    if (!usuarioAdmin || usuarioAdmin.role !== 'super_admin') {
+        showToast('Erro', 'Acesso negado! Apenas super administradores podem executar limpeza de dados.', 'error');
         return;
     }
     
-    // Segunda confirmação com entrada de texto
-    const confirmacao = prompt('⚠️ CONFIRMAÇÃO FINAL\n\nPara confirmar que deseja limpar TODOS os dados de teste, digite exatamente: LIMPAR TUDO\n\n(Digite "LIMPAR TUDO" sem aspas)');
+    // 1. Perguntar a data para exclusão
+    const dataInput = prompt('📅 LIMPEZA SELETIVA DE DADOS\n\nDigite a data limite para exclusão (formato: DD/MM/AAAA)\n\nSerão removidas todas as solicitações ANTES desta data.\n\nExemplo: 01/01/2024\n\nDeixe em branco para limpar TUDO:');
     
-    if (confirmacao !== 'LIMPAR TUDO') {
-        alert('❌ Operação cancelada. Texto de confirmação incorreto.');
+    let dataLimite = null;
+    let textoConfirmacao = '';
+    
+    if (dataInput && dataInput.trim()) {
+        // Validar formato da data
+        const regex = /^(\d{2})\/(\d{2})\/(\d{4})$/;
+        const match = dataInput.match(regex);
+        
+        if (!match) {
+            showToast('Erro', 'Formato de data inválido. Use DD/MM/AAAA', 'error');
+            return;
+        }
+        
+        const [_, dia, mes, ano] = match;
+        dataLimite = new Date(ano, mes - 1, dia);
+        
+        if (isNaN(dataLimite.getTime())) {
+            showToast('Erro', 'Data inválida.', 'error');
+            return;
+        }
+        
+        textoConfirmacao = `solicitações ANTES de ${dataInput}`;
+    } else {
+        textoConfirmacao = 'TODAS as solicitações e pesquisas de satisfação';
+        dataLimite = null;
+    }
+    
+    // 2. Primeira confirmação
+    if (!confirm(`⚠️ ATENÇÃO: Esta ação irá remover ${textoConfirmacao} do sistema.\n\nEsta ação é IRREVERSÍVEL!\n\nDeseja continuar?`)) {
+        return;
+    }
+    
+    // 3. Segunda confirmação com entrada de texto
+    const confirmacao = prompt(`⚠️ CONFIRMAÇÃO FINAL\n\nPara confirmar que deseja limpar ${textoConfirmacao}, digite exatamente: CONFIRMAR LIMPEZA\n\n(Digite "CONFIRMAR LIMPEZA" sem aspas)`);
+    
+    if (confirmacao !== 'CONFIRMAR LIMPEZA') {
+        showToast('Info', 'Operação cancelada. Texto de confirmação incorreto.', 'info');
         return;
     }
     
     try {
-        console.log('[LIMPEZA] Iniciando limpeza completa dos dados de teste...');
-        
-        // Verificar permissões
-        const usuarioAdmin = window.usuarioAdmin || JSON.parse(localStorage.getItem('usuarioAdmin') || '{}');
-        if (!usuarioAdmin || usuarioAdmin.role !== 'super_admin') {
-            alert('❌ Acesso negado! Apenas super administradores podem executar limpeza de dados.');
-            return;
-        }
+        console.log(`[LIMPEZA] Iniciando limpeza ${dataLimite ? 'seletiva' : 'completa'} dos dados...`);
         
         let totalRemovido = 0;
         
-        // 1. Buscar e remover todas as solicitações
+        // 1. Buscar e remover solicitações (com ou sem filtro de data)
         console.log('[LIMPEZA] Buscando solicitações...');
-        const solicitacoesSnapshot = await window.db.collection('solicitacoes').get();
+        
+        let query = window.db.collection('solicitacoes');
+        
+        // Aplicar filtro de data se especificado
+        if (dataLimite) {
+            query = query.where('criadoEm', '<', dataLimite);
+        }
+        
+        const solicitacoesSnapshot = await query.get();
         
         if (!solicitacoesSnapshot.empty) {
             console.log(`[LIMPEZA] Encontradas ${solicitacoesSnapshot.size} solicitações para remover`);
@@ -6675,8 +6707,12 @@ window.limparDadosTeste = async function() {
         
         console.log(`[LIMPEZA] ✅ Limpeza concluída! Total de ${totalRemovido} registros removidos.`);
         
-        // Mostrar resultado
-        alert(`✅ Limpeza concluída com sucesso!\n\n📊 Resumo:\n- Solicitações removidas: ${solicitacoesSnapshot.size || 0}\n- Quartos liberados: ${quartosSnapshot.size || 0}\n- Total de registros: ${totalRemovido}\n\nO sistema está agora limpo para uso em produção!`);
+        // Mostrar resultado com informação da data
+        const dataInfo = dataLimite ? `\n📅 Dados removidos: anteriores a ${dataInput}` : '\n📅 Dados removidos: TODOS os registros';
+        const successMessage = `✅ Limpeza concluída com sucesso!${dataInfo}\n\n📊 Resumo:\n- Solicitações removidas: ${solicitacoesSnapshot.size || 0}\n- Quartos liberados: ${quartosSnapshot.size || 0}\n- Total de registros: ${totalRemovido}\n\n${dataLimite ? 'Limpeza seletiva' : 'Limpeza completa'} realizada!`;
+        
+        showToast('Sucesso', 'Limpeza concluída com sucesso!', 'success');
+        alert(successMessage);
         
         // Recarregar relatórios se estiver na tela de relatórios
         if (typeof window.carregarSolicitacoes === 'function') {
@@ -6688,7 +6724,7 @@ window.limparDadosTeste = async function() {
         
     } catch (error) {
         console.error('[ERRO] Falha na limpeza de dados:', error);
-        alert(`❌ Erro durante a limpeza: ${error.message}\n\nVerifique o console para mais detalhes.`);
+        showToast('Erro', `Erro durante a limpeza: ${error.message}`, 'error');
     }
 };
 
