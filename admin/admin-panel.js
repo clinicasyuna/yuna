@@ -1328,23 +1328,15 @@ window.mostrarRelatorios = function() {
         
         console.log('[DEBUG] mostrarRelatorios: verificando se deve carregar solicitações');
         
-        // Carrega solicitações do Firestore - mais permissivo para auth
-        if (isAuthenticated && (usuarioAdmin.email || window.auth?.currentUser?.email)) {
-            console.log('[DEBUG] mostrarRelatorios: carregando solicitações...');
-            carregarSolicitacoes();
-            
-            // Adicionar botões de manutenção apenas para super_admin
-            if (userRole === 'super_admin') {
-                console.log('[DEBUG] mostrarRelatorios: adicionando painel de manutenção...');
-                adicionarPainelManutencao();
-            } else {
-                console.log('[DEBUG] mostrarRelatorios: painel de manutenção não adicionado (role não é super_admin)');
-            }
-            
+        // NÃO carregar solicitações na tela de relatórios - apenas configurar filtros
+        console.log('[DEBUG] mostrarRelatorios: configurando apenas filtros (não carregando solicitações)');
+        
+        // Adicionar botões de manutenção apenas para super_admin
+        if (userRole === 'super_admin') {
+            console.log('[DEBUG] mostrarRelatorios: adicionando painel de manutenção...');
+            adicionarPainelManutencao();
         } else {
-            console.warn('[AVISO] mostrarRelatorios: carregando solicitações mesmo sem auth completo...');
-            // Tentar carregar mesmo assim - pode funcionar se há dados em cache
-            carregarSolicitacoes();
+            console.log('[DEBUG] mostrarRelatorios: painel de manutenção não adicionado (role não é super_admin)');
         }
         
         // Garantir que os botões estejam configurados corretamente
@@ -1716,6 +1708,15 @@ let carregandoSolicitacoes = false;
 let timeoutRecarregar = null;
 
 async function carregarSolicitacoes() {
+    // Verificar se estamos na tela de relatórios - se sim, não carregar cards
+    const relatoriosSection = document.getElementById('relatorios-section');
+    const adminPanel = document.getElementById('admin-panel');
+    
+    if (relatoriosSection && !relatoriosSection.classList.contains('hidden')) {
+        console.log('[DEBUG] carregarSolicitacoes: Na tela de relatórios - não carregando cards de solicitações');
+        return;
+    }
+    
     // Evitar chamadas múltiplas simultâneas
     if (carregandoSolicitacoes) {
         console.log('[DEBUG] Carregamento já em andamento - aguardando...');
