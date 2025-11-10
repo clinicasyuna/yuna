@@ -8,6 +8,27 @@
     <meta http-equiv="Expires" content="0">
     <meta name="cache-version" content="20251110-003">
     <title>YUNA - Painel Administrativo</title>
+    
+    <!-- FORCE HIDE CSS PARA BOTÕES DEBUG -->
+    <style>
+        /* Esconder botões com onclick específicos */
+        button[onclick*="showUsersDireto"],
+        button[onclick*="debugFuncs"], 
+        button[onclick*="mostrarRelatoriosDirectly"] {
+            display: none !important;
+            visibility: hidden !important;
+            opacity: 0 !important;
+            pointer-events: none !important;
+        }
+        
+        /* Forçar visibilidade do botão limpeza para super admin */
+        #limpeza-btn.force-visible {
+            display: inline-flex !important;
+            visibility: visible !important;
+            opacity: 1 !important;
+        }
+    </style>
+    
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link rel="stylesheet" href="admin-panel-styles.css">
     <link rel="stylesheet" href="solicitacoes-cards.css">
