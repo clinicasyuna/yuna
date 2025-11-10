@@ -435,6 +435,28 @@ function mostrarSecaoPainel(secao) {
             // Recarregar solicitações ao voltar ao painel
             setTimeout(() => {
                 console.log('[DEBUG] mostrarSecaoPainel: recarregando dados do painel...');
+                
+                // Verificar se usuário está carregado antes de chamar carregarSolicitacoes
+                const usuarioAdmin = window.usuarioAdmin || JSON.parse(localStorage.getItem('usuarioAdmin') || '{}');
+                if (!usuarioAdmin || !usuarioAdmin.uid) {
+                    console.log('[DEBUG] Usuário ainda não carregado, adiando carregamento de solicitações...');
+                    // Tentar novamente após usuário estar carregado
+                    const aguardarUsuarioParaCards = setInterval(() => {
+                        const usuario = window.usuarioAdmin || JSON.parse(localStorage.getItem('usuarioAdmin') || '{}');
+                        if (usuario && usuario.uid) {
+                            clearInterval(aguardarUsuarioParaCards);
+                            console.log('[DEBUG] Usuário carregado, iniciando carregamento de solicitações...');
+                            if (typeof carregarSolicitacoes === 'function') {
+                                carregarSolicitacoes();
+                            }
+                        }
+                    }, 500);
+                    
+                    // Timeout de segurança
+                    setTimeout(() => clearInterval(aguardarUsuarioParaCards), 5000);
+                    return;
+                }
+                
                 if (typeof carregarSolicitacoes === 'function') {
                     carregarSolicitacoes();
                 } else {
@@ -952,8 +974,34 @@ window.handleLogin = async function(event) {
         loader.innerHTML = `<div class='loader-spinner'></div> <span>Carregando...</span>`;
         painel.appendChild(loader);
         window._mainLoader = loader;
-        mostrarSecaoPainel('painel');
-        carregarSolicitacoesAgrupadas();
+        
+        // Aguardar dados do usuário serem carregados antes de mostrar o painel
+        console.log('[DEBUG] Aguardando dados do usuário após login...');
+        
+        const aguardarDadosUsuario = setInterval(() => {
+            const usuarioAdmin = window.usuarioAdmin || JSON.parse(localStorage.getItem('usuarioAdmin') || '{}');
+            
+            if (usuarioAdmin && usuarioAdmin.uid && usuarioAdmin.email && usuarioAdmin.role) {
+                clearInterval(aguardarDadosUsuario);
+                console.log('[DEBUG] Dados do usuário carregados, mostrando painel...');
+                mostrarSecaoPainel('painel');
+                carregarSolicitacoesAgrupadas();
+            } else {
+                console.log('[DEBUG] Aguardando dados completos do usuário...', {
+                    uid: !!usuarioAdmin?.uid,
+                    email: !!usuarioAdmin?.email,
+                    role: !!usuarioAdmin?.role
+                });
+            }
+        }, 100);
+        
+        // Timeout de segurança - mostrar painel mesmo sem dados completos
+        setTimeout(() => {
+            clearInterval(aguardarDadosUsuario);
+            console.log('[DEBUG] Timeout atingido, forçando exibição do painel...');
+            mostrarSecaoPainel('painel');
+            carregarSolicitacoesAgrupadas();
+        }, 5000);
         
     } catch (error) {
         console.error('[ERRO] handleLogin: falha no login:', error);
@@ -1805,8 +1853,23 @@ async function carregarSolicitacoes() {
     // Verificação mais robusta do usuário
     const usuarioAdmin = window.usuarioAdmin || JSON.parse(localStorage.getItem('usuarioAdmin') || '{}');
     if (!usuarioAdmin || !usuarioAdmin.uid || !usuarioAdmin.email) {
-        console.warn('[AVISO] Usuário admin não completamente carregado, aguardando...');
-        console.log('[DEBUG] Estado atual do usuário:', { window: !!window.usuarioAdmin, localStorage: !!localStorage.getItem('usuarioAdmin') });
+        console.warn('[AVISO] carregarSolicitacoes: Usuário admin não completamente carregado');
+        console.log('[DEBUG] Estado atual do usuário:', { 
+            window: !!window.usuarioAdmin, 
+            localStorage: !!localStorage.getItem('usuarioAdmin'),
+            usuarioDetalhes: {
+                uid: usuarioAdmin?.uid,
+                email: usuarioAdmin?.email,
+                role: usuarioAdmin?.role
+            }
+        });
+        
+        // Se estamos na tela de login, não mostrar erro
+        const authSection = document.getElementById('auth-section');
+        if (!authSection || !authSection.classList.contains('hidden')) {
+            console.log('[DEBUG] carregarSolicitacoes: Ainda na tela de login, ignorando...');
+            return;
+        }
         
         // Tentar aguardar carregamento do usuário por até 3 segundos
         let tentativas = 0;
@@ -1818,7 +1881,7 @@ async function carregarSolicitacoes() {
             
             if (usuarioAtualizado && usuarioAtualizado.uid && usuarioAtualizado.email) {
                 clearInterval(aguardarUsuario);
-                console.log('[DEBUG] Usuário carregado, continuando...');
+                console.log('[DEBUG] Usuário carregado após tentativas, continuando...');
                 // Reiniciar função com usuário válido
                 carregarSolicitacoes();
                 return;
@@ -1827,13 +1890,15 @@ async function carregarSolicitacoes() {
             if (tentativas >= maxTentativas) {
                 clearInterval(aguardarUsuario);
                 console.error('[ERRO] Timeout aguardando dados do usuário');
-                // Não mostrar erro se ainda estiver na tela de login
-                const authSection = document.getElementById('auth-section');
-                if (!authSection || authSection.classList.contains('hidden')) {
-                    showToast('Erro', 'Dados do usuário não carregados!', 'error');
+                // Só mostrar erro se não estiver na tela de login
+                const authSectionFinal = document.getElementById('auth-section');
+                if (authSectionFinal && authSectionFinal.classList.contains('hidden')) {
+                    showToast('Erro', 'Dados do usuário não carregados. Tente recarregar a página.', 'error');
                 }
                 return;
             }
+            
+            console.log(`[DEBUG] Tentativa ${tentativas}/${maxTentativas} aguardando usuário...`);
         }, 500);
         
         return;
