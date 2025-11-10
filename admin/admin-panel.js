@@ -1,5 +1,17 @@
 // admin-panel.js - Painel Administrativo YUNA
 
+// === CONFIGURAÇÃO DE MODO DE PRODUÇÃO ===
+const MODO_PRODUCAO = window.location.hostname !== 'localhost' && 
+                      window.location.hostname !== '127.0.0.1' && 
+                      window.location.hostname !== 'file://';
+
+// Função de log condicional - só mostra logs em desenvolvimento
+function debugLog(message, ...args) {
+    if (!MODO_PRODUCAO) {
+        console.log(message, ...args);
+    }
+}
+
 // === DECLARAÇÕES ANTECIPADAS DE FUNÇÕES CRÍTICAS ===
 // Declarações para evitar problemas de ordem de carregamento
 let limparDadosTeste, verificarEstatisticas, adicionarPainelManutencao;
@@ -17,7 +29,10 @@ let limparDadosTeste, verificarEstatisticas, adicionarPainelManutencao;
         allButtons.forEach(btn => {
             const text = (btn.textContent || '').trim().toLowerCase();
             if (debugTexts.some(debugText => text.includes(debugText))) {
-                console.log(`[FORCE-CLEANUP] Removendo botão: "${btn.textContent}"`);
+                // Só loggar em desenvolvimento
+                if (typeof debugLog === 'function') {
+                    debugLog(`[FORCE-CLEANUP] Removendo botão: "${btn.textContent}"`);
+                }
                 btn.style.display = 'none !important';
                 btn.style.visibility = 'hidden !important';
                 btn.style.opacity = '0 !important';
@@ -42,7 +57,9 @@ let limparDadosTeste, verificarEstatisticas, adicionarPainelManutencao;
         specificSelectors.forEach(selector => {
             const elements = document.querySelectorAll(selector);
             elements.forEach(el => {
-                console.log(`[FORCE-CLEANUP] Removendo por seletor: ${selector}`);
+                if (typeof debugLog === 'function') {
+                    debugLog(`[FORCE-CLEANUP] Removendo por seletor: ${selector}`);
+                }
                 el.style.display = 'none !important';
                 el.remove();
                 removed++;
@@ -54,14 +71,16 @@ let limparDadosTeste, verificarEstatisticas, adicionarPainelManutencao;
         unwantedClasses.forEach(className => {
             const elements = document.querySelectorAll(className);
             elements.forEach(el => {
-                console.log(`[FORCE-CLEANUP] Removendo por classe: ${className}`);
+                if (typeof debugLog === 'function') {
+                    debugLog(`[FORCE-CLEANUP] Removendo por classe: ${className}`);
+                }
                 el.remove();
                 removed++;
             });
         });
         
-        if (removed > 0) {
-            console.log(`[FORCE-CLEANUP] Total removido nesta iteração: ${removed}`);
+        if (removed > 0 && typeof debugLog === 'function') {
+            debugLog(`[FORCE-CLEANUP] Total removido nesta iteração: ${removed}`);
         }
         
         // Forçar visibilidade do botão limpeza se for super admin
@@ -83,7 +102,9 @@ let limparDadosTeste, verificarEstatisticas, adicionarPainelManutencao;
     // Parar limpeza após 20 segundos
     setTimeout(() => {
         clearInterval(cleanupInterval);
-        console.log('[FORCE-CLEANUP] Limpeza finalizada');
+        if (typeof debugLog === 'function') {
+            debugLog('[FORCE-CLEANUP] Limpeza finalizada');
+        }
     }, 20000);
     
     // Executar também em eventos específicos
@@ -198,7 +219,7 @@ window.addEventListener('DOMContentLoaded', function() {
 
 // Função para alternar tipo de acesso (definida cedo para HTML poder chamar)
 window.alterarTipoAcesso = function() {
-    console.log('[DEBUG] alterarTipoAcesso: função chamada');
+    debugLog('[DEBUG] alterarTipoAcesso: função chamada');
     
     const tipoSelect = document.getElementById('tipo-acesso');
     const departamentoSection = document.getElementById('departamento-section');
@@ -210,25 +231,25 @@ window.alterarTipoAcesso = function() {
     }
     
     const tipo = tipoSelect.value;
-    console.log('[DEBUG] alterarTipoAcesso: tipo selecionado =', tipo);
+    debugLog('[DEBUG] alterarTipoAcesso: tipo selecionado =', tipo);
     
     if (tipo === 'equipe') {
         // Mostrar seção de departamento para equipe
         departamentoSection.classList.remove('hidden');
-        console.log('[DEBUG] alterarTipoAcesso: mostrando departamento-section');
+        debugLog('[DEBUG] alterarTipoAcesso: mostrando departamento-section');
     } else {
         // Ocultar seção de departamento para admin
         departamentoSection.classList.add('hidden');
         if (departamentoSelect) {
             departamentoSelect.value = ''; // Limpar seleção
         }
-        console.log('[DEBUG] alterarTipoAcesso: ocultando departamento-section');
+        debugLog('[DEBUG] alterarTipoAcesso: ocultando departamento-section');
     }
 };
 
 // Função para alternar tipo de usuário no modal de criação (também definida cedo)
 window.alterarTipoUsuario = function() {
-    console.log('[DEBUG] alterarTipoUsuario: função chamada');
+    debugLog('[DEBUG] alterarTipoUsuario: função chamada');
     
     const tipoSelect = document.getElementById('usuario-tipo');
     const campoEquipe = document.getElementById('campo-equipe');
@@ -240,7 +261,7 @@ window.alterarTipoUsuario = function() {
     }
     
     const tipo = tipoSelect.value;
-    console.log('[DEBUG] alterarTipoUsuario: tipo selecionado =', tipo);
+    debugLog('[DEBUG] alterarTipoUsuario: tipo selecionado =', tipo);
     
     if (tipo === 'equipe') {
         // Mostrar campo de equipe e torná-lo obrigatório
@@ -248,7 +269,7 @@ window.alterarTipoUsuario = function() {
         if (usuarioEquipeSelect) {
             usuarioEquipeSelect.required = true;
         }
-        console.log('[DEBUG] alterarTipoUsuario: mostrando campo equipe');
+        debugLog('[DEBUG] alterarTipoUsuario: mostrando campo equipe');
     } else {
         // Ocultar campo de equipe e remover obrigatoriedade
         campoEquipe.style.display = 'none';
@@ -256,14 +277,14 @@ window.alterarTipoUsuario = function() {
             usuarioEquipeSelect.required = false;
             usuarioEquipeSelect.value = ''; // Limpar seleção
         }
-        console.log('[DEBUG] alterarTipoUsuario: ocultando campo equipe');
+        debugLog('[DEBUG] alterarTipoUsuario: ocultando campo equipe');
     }
 };
 
 // Função para limpar completamente a interface
 function limparInterfaceCompleta() {
     try {
-        console.log('[DEBUG] Iniciando limpeza completa da interface...');
+        debugLog('[DEBUG] Iniciando limpeza completa da interface...');
         
         // Ocultar todos os elementos principais
         const elementosParaOcultar = [
@@ -326,7 +347,7 @@ function limparInterfaceCompleta() {
         document.documentElement.style.margin = '0';
         document.documentElement.style.padding = '0';
         
-        console.log('[DEBUG] Limpeza completa da interface realizada');
+        debugLog('[DEBUG] Limpeza completa da interface realizada');
         
     } catch (error) {
         console.error('[ERRO] Falha na limpeza da interface:', error);
@@ -360,7 +381,7 @@ window.emergencyReset = function() {
 // Referência antecipada para função de limpeza (definida no final do arquivo)
 window.limparDadosTeste = function() {
     // Função será redefinida completamente no final do arquivo
-    console.log('[DEBUG] limparDadosTeste chamada prematuramente - aguardando definição completa');
+    debugLog('[DEBUG] limparDadosTeste chamada prematuramente - aguardando definição completa');
     setTimeout(() => {
         if (window.limparDadosTeste && typeof window.limparDadosTeste === 'function') {
             window.limparDadosTeste();
@@ -427,7 +448,7 @@ async function initFirebaseApp() {
                 appId: "1:251931417472:web:4b955052a184d114f57f65"
             };
             
-            console.log('[DEBUG] Inicializando Firebase com config:', firebaseConfig.projectId);
+            debugLog('[DEBUG] Inicializando Firebase com config:', firebaseConfig.projectId);
             firebase.initializeApp(firebaseConfig);
             console.log('✅ Firebase inicializado com sucesso');
         }
@@ -530,10 +551,10 @@ function ocultarSecoesPrincipais() {
     });
     if (document.querySelector('.teams-grid')) {
         document.querySelector('.teams-grid').classList.add('hidden');
-        console.log('[DEBUG] ocultarSecoesPrincipais: ocultando teams-grid');
+        debugLog('[DEBUG] ocultarSecoesPrincipais: ocultando teams-grid');
     }
     document.getElementById('auth-section')?.classList.remove('hidden');
-    console.log('[DEBUG] ocultarSecoesPrincipais: exibindo auth-section');
+    debugLog('[DEBUG] ocultarSecoesPrincipais: exibindo auth-section');
 }
 
 function mostrarSecaoPainel(secao) {
@@ -558,21 +579,21 @@ function mostrarSecaoPainel(secao) {
             document.getElementById('admin-panel')?.classList.remove('hidden');
             document.getElementById('metricas-gerais')?.classList.remove('hidden');
             document.querySelector('.teams-grid')?.classList.remove('hidden');
-            console.log('[DEBUG] mostrarSecaoPainel: exibindo painel principal');
+            debugLog('[DEBUG] mostrarSecaoPainel: exibindo painel principal');
             
             // Recarregar solicitações de forma simplificada
             if (typeof carregarSolicitacoes === 'function') {
-                console.log('[DEBUG] mostrarSecaoPainel: carregando solicitações...');
+                debugLog('[DEBUG] mostrarSecaoPainel: carregando solicitações...');
                 carregarSolicitacoes();
             }
         } else if (secao === 'acompanhantes') {
             document.getElementById('admin-panel')?.classList.remove('hidden');
             document.getElementById('acompanhantes-section')?.classList.remove('hidden');
-            console.log('[DEBUG] mostrarSecaoPainel: exibindo acompanhantes-section');
+            debugLog('[DEBUG] mostrarSecaoPainel: exibindo acompanhantes-section');
             
             // Inicializar listener de tempo real para acompanhantes
             if (typeof configurarListenerAcompanhantes === 'function') {
-                console.log('[DEBUG] Inicializando listener de acompanhantes...');
+                debugLog('[DEBUG] Inicializando listener de acompanhantes...');
                 configurarListenerAcompanhantes();
             }
         } else if (secao === 'relatorios') {
@@ -580,7 +601,7 @@ function mostrarSecaoPainel(secao) {
             const relatoriosSection = document.getElementById('relatorios-section');
             if (relatoriosSection) {
                 relatoriosSection.classList.remove('hidden');
-                console.log('[DEBUG] mostrarSecaoPainel: exibindo APENAS relatorios-section');
+                debugLog('[DEBUG] mostrarSecaoPainel: exibindo APENAS relatorios-section');
             } else {
                 console.error('[ERRO] mostrarSecaoPainel: elemento relatorios-section não encontrado no HTML!');
                 alert('Erro: Seção de relatórios não encontrada no HTML');
@@ -592,7 +613,7 @@ function mostrarSecaoPainel(secao) {
             if (modal) {
                 // Garantir que o modal esteja anexado ao body
                 if (modal.parentElement !== document.body) {
-                    console.log('[DEBUG] Modal criar usuário não está no body, movendo...');
+                    debugLog('[DEBUG] Modal criar usuário não está no body, movendo...');
                     document.body.appendChild(modal);
                 }
                 
@@ -608,14 +629,14 @@ function mostrarSecaoPainel(secao) {
                 modal.style.height = '100vh';
             }
             setTimeout(() => document.getElementById('usuario-nome')?.focus(), 300);
-            console.log('[DEBUG] mostrarSecaoPainel: exibindo modal-novo-usuario');
+            debugLog('[DEBUG] mostrarSecaoPainel: exibindo modal-novo-usuario');
         } else if (secao === 'manage-users') {
             const modal = document.getElementById('manage-users-modal');
             document.getElementById('admin-panel')?.classList.remove('hidden');
             if (modal) {
                 // Garantir que o modal esteja anexado ao body
                 if (modal.parentElement !== document.body) {
-                    console.log('[DEBUG] Modal gerenciar usuários não está no body, movendo...');
+                    debugLog('[DEBUG] Modal gerenciar usuários não está no body, movendo...');
                     document.body.appendChild(modal);
                 }
                 
@@ -630,14 +651,14 @@ function mostrarSecaoPainel(secao) {
                 modal.style.width = '100vw';
                 modal.style.height = '100vh';
             }
-            console.log('[DEBUG] mostrarSecaoPainel: exibindo manage-users-modal');
+            debugLog('[DEBUG] mostrarSecaoPainel: exibindo manage-users-modal');
         } else {
             console.warn(`[AVISO] mostrarSecaoPainel: seção desconhecida: ${secao}`);
         }
         
         // Garantir que os botões estejam sempre configurados após mudança de seção
         // Removido para evitar chamadas desnecessárias - configuração feita no login
-        console.log('[DEBUG] mostrarSecaoPainel: seção alterada para:', secao);
+        debugLog('[DEBUG] mostrarSecaoPainel: seção alterada para:', secao);
         
     } catch (err) {
         console.error('[ERRO] mostrarSecaoPainel: falha ao exibir seção:', err);
@@ -647,10 +668,10 @@ function mostrarSecaoPainel(secao) {
 // --- Autenticação e Acesso ---
 // Oculta campo departamento corretamente na inicialização
 window.addEventListener('DOMContentLoaded', async function() {
-    console.log('[DEBUG] DOMContentLoaded: iniciando configuração...');
+    debugLog('[DEBUG] DOMContentLoaded: iniciando configuração...');
     
     // Primeiro, configurar os botões ANTES de qualquer coisa relacionada ao Firebase
-    console.log('[DEBUG] DOMContentLoaded: configurando eventos dos botões ANTES do Firebase...');
+    debugLog('[DEBUG] DOMContentLoaded: configurando eventos dos botões ANTES do Firebase...');
     
     // Garantir que as funções dos modais estão disponíveis
     if (typeof window.showCreateUserModal !== 'function') {
@@ -716,7 +737,7 @@ window.addEventListener('DOMContentLoaded', async function() {
         departamentoSection.classList.add('hidden');
         var departamentoSelect = document.getElementById('departamento');
         if (departamentoSelect) departamentoSelect.value = '';
-        console.log('[DEBUG] Inicialização: ocultando departamento-section');
+        debugLog('[DEBUG] Inicialização: ocultando departamento-section');
     }
     
     // Listener de autenticação persistente (apenas se Firebase OK)
@@ -724,22 +745,22 @@ window.addEventListener('DOMContentLoaded', async function() {
         window.auth.onAuthStateChanged(async function(user) {
             try {
                 if (user) {
-                    console.log('[DEBUG] Usuário autenticado:', user.email);
-                    console.log('[DEBUG] UID do usuário:', user.uid);
+                    debugLog('[DEBUG] Usuário autenticado:', user.email);
+                    debugLog('[DEBUG] UID do usuário:', user.uid);
                     
                     // Verifica admin via Firestore
-                    console.log('[DEBUG] Verificando permissões do usuário...');
+                    debugLog('[DEBUG] Verificando permissões do usuário...');
                     const dadosAdmin = await window.verificarUsuarioAdminJS(user);
                     
                     if (dadosAdmin) {
-                        console.log('[DEBUG] Dados do admin carregados:', dadosAdmin);
+                        debugLog('[DEBUG] Dados do admin carregados:', dadosAdmin);
                         window.usuarioAdmin = dadosAdmin;
                         localStorage.setItem('usuarioAdmin', JSON.stringify(dadosAdmin));
                         
                         window.userEmail = user.email;
                         window.userRole = dadosAdmin.role;
                         
-                        console.log('[DEBUG] Configurando interface para:', {
+                        debugLog('[DEBUG] Configurando interface para:', {
                             email: user.email,
                             role: dadosAdmin.role,
                             isEquipe: dadosAdmin.isEquipe,
@@ -749,7 +770,7 @@ window.addEventListener('DOMContentLoaded', async function() {
                         
                         // Configurar interface baseada no tipo de usuário
                         if (dadosAdmin.role === 'super_admin' || dadosAdmin.isSuperAdmin) {
-                            console.log('[DEBUG] Usuário SUPER ADMIN - mostrando painel completo');
+                            debugLog('[DEBUG] Usuário SUPER ADMIN - mostrando painel completo');
                             
                             // Esconder login e mostrar painel
                             const authSection = document.getElementById('auth-section');
@@ -777,10 +798,10 @@ window.addEventListener('DOMContentLoaded', async function() {
                             document.body.style.display = 'block';
                             document.body.style.visibility = 'visible';
                             
-                            console.log('[DEBUG] Interface configurada para super admin');
+                            debugLog('[DEBUG] Interface configurada para super admin');
                             
                         } else if (dadosAdmin.isEquipe && dadosAdmin.equipe) {
-                            console.log('[DEBUG] Usuário EQUIPE - mostrando apenas cards do departamento:', dadosAdmin.equipe);
+                            debugLog('[DEBUG] Usuário EQUIPE - mostrando apenas cards do departamento:', dadosAdmin.equipe);
                             // Usuário de equipe vê apenas seu departamento
                             document.getElementById('auth-section')?.classList.add('hidden');
                             document.getElementById('admin-panel')?.classList.remove('hidden');
@@ -799,13 +820,13 @@ window.addEventListener('DOMContentLoaded', async function() {
                             const departmentPanel = document.querySelector(`[data-department="${dadosAdmin.equipe}"]`);
                             if (departmentPanel) {
                                 departmentPanel.classList.remove('hidden');
-                                console.log('[DEBUG] Mostrando painel do departamento:', dadosAdmin.equipe);
+                                debugLog('[DEBUG] Mostrando painel do departamento:', dadosAdmin.equipe);
                             } else {
                                 console.warn('[AVISO] Painel não encontrado para departamento:', dadosAdmin.equipe);
                             }
                             
                         } else {
-                            console.log('[DEBUG] Usuário sem permissões específicas - mantendo na tela de login');
+                            debugLog('[DEBUG] Usuário sem permissões específicas - mantendo na tela de login');
                             document.getElementById('auth-section')?.classList.remove('hidden');
                             document.getElementById('admin-panel')?.classList.add('hidden');
                             showToast('Erro', 'Usuário sem permissões definidas', 'error');
@@ -814,13 +835,13 @@ window.addEventListener('DOMContentLoaded', async function() {
                         }
                         
                         // Atualizar botões imediatamente após login (sem timeout)
-                        console.log('[DEBUG] Inicializando botões após login...');
+                        debugLog('[DEBUG] Inicializando botões após login...');
                         atualizarVisibilidadeBotoes();
                         configurarEventosBotoes();
                         
                         // Configuração adicional após um pequeno delay para garantir DOM estável
                         setTimeout(() => {
-                            console.log('[DEBUG] Reconfiguração de segurança dos botões...');
+                            debugLog('[DEBUG] Reconfiguração de segurança dos botões...');
                             atualizarVisibilidadeBotoes();
                             configurarEventosBotoes();
                             
@@ -830,7 +851,7 @@ window.addEventListener('DOMContentLoaded', async function() {
                                 if (btnLimpeza) {
                                     btnLimpeza.classList.remove('btn-hide');
                                     btnLimpeza.style.display = 'inline-flex';
-                                    console.log('[DEBUG] Botão limpeza forçado para super_admin');
+                                    debugLog('[DEBUG] Botão limpeza forçado para super_admin');
                                 } else {
                                     console.warn('[AVISO] Botão limpeza não encontrado no DOM');
                                 }
@@ -847,7 +868,7 @@ window.addEventListener('DOMContentLoaded', async function() {
                                 console.error('[ERRO] limparDadosTeste não está definida!');
                             }
                             
-                            console.log('[DEBUG] Estado dos botões após login:', {
+                            debugLog('[DEBUG] Estado dos botões após login:', {
                                 userRole: window.userRole,
                                 usuarioAdmin: window.usuarioAdmin,
                                 showCreateUserModal: typeof window.showCreateUserModal,
@@ -864,18 +885,18 @@ window.addEventListener('DOMContentLoaded', async function() {
                         
                         // Segunda verificação para garantir configuração
                         setTimeout(() => {
-                            console.log('[DEBUG] Segunda verificação dos botões...');
+                            debugLog('[DEBUG] Segunda verificação dos botões...');
                             if (window.reconfigurarBotoes) {
                                 window.reconfigurarBotoes();
                             }
                         }, 1000);
                         
                         // Carregar dados da aplicação com timeout aumentado
-                        console.log('[DEBUG] Iniciando carregamento de solicitações...');
+                        debugLog('[DEBUG] Iniciando carregamento de solicitações...');
                         setTimeout(async () => {
                             try {
                                 await carregarSolicitacoes();
-                                console.log('[DEBUG] Solicitações carregadas com sucesso');
+                                debugLog('[DEBUG] Solicitações carregadas com sucesso');
                             } catch (error) {
                                 console.error('[ERRO] Falha no carregamento de solicitações:', error);
                                 showToast('Erro', 'Falha ao carregar dados. Recarregue a página.', 'error');
@@ -883,7 +904,7 @@ window.addEventListener('DOMContentLoaded', async function() {
                         }, 500);
                         
                     } else {
-                        console.log('[DEBUG] Usuário sem permissões - mantendo na tela de login');
+                        debugLog('[DEBUG] Usuário sem permissões - mantendo na tela de login');
                         // Usuário autenticado mas sem permissões - manter na tela de login
                         const authSection = document.getElementById('auth-section');
                         const adminPanel = document.getElementById('admin-panel');
@@ -896,7 +917,7 @@ window.addEventListener('DOMContentLoaded', async function() {
                         }, 2000);
                     }
                 } else {
-                    console.log('[DEBUG] Usuário não autenticado - resetando interface completa');
+                    debugLog('[DEBUG] Usuário não autenticado - resetando interface completa');
                     // Usuário não autenticado - resetar interface completamente
                     
                     // Ocultar painéis administrativos
@@ -935,7 +956,7 @@ window.addEventListener('DOMContentLoaded', async function() {
     if (logoutBtn) {
         logoutBtn.onclick = async function() {
             try {
-                console.log('[DEBUG] Iniciando processo de logout...');
+                debugLog('[DEBUG] Iniciando processo de logout...');
                 
                 // Registrar logout em auditoria
                 if (window.registrarLogAuditoria) {
@@ -963,7 +984,7 @@ window.addEventListener('DOMContentLoaded', async function() {
                 }, 100);
                 
                 showToast('Sucesso', 'Logout realizado com sucesso!', 'success');
-                console.log('[DEBUG] Logout completo realizado');
+                debugLog('[DEBUG] Logout completo realizado');
                 
             } catch (err) {
                 console.error('[ERRO] Falha no logout:', err);
@@ -1006,7 +1027,7 @@ window.handleLogin = async function(event) {
     const email = document.getElementById('login-email')?.value;
     
     try {
-        console.log('[DEBUG] handleLogin: login iniciado...');
+        debugLog('[DEBUG] handleLogin: login iniciado...');
         event.preventDefault();
         const senha = document.getElementById('login-password').value;
         
@@ -1024,7 +1045,7 @@ window.handleLogin = async function(event) {
             window.verificarTentativasLogin(email);
         }
         
-        console.log('[DEBUG] Tentando login com email:', email);
+        debugLog('[DEBUG] Tentando login com email:', email);
         
         // Verificar se Firebase está disponível
         if (!window.auth) {
@@ -1042,7 +1063,7 @@ window.handleLogin = async function(event) {
         
         const userCredential = await window.auth.signInWithEmailAndPassword(email, senha);
         showToast('Sucesso', 'Login realizado!', 'success');
-        console.log('[DEBUG] handleLogin: login realizado com sucesso!');
+        debugLog('[DEBUG] handleLogin: login realizado com sucesso!');
         
         // Registrar login bem-sucedido
         if (window.registrarTentativaLogin) {
@@ -1074,7 +1095,7 @@ window.handleLogin = async function(event) {
         window._mainLoader = loader;
         
         // Mostrar painel diretamente após login
-        console.log('[DEBUG] Mostrando painel após login...');
+        debugLog('[DEBUG] Mostrando painel após login...');
         mostrarSecaoPainel('painel');
         
     } catch (error) {
@@ -1179,7 +1200,7 @@ window.carregarSolicitacoesAgrupadas = async function() {
 }
 
 window.showCreateUserModal = function() {
-    console.log('[DEBUG] showCreateUserModal: iniciando...');
+    debugLog('[DEBUG] showCreateUserModal: iniciando...');
     
     // Debug completo do estado atual
     window.debugModals();
@@ -1188,8 +1209,8 @@ window.showCreateUserModal = function() {
     const usuarioAdmin = window.usuarioAdmin || JSON.parse(localStorage.getItem('usuarioAdmin') || '{}');
     const userRole = window.userRole || usuarioAdmin.role;
     
-    console.log('[DEBUG] showCreateUserModal: usuarioAdmin:', usuarioAdmin);
-    console.log('[DEBUG] showCreateUserModal: userRole:', userRole);
+    debugLog('[DEBUG] showCreateUserModal: usuarioAdmin:', usuarioAdmin);
+    debugLog('[DEBUG] showCreateUserModal: userRole:', userRole);
     
     // Permite APENAS para super_admin
     if (!userRole || userRole !== 'super_admin') {
@@ -1200,14 +1221,14 @@ window.showCreateUserModal = function() {
     
     // Busca o modal
     const modal = document.getElementById('modal-novo-usuario');
-    console.log('[DEBUG] showCreateUserModal: modal encontrado:', !!modal);
+    debugLog('[DEBUG] showCreateUserModal: modal encontrado:', !!modal);
     
     if (modal) {
-        console.log('[DEBUG] showCreateUserModal: exibindo modal');
+        debugLog('[DEBUG] showCreateUserModal: exibindo modal');
         
         // Garantir que o modal esteja anexado ao body
         if (modal.parentElement !== document.body) {
-            console.log('[DEBUG] showCreateUserModal: modal não está no body, movendo...');
+            debugLog('[DEBUG] showCreateUserModal: modal não está no body, movendo...');
             document.body.appendChild(modal);
         }
         
@@ -1233,7 +1254,7 @@ window.showCreateUserModal = function() {
         const btnCancelar = document.getElementById('btn-cancelar-novo-usuario');
         if (btnCancelar) {
             btnCancelar.onclick = function() {
-                console.log('[DEBUG] Botão cancelar clicado - fechando modal');
+                debugLog('[DEBUG] Botão cancelar clicado - fechando modal');
                 window.closeCreateUserModal();
             };
         }
@@ -1243,7 +1264,7 @@ window.showCreateUserModal = function() {
         if (form) {
             form.onsubmit = async function(e) {
                 e.preventDefault();
-                console.log('[DEBUG] Form submit interceptado');
+                debugLog('[DEBUG] Form submit interceptado');
                 await window.criarNovoUsuario();
             };
         }
@@ -1253,11 +1274,11 @@ window.showCreateUserModal = function() {
             const tipoField = document.getElementById('usuario-tipo');
             if (tipoField) {
                 tipoField.focus();
-                console.log('[DEBUG] showCreateUserModal: foco definido no campo tipo');
+                debugLog('[DEBUG] showCreateUserModal: foco definido no campo tipo');
             }
         }, 200);
         
-        console.log('[DEBUG] showCreateUserModal: modal exibido com sucesso');
+        debugLog('[DEBUG] showCreateUserModal: modal exibido com sucesso');
     } else {
         console.error('[ERRO] Modal de criação de usuário não encontrado no DOM!');
         alert('Erro: Modal de criação de usuário não encontrado!');
@@ -1266,7 +1287,7 @@ window.showCreateUserModal = function() {
 
 // Função para criar novo usuário (equipe ou admin)
 window.criarNovoUsuario = async function() {
-    console.log('[DEBUG] criarNovoUsuario: iniciando...');
+    debugLog('[DEBUG] criarNovoUsuario: iniciando...');
     
     try {
         // Verificar permissões
@@ -1285,7 +1306,7 @@ window.criarNovoUsuario = async function() {
         const senha = document.getElementById('usuario-senha').value;
         const equipe = document.getElementById('usuario-equipe').value;
         
-        console.log('[DEBUG] Dados do formulário:', { tipo, nome, email, senha: senha.length, equipe });
+        debugLog('[DEBUG] Dados do formulário:', { tipo, nome, email, senha: senha.length, equipe });
         
         // Validações
         if (!tipo) {
@@ -1315,13 +1336,13 @@ window.criarNovoUsuario = async function() {
             btnSubmit.textContent = 'Criando...';
         }
         
-        console.log('[DEBUG] Criando usuário no Firebase Auth...');
+        debugLog('[DEBUG] Criando usuário no Firebase Auth...');
         
         // Criar usuário no Firebase Auth
         const userCredential = await window.auth.createUserWithEmailAndPassword(email, senha);
         const user = userCredential.user;
         
-        console.log('[DEBUG] Usuário criado no Auth:', user.uid);
+        debugLog('[DEBUG] Usuário criado no Auth:', user.uid);
         
         // Preparar dados do usuário baseado no tipo
         let dadosUsuario;
@@ -1362,12 +1383,12 @@ window.criarNovoUsuario = async function() {
             };
         }
         
-        console.log('[DEBUG] Salvando no Firestore - Coleção:', colecao);
+        debugLog('[DEBUG] Salvando no Firestore - Coleção:', colecao);
         
         // Salvar no Firestore
         await window.db.collection(colecao).doc(user.uid).set(dadosUsuario);
         
-        console.log('[DEBUG] Usuário salvo com sucesso');
+        debugLog('[DEBUG] Usuário salvo com sucesso');
         
         showToast('Sucesso', `${tipo === 'admin' ? 'Administrador' : 'Usuário de equipe'} criado com sucesso!`, 'success');
         
@@ -1409,7 +1430,7 @@ window.criarNovoUsuario = async function() {
 };
 
 window.showManageUsersModal = async function() {
-    console.log('[DEBUG] showManageUsersModal: iniciando...');
+    debugLog('[DEBUG] showManageUsersModal: iniciando...');
     
     // Debug completo do estado atual
     window.debugModals();
@@ -1418,8 +1439,8 @@ window.showManageUsersModal = async function() {
     const usuarioAdmin = window.usuarioAdmin || JSON.parse(localStorage.getItem('usuarioAdmin') || '{}');
     const userRole = window.userRole || usuarioAdmin.role;
     
-    console.log('[DEBUG] showManageUsersModal: usuarioAdmin:', usuarioAdmin);
-    console.log('[DEBUG] showManageUsersModal: userRole:', userRole);
+    debugLog('[DEBUG] showManageUsersModal: usuarioAdmin:', usuarioAdmin);
+    debugLog('[DEBUG] showManageUsersModal: userRole:', userRole);
     
     // Permite APENAS para super_admin
     if (!userRole || userRole !== 'super_admin') {
@@ -1430,10 +1451,10 @@ window.showManageUsersModal = async function() {
     
     // Busca o modal
     const modal = document.getElementById('manage-users-modal');
-    console.log('[DEBUG] showManageUsersModal: modal encontrado:', !!modal);
+    debugLog('[DEBUG] showManageUsersModal: modal encontrado:', !!modal);
     
     if (modal) {
-        console.log('[DEBUG] showManageUsersModal: exibindo modal');
+        debugLog('[DEBUG] showManageUsersModal: exibindo modal');
         
         // IMPORTANTE: Remover a classe .hidden PRIMEIRO (que tem !important)
         modal.classList.remove('hidden');
@@ -1455,20 +1476,20 @@ window.showManageUsersModal = async function() {
         // Focar no modal após um delay
         setTimeout(() => {
             modal.focus();
-            console.log('[DEBUG] showManageUsersModal: foco definido no modal');
+            debugLog('[DEBUG] showManageUsersModal: foco definido no modal');
         }, 200);
         
         // Carregar os usuários após exibir o modal
         try {
-            console.log('[DEBUG] showManageUsersModal: carregando usuários...');
+            debugLog('[DEBUG] showManageUsersModal: carregando usuários...');
             await carregarUsuarios();
-            console.log('[DEBUG] showManageUsersModal: usuários carregados com sucesso');
+            debugLog('[DEBUG] showManageUsersModal: usuários carregados com sucesso');
         } catch (error) {
             console.error('[ERRO] showManageUsersModal: erro ao carregar usuários:', error);
             showToast('Erro', 'Erro ao carregar usuários.', 'error');
         }
         
-        console.log('[DEBUG] showManageUsersModal: modal exibido com sucesso');
+        debugLog('[DEBUG] showManageUsersModal: modal exibido com sucesso');
     } else {
         console.error('[ERRO] Modal de gerenciamento de usuários não encontrado no DOM!');
         alert('Erro: Modal de gerenciamento de usuários não encontrado!');
@@ -1477,14 +1498,14 @@ window.showManageUsersModal = async function() {
 
 window.mostrarRelatorios = function() {
     try {
-        console.log('[DEBUG] ===== INÍCIO MOSTRAR RELATÓRIOS =====');
+        debugLog('[DEBUG] ===== INÍCIO MOSTRAR RELATÓRIOS =====');
         
         // Verificar estado de autenticação de forma mais robusta
         const usuarioAdmin = window.usuarioAdmin || JSON.parse(localStorage.getItem('usuarioAdmin') || '{}');
         const userRole = window.userRole || usuarioAdmin.role || 'admin';
         const isAuthenticated = window.auth?.currentUser || usuarioAdmin.uid;
         
-        console.log('[DEBUG] mostrarRelatorios: estado de auth:', {
+        debugLog('[DEBUG] mostrarRelatorios: estado de auth:', {
             email: usuarioAdmin?.email,
             role: userRole,
             isAuthenticated: !!isAuthenticated,
@@ -1500,7 +1521,7 @@ window.mostrarRelatorios = function() {
             // Tentar forçar role admin como fallback
             if (isAuthenticated) {
                 window.userRole = 'admin';
-                console.log('[DEBUG] mostrarRelatorios: role forçado para admin');
+                debugLog('[DEBUG] mostrarRelatorios: role forçado para admin');
             } else {
                 showToast('Erro', 'Acesso negado. Faça login novamente.', 'error');
                 console.warn('[AVISO] mostrarRelatorios: usuário não autenticado');
@@ -1508,12 +1529,12 @@ window.mostrarRelatorios = function() {
             }
         }
         
-        console.log('[DEBUG] mostrarRelatorios: acesso autorizado, mostrando seção relatórios');
+        debugLog('[DEBUG] mostrarRelatorios: acesso autorizado, mostrando seção relatórios');
         
         // Permite acesso para admin e super_admin autenticados
         mostrarSecaoPainel('relatorios');
         
-        console.log('[DEBUG] mostrarRelatorios: seção mostrada, configurando filtros');
+        debugLog('[DEBUG] mostrarRelatorios: seção mostrada, configurando filtros');
         
         var filtroPeriodo = document.getElementById('filtro-periodo');
         if (filtroPeriodo && !filtroPeriodo.dataset.listenerAdded) {
@@ -1524,24 +1545,24 @@ window.mostrarRelatorios = function() {
             filtroPeriodo.dataset.listenerAdded = 'true';
         }
         
-        console.log('[DEBUG] mostrarRelatorios: verificando se deve carregar solicitações');
+        debugLog('[DEBUG] mostrarRelatorios: verificando se deve carregar solicitações');
         
         // NÃO carregar solicitações na tela de relatórios - apenas configurar filtros
-        console.log('[DEBUG] mostrarRelatorios: configurando apenas filtros (não carregando solicitações)');
+        debugLog('[DEBUG] mostrarRelatorios: configurando apenas filtros (não carregando solicitações)');
         
         // Adicionar botões de manutenção apenas para super_admin
         if (userRole === 'super_admin') {
-            console.log('[DEBUG] mostrarRelatorios: adicionando painel de manutenção...');
+            debugLog('[DEBUG] mostrarRelatorios: adicionando painel de manutenção...');
             adicionarPainelManutencao();
         } else {
-            console.log('[DEBUG] mostrarRelatorios: painel de manutenção não adicionado (role não é super_admin)');
+            debugLog('[DEBUG] mostrarRelatorios: painel de manutenção não adicionado (role não é super_admin)');
         }
         
         // Garantir que os botões estejam configurados corretamente
         // Removido para evitar chamadas duplicadas - configuração feita no login
-        console.log('[DEBUG] mostrarRelatorios: função executada com sucesso');
+        debugLog('[DEBUG] mostrarRelatorios: função executada com sucesso');
         
-        console.log('[DEBUG] ===== FIM MOSTRAR RELATÓRIOS =====');
+        debugLog('[DEBUG] ===== FIM MOSTRAR RELATÓRIOS =====');
         
     } catch (error) {
         console.error('[ERRO] mostrarRelatorios: falha na execução:', error);
@@ -1572,14 +1593,14 @@ window.abrirAcompanhantesSection = function() {
 };
 
 window.voltarPainelPrincipal = function() {
-    console.log('[DEBUG] ===== VOLTANDO AO PAINEL PRINCIPAL =====');
+    debugLog('[DEBUG] ===== VOLTANDO AO PAINEL PRINCIPAL =====');
     console.trace('[DEBUG] Stack trace do voltarPainelPrincipal:');
     
     mostrarSecaoPainel('painel');
     
     // Garantir que os botões estejam configurados ao voltar ao painel
     setTimeout(() => {
-        console.log('[DEBUG] voltarPainelPrincipal: reconfigurando botões...');
+        debugLog('[DEBUG] voltarPainelPrincipal: reconfigurando botões...');
         atualizarVisibilidadeBotoes();
         configurarEventosBotoes();
     }, 100);
@@ -1608,7 +1629,7 @@ function preencherTabelaUsuarios(listaUsuarios) {
     if (totalCount) totalCount.textContent = listaUsuarios.length;
 }
 async function carregarUsuarios() {
-    console.log('[DEBUG] carregarUsuarios: iniciando (APENAS equipe e admin)...');
+    debugLog('[DEBUG] carregarUsuarios: iniciando (APENAS equipe e admin)...');
     
     if (!window.db) {
         showToast('Erro', 'Firestore não inicializado!', 'error');
@@ -1617,26 +1638,26 @@ async function carregarUsuarios() {
     
     try {
         // Busca usuários de equipe
-        console.log('[DEBUG] carregarUsuarios: buscando usuarios_equipe...');
+        debugLog('[DEBUG] carregarUsuarios: buscando usuarios_equipe...');
         const equipeSnap = await window.db.collection('usuarios_equipe').get();
         const listaEquipe = [];
         equipeSnap.forEach(doc => {
             listaEquipe.push({ id: doc.id, ...doc.data(), tipo: 'Equipe' });
         });
-        console.log('[DEBUG] carregarUsuarios: encontrados', listaEquipe.length, 'usuários de equipe');
+        debugLog('[DEBUG] carregarUsuarios: encontrados', listaEquipe.length, 'usuários de equipe');
         
         // Busca usuários admin
-        console.log('[DEBUG] carregarUsuarios: buscando usuarios_admin...');
+        debugLog('[DEBUG] carregarUsuarios: buscando usuarios_admin...');
         const adminSnap = await window.db.collection('usuarios_admin').get();
         const listaAdmin = [];
         adminSnap.forEach(doc => {
             listaAdmin.push({ id: doc.id, ...doc.data(), tipo: 'Admin' });
         });
-        console.log('[DEBUG] carregarUsuarios: encontrados', listaAdmin.length, 'usuários admin');
+        debugLog('[DEBUG] carregarUsuarios: encontrados', listaAdmin.length, 'usuários admin');
         
         // Junta APENAS equipe e admin (SEM acompanhantes)
         const listaUsuarios = [...listaEquipe, ...listaAdmin];
-        console.log('[DEBUG] carregarUsuarios: total de usuários para tabela:', listaUsuarios.length);
+        debugLog('[DEBUG] carregarUsuarios: total de usuários para tabela:', listaUsuarios.length);
         
         preencherTabelaUsuarios(listaUsuarios);
         console.log('[SUCCESS] Usuários de equipe e admin carregados:', listaUsuarios);
@@ -1650,7 +1671,7 @@ async function carregarUsuarios() {
 
 // Função para editar usuário
 window.editarUsuario = async function(userId) {
-    console.log('[DEBUG] Editando usuário:', userId);
+    debugLog('[DEBUG] Editando usuário:', userId);
     
     if (!userId) {
         showToast('Erro', 'ID do usuário não fornecido', 'error');
@@ -1677,7 +1698,7 @@ window.editarUsuario = async function(userId) {
                 userCollection = 'usuarios_equipe';
             }
         } catch (error) {
-            console.log('[DEBUG] Usuário não encontrado em usuarios_equipe');
+            debugLog('[DEBUG] Usuário não encontrado em usuarios_equipe');
         }
         
         // Tentar em usuarios_admin se não encontrou
@@ -1689,7 +1710,7 @@ window.editarUsuario = async function(userId) {
                     userCollection = 'usuarios_admin';
                 }
             } catch (error) {
-                console.log('[DEBUG] Usuário não encontrado em usuarios_admin');
+                debugLog('[DEBUG] Usuário não encontrado em usuarios_admin');
             }
         }
         
@@ -1702,7 +1723,7 @@ window.editarUsuario = async function(userId) {
                     userCollection = 'usuarios_acompanhantes';
                 }
             } catch (error) {
-                console.log('[DEBUG] Usuário não encontrado em usuarios_acompanhantes');
+                debugLog('[DEBUG] Usuário não encontrado em usuarios_acompanhantes');
             }
         }
         
@@ -1837,7 +1858,7 @@ window.salvarUsuarioEditado = async function(userId, collection) {
 
 // Função para remover usuário
 window.removerUsuario = async function(userId) {
-    console.log('[DEBUG] Removendo usuário:', userId);
+    debugLog('[DEBUG] Removendo usuário:', userId);
     
     if (!userId) {
         showToast('Erro', 'ID do usuário não fornecido', 'error');
@@ -1908,13 +1929,13 @@ async function carregarSolicitacoes() {
     const adminPanel = document.getElementById('admin-panel');
     
     if (relatoriosSection && !relatoriosSection.classList.contains('hidden')) {
-        console.log('[DEBUG] carregarSolicitacoes: Na tela de relatórios - não carregando cards de solicitações');
+        debugLog('[DEBUG] carregarSolicitacoes: Na tela de relatórios - não carregando cards de solicitações');
         return;
     }
     
     // Evitar chamadas múltiplas simultâneas
     if (carregandoSolicitacoes) {
-        console.log('[DEBUG] Carregamento já em andamento - aguardando...');
+        debugLog('[DEBUG] Carregamento já em andamento - aguardando...');
         return;
     }
     
@@ -1932,18 +1953,18 @@ async function carregarSolicitacoes() {
         // Se estamos na tela de login, não mostrar erro
         const authSection = document.getElementById('auth-section');
         if (!authSection || !authSection.classList.contains('hidden')) {
-            console.log('[DEBUG] carregarSolicitacoes: Ainda na tela de login, ignorando...');
+            debugLog('[DEBUG] carregarSolicitacoes: Ainda na tela de login, ignorando...');
             return;
         }
         
-        console.log('[DEBUG] Usuário ainda não carregado completamente');
+        debugLog('[DEBUG] Usuário ainda não carregado completamente');
         return;
     }
     
     try {
         carregandoSolicitacoes = true;
-        console.log('[DEBUG] === INÍCIO DO CARREGAMENTO DE SOLICITAÇÕES ===');
-        console.log('[DEBUG] Buscando solicitações da coleção "solicitacoes"...');
+        debugLog('[DEBUG] === INÍCIO DO CARREGAMENTO DE SOLICITAÇÕES ===');
+        debugLog('[DEBUG] Buscando solicitações da coleção "solicitacoes"...');
         
         // Mostrar indicador de carregamento
         mostrarIndicadorCarregamento();
@@ -1953,7 +1974,7 @@ async function carregarSolicitacoes() {
         const isEquipe = usuarioAdmin && (usuarioAdmin.role === 'equipe' || usuarioAdmin.isEquipe);
         const isSuperAdmin = usuarioAdmin && usuarioAdmin.role === 'super_admin';
         
-        console.log('[DEBUG] Carregando para usuário:', { 
+        debugLog('[DEBUG] Carregando para usuário:', { 
             email: usuarioAdmin?.email,
             role: usuarioAdmin?.role, 
             isEquipe, 
@@ -1970,7 +1991,7 @@ async function carregarSolicitacoes() {
         
         // Buscar todas as solicitações com timeout
         const snapshot = await Promise.race([firestorePromise, timeoutPromise]);
-        console.log('[DEBUG] Snapshot recebido:', snapshot.size, 'documentos');
+        debugLog('[DEBUG] Snapshot recebido:', snapshot.size, 'documentos');
         
         if (snapshot.empty) {
             console.warn('[AVISO] Nenhuma solicitação encontrada');
@@ -2046,7 +2067,7 @@ async function carregarSolicitacoes() {
             
         } else if (isSuperAdmin) {
             // Super admin: mostrar TODAS as equipes
-            console.log('[DEBUG] Renderizando todas as equipes para super admin');
+            debugLog('[DEBUG] Renderizando todas as equipes para super admin');
             renderizarCardsEquipe(equipes);
             
             // Mostrar todos os painéis
@@ -2069,7 +2090,7 @@ async function carregarSolicitacoes() {
         
         // Se não há dados, mostrar dados simulados para teste
         if (totalDocs === 0) {
-            console.log('[DEBUG] Nenhuma solicitação encontrada, criando dados de exemplo');
+            debugLog('[DEBUG] Nenhuma solicitação encontrada, criando dados de exemplo');
             criarDadosExemplo();
         }
         
@@ -2083,7 +2104,7 @@ async function carregarSolicitacoes() {
         // Tentar novamente após falha (uma vez)
         if (!window.tentativaRecarga) {
             window.tentativaRecarga = true;
-            console.log('[DEBUG] Tentando recarregar automaticamente em 3 segundos...');
+            debugLog('[DEBUG] Tentando recarregar automaticamente em 3 segundos...');
             
             showToast('Aviso', 'Falha no carregamento. Tentando novamente...', 'warning');
             
@@ -2128,7 +2149,7 @@ async function carregarSolicitacoes() {
                     teamsGrid.classList.remove('hidden');
                 }
                 
-                console.log('[DEBUG] Interface forçadamente atualizada após carregamento');
+                debugLog('[DEBUG] Interface forçadamente atualizada após carregamento');
                 
                 // REMOVER BOTÕES DEBUG IMEDIATAMENTE APÓS CARREGAMENTO
                 setTimeout(() => {
@@ -2151,7 +2172,7 @@ function recarregarSolicitacoes(delay = 1000) {
         // Verificar se usuário ainda está logado antes de recarregar
         const usuarioAdmin = window.usuarioAdmin || JSON.parse(localStorage.getItem('usuarioAdmin') || '{}');
         if (!usuarioAdmin || !usuarioAdmin.uid || !usuarioAdmin.email) {
-            console.log('[DEBUG] recarregarSolicitacoes: usuário não logado, cancelando recarregamento...');
+            debugLog('[DEBUG] recarregarSolicitacoes: usuário não logado, cancelando recarregamento...');
             return;
         }
         
@@ -2197,7 +2218,7 @@ function carregarDadosOffline() {
 }
 
 function criarDadosExemplo() {
-    console.log('[DEBUG] Criando dados de exemplo para demonstração');
+    debugLog('[DEBUG] Criando dados de exemplo para demonstração');
     
     const dadosExemplo = {
         manutencao: [
@@ -2278,7 +2299,7 @@ function atualizarVisibilidadeBotoes() {
     forceRemoveDebugButtons();
     
     if (reconfigurando) {
-        console.log('[DEBUG] atualizarVisibilidadeBotoes: já está reconfigurando, ignorando...');
+        debugLog('[DEBUG] atualizarVisibilidadeBotoes: já está reconfigurando, ignorando...');
         return;
     }
     
@@ -2293,7 +2314,7 @@ function atualizarVisibilidadeBotoes() {
     const userRoleBadge = document.getElementById('user-role-badge');
     const panelTitle = document.getElementById('panel-title');
     
-    console.log('[DEBUG] Elementos encontrados:', {
+    debugLog('[DEBUG] Elementos encontrados:', {
         btnNovoUsuario: !!btnNovoUsuario,
         btnGerenciarUsuarios: !!btnGerenciarUsuarios,
         btnAcompanhantes: !!btnAcompanhantes,
@@ -2301,14 +2322,14 @@ function atualizarVisibilidadeBotoes() {
         btnLimpeza: !!btnLimpeza
     });
     
-    console.log('[DEBUG] Atualizando botões para usuário:', usuarioAdmin);
+    debugLog('[DEBUG] Atualizando botões para usuário:', usuarioAdmin);
     
     // Verificar tipo de usuário baseado nas coleções Firestore
     const isSuperAdmin = usuarioAdmin && usuarioAdmin.role === 'super_admin';
     const isEquipe = usuarioAdmin && (usuarioAdmin.role === 'equipe' || usuarioAdmin.isEquipe);
     const isAdmin = usuarioAdmin && usuarioAdmin.role === 'admin';
     
-    console.log('[DEBUG] Tipo de usuário:', { 
+    debugLog('[DEBUG] Tipo de usuário:', { 
         isSuperAdmin, 
         isEquipe, 
         isAdmin, 
@@ -2357,11 +2378,11 @@ function atualizarVisibilidadeBotoes() {
         if (isSuperAdmin) {
             btnNovoUsuario.classList.remove('btn-hide');
             btnNovoUsuario.style.display = 'inline-flex';
-            console.log('[DEBUG] Botão Criar Usuário exibido para super_admin');
+            debugLog('[DEBUG] Botão Criar Usuário exibido para super_admin');
         } else {
             btnNovoUsuario.classList.add('btn-hide');
             btnNovoUsuario.style.display = 'none';
-            console.log('[DEBUG] Botão Criar Usuário ocultado para usuário não super_admin');
+            debugLog('[DEBUG] Botão Criar Usuário ocultado para usuário não super_admin');
         }
     }
     
@@ -2370,11 +2391,11 @@ function atualizarVisibilidadeBotoes() {
         if (isSuperAdmin || isAdmin) {
             btnGerenciarUsuarios.classList.remove('btn-hide');
             btnGerenciarUsuarios.style.display = 'inline-flex';
-            console.log('[DEBUG] Botão Gerenciar Usuários exibido para', isSuperAdmin ? 'super_admin' : 'admin');
+            debugLog('[DEBUG] Botão Gerenciar Usuários exibido para', isSuperAdmin ? 'super_admin' : 'admin');
         } else {
             btnGerenciarUsuarios.classList.add('btn-hide');
             btnGerenciarUsuarios.style.display = 'none';
-            console.log('[DEBUG] Botão Gerenciar Usuários ocultado para usuário não admin');
+            debugLog('[DEBUG] Botão Gerenciar Usuários ocultado para usuário não admin');
         }
     }
 
@@ -2383,11 +2404,11 @@ function atualizarVisibilidadeBotoes() {
         if (isSuperAdmin || isAdmin) {
             btnAcompanhantes.classList.remove('btn-hide');
             btnAcompanhantes.style.display = 'inline-flex';
-            console.log('[DEBUG] Botão Acompanhantes exibido para', isSuperAdmin ? 'super_admin' : 'admin');
+            debugLog('[DEBUG] Botão Acompanhantes exibido para', isSuperAdmin ? 'super_admin' : 'admin');
         } else {
             btnAcompanhantes.classList.add('btn-hide');
             btnAcompanhantes.style.display = 'none';
-            console.log('[DEBUG] Botão Acompanhantes ocultado para usuário não admin');
+            debugLog('[DEBUG] Botão Acompanhantes ocultado para usuário não admin');
         }
     }
 
@@ -2396,11 +2417,11 @@ function atualizarVisibilidadeBotoes() {
         if (isSuperAdmin || isAdmin) {
             btnRelatorios.classList.remove('btn-hide');
             btnRelatorios.style.display = 'inline-flex';
-            console.log('[DEBUG] Botão Relatórios exibido para', isSuperAdmin ? 'super_admin' : 'admin');
+            debugLog('[DEBUG] Botão Relatórios exibido para', isSuperAdmin ? 'super_admin' : 'admin');
         } else {
             btnRelatorios.classList.add('btn-hide');
             btnRelatorios.style.display = 'none';
-            console.log('[DEBUG] Botão Relatórios ocultado para usuário não admin');
+            debugLog('[DEBUG] Botão Relatórios ocultado para usuário não admin');
         }
     }
 
@@ -2411,18 +2432,18 @@ function atualizarVisibilidadeBotoes() {
         if (isSuperAdmin) {
             btnLimpeza.classList.remove('btn-hide');
             btnLimpeza.style.display = 'inline-flex';
-            console.log('[DEBUG] Botão Limpeza exibido para super_admin');
+            debugLog('[DEBUG] Botão Limpeza exibido para super_admin');
             
             // Forçar novamente após 500ms para combater cache
             setTimeout(() => {
                 btnLimpeza.classList.remove('btn-hide', 'hidden');
                 btnLimpeza.style.cssText = 'display: inline-flex !important; visibility: visible !important;';
-                console.log('[DEBUG] Botão Limpeza forçado novamente para super_admin');
+                debugLog('[DEBUG] Botão Limpeza forçado novamente para super_admin');
             }, 500);
         } else {
             btnLimpeza.classList.add('btn-hide');
             btnLimpeza.style.display = 'none';
-            console.log('[DEBUG] Botão Limpeza ocultado para usuário não super_admin');
+            debugLog('[DEBUG] Botão Limpeza ocultado para usuário não super_admin');
         }
     }
     
@@ -2453,7 +2474,7 @@ function atualizarVisibilidadeBotoes() {
     }
     
     // Log final do estado dos botões
-    console.log('[DEBUG] Estado final dos botões:', {
+    debugLog('[DEBUG] Estado final dos botões:', {
         role: usuarioAdmin?.role,
         equipe: usuarioAdmin?.equipe,
         isSuperAdmin,
@@ -2474,10 +2495,10 @@ function atualizarVisibilidadeBotoes() {
 
 // Função para configurar eventos dos botões
 function configurarEventosBotoes() {
-    console.log('[DEBUG] ===== CONFIGURANDO EVENTOS DOS BOTÕES =====');
+    debugLog('[DEBUG] ===== CONFIGURANDO EVENTOS DOS BOTÕES =====');
     
     // Verificar estado geral
-    console.log('[DEBUG] Estado atual:', {
+    debugLog('[DEBUG] Estado atual:', {
         userRole: window.userRole,
         usuarioAdmin: !!window.usuarioAdmin,
         isAuthenticated: !!window.auth?.currentUser
@@ -2489,7 +2510,7 @@ function configurarEventosBotoes() {
     const btnLimpeza = document.getElementById('limpeza-btn');
     
     // Debug específico para o botão de limpeza
-    console.log('[DEBUG] Botão Limpeza Debug:', {
+    debugLog('[DEBUG] Botão Limpeza Debug:', {
         elemento: btnLimpeza,
         id: btnLimpeza?.id,
         classes: btnLimpeza?.className,
@@ -2497,7 +2518,7 @@ function configurarEventosBotoes() {
         hidden: btnLimpeza?.classList.contains('btn-hide')
     });
     
-    console.log('[DEBUG] configurarEventosBotoes: botões encontrados:', {
+    debugLog('[DEBUG] configurarEventosBotoes: botões encontrados:', {
         btnNovoUsuario: !!btnNovoUsuario,
         btnGerenciarUsuarios: !!btnGerenciarUsuarios,
         btnRelatorios: !!btnRelatorios,
@@ -2532,7 +2553,7 @@ function configurarEventosBotoes() {
             e.stopPropagation();
             
             try {
-                console.log('[DEBUG] Verificando função mostrarRelatorios...');
+                debugLog('[DEBUG] Verificando função mostrarRelatorios...');
                 
                 if (typeof window.mostrarRelatorios !== 'function') {
                     console.error('[ERRO] mostrarRelatorios não está definida!');
@@ -2540,7 +2561,7 @@ function configurarEventosBotoes() {
                     return;
                 }
                 
-                console.log('[DEBUG] Chamando mostrarRelatorios...');
+                debugLog('[DEBUG] Chamando mostrarRelatorios...');
                 window.mostrarRelatorios();
                 
             } catch (err) {
@@ -2548,7 +2569,7 @@ function configurarEventosBotoes() {
                 alert('Erro ao abrir relatórios: ' + err.message);
                 
                 // Debug adicional em caso de erro
-                console.log('[DEBUG] Estado após erro:', {
+                debugLog('[DEBUG] Estado após erro:', {
                     relatoriosSection: !!document.getElementById('relatorios-section'),
                     adminPanel: !!document.getElementById('admin-panel'),
                     userRole: window.userRole
@@ -2560,7 +2581,7 @@ function configurarEventosBotoes() {
         btnRelatorios.style.pointerEvents = 'auto';
         btnRelatorios.style.cursor = 'pointer';
         
-        console.log('[DEBUG] Evento configurado para Relatórios');
+        debugLog('[DEBUG] Evento configurado para Relatórios');
     } else {
         console.warn('[AVISO] Botão Relatórios não encontrado!');
     }
@@ -2575,7 +2596,7 @@ function configurarEventosBotoes() {
             e.stopPropagation();
             
             try {
-                console.log('[DEBUG] Verificando função showCreateUserModal...');
+                debugLog('[DEBUG] Verificando função showCreateUserModal...');
                 
                 if (typeof window.showCreateUserModal !== 'function') {
                     console.error('[ERRO] showCreateUserModal não está definida!');
@@ -2583,7 +2604,7 @@ function configurarEventosBotoes() {
                     return;
                 }
                 
-                console.log('[DEBUG] Chamando showCreateUserModal...');
+                debugLog('[DEBUG] Chamando showCreateUserModal...');
                 window.showCreateUserModal();
                 
             } catch (err) {
@@ -2596,13 +2617,13 @@ function configurarEventosBotoes() {
         btnNovoUsuario.style.pointerEvents = 'auto';
         btnNovoUsuario.style.cursor = 'pointer';
         
-        console.log('[DEBUG] Evento configurado para Criar Usuário');
+        debugLog('[DEBUG] Evento configurado para Criar Usuário');
     } else {
         console.warn('[AVISO] Botão Criar Usuário não encontrado!');
     }
     
     if (btnGerenciarUsuarios) {
-        console.log('[DEBUG] Configurando evento para Gerenciar Usuários...');
+        debugLog('[DEBUG] Configurando evento para Gerenciar Usuários...');
         
         // Remove qualquer evento anterior
         btnGerenciarUsuarios.onclick = null;
@@ -2611,7 +2632,7 @@ function configurarEventosBotoes() {
         btnGerenciarUsuarios.onclick = function(e) {
             // Prevenir cliques múltiplos
             if (btnGerenciarUsuarios.disabled) {
-                console.log('[DEBUG] Clique ignorado - botão temporariamente desabilitado');
+                debugLog('[DEBUG] Clique ignorado - botão temporariamente desabilitado');
                 return;
             }
             
@@ -2634,25 +2655,25 @@ function configurarEventosBotoes() {
             e.stopPropagation();
             
             try {
-                console.log('[DEBUG] Verificando função showManageUsersModal...');
+                debugLog('[DEBUG] Verificando função showManageUsersModal...');
                 
                 if (typeof window.showManageUsersModal !== 'function') {
                     console.error('[ERRO] showManageUsersModal não está definida!');
-                    console.log('[DEBUG] Funções disponíveis no window:', Object.keys(window).filter(k => k.includes('show')));
+                    debugLog('[DEBUG] Funções disponíveis no window:', Object.keys(window).filter(k => k.includes('show')));
                     alert('Erro: Função showManageUsersModal não encontrada!');
                     return;
                 }
                 
-                console.log('[DEBUG] Chamando showManageUsersModal...');
+                debugLog('[DEBUG] Chamando showManageUsersModal...');
                 window.showManageUsersModal();
-                console.log('[DEBUG] showManageUsersModal chamada com sucesso');
+                debugLog('[DEBUG] showManageUsersModal chamada com sucesso');
                 
             } catch (err) {
                 console.error('[ERRO] Falha ao abrir modal Gerenciar Usuários:', err);
                 alert('Erro ao abrir modal Gerenciar Usuários: ' + err.message);
                 
                 // Debug adicional
-                console.log('[DEBUG] Estado após erro:', {
+                debugLog('[DEBUG] Estado após erro:', {
                     modal: !!document.getElementById('manage-users-modal'),
                     userRole: window.userRole
                 });
@@ -2664,14 +2685,14 @@ function configurarEventosBotoes() {
         btnGerenciarUsuarios.style.cursor = 'pointer';
         btnGerenciarUsuarios.disabled = false;
         
-        console.log('[DEBUG] Evento configurado para Gerenciar Usuários');
+        debugLog('[DEBUG] Evento configurado para Gerenciar Usuários');
     } else {
         console.warn('[AVISO] Botão Gerenciar Usuários não encontrado no DOM!');
     }
     
     if (btnLimpeza) {
-        console.log('[DEBUG] Configurando evento para Limpeza...');
-        console.log('[DEBUG] btnLimpeza encontrado:', {
+        debugLog('[DEBUG] Configurando evento para Limpeza...');
+        debugLog('[DEBUG] btnLimpeza encontrado:', {
             id: btnLimpeza.id,
             classes: btnLimpeza.className,
             onclick: btnLimpeza.onclick
@@ -2688,7 +2709,7 @@ function configurarEventosBotoes() {
             e.stopPropagation();
             
             try {
-                console.log('[DEBUG] Verificando função limparDadosTeste...');
+                debugLog('[DEBUG] Verificando função limparDadosTeste...');
                 
                 if (typeof window.limparDadosTeste !== 'function') {
                     console.error('[ERRO] limparDadosTeste não está definida!');
@@ -2696,9 +2717,9 @@ function configurarEventosBotoes() {
                     return;
                 }
                 
-                console.log('[DEBUG] Chamando limparDadosTeste...');
+                debugLog('[DEBUG] Chamando limparDadosTeste...');
                 window.limparDadosTeste();
-                console.log('[DEBUG] limparDadosTeste chamada com sucesso');
+                debugLog('[DEBUG] limparDadosTeste chamada com sucesso');
                 
             } catch (err) {
                 console.error('[ERRO] Falha ao executar limpeza:', err);
@@ -2711,7 +2732,7 @@ function configurarEventosBotoes() {
         btnLimpeza.style.cursor = 'pointer';
         btnLimpeza.disabled = false;
         
-        console.log('[DEBUG] Evento configurado para Limpeza');
+        debugLog('[DEBUG] Evento configurado para Limpeza');
     } else {
         console.warn('[AVISO] Botão Limpeza não encontrado no DOM!');
         
@@ -2721,7 +2742,7 @@ function configurarEventosBotoes() {
             btn.textContent && btn.textContent.includes('Limpar Dados')
         );
         
-        console.log('[DEBUG] Busca alternativa do botão limpeza:', {
+        debugLog('[DEBUG] Busca alternativa do botão limpeza:', {
             porId: !!limpezaAlt,
             porTexto: !!limpezaByText,
             todosOsBotoes: document.querySelectorAll('button').length
@@ -2729,7 +2750,7 @@ function configurarEventosBotoes() {
         
         if (limpezaAlt || limpezaByText) {
             const btnAlternativo = limpezaAlt || limpezaByText;
-            console.log('[DEBUG] Botão limpeza encontrado por busca alternativa');
+            debugLog('[DEBUG] Botão limpeza encontrado por busca alternativa');
             btnAlternativo.onclick = () => {
                 if (typeof window.limparDadosTeste === 'function') {
                     window.limparDadosTeste();
@@ -2740,7 +2761,7 @@ function configurarEventosBotoes() {
         }
     }
     
-    console.log('[DEBUG] ===== FIM CONFIGURAÇÃO EVENTOS BOTÕES =====');
+    debugLog('[DEBUG] ===== FIM CONFIGURAÇÃO EVENTOS BOTÕES =====');
     
     // LIMPEZA FINAL DE BOTÕES DEBUG APÓS CONFIGURAÇÃO
     setTimeout(() => {
@@ -2751,24 +2772,24 @@ function configurarEventosBotoes() {
     
     // Fallback: Garantir que os botões principais sempre funcionem
     setTimeout(() => {
-        console.log('[DEBUG] Aplicando fallback para botões críticos...');
+        debugLog('[DEBUG] Aplicando fallback para botões críticos...');
         
         const btnGerenciar = document.getElementById('manage-users-btn');
         const btnRel = document.getElementById('relatorios-btn');
         const btnLimp = document.getElementById('limpeza-btn');
         
         if (btnGerenciar && !btnGerenciar.onclick && window.userRole) {
-            console.log('[DEBUG] Aplicando fallback para Gerenciar Usuários');
+            debugLog('[DEBUG] Aplicando fallback para Gerenciar Usuários');
             btnGerenciar.onclick = () => window.showManageUsersModal();
         }
         
         if (btnRel && !btnRel.onclick && window.userRole) {
-            console.log('[DEBUG] Aplicando fallback para Relatórios');
+            debugLog('[DEBUG] Aplicando fallback para Relatórios');
             btnRel.onclick = () => window.mostrarRelatorios();
         }
         
         if (btnLimp && !btnLimp.onclick && window.userRole === 'super_admin') {
-            console.log('[DEBUG] Aplicando fallback para Limpeza');
+            debugLog('[DEBUG] Aplicando fallback para Limpeza');
             btnLimp.onclick = () => window.limparDadosTeste();
         }
     }, 100);
@@ -2778,7 +2799,7 @@ function configurarEventosBotoes() {
 
 // Função auxiliar para reconfigurar botões quando necessário
 window.reconfigurarBotoes = function() {
-    console.log('[DEBUG] reconfigurarBotoes: forçando reconfiguração...');
+    debugLog('[DEBUG] reconfigurarBotoes: forçando reconfiguração...');
     
     // PRIMEIRO: Limpar botões debug antes de qualquer coisa
     if (typeof window.forceRemoveDebugButtons === 'function') {
@@ -2804,7 +2825,7 @@ window.reconfigurarBotoes = function() {
     atualizarVisibilidadeBotoes();
     configurarEventosBotoes();
     
-    console.log('[DEBUG] reconfigurarBotoes: reconfiguração concluída');
+    debugLog('[DEBUG] reconfigurarBotoes: reconfiguração concluída');
 };
 
 // Função de debug para verificar estado dos modais
@@ -2812,7 +2833,7 @@ window.debugModals = function() {
     const modalCriar = document.getElementById('modal-novo-usuario');
     const modalGerenciar = document.getElementById('manage-users-modal');
     
-    console.log('[DEBUG] Estado dos modais:', {
+    debugLog('[DEBUG] Estado dos modais:', {
         modalCriar: {
             exists: !!modalCriar,
             hidden: modalCriar ? modalCriar.classList.contains('hidden') : 'N/A',
@@ -3098,12 +3119,12 @@ corrigirTudo()
 
 // Funções para fechar modais
 window.closeCreateUserModal = function() {
-    console.log('[DEBUG] closeCreateUserModal: fechando modal...');
+    debugLog('[DEBUG] closeCreateUserModal: fechando modal...');
     const modal = document.getElementById('modal-novo-usuario');
     if (modal) {
         modal.classList.add('hidden');
         modal.style.display = 'none';
-        console.log('[DEBUG] closeCreateUserModal: modal fechado');
+        debugLog('[DEBUG] closeCreateUserModal: modal fechado');
     }
 };
 
@@ -3918,12 +3939,12 @@ function gerarHTMLDashboard(metricas, opcoes = {}) {
 window.testarMelhoriasCards = testarMelhoriasCards;
 
 window.closeManageUsersModal = function() {
-    console.log('[DEBUG] closeManageUsersModal: fechando modal...');
+    debugLog('[DEBUG] closeManageUsersModal: fechando modal...');
     const modal = document.getElementById('manage-users-modal');
     if (modal) {
         modal.classList.add('hidden');
         modal.style.display = 'none';
-        console.log('[DEBUG] closeManageUsersModal: modal fechado');
+        debugLog('[DEBUG] closeManageUsersModal: modal fechado');
     }
 };
 
@@ -4332,7 +4353,7 @@ function renderizarCardsEquipe(equipes) {
 
 // === MODAL DE SOLICITAÇÃO (VERSÃO LIMPA) ===
 function abrirSolicitacaoModal(solicitacao) {
-    console.log('[DEBUG] Abrindo modal para:', solicitacao.id, 'Status:', solicitacao.status);
+    debugLog('[DEBUG] Abrindo modal para:', solicitacao.id, 'Status:', solicitacao.status);
     mostrarModal(solicitacao);
 }
 
@@ -4583,7 +4604,7 @@ function fecharSolicitacaoModal() {
         if (detalhesEl) detalhesEl.innerHTML = '';
         if (acoesEl) acoesEl.innerHTML = '';
         
-        console.log('[DEBUG] Modal fechado e limpo');
+        debugLog('[DEBUG] Modal fechado e limpo');
     }
 }
 
@@ -4602,7 +4623,7 @@ function adicionarEventosSolicitacoes() {
             
             try {
                 const solicitacao = JSON.parse(card.dataset.solicitacao.replace(/&apos;/g, "'"));
-                console.log('[DEBUG] Abrindo modal para solicitação:', solicitacao.id);
+                debugLog('[DEBUG] Abrindo modal para solicitação:', solicitacao.id);
                 abrirSolicitacaoModal(solicitacao);
             } catch (error) {
                 console.error('[ERRO] Falha ao parsear dados da solicitação:', error);
@@ -4617,7 +4638,7 @@ function adicionarEventosSolicitacoes() {
 // === SISTEMA DE PESQUISA DE SATISFAÇÃO ===
 
 function abrirPesquisaSatisfacao(solicitacaoId, solicitacaoData) {
-    console.log('[DEBUG] Abrindo pesquisa de satisfação para:', solicitacaoId);
+    debugLog('[DEBUG] Abrindo pesquisa de satisfação para:', solicitacaoId);
     
     // Criar modal de pesquisa de satisfação
     const modalSatisfacao = document.createElement('div');
@@ -4825,7 +4846,7 @@ function abrirPesquisaSatisfacao(solicitacaoId, solicitacaoData) {
     const ratingText = modalSatisfacao.querySelector('#rating-text');
     const btnEnviar = modalSatisfacao.querySelector('#btn-enviar-avaliacao');
     
-    console.log('[DEBUG] Sistema de estrelas configurado:', {
+    debugLog('[DEBUG] Sistema de estrelas configurado:', {
         stars: stars.length,
         ratingText: !!ratingText,
         btnEnviar: !!btnEnviar
@@ -4842,7 +4863,7 @@ function abrirPesquisaSatisfacao(solicitacaoId, solicitacaoData) {
     stars.forEach((star, index) => {
         star.addEventListener('click', () => {
             avaliacaoSelecionada = parseInt(star.dataset.rating);
-            console.log('[DEBUG] Estrela selecionada:', avaliacaoSelecionada);
+            debugLog('[DEBUG] Estrela selecionada:', avaliacaoSelecionada);
             
             // Atualizar visual das estrelas
             stars.forEach((s, i) => {
@@ -4861,7 +4882,7 @@ function abrirPesquisaSatisfacao(solicitacaoId, solicitacaoData) {
                 btnEnviar.disabled = false;
                 btnEnviar.style.background = '#10b981';
                 btnEnviar.style.cursor = 'pointer';
-                console.log('[DEBUG] Botão habilitado para avaliação:', avaliacaoSelecionada);
+                debugLog('[DEBUG] Botão habilitado para avaliação:', avaliacaoSelecionada);
             } else {
                 console.error('[ERRO] Botão enviar não encontrado!');
             }
@@ -4915,7 +4936,7 @@ function abrirPesquisaSatisfacao(solicitacaoId, solicitacaoData) {
                     }
                 });
                 
-                console.log('[DEBUG] Avaliação do aspecto', aspect + ':', rating);
+                debugLog('[DEBUG] Avaliação do aspecto', aspect + ':', rating);
             });
             
             // Efeito hover para aspectos
@@ -4949,7 +4970,7 @@ function abrirPesquisaSatisfacao(solicitacaoId, solicitacaoData) {
 }
 
 async function enviarAvaliacao(solicitacaoId) {
-    console.log('[DEBUG] Iniciando envio de avaliação para:', solicitacaoId);
+    debugLog('[DEBUG] Iniciando envio de avaliação para:', solicitacaoId);
     
     if (!window.avaliacaoAtual || window.avaliacaoAtual.getAvaliacao() === 0) {
         showToast('Aviso', 'Por favor, selecione uma avaliação primeiro!', 'warning');
@@ -4979,7 +5000,7 @@ async function enviarAvaliacao(solicitacaoId) {
             aspectosAvaliacao[aspect] = stars.length;
         });
         
-        console.log('[DEBUG] Dados da avaliação:', {
+        debugLog('[DEBUG] Dados da avaliação:', {
             avaliacao,
             aspectos: aspectosAvaliacao,
             comentario: comentario.slice(0, 50) + '...',
@@ -5004,11 +5025,11 @@ async function enviarAvaliacao(solicitacaoId) {
         }
         
         // Salvar no Firestore
-        console.log('[DEBUG] Salvando avaliação no Firestore...');
+        debugLog('[DEBUG] Salvando avaliação no Firestore...');
         await window.db.collection('avaliacoes_satisfacao').add(avaliacaoData);
         
         // Atualizar solicitação com referência à avaliação
-        console.log('[DEBUG] Atualizando solicitação com dados da avaliação...');
+        debugLog('[DEBUG] Atualizando solicitação com dados da avaliação...');
         await window.db.collection('solicitacoes').doc(solicitacaoId).update({
             avaliacaoSatisfacao: {
                 nota: avaliacao,
@@ -5080,7 +5101,7 @@ window.fecharPesquisaSatisfacao = fecharPesquisaSatisfacao;
 
 // Função de teste para debugar a pesquisa de satisfação
 window.testarPesquisaSatisfacao = function() {
-    console.log('[DEBUG] Testando pesquisa de satisfação...');
+    debugLog('[DEBUG] Testando pesquisa de satisfação...');
     const dadosTeste = {
         id: 'teste-123',
         descricao: 'Solicitação de teste para avaliação',
@@ -5094,7 +5115,7 @@ window.testarPesquisaSatisfacao = function() {
 // === DASHBOARD DE SATISFAÇÃO ===
 
 async function abrirDashboardSatisfacao() {
-    console.log('[DEBUG] Abrindo dashboard de satisfação...');
+    debugLog('[DEBUG] Abrindo dashboard de satisfação...');
     
     // Verificar permissões (apenas super_admin)
     const usuarioAdmin = window.usuarioAdmin || JSON.parse(localStorage.getItem('usuarioAdmin') || '{}');
@@ -5622,7 +5643,7 @@ window.fecharDashboardSatisfacao = fecharDashboardSatisfacao;
 // Função para gerar relatório visual/dashboard
 async function gerarRelatorioAdmin() {
     try {
-        console.log('[DEBUG] gerarRelatorioAdmin: iniciando geração de relatório...');
+        debugLog('[DEBUG] gerarRelatorioAdmin: iniciando geração de relatório...');
         
         if (!window.db) {
             showToast('Erro', 'Firestore não inicializado!', 'error');
@@ -5791,7 +5812,7 @@ function calcularEstatisticas(solicitacoes) {
 // Função para exportar dados para Excel
 async function exportarDados() {
     try {
-        console.log('[DEBUG] exportarDados: iniciando exportação...');
+        debugLog('[DEBUG] exportarDados: iniciando exportação...');
         
         if (!window.XLSX) {
             showToast('Erro', 'Biblioteca XLSX não carregada!', 'error');
@@ -5915,7 +5936,7 @@ window.imprimirRelatorio = imprimirRelatorio;
 // Função para cadastrar acompanhante
 async function cadastrarAcompanhante() {
     try {
-        console.log('[DEBUG] cadastrarAcompanhante: iniciando cadastro...');
+        debugLog('[DEBUG] cadastrarAcompanhante: iniciando cadastro...');
         
         if (!window.db || !window.auth) {
             showToast('Erro', 'Firebase não inicializado!', 'error');
@@ -5982,7 +6003,7 @@ async function cadastrarAcompanhante() {
         // Gerar um ID único para o acompanhante
         const acompanhanteId = window.db.collection('usuarios_acompanhantes').doc().id;
         
-        console.log('[DEBUG] cadastrarAcompanhante: criando acompanhante com ID:', acompanhanteId);
+        debugLog('[DEBUG] cadastrarAcompanhante: criando acompanhante com ID:', acompanhanteId);
 
         // Criar documento no Firestore com dados de pre-cadastro
         const dadosAcompanhante = {
@@ -6008,7 +6029,7 @@ async function cadastrarAcompanhante() {
             ocupadoEm: new Date().toISOString()
         });
 
-        console.log('[DEBUG] cadastrarAcompanhante: acompanhante salvo no Firestore (pre-cadastro)');
+        debugLog('[DEBUG] cadastrarAcompanhante: acompanhante salvo no Firestore (pre-cadastro)');
 
         // Limpar formulário
         document.getElementById('form-cadastro-acompanhante').reset();
@@ -6112,7 +6133,7 @@ let acompanhantesListener = null;
 
 // Função para configurar listener em tempo real para acompanhantes
 function configurarListenerAcompanhantes() {
-    console.log('[DEBUG] configurarListenerAcompanhantes: configurando listener...');
+    debugLog('[DEBUG] configurarListenerAcompanhantes: configurando listener...');
     
     if (!window.db) {
         console.warn('[AVISO] configurarListenerAcompanhantes: Firestore não inicializado');
@@ -6128,7 +6149,7 @@ function configurarListenerAcompanhantes() {
     // Configurar listener em tempo real
     acompanhantesListener = window.db.collection('usuarios_acompanhantes').onSnapshot((snapshot) => {
         try {
-            console.log('[DEBUG] Listener acompanhantes: atualização detectada');
+            debugLog('[DEBUG] Listener acompanhantes: atualização detectada');
             const acompanhantes = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
             atualizarListaAcompanhantes(acompanhantes);
         } catch (error) {
@@ -6211,7 +6232,7 @@ function atualizarListaAcompanhantes(acompanhantes) {
 // Função para carregar lista de acompanhantes
 async function carregarAcompanhantes() {
     try {
-        console.log('[DEBUG] carregarAcompanhantes: iniciando...');
+        debugLog('[DEBUG] carregarAcompanhantes: iniciando...');
         
         if (!window.db) {
             console.warn('[AVISO] carregarAcompanhantes: Firestore não inicializado');
@@ -6244,28 +6265,28 @@ async function removerAcompanhante(acompanhanteId, quarto) {
         const docSnapshot = await window.db.collection('usuarios_acompanhantes').doc(acompanhanteId).get();
         const acompanhanteData = docSnapshot.exists ? docSnapshot.data() : null;
         
-        console.log('[DEBUG] removerAcompanhante: dados do acompanhante:', acompanhanteData);
+        debugLog('[DEBUG] removerAcompanhante: dados do acompanhante:', acompanhanteData);
 
         // Remover do Firestore
         await window.db.collection('usuarios_acompanhantes').doc(acompanhanteId).delete();
-        console.log('[DEBUG] removerAcompanhante: removido do Firestore');
+        debugLog('[DEBUG] removerAcompanhante: removido do Firestore');
 
         // Liberar quarto
         if (quarto) {
             await window.db.collection('quartos_ocupados').doc(quarto).delete();
-            console.log('[DEBUG] removerAcompanhante: quarto liberado');
+            debugLog('[DEBUG] removerAcompanhante: quarto liberado');
         }
 
         // Se tem UID (conta foi ativada), também remover registros órfãos
         if (acompanhanteData && acompanhanteData.uid) {
-            console.log('[DEBUG] removerAcompanhante: removendo registros órfãos com UID:', acompanhanteData.uid);
+            debugLog('[DEBUG] removerAcompanhante: removendo registros órfãos com UID:', acompanhanteData.uid);
             
             // Remover possível documento duplicado com UID
             try {
                 await window.db.collection('usuarios_acompanhantes').doc(acompanhanteData.uid).delete();
-                console.log('[DEBUG] removerAcompanhante: documento UID removido');
+                debugLog('[DEBUG] removerAcompanhante: documento UID removido');
             } catch (error) {
-                console.log('[DEBUG] removerAcompanhante: documento UID não existe (normal)');
+                debugLog('[DEBUG] removerAcompanhante: documento UID não existe (normal)');
             }
             
             // Nota: Remoção do Firebase Auth requer Admin SDK no backend
@@ -6310,27 +6331,27 @@ let ultimoClickEditar = 0;
 // Função para editar acompanhante
 async function editarAcompanhante(acompanhanteId) {
     console.log('🔧 BOTÃO EDITAR CLICADO! ID:', acompanhanteId);
-    console.log('[DEBUG] === INICIANDO editarAcompanhante ===');
-    console.log('[DEBUG] acompanhanteId recebido:', acompanhanteId);
-    console.log('[DEBUG] typeof acompanhanteId:', typeof acompanhanteId);
+    debugLog('[DEBUG] === INICIANDO editarAcompanhante ===');
+    debugLog('[DEBUG] acompanhanteId recebido:', acompanhanteId);
+    debugLog('[DEBUG] typeof acompanhanteId:', typeof acompanhanteId);
     
     try {
         // Debounce para evitar cliques duplos muito rápidos
         const agora = Date.now();
         if (agora - ultimoClickEditar < 1000) { // Aumentei para 1 segundo
-            console.log('[DEBUG] editarAcompanhante: clique muito rápido, ignorando');
+            debugLog('[DEBUG] editarAcompanhante: clique muito rápido, ignorando');
             return;
         }
         ultimoClickEditar = agora;
         
         // Prevenir múltiplas execuções simultâneas
         if (editandoAcompanhante) {
-            console.log('[DEBUG] editarAcompanhante: já está processando, ignorando chamada duplicada');
+            debugLog('[DEBUG] editarAcompanhante: já está processando, ignorando chamada duplicada');
             return;
         }
         
         editandoAcompanhante = true;
-        console.log('[DEBUG] editarAcompanhante: iniciando edição para ID:', acompanhanteId);
+        debugLog('[DEBUG] editarAcompanhante: iniciando edição para ID:', acompanhanteId);
         
         // Verificar se o modal existe no DOM
         const modalElement = document.getElementById('modal-editar-acompanhante');
@@ -6340,12 +6361,12 @@ async function editarAcompanhante(acompanhanteId) {
             return;
         }
         
-        console.log('[DEBUG] Modal encontrado no DOM');
-        console.log('[DEBUG] Modal classList antes:', modalElement.classList.toString());
-        console.log('[DEBUG] Modal style.display antes:', modalElement.style.display);
+        debugLog('[DEBUG] Modal encontrado no DOM');
+        debugLog('[DEBUG] Modal classList antes:', modalElement.classList.toString());
+        debugLog('[DEBUG] Modal style.display antes:', modalElement.style.display);
         
         // Buscar dados do acompanhante no Firestore
-        console.log('[DEBUG] Buscando dados no Firestore...');
+        debugLog('[DEBUG] Buscando dados no Firestore...');
         const doc = await window.db.collection('usuarios_acompanhantes').doc(acompanhanteId).get();
         
         if (!doc.exists) {
@@ -6355,7 +6376,7 @@ async function editarAcompanhante(acompanhanteId) {
         }
         
         const acompanhante = doc.data();
-        console.log('[DEBUG] Dados carregados, preenchendo modal para:', acompanhante.nome);
+        debugLog('[DEBUG] Dados carregados, preenchendo modal para:', acompanhante.nome);
         
         // Preencher o modal com os dados atuais
         document.getElementById('edit-acomp-id').value = acompanhanteId;
@@ -6366,17 +6387,17 @@ async function editarAcompanhante(acompanhanteId) {
         
         // Mostrar o modal
         const modalToShow = document.getElementById('modal-editar-acompanhante');
-        console.log('[DEBUG] === MOSTRANDO MODAL ===');
-        console.log('[DEBUG] Modal antes de remover hidden:', modalToShow.classList.toString());
+        debugLog('[DEBUG] === MOSTRANDO MODAL ===');
+        debugLog('[DEBUG] Modal antes de remover hidden:', modalToShow.classList.toString());
         
         // Garantir que o modal esteja anexado ao body (não dentro de uma seção)
         if (modalToShow.parentElement !== document.body) {
-            console.log('[DEBUG] Modal não está no body, movendo...');
+            debugLog('[DEBUG] Modal não está no body, movendo...');
             document.body.appendChild(modalToShow);
         }
         
         modalToShow.classList.remove('hidden');
-        console.log('[DEBUG] Modal após remover hidden:', modalToShow.classList.toString());
+        debugLog('[DEBUG] Modal após remover hidden:', modalToShow.classList.toString());
         
         modalToShow.style.display = 'flex';
         modalToShow.style.visibility = 'visible';
@@ -6388,7 +6409,7 @@ async function editarAcompanhante(acompanhanteId) {
         modalToShow.style.width = '100vw';
         modalToShow.style.height = '100vh';
         
-        console.log('[DEBUG] Modal style final:', {
+        debugLog('[DEBUG] Modal style final:', {
             display: modalToShow.style.display,
             visibility: modalToShow.style.visibility,
             opacity: modalToShow.style.opacity,
@@ -6397,7 +6418,7 @@ async function editarAcompanhante(acompanhanteId) {
         
         // Verificar se o modal está realmente visível
         const computed = window.getComputedStyle(modalToShow);
-        console.log('[DEBUG] Modal computed style:', {
+        debugLog('[DEBUG] Modal computed style:', {
             display: computed.display,
             visibility: computed.visibility,
             opacity: computed.opacity,
@@ -6425,7 +6446,7 @@ async function editarAcompanhante(acompanhanteId) {
         
         // Verificar se o modal está realmente na viewport
         const rect = modalToShow.getBoundingClientRect();
-        console.log('[DEBUG] Modal getBoundingClientRect:', {
+        debugLog('[DEBUG] Modal getBoundingClientRect:', {
             top: rect.top,
             left: rect.left,
             width: rect.width,
@@ -6442,9 +6463,9 @@ async function editarAcompanhante(acompanhanteId) {
         modalToShow.style.zIndex = '99999';
         modalToShow.style.backgroundColor = 'rgba(0, 0, 0, 0.8)';
         
-        console.log('[DEBUG] Modal forçado com estilos inline');
-        console.log('[DEBUG] Modal de edição configurado com sucesso');
-        console.log('[DEBUG] === FIM MOSTRAR MODAL ===');
+        debugLog('[DEBUG] Modal forçado com estilos inline');
+        debugLog('[DEBUG] Modal de edição configurado com sucesso');
+        debugLog('[DEBUG] === FIM MOSTRAR MODAL ===');
         
         // Foco no primeiro campo
         setTimeout(() => {
@@ -6462,7 +6483,7 @@ async function editarAcompanhante(acompanhanteId) {
 
 // Função para fechar modal de edição
 function fecharModalEditarAcompanhante() {
-    console.log('[DEBUG] Fechando modal de edição');
+    debugLog('[DEBUG] Fechando modal de edição');
     
     const modal = document.getElementById('modal-editar-acompanhante');
     modal.classList.add('hidden');
@@ -6492,7 +6513,7 @@ async function salvarEdicaoAcompanhante(event) {
             return;
         }
         
-        console.log('[DEBUG] Salvando edição do acompanhante:', { acompanhanteId, nome, email, quarto });
+        debugLog('[DEBUG] Salvando edição do acompanhante:', { acompanhanteId, nome, email, quarto });
         
         showToast('Atualizando...', 'Salvando alterações...', 'info');
         
@@ -6511,7 +6532,7 @@ async function salvarEdicaoAcompanhante(event) {
         
         // Se uma nova senha foi fornecida, atualizar no Firebase Auth
         if (novaSenha) {
-            console.log('[DEBUG] Nova senha fornecida, atualizando autenticação...');
+            debugLog('[DEBUG] Nova senha fornecida, atualizando autenticação...');
             // Nota: Para atualizar senha no Firebase Auth seria necessário Admin SDK no backend
             // Por enquanto, apenas log que a funcionalidade precisa ser implementada
             console.warn('[AVISO] Atualização de senha requer implementação no backend');
@@ -6520,7 +6541,7 @@ async function salvarEdicaoAcompanhante(event) {
         
         // Verificar se o quarto mudou para atualizar a tabela de quartos ocupados
         if (quartoAtual !== quarto) {
-            console.log('[DEBUG] Quarto alterado de', quartoAtual, 'para', quarto);
+            debugLog('[DEBUG] Quarto alterado de', quartoAtual, 'para', quarto);
             
             // Verificar se o novo quarto já está ocupado
             const quartoOcupado = await window.db.collection('quartos_ocupados').doc(quarto).get();
@@ -6880,7 +6901,7 @@ window.debugEstadoApp = function() {
 // Função melhorada para logout com limpeza completa
 window.logout = async function() {
     try {
-        console.log('[DEBUG] Iniciando processo de logout...');
+        debugLog('[DEBUG] Iniciando processo de logout...');
         
         // 1. Logout do Firebase
         await window.auth.signOut();
@@ -6913,7 +6934,7 @@ window.logout = async function() {
         // 6. Limpar interface completamente
         limparInterfaceCompleta();
         
-        console.log('[DEBUG] Logout concluído com sucesso');
+        debugLog('[DEBUG] Logout concluído com sucesso');
         showToast('Sucesso', 'Logout realizado com sucesso!', 'success');
         
     } catch (error) {
@@ -6954,33 +6975,101 @@ window.forceRemoveDebugButtons = function() {
         '#relatorios-direto-btn'
     ];
     
-    const debugTexts = ['usuários direto', 'debug', 'relatórios direto'];
+    const debugTexts = ['usuários direto', 'debug', 'relatórios direto', 'usuario direto', 'relatorio direto'];
     let removed = 0;
     
     // Remoção por seletores
     debugSelectors.forEach(selector => {
         const elements = document.querySelectorAll(selector);
         elements.forEach(el => {
-            console.log(`[FORCE-REMOVE] Removendo por seletor: ${selector}`);
+            debugLog(`[FORCE-REMOVE] Removendo por seletor: ${selector}`);
             el.remove();
             removed++;
         });
     });
     
-    // Remoção por texto
-    const allButtons = document.querySelectorAll('button');
-    allButtons.forEach(btn => {
-        const text = (btn.textContent || '').trim().toLowerCase();
-        if (debugTexts.some(debugText => text.includes(debugText))) {
-            console.log(`[FORCE-REMOVE] Removendo botão por texto: "${btn.textContent}"`);
-            btn.remove();
-            removed++;
+    // Remoção por texto (busca em TODOS os elementos)
+    const allElements = document.querySelectorAll('*');
+    allElements.forEach(el => {
+        if (el.tagName === 'BUTTON' || el.getAttribute('onclick') || el.classList.contains('button')) {
+            const text = (el.textContent || '').trim().toLowerCase();
+            if (debugTexts.some(debugText => text.includes(debugText))) {
+                debugLog(`[FORCE-REMOVE] Removendo elemento por texto: "${el.textContent}"`);
+                // Múltiplas formas de remoção
+                el.style.display = 'none !important';
+                el.style.visibility = 'hidden !important';
+                el.remove();
+                removed++;
+            }
         }
     });
     
+    // Interceptar criação dinâmica de botões
+    const originalCreateElement = document.createElement;
+    document.createElement = function(tagName) {
+        const element = originalCreateElement.call(document, tagName);
+        
+        if (tagName.toLowerCase() === 'button') {
+            // Observar mudanças de texto
+            const observer = new MutationObserver(() => {
+                const text = (element.textContent || '').trim().toLowerCase();
+                if (debugTexts.some(debugText => text.includes(debugText))) {
+                    debugLog('[INTERCEPT] Bloqueando criação de botão debug:', text);
+                    element.style.display = 'none !important';
+                    element.remove();
+                }
+            });
+            
+            observer.observe(element, { 
+                childList: true, 
+                characterData: true, 
+                subtree: true 
+            });
+        }
+        
+        return element;
+    };
+    
     if (removed > 0) {
-        console.log(`[FORCE-REMOVE] Total removido: ${removed} botões`);
+        debugLog(`[FORCE-REMOVE] Total removido: ${removed} elementos`);
     }
     
     return removed;
 };
+
+// === APLICAR CSS FORCE-HIDE PARA PRODUÇÃO ===
+(function applyProductionCSS() {
+    if (MODO_PRODUCAO) {
+        const style = document.createElement('style');
+        style.textContent = `
+            /* CSS para esconder elementos de debug em produção */
+            button[onclick*="showUsersDireto"],
+            button[onclick*="debugFuncs"],
+            button[onclick*="mostrarRelatoriosDirectly"],
+            #debug-btn,
+            #usuarios-direto-btn,
+            #relatorios-direto-btn,
+            .debug-button,
+            .btn-debug,
+            .direct-button {
+                display: none !important;
+                visibility: hidden !important;
+                opacity: 0 !important;
+                pointer-events: none !important;
+                position: absolute !important;
+                left: -9999px !important;
+            }
+            
+            /* Esconder qualquer botão que contenha textos de debug */
+            button:contains("usuários direto"),
+            button:contains("debug"), 
+            button:contains("relatórios direto"),
+            button:contains("usuario direto"),
+            button:contains("relatorio direto") {
+                display: none !important;
+            }
+        `;
+        document.head.appendChild(style);
+        debugLog('[PRODUCTION] CSS de ocultação aplicado');
+    }
+})();
