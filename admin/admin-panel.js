@@ -4,6 +4,44 @@
 // Declarações para evitar problemas de ordem de carregamento
 let limparDadosTeste, verificarEstatisticas, adicionarPainelManutencao;
 
+// === LIMPEZA DE CACHE E ELEMENTOS INDESEJADOS ===
+window.addEventListener('DOMContentLoaded', function() {
+    // Remover botões debug que possam estar no cache
+    setTimeout(() => {
+        const elementosIndesejados = [
+            'button[onclick*="showUsersDireto"]',
+            'button[onclick*="debugFuncs"]', 
+            'button[onclick*="mostrarRelatoriosDirectly"]',
+            '.debug-btn',
+            '#debug-btn',
+            '#usuarios-direto-btn',
+            '#relatorios-direto-btn'
+        ];
+        
+        elementosIndesejados.forEach(selector => {
+            const elementos = document.querySelectorAll(selector);
+            elementos.forEach(elemento => {
+                console.log(`[CLEANUP] Removendo elemento indesejado:`, elemento);
+                elemento.remove();
+            });
+        });
+        
+        // Verificar se botões com textos específicos existem
+        const todosBotoes = document.querySelectorAll('button');
+        todosBotoes.forEach(btn => {
+            const texto = btn.textContent || '';
+            if (texto.includes('Usuários Direto') || 
+                texto.includes('Debug') || 
+                texto.includes('Relatórios Direto')) {
+                console.log(`[CLEANUP] Removendo botão por texto:`, btn);
+                btn.remove();
+            }
+        });
+        
+        console.log('[CLEANUP] Limpeza de elementos indesejados concluída');
+    }, 100);
+});
+
 // === PROTEÇÃO CONTRA ERROS DE EXTENSÕES ===
 (function() {
     'use strict';
@@ -665,6 +703,18 @@ window.addEventListener('DOMContentLoaded', async function() {
                             console.log('[DEBUG] Reconfiguração de segurança dos botões...');
                             atualizarVisibilidadeBotoes();
                             configurarEventosBotoes();
+                            
+                            // Forçar exibição do botão de limpeza para super_admin
+                            if (window.usuarioAdmin && window.usuarioAdmin.role === 'super_admin') {
+                                const btnLimpeza = document.getElementById('limpeza-btn');
+                                if (btnLimpeza) {
+                                    btnLimpeza.classList.remove('btn-hide');
+                                    btnLimpeza.style.display = 'inline-flex';
+                                    console.log('[DEBUG] Botão limpeza forçado para super_admin');
+                                } else {
+                                    console.warn('[AVISO] Botão limpeza não encontrado no DOM');
+                                }
+                            }
                             
                             // Garantir que as funções estão disponíveis globalmente
                             if (typeof window.showCreateUserModal !== 'function') {
