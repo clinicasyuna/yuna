@@ -1482,7 +1482,7 @@ window.showManageUsersModal = async function() {
         // Carregar os usuários após exibir o modal
         try {
             debugLog('[DEBUG] showManageUsersModal: carregando usuários...');
-            await carregarUsuarios();
+            await window.carregarUsuarios();
             debugLog('[DEBUG] showManageUsersModal: usuários carregados com sucesso');
         } catch (error) {
             console.error('[ERRO] showManageUsersModal: erro ao carregar usuários:', error);
@@ -1621,7 +1621,7 @@ window.voltarPainelPrincipal = function() {
 };
 
 // --- Firestore: Usuários ---
-function preencherTabelaUsuarios(listaUsuarios) {
+window.preencherTabelaUsuarios = function(listaUsuarios) {
     const usersList = document.getElementById('users-list');
     const totalCount = document.getElementById('total-users-count');
     if (!usersList) return;
@@ -1641,8 +1641,8 @@ function preencherTabelaUsuarios(listaUsuarios) {
         </div>
     `).join('');
     if (totalCount) totalCount.textContent = listaUsuarios.length;
-}
-async function carregarUsuarios() {
+};
+window.carregarUsuarios = async function() {
     debugLog('[DEBUG] carregarUsuarios: iniciando (APENAS equipe e admin)...');
     
     if (!window.db) {
@@ -1673,13 +1673,13 @@ async function carregarUsuarios() {
         const listaUsuarios = [...listaEquipe, ...listaAdmin];
         debugLog('[DEBUG] carregarUsuarios: total de usuários para tabela:', listaUsuarios.length);
         
-        preencherTabelaUsuarios(listaUsuarios);
+        window.preencherTabelaUsuarios(listaUsuarios);
         console.log('[SUCCESS] Usuários de equipe e admin carregados:', listaUsuarios);
     } catch (error) {
         console.error('[ERRO] carregarUsuarios:', error);
         showToast('Erro', 'Não foi possível carregar os usuários.', 'error');
     }
-}
+};
 
 // === FUNÇÕES DE GERENCIAMENTO DE USUÁRIOS ===
 
@@ -1853,7 +1853,7 @@ window.salvarUsuarioEditado = async function(userId, collection) {
         
         // Fechar modal e recarregar lista
         fecharModalEditarUsuario();
-        await carregarUsuarios();
+        await window.carregarUsuarios();
         
         // Registrar auditoria
         if (window.registrarLogAuditoria) {
@@ -1920,7 +1920,7 @@ window.removerUsuario = async function(userId) {
         
         if (removido) {
             showToast('Sucesso', 'Usuário removido com sucesso', 'success');
-            await carregarUsuarios(); // Recarregar lista
+            await window.carregarUsuarios(); // Recarregar lista
         } else {
             showToast('Erro', 'Usuário não encontrado', 'error');
         }
