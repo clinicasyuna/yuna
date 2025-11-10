@@ -4,6 +4,64 @@
 // Declarações para evitar problemas de ordem de carregamento
 let limparDadosTeste, verificarEstatisticas, adicionarPainelManutencao;
 
+// === LIMPEZA IMEDIATA DE CACHE AGRESSIVA ===
+(function forceCleanupDebugElements() {
+    // Executa imediatamente e a cada 500ms por 5 segundos
+    const cleanupInterval = setInterval(() => {
+        const debugTexts = ['Usuários Direto', 'Debug', 'Relatórios Direto'];
+        let removed = 0;
+        
+        // Buscar todos os botões
+        const allButtons = document.querySelectorAll('button');
+        allButtons.forEach(btn => {
+            const text = (btn.textContent || '').trim();
+            if (debugTexts.some(debugText => text.includes(debugText))) {
+                console.log(`[FORCE-CLEANUP] Removendo botão: "${text}"`);
+                btn.remove();
+                removed++;
+            }
+        });
+        
+        // Buscar por onclick específicos
+        const specificSelectors = [
+            'button[onclick*="showUsersDireto"]',
+            'button[onclick*="debugFuncs"]', 
+            'button[onclick*="mostrarRelatoriosDirectly"]',
+            '#debug-btn',
+            '#usuarios-direto-btn', 
+            '#relatorios-direto-btn'
+        ];
+        
+        specificSelectors.forEach(selector => {
+            const elements = document.querySelectorAll(selector);
+            elements.forEach(el => {
+                console.log(`[FORCE-CLEANUP] Removendo por seletor: ${selector}`);
+                el.remove();
+                removed++;
+            });
+        });
+        
+        if (removed > 0) {
+            console.log(`[FORCE-CLEANUP] Total removido nesta iteração: ${removed}`);
+        }
+        
+        // Forçar visibilidade do botão limpeza se for super admin
+        const limpezaBtn = document.getElementById('limpeza-btn');
+        if (limpezaBtn && window.usuarioAdmin && window.usuarioAdmin.role === 'super_admin') {
+            limpezaBtn.classList.remove('btn-hide');
+            limpezaBtn.classList.add('force-visible');
+            limpezaBtn.style.cssText = 'display: inline-flex !important; visibility: visible !important;';
+        }
+        
+    }, 500);
+    
+    // Parar limpeza após 10 segundos
+    setTimeout(() => {
+        clearInterval(cleanupInterval);
+        console.log('[FORCE-CLEANUP] Limpeza finalizada');
+    }, 10000);
+})();
+
 // === LIMPEZA DE CACHE E ELEMENTOS INDESEJADOS ===
 window.addEventListener('DOMContentLoaded', function() {
     // Remover botões debug que possam estar no cache

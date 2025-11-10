@@ -1,0 +1,36 @@
+/* Force cleanup of cached elements */
+.debug-cleanup {
+    display: none !important;
+    visibility: hidden !important;
+    opacity: 0 !important;
+    pointer-events: none !important;
+}
+
+/* Hide specific debug buttons */
+button[onclick*="showUsersDireto"],
+button[onclick*="debugFuncs"],
+button[onclick*="mostrarRelatoriosDirectly"],
+#debug-btn,
+#usuarios-direto-btn,
+#relatorios-direto-btn {
+    display: none !important;
+    visibility: hidden !important;
+}
+
+/* Ensure cleanup button is visible for super admin */
+#limpeza-btn.force-visible {
+    display: inline-flex !important;
+    visibility: visible !important;
+    opacity: 1 !important;
+}
+
+/* Cache busting animation */
+@keyframes cache-bust {
+    0% { transform: scale(1); }
+    50% { transform: scale(1.01); }
+    100% { transform: scale(1); }
+}
+
+.cache-bust-animation {
+    animation: cache-bust 0.1s;
+}
