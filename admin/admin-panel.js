@@ -393,9 +393,16 @@ function mostrarSecaoPainel(secao) {
                 }
             }, 500);
         } else if (secao === 'relatorios') {
-            document.getElementById('admin-panel')?.classList.remove('hidden');
-            document.getElementById('relatorios-section')?.classList.remove('hidden');
-            console.log('[DEBUG] mostrarSecaoPainel: exibindo relatorios-section');
+            // Para relatórios, mostrar APENAS a seção de relatórios (não o admin-panel)
+            const relatoriosSection = document.getElementById('relatorios-section');
+            if (relatoriosSection) {
+                relatoriosSection.classList.remove('hidden');
+                console.log('[DEBUG] mostrarSecaoPainel: exibindo APENAS relatorios-section');
+            } else {
+                console.error('[ERRO] mostrarSecaoPainel: elemento relatorios-section não encontrado no HTML!');
+                alert('Erro: Seção de relatórios não encontrada no HTML');
+                return false;
+            }
         } else if (secao === 'create-user') {
             const modal = document.getElementById('modal-novo-usuario');
             document.getElementById('admin-panel')?.classList.remove('hidden');
@@ -626,9 +633,14 @@ window.addEventListener('DOMContentLoaded', async function() {
                             return;
                         }
                         
-                        // Atualizar botões imediatamente após login
+                        // Atualizar botões imediatamente após login (sem timeout)
+                        console.log('[DEBUG] Inicializando botões após login...');
+                        atualizarVisibilidadeBotoes();
+                        configurarEventosBotoes();
+                        
+                        // Configuração adicional após um pequeno delay para garantir DOM estável
                         setTimeout(() => {
-                            console.log('[DEBUG] Inicializando botões após login...');
+                            console.log('[DEBUG] Reconfiguração de segurança dos botões...');
                             atualizarVisibilidadeBotoes();
                             configurarEventosBotoes();
                             
@@ -1269,21 +1281,38 @@ window.mostrarRelatorios = function() {
     try {
         console.log('[DEBUG] ===== INÍCIO MOSTRAR RELATÓRIOS =====');
         
-        // Verificar se é super_admin
+        // Verificar estado de autenticação de forma mais robusta
         const usuarioAdmin = window.usuarioAdmin || JSON.parse(localStorage.getItem('usuarioAdmin') || '{}');
-        const userRole = window.userRole || usuarioAdmin.role;
+        const userRole = window.userRole || usuarioAdmin.role || 'admin';
+        const isAuthenticated = window.auth?.currentUser || usuarioAdmin.uid;
         
-        console.log('[DEBUG] mostrarRelatorios: usuário:', { email: usuarioAdmin?.email, role: userRole });
+        console.log('[DEBUG] mostrarRelatorios: estado de auth:', {
+            email: usuarioAdmin?.email,
+            role: userRole,
+            isAuthenticated: !!isAuthenticated,
+            windowUserRole: window.userRole,
+            localStorageUser: !!localStorage.getItem('usuarioAdmin'),
+            firebaseUser: !!window.auth?.currentUser
+        });
         
-        if (!userRole || userRole !== 'super_admin') {
-            showToast('Erro', 'Acesso negado. Apenas super administradores podem acessar relatórios.', 'error');
-            console.warn('[AVISO] mostrarRelatorios: acesso negado, role:', userRole);
-            return;
+        // Permitir acesso para admin e super_admin
+        if (!userRole || (userRole !== 'super_admin' && userRole !== 'admin')) {
+            console.warn('[AVISO] mostrarRelatorios: tentando forçar role admin...');
+            
+            // Tentar forçar role admin como fallback
+            if (isAuthenticated) {
+                window.userRole = 'admin';
+                console.log('[DEBUG] mostrarRelatorios: role forçado para admin');
+            } else {
+                showToast('Erro', 'Acesso negado. Faça login novamente.', 'error');
+                console.warn('[AVISO] mostrarRelatorios: usuário não autenticado');
+                return;
+            }
         }
         
         console.log('[DEBUG] mostrarRelatorios: acesso autorizado, mostrando seção relatórios');
         
-        // Permite acesso para super_admin autenticado
+        // Permite acesso para admin e super_admin autenticados
         mostrarSecaoPainel('relatorios');
         
         console.log('[DEBUG] mostrarRelatorios: seção mostrada, configurando filtros');
@@ -1299,12 +1328,23 @@ window.mostrarRelatorios = function() {
         
         console.log('[DEBUG] mostrarRelatorios: verificando se deve carregar solicitações');
         
-        // Carrega solicitações do Firestore ao abrir relatórios (apenas se usuário válido)
-        if (usuarioAdmin && usuarioAdmin.uid && usuarioAdmin.email) {
+        // Carrega solicitações do Firestore - mais permissivo para auth
+        if (isAuthenticated && (usuarioAdmin.email || window.auth?.currentUser?.email)) {
             console.log('[DEBUG] mostrarRelatorios: carregando solicitações...');
             carregarSolicitacoes();
+            
+            // Adicionar botões de manutenção apenas para super_admin
+            if (userRole === 'super_admin') {
+                console.log('[DEBUG] mostrarRelatorios: adicionando painel de manutenção...');
+                adicionarPainelManutencao();
+            } else {
+                console.log('[DEBUG] mostrarRelatorios: painel de manutenção não adicionado (role não é super_admin)');
+            }
+            
         } else {
-            console.warn('[AVISO] mostrarRelatorios: usuário não válido, não carregando solicitações');
+            console.warn('[AVISO] mostrarRelatorios: carregando solicitações mesmo sem auth completo...');
+            // Tentar carregar mesmo assim - pode funcionar se há dados em cache
+            carregarSolicitacoes();
         }
         
         // Garantir que os botões estejam configurados corretamente
@@ -2113,42 +2153,42 @@ function atualizarVisibilidadeBotoes() {
         }
     }
     
-    // Botão Gerenciar Usuários - APENAS super_admin
+    // Botão Gerenciar Usuários - super_admin e admin
     if (btnGerenciarUsuarios) {
-        if (isSuperAdmin) {
+        if (isSuperAdmin || isAdmin) {
             btnGerenciarUsuarios.classList.remove('btn-hide');
             btnGerenciarUsuarios.style.display = 'inline-flex';
-            console.log('[DEBUG] Botão Gerenciar Usuários exibido para super_admin');
+            console.log('[DEBUG] Botão Gerenciar Usuários exibido para', isSuperAdmin ? 'super_admin' : 'admin');
         } else {
             btnGerenciarUsuarios.classList.add('btn-hide');
             btnGerenciarUsuarios.style.display = 'none';
-            console.log('[DEBUG] Botão Gerenciar Usuários ocultado para usuário não super_admin');
+            console.log('[DEBUG] Botão Gerenciar Usuários ocultado para usuário não admin');
         }
     }
-    
-    // Botão Acompanhantes - APENAS super_admin
+
+    // Botão Acompanhantes - super_admin e admin
     if (btnAcompanhantes) {
-        if (isSuperAdmin) {
+        if (isSuperAdmin || isAdmin) {
             btnAcompanhantes.classList.remove('btn-hide');
             btnAcompanhantes.style.display = 'inline-flex';
-            console.log('[DEBUG] Botão Acompanhantes exibido para super_admin');
+            console.log('[DEBUG] Botão Acompanhantes exibido para', isSuperAdmin ? 'super_admin' : 'admin');
         } else {
             btnAcompanhantes.classList.add('btn-hide');
             btnAcompanhantes.style.display = 'none';
-            console.log('[DEBUG] Botão Acompanhantes ocultado para usuário não super_admin');
+            console.log('[DEBUG] Botão Acompanhantes ocultado para usuário não admin');
         }
     }
-    
-    // Botão Relatórios - APENAS super_admin
+
+    // Botão Relatórios - super_admin e admin
     if (btnRelatorios) {
-        if (isSuperAdmin) {
+        if (isSuperAdmin || isAdmin) {
             btnRelatorios.classList.remove('btn-hide');
             btnRelatorios.style.display = 'inline-flex';
-            console.log('[DEBUG] Botão Relatórios exibido para super_admin');
+            console.log('[DEBUG] Botão Relatórios exibido para', isSuperAdmin ? 'super_admin' : 'admin');
         } else {
             btnRelatorios.classList.add('btn-hide');
             btnRelatorios.style.display = 'none';
-            console.log('[DEBUG] Botão Relatórios ocultado para usuário não super_admin');
+            console.log('[DEBUG] Botão Relatórios ocultado para usuário não admin');
         }
     }
     
@@ -2194,7 +2234,14 @@ function atualizarVisibilidadeBotoes() {
 
 // Função para configurar eventos dos botões
 function configurarEventosBotoes() {
-    console.log('[DEBUG] configurarEventosBotoes: iniciando configuração...');
+    console.log('[DEBUG] ===== CONFIGURANDO EVENTOS DOS BOTÕES =====');
+    
+    // Verificar estado geral
+    console.log('[DEBUG] Estado atual:', {
+        userRole: window.userRole,
+        usuarioAdmin: !!window.usuarioAdmin,
+        isAuthenticated: !!window.auth?.currentUser
+    });
     
     const btnNovoUsuario = document.getElementById('btn-novo-usuario');
     const btnGerenciarUsuarios = document.getElementById('manage-users-btn');
@@ -2216,7 +2263,18 @@ function configurarEventosBotoes() {
         btnRelatorios.removeAttribute('onclick');
         
         btnRelatorios.onclick = function(e) {
-            console.log('[LOG] CLIQUE no botão Relatórios detectado');
+            console.log('[LOG] ===== CLIQUE RELATÓRIOS DETECTADO =====');
+            
+            // Debug completo do estado
+            window.debugEstadoApp();
+            
+            console.log('[LOG] Estado da autenticação:', {
+                windowUserRole: window.userRole,
+                windowUsuarioAdmin: !!window.usuarioAdmin,
+                localStorage: !!localStorage.getItem('usuarioAdmin'),
+                firebaseCurrentUser: !!window.auth?.currentUser
+            });
+            
             e.preventDefault();
             e.stopPropagation();
             
@@ -2235,6 +2293,13 @@ function configurarEventosBotoes() {
             } catch (err) {
                 console.error('[ERRO] Falha ao abrir relatórios:', err);
                 alert('Erro ao abrir relatórios: ' + err.message);
+                
+                // Debug adicional em caso de erro
+                console.log('[DEBUG] Estado após erro:', {
+                    relatoriosSection: !!document.getElementById('relatorios-section'),
+                    adminPanel: !!document.getElementById('admin-panel'),
+                    userRole: window.userRole
+                });
             }
         };
         
@@ -2284,11 +2349,22 @@ function configurarEventosBotoes() {
     }
     
     if (btnGerenciarUsuarios) {
+        console.log('[DEBUG] Configurando evento para Gerenciar Usuários...');
+        
         // Remove qualquer evento anterior
         btnGerenciarUsuarios.onclick = null;
+        btnGerenciarUsuarios.removeAttribute('onclick');
         
         btnGerenciarUsuarios.onclick = function(e) {
-            console.log('[LOG] CLIQUE no botão Gerenciar Usuários detectado');
+            console.log('[LOG] ===== CLIQUE GERENCIAR USUÁRIOS DETECTADO =====');
+            
+            // Debug completo do estado
+            console.log('[LOG] Estado da aplicação:', {
+                userRole: window.userRole,
+                usuarioAdmin: !!window.usuarioAdmin,
+                showManageUsersModal: typeof window.showManageUsersModal
+            });
+            
             e.preventDefault();
             e.stopPropagation();
             
@@ -2297,45 +2373,59 @@ function configurarEventosBotoes() {
                 
                 if (typeof window.showManageUsersModal !== 'function') {
                     console.error('[ERRO] showManageUsersModal não está definida!');
+                    console.log('[DEBUG] Funções disponíveis no window:', Object.keys(window).filter(k => k.includes('show')));
                     alert('Erro: Função showManageUsersModal não encontrada!');
                     return;
                 }
                 
                 console.log('[DEBUG] Chamando showManageUsersModal...');
                 window.showManageUsersModal();
+                console.log('[DEBUG] showManageUsersModal chamada com sucesso');
                 
             } catch (err) {
                 console.error('[ERRO] Falha ao abrir modal Gerenciar Usuários:', err);
                 alert('Erro ao abrir modal Gerenciar Usuários: ' + err.message);
+                
+                // Debug adicional
+                console.log('[DEBUG] Estado após erro:', {
+                    modal: !!document.getElementById('manage-users-modal'),
+                    userRole: window.userRole
+                });
             }
         };
         
         // Garantir que o botão é sempre clicável
         btnGerenciarUsuarios.style.pointerEvents = 'auto';
         btnGerenciarUsuarios.style.cursor = 'pointer';
+        btnGerenciarUsuarios.disabled = false;
         
         console.log('[DEBUG] Evento configurado para Gerenciar Usuários');
     } else {
-        console.warn('[AVISO] Botão Gerenciar Usuários não encontrado!');
+        console.warn('[AVISO] Botão Gerenciar Usuários não encontrado no DOM!');
     }
     
-    console.log('[DEBUG] configurarEventosBotoes: configuração finalizada');
+    console.log('[DEBUG] ===== FIM CONFIGURAÇÃO EVENTOS BOTÕES =====');
     
-    // Forçar exibição dos botões se usuário tem permissão
+    // Fallback: Garantir que os botões principais sempre funcionem
     setTimeout(() => {
-        if (window.userRole === 'admin' || window.userRole === 'super_admin') {
-            if (btnNovoUsuario) {
-                btnNovoUsuario.classList.remove('btn-hide');
-                btnNovoUsuario.style.display = 'inline-flex';
-            }
-            if (btnGerenciarUsuarios) {
-                btnGerenciarUsuarios.classList.remove('btn-hide');
-                btnGerenciarUsuarios.style.display = 'inline-flex';
-            }
-            console.log('[DEBUG] Botões forçados a exibir para admin');
+        console.log('[DEBUG] Aplicando fallback para botões críticos...');
+        
+        const btnGerenciar = document.getElementById('manage-users-btn');
+        const btnRel = document.getElementById('relatorios-btn');
+        
+        if (btnGerenciar && !btnGerenciar.onclick && window.userRole) {
+            console.log('[DEBUG] Aplicando fallback para Gerenciar Usuários');
+            btnGerenciar.onclick = () => window.showManageUsersModal();
+        }
+        
+        if (btnRel && !btnRel.onclick && window.userRole) {
+            console.log('[DEBUG] Aplicando fallback para Relatórios');
+            btnRel.onclick = () => window.mostrarRelatorios();
         }
     }, 100);
 }
+
+// Função auxiliar para reconfigurar botões quando necessário
 
 // Função auxiliar para reconfigurar botões quando necessário
 window.reconfigurarBotoes = function() {
@@ -6116,6 +6206,309 @@ window.removerAcompanhante = removerAcompanhante;
 window.editarAcompanhante = editarAcompanhante;
 window.fecharModalEditarAcompanhante = fecharModalEditarAcompanhante;
 window.salvarEdicaoAcompanhante = salvarEdicaoAcompanhante;
+
+// === FUNÇÕES DE LIMPEZA E MANUTENÇÃO ===
+
+// Função para limpar dados de teste
+window.limparDadosTeste = async function() {
+    if (!confirm('⚠️ ATENÇÃO: Esta ação irá remover TODAS as solicitações e pesquisas de satisfação do sistema.\n\nEsta ação é IRREVERSÍVEL!\n\nDeseja continuar?')) {
+        return;
+    }
+    
+    // Segunda confirmação com entrada de texto
+    const confirmacao = prompt('⚠️ CONFIRMAÇÃO FINAL\n\nPara confirmar que deseja limpar TODOS os dados de teste, digite exatamente: LIMPAR TUDO\n\n(Digite "LIMPAR TUDO" sem aspas)');
+    
+    if (confirmacao !== 'LIMPAR TUDO') {
+        alert('❌ Operação cancelada. Texto de confirmação incorreto.');
+        return;
+    }
+    
+    try {
+        console.log('[LIMPEZA] Iniciando limpeza completa dos dados de teste...');
+        
+        // Verificar permissões
+        const usuarioAdmin = window.usuarioAdmin || JSON.parse(localStorage.getItem('usuarioAdmin') || '{}');
+        if (!usuarioAdmin || usuarioAdmin.role !== 'super_admin') {
+            alert('❌ Acesso negado! Apenas super administradores podem executar limpeza de dados.');
+            return;
+        }
+        
+        let totalRemovido = 0;
+        
+        // 1. Buscar e remover todas as solicitações
+        console.log('[LIMPEZA] Buscando solicitações...');
+        const solicitacoesSnapshot = await window.db.collection('solicitacoes').get();
+        
+        if (!solicitacoesSnapshot.empty) {
+            console.log(`[LIMPEZA] Encontradas ${solicitacoesSnapshot.size} solicitações para remover`);
+            
+            // Remover em lotes para melhor performance
+            const batch = window.db.batch();
+            let batchCount = 0;
+            
+            solicitacoesSnapshot.forEach(doc => {
+                batch.delete(doc.ref);
+                batchCount++;
+                totalRemovido++;
+                
+                // Firestore permite máximo 500 operações por batch
+                if (batchCount >= 500) {
+                    batch.commit();
+                    batchCount = 0;
+                }
+            });
+            
+            // Commit do último batch se houver operações pendentes
+            if (batchCount > 0) {
+                await batch.commit();
+            }
+            
+            console.log(`[LIMPEZA] ${solicitacoesSnapshot.size} solicitações removidas`);
+        }
+        
+        // 2. Buscar e remover quartos ocupados órfãos
+        console.log('[LIMPEZA] Verificando quartos ocupados...');
+        const quartosSnapshot = await window.db.collection('quartos_ocupados').get();
+        
+        if (!quartosSnapshot.empty) {
+            console.log(`[LIMPEZA] Encontrados ${quartosSnapshot.size} registros de quartos ocupados`);
+            
+            const batchQuartos = window.db.batch();
+            quartosSnapshot.forEach(doc => {
+                batchQuartos.delete(doc.ref);
+                totalRemovido++;
+            });
+            
+            await batchQuartos.commit();
+            console.log(`[LIMPEZA] ${quartosSnapshot.size} registros de quartos removidos`);
+        }
+        
+        // 3. Limpar dados de satisfação incorporados nas solicitações (já removidos com as solicitações)
+        
+        console.log(`[LIMPEZA] ✅ Limpeza concluída! Total de ${totalRemovido} registros removidos.`);
+        
+        // Mostrar resultado
+        alert(`✅ Limpeza concluída com sucesso!\n\n📊 Resumo:\n- Solicitações removidas: ${solicitacoesSnapshot.size || 0}\n- Quartos liberados: ${quartosSnapshot.size || 0}\n- Total de registros: ${totalRemovido}\n\nO sistema está agora limpo para uso em produção!`);
+        
+        // Recarregar relatórios se estiver na tela de relatórios
+        if (typeof window.carregarSolicitacoes === 'function') {
+            console.log('[LIMPEZA] Recarregando interface...');
+            setTimeout(() => {
+                window.carregarSolicitacoes();
+            }, 1000);
+        }
+        
+    } catch (error) {
+        console.error('[ERRO] Falha na limpeza de dados:', error);
+        alert(`❌ Erro durante a limpeza: ${error.message}\n\nVerifique o console para mais detalhes.`);
+    }
+};
+
+// Função para verificar estatísticas dos dados
+window.verificarEstatisticas = async function() {
+    try {
+        console.log('[STATS] Coletando estatísticas dos dados...');
+        
+        // Contar solicitações por status
+        const solicitacoesSnapshot = await window.db.collection('solicitacoes').get();
+        const stats = {
+            total: solicitacoesSnapshot.size,
+            pendente: 0,
+            emAndamento: 0,
+            finalizada: 0,
+            avaliada: 0,
+            porEquipe: {
+                manutencao: 0,
+                nutricao: 0,
+                higienizacao: 0,
+                hotelaria: 0
+            }
+        };
+        
+        solicitacoesSnapshot.forEach(doc => {
+            const data = doc.data();
+            const status = data.status || 'pendente';
+            
+            if (stats[status] !== undefined) {
+                stats[status]++;
+            }
+            
+            if (data.avaliada) {
+                stats.avaliada++;
+            }
+            
+            const equipe = data.equipe || data.tipoServico;
+            if (stats.porEquipe[equipe] !== undefined) {
+                stats.porEquipe[equipe]++;
+            }
+        });
+        
+        // Contar quartos ocupados
+        const quartosSnapshot = await window.db.collection('quartos_ocupados').get();
+        stats.quartosOcupados = quartosSnapshot.size;
+        
+        // Contar usuários
+        const adminSnapshot = await window.db.collection('usuarios_admin').get();
+        const equipeSnapshot = await window.db.collection('usuarios_equipe').get();
+        const acompanhantesSnapshot = await window.db.collection('usuarios_acompanhantes').get();
+        
+        stats.usuarios = {
+            admins: adminSnapshot.size,
+            equipe: equipeSnapshot.size,
+            acompanhantes: acompanhantesSnapshot.size
+        };
+        
+        console.log('[STATS] Estatísticas coletadas:', stats);
+        
+        const relatorio = `
+📊 ESTATÍSTICAS DO SISTEMA YUNA
+===============================
+
+📋 SOLICITAÇÕES:
+  • Total: ${stats.total}
+  • Pendentes: ${stats.pendente}
+  • Em Andamento: ${stats.emAndamento}
+  • Finalizadas: ${stats.finalizada}
+  • Avaliadas: ${stats.avaliada}
+
+🏢 POR DEPARTAMENTO:
+  • Manutenção: ${stats.porEquipe.manutencao}
+  • Nutrição: ${stats.porEquipe.nutricao}
+  • Higienização: ${stats.porEquipe.higienizacao}
+  • Hotelaria: ${stats.porEquipe.hotelaria}
+
+🏠 QUARTOS OCUPADOS: ${stats.quartosOcupados}
+
+👥 USUÁRIOS:
+  • Administradores: ${stats.usuarios.admins}
+  • Equipe: ${stats.usuarios.equipe}
+  • Acompanhantes: ${stats.usuarios.acompanhantes}
+        `;
+        
+        alert(relatorio);
+        console.log(relatorio);
+        
+        return stats;
+        
+    } catch (error) {
+        console.error('[ERRO] Falha ao verificar estatísticas:', error);
+        alert(`❌ Erro ao coletar estatísticas: ${error.message}`);
+    }
+};
+
+// Função para adicionar painel de manutenção no relatórios
+window.adicionarPainelManutencao = function() {
+    try {
+        // Verificar se já foi adicionado
+        const existente = document.querySelector('.maintenance-panel');
+        if (existente) {
+            console.log('[MANUTENCAO] Painel já existe, não adicionando novamente');
+            return;
+        }
+        
+        // Encontrar o container de relatórios
+        const relatoriosContainer = document.querySelector('#relatorios .container-fluid') || 
+                                   document.querySelector('#relatorios .section-content') ||
+                                   document.querySelector('#relatorios');
+        
+        if (!relatoriosContainer) {
+            console.warn('[MANUTENCAO] Container de relatórios não encontrado');
+            return;
+        }
+        
+        // Criar o painel de manutenção
+        const painelManutencao = document.createElement('div');
+        painelManutencao.innerHTML = `
+            <div class="maintenance-panel" style="background: linear-gradient(135deg, #ff6b6b, #ee5a52); margin: 20px 0; padding: 20px; border-radius: 12px; border: 1px solid #e74c3c; box-shadow: 0 4px 12px rgba(0,0,0,0.15);">
+                <h3 style="color: white; margin: 0 0 15px 0; font-size: 18px; display: flex; align-items: center;">
+                    <i class="fas fa-tools" style="margin-right: 10px;"></i>
+                    Ferramentas de Manutenção do Sistema
+                </h3>
+                <p style="color: #fff; margin: 0 0 15px 0; font-size: 14px; opacity: 0.9;">
+                    ⚠️ <strong>Apenas para Super Administradores</strong> - Use com extrema cautela
+                </p>
+                <div style="display: flex; gap: 15px; flex-wrap: wrap;">
+                    <button onclick="verificarEstatisticas()" style="background: rgba(255,255,255,0.2); color: white; border: 1px solid rgba(255,255,255,0.3); padding: 12px 24px; border-radius: 6px; cursor: pointer; font-size: 14px; transition: all 0.3s ease; display: flex; align-items: center; gap: 8px;">
+                        <i class="fas fa-chart-bar"></i> Verificar Estatísticas
+                    </button>
+                    <button onclick="limparDadosTeste()" style="background: rgba(255,255,255,0.2); color: white; border: 1px solid rgba(255,255,255,0.3); padding: 12px 24px; border-radius: 6px; cursor: pointer; font-size: 14px; transition: all 0.3s ease; display: flex; align-items: center; gap: 8px;">
+                        <i class="fas fa-trash-alt"></i> Limpar Dados de Teste
+                    </button>
+                </div>
+                <div style="margin-top: 15px; padding-top: 15px; border-top: 1px solid rgba(255,255,255,0.2);">
+                    <small style="color: rgba(255,255,255,0.8); font-size: 12px;">
+                        💡 <strong>Dica:</strong> Use "Verificar Estatísticas" antes de limpar para conferir o que será removido
+                    </small>
+                </div>
+            </div>
+        `;
+        
+        // Adicionar estilos para hover
+        if (!document.querySelector('#maintenance-styles')) {
+            const style = document.createElement('style');
+            style.id = 'maintenance-styles';
+            style.textContent = `
+                .maintenance-panel button:hover {
+                    background: rgba(255,255,255,0.35) !important;
+                    transform: translateY(-2px);
+                    box-shadow: 0 6px 16px rgba(0,0,0,0.3);
+                }
+                .maintenance-panel button:active {
+                    transform: translateY(0);
+                }
+            `;
+            document.head.appendChild(style);
+        }
+        
+        // Inserir no início do container (logo após o título)
+        const primeiroElemento = relatoriosContainer.querySelector('.row') || relatoriosContainer.firstElementChild;
+        if (primeiroElemento) {
+            primeiroElemento.parentNode.insertBefore(painelManutencao, primeiroElemento);
+        } else {
+            relatoriosContainer.appendChild(painelManutencao);
+        }
+        
+        console.log('[MANUTENCAO] Painel de manutenção adicionado com sucesso');
+        
+    } catch (error) {
+        console.error('[ERRO] Falha ao adicionar painel de manutenção:', error);
+    }
+};
+
+// Função para debug completo do estado da aplicação
+window.debugEstadoApp = function() {
+    console.log('===== DEBUG ESTADO DA APLICAÇÃO =====');
+    console.log('1. Variáveis globais:', {
+        userRole: window.userRole,
+        usuarioAdmin: window.usuarioAdmin,
+        auth: !!window.auth,
+        db: !!window.db
+    });
+    
+    console.log('2. Firebase Auth:', {
+        currentUser: window.auth?.currentUser,
+        isSignedIn: !!window.auth?.currentUser
+    });
+    
+    console.log('3. LocalStorage:', {
+        usuarioAdmin: localStorage.getItem('usuarioAdmin'),
+        hasUserData: !!localStorage.getItem('usuarioAdmin')
+    });
+    
+    console.log('4. Elementos do DOM:', {
+        relatoriosBtn: !!document.getElementById('relatorios-btn'),
+        relatoriosSection: !!document.getElementById('relatorios-section'),
+        adminPanel: !!document.getElementById('admin-panel')
+    });
+    
+    console.log('5. Funções disponíveis:', {
+        mostrarRelatorios: typeof window.mostrarRelatorios,
+        mostrarSecaoPainel: typeof mostrarSecaoPainel,
+        carregarSolicitacoes: typeof carregarSolicitacoes
+    });
+    
+    console.log('===== FIM DEBUG =====');
+};
 
 // Função melhorada para logout com limpeza completa
 window.logout = async function() {

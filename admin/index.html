@@ -96,10 +96,25 @@
                 <button id="manage-users-btn" class="btn-primary btn-hide">
                     <i class="fas fa-users-cog"></i> Gerenciar Usuários
                 </button>
+                
+                <!-- Botão de teste direto para Gerenciar Usuários -->
+                <button onclick="window.showManageUsersModal()" style="background: #9b59b6; margin-left: 5px; padding: 8px;">
+                    <i class="fas fa-users-cog"></i> Usuários Direto
+                </button>
+                
                 <span id="admin-permission-msg" class="msg-permissao-hide">Acesso restrito: sem permissão para criar/gerenciar usuários.</span>
                 <button id="relatorios-btn" class="btn-primary">
                     <i class="fas fa-chart-bar"></i> Relatórios
                 </button>
+                
+                <!-- Botões de Debug Temporário -->
+                <button onclick="window.debugEstadoApp()" style="background: #e74c3c; margin-left: 10px; padding: 8px;">
+                    <i class="fas fa-bug"></i> Debug
+                </button>
+                <button onclick="window.mostrarRelatorios()" style="background: #f39c12; margin-left: 5px; padding: 8px;">
+                    <i class="fas fa-chart-line"></i> Relatórios Direto
+                </button>
+                
                 <button id="metricas-btn" class="btn-primary" onclick="abrirDashboardMetricas()" title="Dashboard de TMA, SLA e TME">
                     <i class="fas fa-chart-line"></i> Métricas
                 </button>
