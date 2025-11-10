@@ -1980,13 +1980,54 @@ function configurarEventosBotoes() {
     
     const btnNovoUsuario = document.getElementById('btn-novo-usuario');
     const btnGerenciarUsuarios = document.getElementById('manage-users-btn');
+    const btnRelatorios = document.getElementById('relatorios-btn');
     
     console.log('[DEBUG] configurarEventosBotoes: botões encontrados:', {
         btnNovoUsuario: !!btnNovoUsuario,
         btnGerenciarUsuarios: !!btnGerenciarUsuarios,
+        btnRelatorios: !!btnRelatorios,
         btnNovoUsuarioVisible: btnNovoUsuario ? !btnNovoUsuario.classList.contains('btn-hide') : false,
-        btnGerenciarVisible: btnGerenciarUsuarios ? !btnGerenciarUsuarios.classList.contains('btn-hide') : false
+        btnGerenciarVisible: btnGerenciarUsuarios ? !btnGerenciarUsuarios.classList.contains('btn-hide') : false,
+        btnRelatoriosVisible: btnRelatorios ? !btnRelatorios.classList.contains('btn-hide') : false
     });
+
+    // Configurar botão Relatórios
+    if (btnRelatorios) {
+        // Remove qualquer evento anterior (incluindo onclick do HTML)
+        btnRelatorios.onclick = null;
+        btnRelatorios.removeAttribute('onclick');
+        
+        btnRelatorios.onclick = function(e) {
+            console.log('[LOG] CLIQUE no botão Relatórios detectado');
+            e.preventDefault();
+            e.stopPropagation();
+            
+            try {
+                console.log('[DEBUG] Verificando função mostrarRelatorios...');
+                
+                if (typeof window.mostrarRelatorios !== 'function') {
+                    console.error('[ERRO] mostrarRelatorios não está definida!');
+                    alert('Erro: Função mostrarRelatorios não encontrada!');
+                    return;
+                }
+                
+                console.log('[DEBUG] Chamando mostrarRelatorios...');
+                window.mostrarRelatorios();
+                
+            } catch (err) {
+                console.error('[ERRO] Falha ao abrir relatórios:', err);
+                alert('Erro ao abrir relatórios: ' + err.message);
+            }
+        };
+        
+        // Garantir que o botão é sempre clicável
+        btnRelatorios.style.pointerEvents = 'auto';
+        btnRelatorios.style.cursor = 'pointer';
+        
+        console.log('[DEBUG] Evento configurado para Relatórios');
+    } else {
+        console.warn('[AVISO] Botão Relatórios não encontrado!');
+    }
     
     if (btnNovoUsuario) {
         // Remove qualquer evento anterior
