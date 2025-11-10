@@ -355,25 +355,33 @@
     <div id="modal-novo-usuario" class="modal hidden">
 <!-- Modal de Criação de Usuário sempre presente para admins -->
     <div class="modal-content modal-novo-usuario-content">
-            <h2 class="modal-novo-usuario-title">Criar Usuário de Equipe</h2>
+            <h2 class="modal-novo-usuario-title">Criar Novo Usuário</h2>
             <form id="form-novo-usuario">
                 <div class="form-group">
+                    <label for="usuario-tipo">Tipo de Usuário</label>
+                    <select id="usuario-tipo" class="form-input" required title="Selecione o tipo de usuário" onchange="alterarTipoUsuario()">
+                        <option value="">Selecione o tipo</option>
+                        <option value="equipe">👥 Usuário de Equipe</option>
+                        <option value="admin">🔐 Administrador</option>
+                    </select>
+                </div>
+                <div class="form-group" id="campo-equipe" style="display: none;">
                     <label for="usuario-equipe">Equipe</label>
-                    <select id="usuario-equipe" class="form-input" required title="Selecione a equipe">
+                    <select id="usuario-equipe" class="form-input" title="Selecione a equipe">
                         <option value="">Selecione a equipe</option>
-                        <option value="manutencao">Manutenção</option>
-                        <option value="nutricao">Nutrição</option>
-                        <option value="higienizacao">Higienização</option>
-                        <option value="hotelaria">Hotelaria</option>
+                        <option value="manutencao">🔧 Manutenção</option>
+                        <option value="nutricao">🍽️ Nutrição</option>
+                        <option value="higienizacao">🧽 Higienização</option>
+                        <option value="hotelaria">🏨 Hotelaria</option>
                     </select>
                 </div>
                 <div class="form-group">
                     <label for="usuario-nome">Nome/Login</label>
-                    <input type="text" id="usuario-nome" class="form-input" required placeholder="Nome ou login" title="Nome ou login do usuário">
+                    <input type="text" id="usuario-nome" class="form-input" required placeholder="Nome completo do usuário" title="Nome completo do usuário">
                 </div>
                 <div class="form-group">
                     <label for="usuario-email">E-mail</label>
-                    <input type="email" id="usuario-email" class="form-input" required placeholder="email@dominio.com" title="E-mail do usuário">
+                    <input type="email" id="usuario-email" class="form-input" required placeholder="email@yuna.com.br" title="E-mail do usuário">
                 </div>
                 <div class="form-group">
                     <label for="usuario-senha">Senha</label>
@@ -381,7 +389,7 @@
                 </div>
                 <div class="modal-novo-usuario-btns">
                     <button type="button" id="btn-cancelar-novo-usuario" class="btn btn-cancelar-novo-usuario">Cancelar</button>
-                    <button type="submit" class="btn btn-criar-novo-usuario">Criar</button>
+                    <button type="submit" class="btn btn-criar-novo-usuario">Criar Usuário</button>
                 </div>
             </form>
         </div>
