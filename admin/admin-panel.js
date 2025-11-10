@@ -1,5 +1,9 @@
 // admin-panel.js - Painel Administrativo YUNA
 
+// === DECLARAÇÕES ANTECIPADAS DE FUNÇÕES CRÍTICAS ===
+// Declarações para evitar problemas de ordem de carregamento
+let limparDadosTeste, verificarEstatisticas, adicionarPainelManutencao;
+
 // === PROTEÇÃO CONTRA ERROS DE EXTENSÕES ===
 (function() {
     'use strict';
@@ -195,6 +199,17 @@ window.emergencyReset = function() {
     } else {
         window.location.reload();
     }
+};
+
+// Referência antecipada para função de limpeza (definida no final do arquivo)
+window.limparDadosTeste = function() {
+    // Função será redefinida completamente no final do arquivo
+    console.log('[DEBUG] limparDadosTeste chamada prematuramente - aguardando definição completa');
+    setTimeout(() => {
+        if (window.limparDadosTeste && typeof window.limparDadosTeste === 'function') {
+            window.limparDadosTeste();
+        }
+    }, 500);
 };
 
 // Função para criação rápida de super admin (desenvolvimento)
@@ -463,11 +478,8 @@ function mostrarSecaoPainel(secao) {
         }
         
         // Garantir que os botões estejam sempre configurados após mudança de seção
-        setTimeout(() => {
-            console.log('[DEBUG] mostrarSecaoPainel: reconfigurando botões para seção:', secao);
-            atualizarVisibilidadeBotoes();
-            configurarEventosBotoes();
-        }, 100);
+        // Removido para evitar chamadas desnecessárias - configuração feita no login
+        console.log('[DEBUG] mostrarSecaoPainel: seção alterada para:', secao);
         
     } catch (err) {
         console.error('[ERRO] mostrarSecaoPainel: falha ao exibir seção:', err);
@@ -661,12 +673,16 @@ window.addEventListener('DOMContentLoaded', async function() {
                             if (typeof window.showManageUsersModal !== 'function') {
                                 console.error('[ERRO] showManageUsersModal não está definida!');
                             }
+                            if (typeof window.limparDadosTeste !== 'function') {
+                                console.error('[ERRO] limparDadosTeste não está definida!');
+                            }
                             
                             console.log('[DEBUG] Estado dos botões após login:', {
                                 userRole: window.userRole,
                                 usuarioAdmin: window.usuarioAdmin,
                                 showCreateUserModal: typeof window.showCreateUserModal,
-                                showManageUsersModal: typeof window.showManageUsersModal
+                                showManageUsersModal: typeof window.showManageUsersModal,
+                                limparDadosTeste: typeof window.limparDadosTeste
                             });
                             
                             // Chamar função de teste para debug
@@ -1350,11 +1366,8 @@ window.mostrarRelatorios = function() {
         }
         
         // Garantir que os botões estejam configurados corretamente
-        setTimeout(() => {
-            console.log('[DEBUG] mostrarRelatorios: reconfigurando botões...');
-            atualizarVisibilidadeBotoes();
-            configurarEventosBotoes();
-        }, 150);
+        // Removido para evitar chamadas duplicadas - configuração feita no login
+        console.log('[DEBUG] mostrarRelatorios: função executada com sucesso');
         
         console.log('[DEBUG] ===== FIM MOSTRAR RELATÓRIOS =====');
         
@@ -2089,16 +2102,34 @@ function atualizarMetricasPainel(total, pendentes, finalizadasHoje, quartosAtivo
     if (quartosEl) quartosEl.textContent = quartosAtivos;
 }
 
+// Variável global para controlar reconfiguração de botões
+let reconfigurando = false;
+
 // Nova função para atualizar visibilidade dos botões
 function atualizarVisibilidadeBotoes() {
+    if (reconfigurando) {
+        console.log('[DEBUG] atualizarVisibilidadeBotoes: já está reconfigurando, ignorando...');
+        return;
+    }
+    
+    reconfigurando = true;
     const usuarioAdmin = window.usuarioAdmin || JSON.parse(localStorage.getItem('usuarioAdmin') || '{}');
     const btnNovoUsuario = document.getElementById('btn-novo-usuario');
     const btnGerenciarUsuarios = document.getElementById('manage-users-btn');
     const btnAcompanhantes = document.getElementById('acompanhantes-btn');
     const btnRelatorios = document.getElementById('relatorios-btn');
+    const btnLimpeza = document.getElementById('limpeza-btn');
     const msgPermissao = document.getElementById('admin-permission-msg');
     const userRoleBadge = document.getElementById('user-role-badge');
     const panelTitle = document.getElementById('panel-title');
+    
+    console.log('[DEBUG] Elementos encontrados:', {
+        btnNovoUsuario: !!btnNovoUsuario,
+        btnGerenciarUsuarios: !!btnGerenciarUsuarios,
+        btnAcompanhantes: !!btnAcompanhantes,
+        btnRelatorios: !!btnRelatorios,
+        btnLimpeza: !!btnLimpeza
+    });
     
     console.log('[DEBUG] Atualizando botões para usuário:', usuarioAdmin);
     
@@ -2202,6 +2233,19 @@ function atualizarVisibilidadeBotoes() {
             console.log('[DEBUG] Botão Relatórios ocultado para usuário não admin');
         }
     }
+
+    // Botão Limpeza - APENAS super_admin
+    if (btnLimpeza) {
+        if (isSuperAdmin) {
+            btnLimpeza.classList.remove('btn-hide');
+            btnLimpeza.style.display = 'inline-flex';
+            console.log('[DEBUG] Botão Limpeza exibido para super_admin');
+        } else {
+            btnLimpeza.classList.add('btn-hide');
+            btnLimpeza.style.display = 'none';
+            console.log('[DEBUG] Botão Limpeza ocultado para usuário não super_admin');
+        }
+    }
     
     // Mensagem de permissão
     if (msgPermissao) {
@@ -2239,8 +2283,14 @@ function atualizarVisibilidadeBotoes() {
         btnNovoUsuario: btnNovoUsuario ? !btnNovoUsuario.classList.contains('btn-hide') : 'não encontrado',
         btnGerenciarUsuarios: btnGerenciarUsuarios ? !btnGerenciarUsuarios.classList.contains('btn-hide') : 'não encontrado',
         btnAcompanhantes: btnAcompanhantes ? !btnAcompanhantes.classList.contains('btn-hide') : 'não encontrado',
-        btnRelatorios: btnRelatorios ? !btnRelatorios.classList.contains('btn-hide') : 'não encontrado'
+        btnRelatorios: btnRelatorios ? !btnRelatorios.classList.contains('btn-hide') : 'não encontrado',
+        btnLimpeza: btnLimpeza ? !btnLimpeza.classList.contains('btn-hide') : 'não encontrado'
     });
+    
+    // Reset da flag de reconfiguração
+    setTimeout(() => {
+        reconfigurando = false;
+    }, 50);
 }
 
 // Função para configurar eventos dos botões
@@ -2257,14 +2307,26 @@ function configurarEventosBotoes() {
     const btnNovoUsuario = document.getElementById('btn-novo-usuario');
     const btnGerenciarUsuarios = document.getElementById('manage-users-btn');
     const btnRelatorios = document.getElementById('relatorios-btn');
+    const btnLimpeza = document.getElementById('limpeza-btn');
+    
+    // Debug específico para o botão de limpeza
+    console.log('[DEBUG] Botão Limpeza Debug:', {
+        elemento: btnLimpeza,
+        id: btnLimpeza?.id,
+        classes: btnLimpeza?.className,
+        display: btnLimpeza?.style.display,
+        hidden: btnLimpeza?.classList.contains('btn-hide')
+    });
     
     console.log('[DEBUG] configurarEventosBotoes: botões encontrados:', {
         btnNovoUsuario: !!btnNovoUsuario,
         btnGerenciarUsuarios: !!btnGerenciarUsuarios,
         btnRelatorios: !!btnRelatorios,
+        btnLimpeza: !!btnLimpeza,
         btnNovoUsuarioVisible: btnNovoUsuario ? !btnNovoUsuario.classList.contains('btn-hide') : false,
         btnGerenciarVisible: btnGerenciarUsuarios ? !btnGerenciarUsuarios.classList.contains('btn-hide') : false,
-        btnRelatoriosVisible: btnRelatorios ? !btnRelatorios.classList.contains('btn-hide') : false
+        btnRelatoriosVisible: btnRelatorios ? !btnRelatorios.classList.contains('btn-hide') : false,
+        btnLimpezaVisible: btnLimpeza ? !btnLimpeza.classList.contains('btn-hide') : false
     });
 
     // Configurar botão Relatórios
@@ -2415,6 +2477,53 @@ function configurarEventosBotoes() {
         console.warn('[AVISO] Botão Gerenciar Usuários não encontrado no DOM!');
     }
     
+    if (btnLimpeza) {
+        console.log('[DEBUG] Configurando evento para Limpeza...');
+        console.log('[DEBUG] btnLimpeza encontrado:', {
+            id: btnLimpeza.id,
+            classes: btnLimpeza.className,
+            onclick: btnLimpeza.onclick
+        });
+        
+        // Remove qualquer evento anterior
+        btnLimpeza.onclick = null;
+        btnLimpeza.removeAttribute('onclick');
+        
+        btnLimpeza.onclick = function(e) {
+            console.log('[LOG] ===== CLIQUE LIMPEZA DETECTADO =====');
+            
+            e.preventDefault();
+            e.stopPropagation();
+            
+            try {
+                console.log('[DEBUG] Verificando função limparDadosTeste...');
+                
+                if (typeof window.limparDadosTeste !== 'function') {
+                    console.error('[ERRO] limparDadosTeste não está definida!');
+                    alert('Erro: Função limparDadosTeste não encontrada!');
+                    return;
+                }
+                
+                console.log('[DEBUG] Chamando limparDadosTeste...');
+                window.limparDadosTeste();
+                console.log('[DEBUG] limparDadosTeste chamada com sucesso');
+                
+            } catch (err) {
+                console.error('[ERRO] Falha ao executar limpeza:', err);
+                alert('Erro ao executar limpeza: ' + err.message);
+            }
+        };
+        
+        // Garantir que o botão é sempre clicável
+        btnLimpeza.style.pointerEvents = 'auto';
+        btnLimpeza.style.cursor = 'pointer';
+        btnLimpeza.disabled = false;
+        
+        console.log('[DEBUG] Evento configurado para Limpeza');
+    } else {
+        console.warn('[AVISO] Botão Limpeza não encontrado no DOM!');
+    }
+    
     console.log('[DEBUG] ===== FIM CONFIGURAÇÃO EVENTOS BOTÕES =====');
     
     // Fallback: Garantir que os botões principais sempre funcionem
@@ -2423,6 +2532,7 @@ function configurarEventosBotoes() {
         
         const btnGerenciar = document.getElementById('manage-users-btn');
         const btnRel = document.getElementById('relatorios-btn');
+        const btnLimp = document.getElementById('limpeza-btn');
         
         if (btnGerenciar && !btnGerenciar.onclick && window.userRole) {
             console.log('[DEBUG] Aplicando fallback para Gerenciar Usuários');
@@ -2432,6 +2542,11 @@ function configurarEventosBotoes() {
         if (btnRel && !btnRel.onclick && window.userRole) {
             console.log('[DEBUG] Aplicando fallback para Relatórios');
             btnRel.onclick = () => window.mostrarRelatorios();
+        }
+        
+        if (btnLimp && !btnLimp.onclick && window.userRole === 'super_admin') {
+            console.log('[DEBUG] Aplicando fallback para Limpeza');
+            btnLimp.onclick = () => window.limparDadosTeste();
         }
     }, 100);
 }
@@ -2445,12 +2560,16 @@ window.reconfigurarBotoes = function() {
     // Remove flags de configuração para forçar reconfiguração
     const btnNovoUsuario = document.getElementById('btn-novo-usuario');
     const btnGerenciarUsuarios = document.getElementById('manage-users-btn');
+    const btnLimpeza = document.getElementById('limpeza-btn');
     
     if (btnNovoUsuario) {
         delete btnNovoUsuario.dataset.configured;
     }
     if (btnGerenciarUsuarios) {
         delete btnGerenciarUsuarios.dataset.configured;
+    }
+    if (btnLimpeza) {
+        delete btnLimpeza.dataset.configured;
     }
     
     // Reconfigura os botões
@@ -2498,6 +2617,7 @@ window.testarBotoes = function() {
     
     const btnCriar = document.getElementById('btn-novo-usuario');
     const btnGerenciar = document.getElementById('manage-users-btn');
+    const btnLimpeza = document.getElementById('limpeza-btn');
     
     console.log('Botão Criar Usuário:', {
         existe: !!btnCriar,
@@ -2513,9 +2633,17 @@ window.testarBotoes = function() {
         onclick: btnGerenciar ? !!btnGerenciar.onclick : false
     });
     
+    console.log('Botão Limpeza:', {
+        existe: !!btnLimpeza,
+        visivel: btnLimpeza ? !btnLimpeza.classList.contains('btn-hide') : false,
+        display: btnLimpeza ? btnLimpeza.style.display : 'N/A',
+        onclick: btnLimpeza ? !!btnLimpeza.onclick : false
+    });
+    
     console.log('Funções disponíveis:', {
         showCreateUserModal: typeof window.showCreateUserModal,
         showManageUsersModal: typeof window.showManageUsersModal,
+        limparDadosTeste: typeof window.limparDadosTeste,
         userRole: window.userRole,
         usuarioAdmin: !!window.usuarioAdmin
     });
