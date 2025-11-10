@@ -630,7 +630,7 @@ function mostrarSecaoPainel(secao) {
             }
             setTimeout(() => document.getElementById('usuario-nome')?.focus(), 300);
             debugLog('[DEBUG] mostrarSecaoPainel: exibindo modal-novo-usuario');
-        } else if (secao === 'manage-users') {
+        } else if (secao === 'manage-users' || secao === 'gerenciar-usuarios') {
             const modal = document.getElementById('manage-users-modal');
             document.getElementById('admin-panel')?.classList.remove('hidden');
             if (modal) {
@@ -1553,7 +1553,21 @@ window.mostrarRelatorios = function() {
         // Adicionar botões de manutenção apenas para super_admin
         if (userRole === 'super_admin') {
             debugLog('[DEBUG] mostrarRelatorios: adicionando painel de manutenção...');
-            adicionarPainelManutencao();
+            
+            // Verificar se a função existe antes de chamar
+            if (typeof window.adicionarPainelManutencao === 'function') {
+                window.adicionarPainelManutencao();
+            } else {
+                console.warn('[AVISO] adicionarPainelManutencao não está definida ainda - será chamada posteriormente');
+                // Tentar novamente após um pequeno delay
+                setTimeout(() => {
+                    if (typeof window.adicionarPainelManutencao === 'function') {
+                        window.adicionarPainelManutencao();
+                    } else {
+                        console.error('[ERRO] adicionarPainelManutencao ainda não está disponível');
+                    }
+                }, 100);
+            }
         } else {
             debugLog('[DEBUG] mostrarRelatorios: painel de manutenção não adicionado (role não é super_admin)');
         }
@@ -2648,11 +2662,11 @@ function configurarEventosBotoes() {
             e.stopPropagation();
             
             try {
-                debugLog('[DEBUG] Chamando mostrarSecaoPainel para gerenciar-usuarios...');
+                debugLog('[DEBUG] Chamando mostrarSecaoPainel para manage-users...');
                 
                 // Usar a função de navegação existente em vez da modal diretamente
                 if (typeof window.mostrarSecaoPainel === 'function') {
-                    window.mostrarSecaoPainel('gerenciar-usuarios');
+                    window.mostrarSecaoPainel('manage-users');
                 } else if (typeof window.showManageUsersModal === 'function') {
                     window.showManageUsersModal();
                 } else {
