@@ -2524,6 +2524,9 @@ async function carregarSolicitacoes() {
             console.log('[NOTIFICATION] Configurando listener pela primeira vez...');
             configurarListenerNotificacoes();
             window.notificationListenerConfigured = true;
+            
+            // ADICIONAL: Configurar atualização periódica como backup
+            configurarAtualizacaoAutomatica();
         } else {
             console.log('[NOTIFICATION] Listener já configurado, pulando...');
         }
@@ -2575,6 +2578,24 @@ function recarregarSolicitacoes(delay = 1000) {
     }, delay);
 }
 
+// === SISTEMA DE ATUALIZAÇÃO AUTOMÁTICA ===
+function configurarAtualizacaoAutomatica() {
+    console.log('[AUTO-UPDATE] Configurando atualização automática a cada 30 segundos...');
+    
+    // Só configurar se não foi configurado ainda
+    if (!window.autoUpdateInterval) {
+        window.autoUpdateInterval = setInterval(() => {
+            // Só atualizar se estiver logado e não carregando
+            if (window.usuarioAdmin && !window.carregandoSolicitacoes) {
+                console.log('[AUTO-UPDATE] Recarregando solicitações automaticamente...');
+                carregarSolicitacoes();
+            }
+        }, 30000); // 30 segundos
+        
+        console.log('[AUTO-UPDATE] Intervalo configurado com sucesso');
+    }
+}
+
 // === SISTEMA DE NOTIFICAÇÕES EM TEMPO REAL ===
 function configurarListenerNotificacoes() {
     try {
@@ -2587,14 +2608,16 @@ function configurarListenerNotificacoes() {
         }
         
         // Armazenar timestamp da última verificação para evitar notificar solicitações existentes
+        // AJUSTE: Definir como 1 minuto atrás para permitir notificações de solicitações muito recentes
         const agora = Date.now();
-        window.lastNotificationCheck = agora;
+        window.lastNotificationCheck = agora - (60 * 1000); // 1 minuto atrás
         
         console.log('[NOTIFICATION] Iniciando listener para solicitações...', {
             usuario: usuarioAdmin.email,
             equipe: usuarioAdmin.equipe,
             role: usuarioAdmin.role,
-            lastCheck: new Date(agora).toLocaleString()
+            lastCheck: new Date(window.lastNotificationCheck).toLocaleString(),
+            agoraReal: new Date(agora).toLocaleString()
         });
         
         // Listener para novas solicitações (SEM ORDERBY para evitar problemas de índice)
@@ -2616,32 +2639,42 @@ function configurarListenerNotificacoes() {
                         if (change.type === 'added') {
                             const novaSolicitacao = { id: change.doc.id, ...change.doc.data() };
                             
-                            console.log('[NOTIFICATION] Solicitação adicionada:', {
+                            console.log('[NOTIFICATION] Verificando se é nova:', {
                                 id: novaSolicitacao.id,
                                 timestamp: novaSolicitacao.timestamp?.toMillis(),
                                 lastCheck: window.lastNotificationCheck,
-                                isNewer: (novaSolicitacao.timestamp?.toMillis() || 0) > window.lastNotificationCheck
+                                isNewer: (novaSolicitacao.timestamp?.toMillis() || 0) > window.lastNotificationCheck,
+                                diferenca: (novaSolicitacao.timestamp?.toMillis() || 0) - window.lastNotificationCheck
                             });
                             
                             // Verificar se é uma solicitação realmente nova (criada após o login)
                             const timestampSolicitacao = novaSolicitacao.timestamp?.toMillis() || 0;
-                            if (timestampSolicitacao > window.lastNotificationCheck) {
-                                
+                            const isNova = timestampSolicitacao > window.lastNotificationCheck;
+                            
+                            if (isNova) {
                                 console.log('[NOTIFICATION] Verificando permissões para:', novaSolicitacao);
                                 // Verificar se o usuário tem permissão para ver esta solicitação
                                 if (podeVerSolicitacaoJS(usuarioAdmin, novaSolicitacao)) {
-                                    console.log('[NOTIFICATION] Nova solicitação detectada:', novaSolicitacao);
+                                    console.log('[NOTIFICATION] ✅ Nova solicitação detectada:', novaSolicitacao);
                                     mostrarNotificacaoNovaSolicitacao(novaSolicitacao);
                                     
                                     // Recarregar as solicitações para mostrar a nova no topo
                                     setTimeout(() => {
+                                        console.log('[NOTIFICATION] Recarregando lista após nova solicitação...');
                                         carregarSolicitacoes();
                                     }, 1000);
                                 } else {
-                                    console.log('[NOTIFICATION] Sem permissão para ver esta solicitação');
+                                    console.log('[NOTIFICATION] ❌ Sem permissão para ver esta solicitação');
                                 }
                             } else {
-                                console.log('[NOTIFICATION] Solicitação não é nova (timestamp anterior ao login)');
+                                console.log('[NOTIFICATION] ⏰ Solicitação não é nova (timestamp anterior ao login)');
+                                
+                                // TESTE: Se for muito recente (menos de 2 minutos), considerar nova mesmo assim
+                                const duasMinutosAtras = Date.now() - (2 * 60 * 1000);
+                                if (timestampSolicitacao > duasMinutosAtras && podeVerSolicitacaoJS(usuarioAdmin, novaSolicitacao)) {
+                                    console.log('[NOTIFICATION] 🔄 Solicitação recente será notificada mesmo assim');
+                                    mostrarNotificacaoNovaSolicitacao(novaSolicitacao);
+                                }
                             }
                         }
                     });
