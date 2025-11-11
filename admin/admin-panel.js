@@ -2267,16 +2267,16 @@ async function carregarSolicitacoes() {
         });
 
         // Buscar todas as solicitações ordenadas por timestamp (mais recentes primeiro)
-        debugLog('[DEBUG] Iniciando busca no Firestore...');
-        debugLog('[DEBUG] Projeto:', window.db.app.options.projectId);
-        debugLog('[DEBUG] Coleção: solicitacoes');
+        console.log('[DEBUG] Iniciando busca no Firestore...');
+        console.log('[DEBUG] Projeto:', window.db.app.options.projectId);
+        console.log('[DEBUG] Coleção: solicitacoes');
         
         // TESTE SIMPLIFICADO: Apenas query simples sem ordenação
-        debugLog('[DEBUG] Executando query SIMPLES sem ordenação...');
+        console.log('[DEBUG] Executando query SIMPLES sem ordenação...');
         const snapshot = await window.db.collection('solicitacoes').get();
-        debugLog('[DEBUG] Query simples executada com sucesso');
+        console.log('[DEBUG] Query simples executada com sucesso');
         
-        debugLog('[DEBUG] Snapshot recebido:', {
+        console.log('[DEBUG] Snapshot recebido:', {
             size: snapshot.size,
             empty: snapshot.empty,
             metadata: snapshot.metadata
@@ -2285,7 +2285,7 @@ async function carregarSolicitacoes() {
         // DEBUG AVANÇADO: Verificar autenticação e permissões
         const currentUser = window.auth.currentUser;
         if (currentUser) {
-            debugLog('[DEBUG] Usuário autenticado:', {
+            console.log('[DEBUG] Usuário autenticado:', {
                 uid: currentUser.uid,
                 email: currentUser.email,
                 emailVerified: currentUser.emailVerified
@@ -2294,7 +2294,7 @@ async function carregarSolicitacoes() {
             // Verificar token de autenticação
             try {
                 const idTokenResult = await currentUser.getIdTokenResult();
-                debugLog('[DEBUG] Token claims:', idTokenResult.claims);
+                console.log('[DEBUG] Token claims:', idTokenResult.claims);
             } catch (tokenError) {
                 console.error('[ERRO] Erro ao obter token:', tokenError);
             }
@@ -2304,7 +2304,21 @@ async function carregarSolicitacoes() {
         
         if (snapshot.empty) {
             console.warn('[AVISO] Coleção solicitacoes está vazia no Firestore');
-            debugLog('[DEBUG] Verificar se há dados na coleção solicitacoes no projeto:', window.db.app.options.projectId);
+            console.log('[DEBUG] Verificar se há dados na coleção solicitacoes no projeto:', window.db.app.options.projectId);
+            
+            // TESTE DIRETO: Tentar acessar o documento específico do Firebase Console
+            console.log('[TESTE] Verificando documento específico 2yKdMYESGGMQqLOwGC6T...');
+            try {
+                const docRef = window.db.collection('solicitacoes').doc('2yKdMYESGGMQqLOwGC6T');
+                const docSnap = await docRef.get();
+                if (docSnap.exists) {
+                    console.log('✅ DOCUMENTO ESPECÍFICO ENCONTRADO:', docSnap.data());
+                } else {
+                    console.log('❌ DOCUMENTO ESPECÍFICO NÃO EXISTE');
+                }
+            } catch (docError) {
+                console.error('❌ ERRO AO ACESSAR DOCUMENTO ESPECÍFICO:', docError);
+            }
             
             // TESTE: Verificar outras possíveis coleções
             const testeColes = ['solicitacao', 'pedidos', 'requests', 'tickets'];
