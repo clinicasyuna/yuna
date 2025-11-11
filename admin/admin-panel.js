@@ -2513,7 +2513,10 @@ async function carregarSolicitacoes() {
             // EM PRODUÇÃO: Não carregar dados simulados
             debugLog('[DEBUG] Sistema em produção - não gerando dados de exemplo em caso de erro');
         }
+        
+        console.log('[DEBUG] Finalizando carregarSolicitacoes - indo para finally...');
     } finally {
+        console.log('[DEBUG] FINALLY: Entrando no finally block');
         carregandoSolicitacoes = false;
         
         // Configurar listener de notificações em tempo real apenas uma vez
@@ -2594,9 +2597,8 @@ function configurarListenerNotificacoes() {
             lastCheck: new Date(agora).toLocaleString()
         });
         
-        // Listener para novas solicitações
+        // Listener para novas solicitações (SEM ORDERBY para evitar problemas de índice)
         window.db.collection('solicitacoes')
-            .orderBy('timestamp', 'desc')
             .onSnapshot((snapshot) => {
                 console.log('[NOTIFICATION] Snapshot recebido:', {
                     size: snapshot.size,
