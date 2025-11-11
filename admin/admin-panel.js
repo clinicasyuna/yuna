@@ -650,6 +650,27 @@ async function mostrarSecaoPainel(secao) {
                 modal.style.left = '0';
                 modal.style.width = '100vw';
                 modal.style.height = '100vh';
+                
+                // CORREÇÃO: Carregar usuários quando modal é exibido
+                debugLog('[DEBUG] Carregando usuários para o modal...');
+                console.log('[MANAGE-USERS] Iniciando carregamento de usuários...');
+                
+                if (typeof window.carregarUsuarios === 'function') {
+                    try {
+                        console.log('[MANAGE-USERS] Executando window.carregarUsuarios()...');
+                        await window.carregarUsuarios();
+                        console.log('[MANAGE-USERS] ✅ Usuários carregados com sucesso no modal');
+                        debugLog('[DEBUG] ✅ Usuários carregados com sucesso no modal');
+                    } catch (error) {
+                        console.error('[MANAGE-USERS] ❌ Falha ao carregar usuários:', error);
+                        console.error('[MANAGE-USERS] Stack trace:', error.stack);
+                        showToast('Erro', 'Falha ao carregar usuários: ' + error.message, 'error');
+                    }
+                } else {
+                    console.error('[MANAGE-USERS] ❌ Função carregarUsuarios não está disponível!');
+                    console.error('[MANAGE-USERS] Disponível:', typeof window.carregarUsuarios);
+                    console.error('[MANAGE-USERS] Window object:', Object.keys(window).filter(k => k.includes('carrega')));
+                }
             }
             debugLog('[DEBUG] mostrarSecaoPainel: exibindo manage-users-modal');
         } else {
