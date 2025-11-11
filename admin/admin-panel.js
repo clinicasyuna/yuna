@@ -2525,6 +2525,8 @@ async function carregarSolicitacoes() {
             configurarListenerNotificacoes();
             window.notificationListenerConfigured = true;
             
+            console.log('[AUTO-UPDATE] Configurando atualização automática a cada 30 segundos...');
+            
             // ADICIONAL: Configurar atualização periódica como backup
             configurarAtualizacaoAutomatica();
         } else {
@@ -2620,6 +2622,13 @@ function configurarListenerNotificacoes() {
             agoraReal: new Date(agora).toLocaleString()
         });
         
+        // Marcar que é o carregamento inicial para não notificar sobre todas as solicitações existentes
+        window.isInitialLoad = true;
+        setTimeout(() => {
+            window.isInitialLoad = false;
+            console.log('[NOTIFICATION] Carregamento inicial finalizado - notificações ativas');
+        }, 5000); // 5 segundos para carregamento inicial
+        
         // Listener para novas solicitações (SEM ORDERBY para evitar problemas de índice)
         window.db.collection('solicitacoes')
             .onSnapshot((snapshot) => {
@@ -2642,21 +2651,38 @@ function configurarListenerNotificacoes() {
                             console.log('[NOTIFICATION] Verificando se é nova:', {
                                 id: novaSolicitacao.id,
                                 timestamp: novaSolicitacao.timestamp?.toMillis(),
+                                dataCriacao: novaSolicitacao.dataCriacao?.toMillis(),
                                 lastCheck: window.lastNotificationCheck,
-                                isNewer: (novaSolicitacao.timestamp?.toMillis() || 0) > window.lastNotificationCheck,
-                                diferenca: (novaSolicitacao.timestamp?.toMillis() || 0) - window.lastNotificationCheck
+                                temTimestamp: !!novaSolicitacao.timestamp,
+                                temDataCriacao: !!novaSolicitacao.dataCriacao
                             });
                             
-                            // Verificar se é uma solicitação realmente nova (criada após o login)
-                            const timestampSolicitacao = novaSolicitacao.timestamp?.toMillis() || 0;
+                            // FALLBACK: Se não há timestamp, considerar como nova durante a primeira verificação
+                            const timestampSolicitacao = novaSolicitacao.timestamp?.toMillis() || 
+                                                        novaSolicitacao.dataCriacao?.toMillis() || 
+                                                        Date.now(); // Usar timestamp atual como fallback
+                            
                             const isNova = timestampSolicitacao > window.lastNotificationCheck;
                             
-                            if (isNova) {
-                                console.log('[NOTIFICATION] Verificando permissões para:', novaSolicitacao);
+                            // ADICIONAL: Se não tem timestamp, verificar se é uma solicitação que acabou de aparecer no listener
+                            const isNovaNoListener = !novaSolicitacao.timestamp && !novaSolicitacao.dataCriacao;
+                            
+                            if (isNova || (isNovaNoListener && change.type === 'added')) {
+                                console.log('[NOTIFICATION] Verificando permissões para:', {
+                                    id: novaSolicitacao.id,
+                                    equipe: novaSolicitacao.equipe,
+                                    isNova,
+                                    isNovaNoListener
+                                });
+                                
                                 // Verificar se o usuário tem permissão para ver esta solicitação
                                 if (podeVerSolicitacaoJS(usuarioAdmin, novaSolicitacao)) {
                                     console.log('[NOTIFICATION] ✅ Nova solicitação detectada:', novaSolicitacao);
-                                    mostrarNotificacaoNovaSolicitacao(novaSolicitacao);
+                                    
+                                    // Só mostrar notificação se for realmente nova (não durante o carregamento inicial)
+                                    if (!window.isInitialLoad) {
+                                        mostrarNotificacaoNovaSolicitacao(novaSolicitacao);
+                                    }
                                     
                                     // Recarregar as solicitações para mostrar a nova no topo
                                     setTimeout(() => {
@@ -2668,13 +2694,6 @@ function configurarListenerNotificacoes() {
                                 }
                             } else {
                                 console.log('[NOTIFICATION] ⏰ Solicitação não é nova (timestamp anterior ao login)');
-                                
-                                // TESTE: Se for muito recente (menos de 2 minutos), considerar nova mesmo assim
-                                const duasMinutosAtras = Date.now() - (2 * 60 * 1000);
-                                if (timestampSolicitacao > duasMinutosAtras && podeVerSolicitacaoJS(usuarioAdmin, novaSolicitacao)) {
-                                    console.log('[NOTIFICATION] 🔄 Solicitação recente será notificada mesmo assim');
-                                    mostrarNotificacaoNovaSolicitacao(novaSolicitacao);
-                                }
                             }
                         }
                     });
