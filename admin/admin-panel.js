@@ -597,15 +597,20 @@ async function mostrarSecaoPainel(secao) {
                 await configurarListenerAcompanhantes();
             }
         } else if (secao === 'relatorios') {
-            // Para relatórios, mostrar APENAS a seção de relatórios (não o admin-panel)
-            const relatoriosSection = document.getElementById('relatorios-section');
-            if (relatoriosSection) {
-                relatoriosSection.classList.remove('hidden');
-                debugLog('[DEBUG] mostrarSecaoPainel: exibindo APENAS relatorios-section');
+            // Para relatórios, chamar a função específica
+            debugLog('[DEBUG] mostrarSecaoPainel: chamando função mostrarRelatorios...');
+            
+            if (typeof window.mostrarRelatorios === 'function') {
+                try {
+                    window.mostrarRelatorios();
+                    debugLog('[DEBUG] mostrarSecaoPainel: função mostrarRelatorios executada com sucesso');
+                } catch (error) {
+                    console.error('[ERRO] mostrarSecaoPainel: erro ao executar mostrarRelatorios:', error);
+                    showToast('Erro', 'Falha ao carregar relatórios: ' + error.message, 'error');
+                }
             } else {
-                console.error('[ERRO] mostrarSecaoPainel: elemento relatorios-section não encontrado no HTML!');
-                alert('Erro: Seção de relatórios não encontrada no HTML');
-                return false;
+                console.error('[ERRO] mostrarSecaoPainel: função mostrarRelatorios não encontrada!');
+                showToast('Erro', 'Função de relatórios não disponível', 'error');
             }
         } else if (secao === 'create-user') {
             const modal = document.getElementById('modal-novo-usuario');
@@ -1550,12 +1555,30 @@ window.mostrarRelatorios = function() {
             }
         }
         
-        debugLog('[DEBUG] mostrarRelatorios: acesso autorizado, mostrando seção relatórios');
+        debugLog('[DEBUG] mostrarRelatorios: acesso autorizado, configurando interface relatórios');
         
-        // Permite acesso para admin e super_admin autenticados
-        mostrarSecaoPainel('relatorios');
+        // Mostrar interface de relatórios diretamente (sem chamar mostrarSecaoPainel recursivamente)
+        // Ocultar outras seções
+        const secoes = [
+            'admin-panel',
+            'acompanhantes-section',
+            'create-user-modal',
+            'manage-users-modal',
+            'teams-grid'
+        ];
+        secoes.forEach(id => {
+            const el = document.getElementById(id) || document.querySelector('.' + id);
+            if (el) el.classList.add('hidden');
+        });
         
-        debugLog('[DEBUG] mostrarRelatorios: seção mostrada, configurando filtros');
+        // Mostrar painel admin com relatórios
+        const adminPanel = document.getElementById('admin-panel');
+        if (adminPanel) {
+            adminPanel.classList.remove('hidden');
+            debugLog('[DEBUG] mostrarRelatorios: admin-panel exibido');
+        }
+        
+        debugLog('[DEBUG] mostrarRelatorios: interface configurada, configurando filtros');
         
         var filtroPeriodo = document.getElementById('filtro-periodo');
         if (filtroPeriodo && !filtroPeriodo.dataset.listenerAdded) {
