@@ -557,7 +557,7 @@ function ocultarSecoesPrincipais() {
     debugLog('[DEBUG] ocultarSecoesPrincipais: exibindo auth-section');
 }
 
-function mostrarSecaoPainel(secao) {
+async function mostrarSecaoPainel(secao) {
     try {
         console.log(`[DEBUG] mostrarSecaoPainel: navegação para '${secao}'`);
         // Oculta todas as seções principais
@@ -594,7 +594,7 @@ function mostrarSecaoPainel(secao) {
             // Inicializar listener de tempo real para acompanhantes
             if (typeof configurarListenerAcompanhantes === 'function') {
                 debugLog('[DEBUG] Inicializando listener de acompanhantes...');
-                configurarListenerAcompanhantes();
+                await configurarListenerAcompanhantes();
             }
         } else if (secao === 'relatorios') {
             // Para relatórios, mostrar APENAS a seção de relatórios (não o admin-panel)
@@ -1822,17 +1822,33 @@ window.verificarUsuariosExistentes = async function() {
         const adminSnap = await window.db.collection('usuarios_admin').get();
         console.log('👥 [VERIFICAR] usuarios_admin:', adminSnap.size, 'documentos');
         
-        console.log('👥 [VERIFICAR] Verificando usuarios_acompanhantes...');
-        const acompSnap = await window.db.collection('usuarios_acompanhantes').get();
-        console.log('👥 [VERIFICAR] usuarios_acompanhantes:', acompSnap.size, 'documentos');
+        // Verificar permissões antes de tentar acessar usuarios_acompanhantes
+        const user = window.auth.currentUser;
+        let acompanhantesCount = 0;
         
-        const total = equipeSnap.size + adminSnap.size + acompSnap.size;
+        if (user) {
+            try {
+                const userData = await obterDadosUsuario(user.uid);
+                if (userData && (userData.role === 'super_admin' || userData.role === 'admin')) {
+                    console.log('👥 [VERIFICAR] Verificando usuarios_acompanhantes...');
+                    const acompSnap = await window.db.collection('usuarios_acompanhantes').get();
+                    acompanhantesCount = acompSnap.size;
+                    console.log('👥 [VERIFICAR] usuarios_acompanhantes:', acompanhantesCount, 'documentos');
+                } else {
+                    console.log('👥 [VERIFICAR] ⚠️ Usuário sem permissão para acessar usuarios_acompanhantes');
+                }
+            } catch (permError) {
+                console.log('👥 [VERIFICAR] ⚠️ Erro de permissão ao acessar usuarios_acompanhantes:', permError.message);
+            }
+        }
+        
+        const total = equipeSnap.size + adminSnap.size + acompanhantesCount;
         console.log('👥 [VERIFICAR] ✅ TOTAL GERAL:', total, 'usuários no sistema');
         
         return {
             equipe: equipeSnap.size,
             admin: adminSnap.size,
-            acompanhantes: acompSnap.size,
+            acompanhantes: acompanhantesCount,
             total: total
         };
         
@@ -6299,11 +6315,29 @@ async function verificarQuartoOcupado(quarto) {
 let acompanhantesListener = null;
 
 // Função para configurar listener em tempo real para acompanhantes
-function configurarListenerAcompanhantes() {
+async function configurarListenerAcompanhantes() {
     debugLog('[DEBUG] configurarListenerAcompanhantes: configurando listener...');
     
     if (!window.db) {
         console.warn('[AVISO] configurarListenerAcompanhantes: Firestore não inicializado');
+        return;
+    }
+
+    // Verificar se usuário tem permissão para acessar acompanhantes
+    const user = window.auth.currentUser;
+    if (!user) {
+        debugLog('[DEBUG] configurarListenerAcompanhantes: usuário não autenticado');
+        return;
+    }
+
+    try {
+        const userData = await obterDadosUsuario(user.uid);
+        if (!userData || (userData.role !== 'super_admin' && userData.role !== 'admin')) {
+            debugLog('[DEBUG] configurarListenerAcompanhantes: usuário sem permissão para acompanhantes');
+            return;
+        }
+    } catch (error) {
+        debugLog('[DEBUG] configurarListenerAcompanhantes: erro ao verificar permissões:', error);
         return;
     }
 
@@ -6408,7 +6442,7 @@ async function carregarAcompanhantes() {
 
         // Configurar listener em tempo real se ainda não foi configurado
         if (!acompanhantesListener) {
-            configurarListenerAcompanhantes();
+            await configurarListenerAcompanhantes();
         }
 
     } catch (error) {
