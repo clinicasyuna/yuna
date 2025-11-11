@@ -4149,6 +4149,11 @@ window.closeManageUsersModal = function() {
         modal.classList.add('hidden');
         modal.style.display = 'none';
         debugLog('[DEBUG] closeManageUsersModal: modal fechado');
+        
+        // CORREÇÃO: Navegar de volta para o painel principal
+        debugLog('[DEBUG] closeManageUsersModal: navegando para painel principal...');
+        mostrarSecaoPainel('painel');
+        debugLog('[DEBUG] closeManageUsersModal: navegação concluída');
     }
 };
 
