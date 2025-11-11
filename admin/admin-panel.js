@@ -1591,8 +1591,24 @@ window.mostrarRelatorios = function() {
         
         debugLog('[DEBUG] mostrarRelatorios: verificando se deve carregar solicitações');
         
-        // NÃO carregar solicitações na tela de relatórios - apenas configurar filtros
-        debugLog('[DEBUG] mostrarRelatorios: configurando apenas filtros (não carregando solicitações)');
+        // Carregar dados de relatórios
+        debugLog('[DEBUG] mostrarRelatorios: carregando dados de relatórios...');
+        
+        // Carregar solicitações para exibir na tela de relatórios
+        try {
+            await window.carregarSolicitacoes();
+            debugLog('[DEBUG] mostrarRelatorios: solicitações carregadas com sucesso');
+        } catch (error) {
+            console.error('[ERRO] mostrarRelatorios: erro ao carregar solicitações:', error);
+        }
+        
+        // Carregar estatísticas do sistema
+        try {
+            await window.verificarEstatisticas();
+            debugLog('[DEBUG] mostrarRelatorios: estatísticas verificadas com sucesso');
+        } catch (error) {
+            console.error('[ERRO] mostrarRelatorios: erro ao verificar estatísticas:', error);
+        }
         
         // Adicionar botões de manutenção apenas para super_admin
         if (userRole === 'super_admin') {
