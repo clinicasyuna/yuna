@@ -2271,38 +2271,36 @@ async function carregarSolicitacoes() {
         debugLog('[DEBUG] Projeto:', window.db.app.options.projectId);
         debugLog('[DEBUG] Coleção: solicitacoes');
         
-        let firestorePromise;
-        try {
-            // Tentar com ordenação primeiro
-            debugLog('[DEBUG] Tentando query com orderBy...');
-            firestorePromise = window.db.collection('solicitacoes')
-                .orderBy('timestamp', 'desc')
-                .get();
-        } catch (orderError) {
-            debugLog('[DEBUG] Erro na ordenação, usando query simples:', orderError.message);
-            // Fallback: buscar sem ordenação
-            firestorePromise = window.db.collection('solicitacoes').get();
-        }
-        
-        // Buscar todas as solicitações com timeout
-        let snapshot;
-        try {
-            debugLog('[DEBUG] Executando query no Firestore...');
-            snapshot = await Promise.race([firestorePromise, timeoutPromise]);
-            debugLog('[DEBUG] Query executada com sucesso');
-        } catch (queryError) {
-            console.warn('[AVISO] Erro na query ordenada, tentando sem ordenação:', queryError.message);
-            // Fallback final: query simples
-            debugLog('[DEBUG] Tentando fallback query simples...');
-            const simpleFallback = window.db.collection('solicitacoes').get();
-            snapshot = await Promise.race([simpleFallback, timeoutPromise]);
-        }
+        // TESTE SIMPLIFICADO: Apenas query simples sem ordenação
+        debugLog('[DEBUG] Executando query SIMPLES sem ordenação...');
+        const snapshot = await window.db.collection('solicitacoes').get();
+        debugLog('[DEBUG] Query simples executada com sucesso');
         
         debugLog('[DEBUG] Snapshot recebido:', {
             size: snapshot.size,
             empty: snapshot.empty,
             metadata: snapshot.metadata
         });
+        
+        // DEBUG AVANÇADO: Verificar autenticação e permissões
+        const currentUser = window.auth.currentUser;
+        if (currentUser) {
+            debugLog('[DEBUG] Usuário autenticado:', {
+                uid: currentUser.uid,
+                email: currentUser.email,
+                emailVerified: currentUser.emailVerified
+            });
+            
+            // Verificar token de autenticação
+            try {
+                const idTokenResult = await currentUser.getIdTokenResult();
+                debugLog('[DEBUG] Token claims:', idTokenResult.claims);
+            } catch (tokenError) {
+                console.error('[ERRO] Erro ao obter token:', tokenError);
+            }
+        } else {
+            console.error('[ERRO] Usuário não autenticado!');
+        }
         
         if (snapshot.empty) {
             console.warn('[AVISO] Coleção solicitacoes está vazia no Firestore');
