@@ -4828,6 +4828,35 @@ function renderizarCardsEquipe(equipes) {
                 </h3>
                 <span class="badge" id="count-${equipe}">${solicitacoes.length}</span>
             </div>
+            
+            <!-- Filtros da Equipe -->
+            <div class="team-filters" id="filters-${equipe}">
+                <div class="filter-group">
+                    <label for="filter-status-${equipe}">Status:</label>
+                    <select id="filter-status-${equipe}" class="filter-select" onchange="filtrarSolicitacoesPorStatus('${equipe}', this.value)">
+                        <option value="todos">Todos</option>
+                        <option value="pendente">Pendente</option>
+                        <option value="em-andamento">Em Andamento</option>
+                        <option value="finalizada">Finalizada</option>
+                    </select>
+                </div>
+                <div class="filter-group">
+                    <label for="filter-prioridade-${equipe}">Prioridade:</label>
+                    <select id="filter-prioridade-${equipe}" class="filter-select" onchange="filtrarSolicitacoesPorPrioridade('${equipe}', this.value)">
+                        <option value="todos">Todas</option>
+                        <option value="urgente">Urgente</option>
+                        <option value="alta">Alta</option>
+                        <option value="normal">Normal</option>
+                        <option value="baixa">Baixa</option>
+                    </select>
+                </div>
+                <div class="filter-group">
+                    <button class="filter-clear-btn" onclick="limparFiltrosSolicitacoes('${equipe}')" title="Limpar filtros">
+                        <i class="fas fa-refresh"></i> Limpar
+                    </button>
+                </div>
+            </div>
+            
             <div class="team-content" id="content-${equipe}">
                 ${solicitacoes.length === 0 ? `
                     <div class="empty-state">
@@ -4841,6 +4870,7 @@ function renderizarCardsEquipe(equipes) {
                              data-equipe="${equipe}" 
                              data-index="${index}" 
                              data-status="${solicitacao.status || 'pendente'}"
+                             data-prioridade="${solicitacao.prioridade || 'normal'}"
                              onclick="abrirSolicitacaoModal(${JSON.stringify(solicitacao).replace(/'/g, '&apos;')})">
                             
                             <div class="card-header">
@@ -7712,6 +7742,225 @@ window.forceRemoveDebugButtons = function() {
     
     return removed;
 };
+
+// === FUNÇÕES DE FILTRO DAS SOLICITAÇÕES ===
+
+// Filtrar solicitações por status
+window.filtrarSolicitacoesPorStatus = function(equipe, status) {
+    console.log(`[FILTRO] Filtrando equipe ${equipe} por status: ${status}`);
+    
+    const content = document.getElementById(`content-${equipe}`);
+    if (!content) return;
+    
+    const cards = content.querySelectorAll('.solicitacao-card');
+    let visibleCount = 0;
+    
+    cards.forEach(card => {
+        const cardStatus = card.getAttribute('data-status') || 'pendente';
+        const shouldShow = status === 'todos' || cardStatus === status;
+        
+        if (shouldShow) {
+            card.style.display = 'block';
+            visibleCount++;
+        } else {
+            card.style.display = 'none';
+        }
+    });
+    
+    // Atualizar contador
+    const badge = document.getElementById(`count-${equipe}`);
+    if (badge) {
+        badge.textContent = status === 'todos' ? cards.length : visibleCount;
+    }
+    
+    // Mostrar empty state se necessário
+    atualizarEmptyState(equipe, visibleCount);
+};
+
+// Filtrar solicitações por prioridade
+window.filtrarSolicitacoesPorPrioridade = function(equipe, prioridade) {
+    console.log(`[FILTRO] Filtrando equipe ${equipe} por prioridade: ${prioridade}`);
+    
+    const content = document.getElementById(`content-${equipe}`);
+    if (!content) return;
+    
+    const cards = content.querySelectorAll('.solicitacao-card');
+    let visibleCount = 0;
+    
+    cards.forEach(card => {
+        const cardPrioridade = card.getAttribute('data-prioridade') || 'normal';
+        const shouldShow = prioridade === 'todos' || cardPrioridade === prioridade;
+        
+        if (shouldShow) {
+            card.style.display = 'block';
+            visibleCount++;
+        } else {
+            card.style.display = 'none';
+        }
+    });
+    
+    // Atualizar contador
+    const badge = document.getElementById(`count-${equipe}`);
+    if (badge) {
+        badge.textContent = prioridade === 'todos' ? cards.length : visibleCount;
+    }
+    
+    // Mostrar empty state se necessário
+    atualizarEmptyState(equipe, visibleCount);
+};
+
+// Limpar todos os filtros
+window.limparFiltrosSolicitacoes = function(equipe) {
+    console.log(`[FILTRO] Limpando filtros da equipe ${equipe}`);
+    
+    // Resetar selects
+    const statusSelect = document.getElementById(`filter-status-${equipe}`);
+    const prioridadeSelect = document.getElementById(`filter-prioridade-${equipe}`);
+    
+    if (statusSelect) statusSelect.value = 'todos';
+    if (prioridadeSelect) prioridadeSelect.value = 'todos';
+    
+    // Mostrar todos os cards
+    const content = document.getElementById(`content-${equipe}`);
+    if (content) {
+        const cards = content.querySelectorAll('.solicitacao-card');
+        cards.forEach(card => {
+            card.style.display = 'block';
+        });
+        
+        // Resetar contador
+        const badge = document.getElementById(`count-${equipe}`);
+        if (badge) {
+            badge.textContent = cards.length;
+        }
+        
+        atualizarEmptyState(equipe, cards.length);
+    }
+};
+
+// Função auxiliar para mostrar/esconder empty state
+function atualizarEmptyState(equipe, visibleCount) {
+    const content = document.getElementById(`content-${equipe}`);
+    if (!content) return;
+    
+    let emptyState = content.querySelector('.empty-state');
+    
+    if (visibleCount === 0) {
+        if (!emptyState) {
+            const icones = {
+                'manutencao': 'tools',
+                'nutricao': 'utensils',
+                'higienizacao': 'spray-can',
+                'hotelaria': 'bed'
+            };
+            
+            const equipesNomes = {
+                'manutencao': 'Manutenção',
+                'nutricao': 'Nutrição',
+                'higienizacao': 'Higienização',
+                'hotelaria': 'Hotelaria'
+            };
+            
+            emptyState = document.createElement('div');
+            emptyState.className = 'empty-state filter-empty';
+            emptyState.innerHTML = `
+                <i class="fas fa-${icones[equipe]}"></i>
+                <p>Nenhuma solicitação encontrada com os filtros aplicados</p>
+            `;
+            content.appendChild(emptyState);
+        }
+        emptyState.style.display = 'block';
+    } else {
+        if (emptyState) {
+            emptyState.style.display = 'none';
+        }
+    }
+}
+
+// === CSS PARA FILTROS ===
+const filterStyles = `
+    .team-filters {
+        padding: 15px;
+        background: #f8f9fa;
+        border-bottom: 1px solid #e9ecef;
+        display: flex;
+        flex-wrap: wrap;
+        gap: 15px;
+        align-items: center;
+    }
+    
+    .filter-group {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+    }
+    
+    .filter-group label {
+        font-weight: 600;
+        font-size: 0.9rem;
+        color: #495057;
+    }
+    
+    .filter-select {
+        padding: 6px 12px;
+        border: 1px solid #ced4da;
+        border-radius: 4px;
+        background: white;
+        font-size: 0.9rem;
+        min-width: 120px;
+    }
+    
+    .filter-select:focus {
+        outline: none;
+        border-color: #007bff;
+        box-shadow: 0 0 0 0.2rem rgba(0, 123, 255, 0.25);
+    }
+    
+    .filter-clear-btn {
+        padding: 6px 12px;
+        background: #6c757d;
+        color: white;
+        border: none;
+        border-radius: 4px;
+        font-size: 0.85rem;
+        cursor: pointer;
+        transition: background 0.2s;
+    }
+    
+    .filter-clear-btn:hover {
+        background: #5a6268;
+    }
+    
+    .empty-state.filter-empty {
+        background: #fff3cd;
+        border: 1px solid #ffeaa7;
+        color: #856404;
+    }
+    
+    @media (max-width: 768px) {
+        .team-filters {
+            flex-direction: column;
+            align-items: stretch;
+        }
+        
+        .filter-group {
+            justify-content: space-between;
+        }
+        
+        .filter-select {
+            min-width: auto;
+            flex: 1;
+        }
+    }
+`;
+
+// Adicionar CSS dos filtros
+if (!document.getElementById('filter-styles')) {
+    const styleSheet = document.createElement('style');
+    styleSheet.id = 'filter-styles';
+    styleSheet.textContent = filterStyles;
+    document.head.appendChild(styleSheet);
+}
 
 // === APLICAR CSS FORCE-HIDE PARA PRODUÇÃO ===
 (function applyProductionCSS() {
