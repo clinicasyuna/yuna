@@ -2518,8 +2518,11 @@ async function carregarSolicitacoes() {
         
         // Configurar listener de notificações em tempo real apenas uma vez
         if (!window.notificationListenerConfigured) {
+            console.log('[NOTIFICATION] Configurando listener pela primeira vez...');
             configurarListenerNotificacoes();
             window.notificationListenerConfigured = true;
+        } else {
+            console.log('[NOTIFICATION] Listener já configurado, pulando...');
         }
         
         // Garantir que a interface está visível após carregamento
@@ -2572,11 +2575,11 @@ function recarregarSolicitacoes(delay = 1000) {
 // === SISTEMA DE NOTIFICAÇÕES EM TEMPO REAL ===
 function configurarListenerNotificacoes() {
     try {
-        debugLog('[NOTIFICATION] Configurando listener de notificações...');
+        console.log('[NOTIFICATION] Configurando listener de notificações...');
         
         const usuarioAdmin = window.usuarioAdmin || JSON.parse(localStorage.getItem('usuarioAdmin') || '{}');
         if (!usuarioAdmin || !usuarioAdmin.uid) {
-            debugLog('[NOTIFICATION] Usuário não está logado - não configurando notificações');
+            console.log('[NOTIFICATION] Usuário não está logado - não configurando notificações');
             return;
         }
         
@@ -2584,7 +2587,7 @@ function configurarListenerNotificacoes() {
         const agora = Date.now();
         window.lastNotificationCheck = agora;
         
-        debugLog('[NOTIFICATION] Iniciando listener para solicitações...', {
+        console.log('[NOTIFICATION] Iniciando listener para solicitações...', {
             usuario: usuarioAdmin.email,
             equipe: usuarioAdmin.equipe,
             role: usuarioAdmin.role,
@@ -2595,32 +2598,55 @@ function configurarListenerNotificacoes() {
         window.db.collection('solicitacoes')
             .orderBy('timestamp', 'desc')
             .onSnapshot((snapshot) => {
+                console.log('[NOTIFICATION] Snapshot recebido:', {
+                    size: snapshot.size,
+                    hasPendingWrites: snapshot.metadata.hasPendingWrites,
+                    docChanges: snapshot.docChanges().length
+                });
+                
                 if (!snapshot.metadata.hasPendingWrites) { // Ignorar mudanças locais
                     snapshot.docChanges().forEach((change) => {
+                        console.log('[NOTIFICATION] Change detectado:', {
+                            type: change.type,
+                            docId: change.doc.id
+                        });
+                        
                         if (change.type === 'added') {
                             const novaSolicitacao = { id: change.doc.id, ...change.doc.data() };
+                            
+                            console.log('[NOTIFICATION] Solicitação adicionada:', {
+                                id: novaSolicitacao.id,
+                                timestamp: novaSolicitacao.timestamp?.toMillis(),
+                                lastCheck: window.lastNotificationCheck,
+                                isNewer: (novaSolicitacao.timestamp?.toMillis() || 0) > window.lastNotificationCheck
+                            });
                             
                             // Verificar se é uma solicitação realmente nova (criada após o login)
                             const timestampSolicitacao = novaSolicitacao.timestamp?.toMillis() || 0;
                             if (timestampSolicitacao > window.lastNotificationCheck) {
                                 
+                                console.log('[NOTIFICATION] Verificando permissões para:', novaSolicitacao);
                                 // Verificar se o usuário tem permissão para ver esta solicitação
                                 if (podeVerSolicitacaoJS(usuarioAdmin, novaSolicitacao)) {
-                                    debugLog('[NOTIFICATION] Nova solicitação detectada:', novaSolicitacao);
+                                    console.log('[NOTIFICATION] Nova solicitação detectada:', novaSolicitacao);
                                     mostrarNotificacaoNovaSolicitacao(novaSolicitacao);
                                     
                                     // Recarregar as solicitações para mostrar a nova no topo
                                     setTimeout(() => {
                                         carregarSolicitacoes();
                                     }, 1000);
+                                } else {
+                                    console.log('[NOTIFICATION] Sem permissão para ver esta solicitação');
                                 }
+                            } else {
+                                console.log('[NOTIFICATION] Solicitação não é nova (timestamp anterior ao login)');
                             }
                         }
                     });
                 }
             }, (error) => {
                 console.error('[ERRO] Erro no listener de notificações:', error);
-                debugLog('[NOTIFICATION] Erro no listener - tentando reconfigurar em 5s...');
+                console.log('[NOTIFICATION] Erro no listener - tentando reconfigurar em 5s...');
                 setTimeout(() => {
                     window.notificationListenerConfigured = false;
                     configurarListenerNotificacoes();
@@ -2634,7 +2660,7 @@ function configurarListenerNotificacoes() {
 
 function mostrarNotificacaoNovaSolicitacao(solicitacao) {
     try {
-        debugLog('[NOTIFICATION] Exibindo notificação para:', solicitacao);
+        console.log('[NOTIFICATION] Exibindo notificação para:', solicitacao);
         
         // Determinar tipo de serviço e emoji
         let tipoServico = solicitacao.equipe || solicitacao.tipoServico || 'solicitação';
@@ -2743,7 +2769,7 @@ function mostrarNotificacaoNovaSolicitacao(solicitacao) {
             }
         }, 7000);
         
-        debugLog('[NOTIFICATION] Notificação exibida com sucesso');
+        console.log('[NOTIFICATION] Notificação exibida com sucesso');
         
     } catch (error) {
         console.error('[ERRO] mostrarNotificacaoNovaSolicitacao:', error);
