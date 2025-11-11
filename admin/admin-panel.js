@@ -2267,9 +2267,14 @@ async function carregarSolicitacoes() {
         });
 
         // Buscar todas as solicitações ordenadas por timestamp (mais recentes primeiro)
+        debugLog('[DEBUG] Iniciando busca no Firestore...');
+        debugLog('[DEBUG] Projeto:', window.db.app.options.projectId);
+        debugLog('[DEBUG] Coleção: solicitacoes');
+        
         let firestorePromise;
         try {
             // Tentar com ordenação primeiro
+            debugLog('[DEBUG] Tentando query com orderBy...');
             firestorePromise = window.db.collection('solicitacoes')
                 .orderBy('timestamp', 'desc')
                 .get();
@@ -2282,17 +2287,28 @@ async function carregarSolicitacoes() {
         // Buscar todas as solicitações com timeout
         let snapshot;
         try {
+            debugLog('[DEBUG] Executando query no Firestore...');
             snapshot = await Promise.race([firestorePromise, timeoutPromise]);
+            debugLog('[DEBUG] Query executada com sucesso');
         } catch (queryError) {
             console.warn('[AVISO] Erro na query ordenada, tentando sem ordenação:', queryError.message);
             // Fallback final: query simples
+            debugLog('[DEBUG] Tentando fallback query simples...');
             const simpleFallback = window.db.collection('solicitacoes').get();
             snapshot = await Promise.race([simpleFallback, timeoutPromise]);
         }
-        debugLog('[DEBUG] Snapshot recebido:', snapshot.size, 'documentos');
+        
+        debugLog('[DEBUG] Snapshot recebido:', {
+            size: snapshot.size,
+            empty: snapshot.empty,
+            metadata: snapshot.metadata
+        });
         
         if (snapshot.empty) {
-            console.warn('[AVISO] Nenhuma solicitação encontrada');
+            console.warn('[AVISO] Coleção solicitacoes está vazia no Firestore');
+            debugLog('[DEBUG] Verificar se há dados na coleção solicitacoes no projeto:', window.db.app.options.projectId);
+        } else {
+            debugLog('[DEBUG] Processando', snapshot.size, 'documentos da coleção solicitacoes');
         }
         
         const solicitacoes = [];
@@ -2310,14 +2326,27 @@ async function carregarSolicitacoes() {
         };
         
         let totalDocs = 0;
+        let docsProcessados = 0;
+        let docsFiltrados = 0;
+        
         snapshot.forEach(doc => {
+            docsProcessados++;
             const data = doc.data();
             const item = { id: doc.id, ...data };
             
+            debugLog('[DEBUG] Processando documento:', {
+                id: doc.id,
+                equipe: data.equipe,
+                tipoServico: data.tipoServico,
+                titulo: data.titulo,
+                quarto: data.quarto
+            });
+            
             // FILTRO RIGOROSO USANDO A FUNÇÃO DE PERMISSÕES
             if (!podeVerSolicitacaoJS(usuarioAdmin, data)) {
+                docsFiltrados++;
                 // Pular esta solicitação se o usuário não tem permissão para vê-la
-                console.log(`[DEBUG] Solicitação filtrada (sem permissão):`, item.titulo || item.tipo, 'equipe:', data.equipe);
+                console.log(`[DEBUG] Solicitação filtrada (sem permissão):`, item.titulo || item.tipo, 'equipe:', data.equipe, 'usuário equipe:', usuarioAdmin.equipe);
                 return;
             }
             
@@ -2336,6 +2365,20 @@ async function carregarSolicitacoes() {
             }
         });
         
+        // Log detalhado do processamento
+        debugLog('[DEBUG] Resumo do processamento:', {
+            totalDocsFirestore: snapshot.size,
+            docsProcessados: docsProcessados,
+            docsFiltrados: docsFiltrados,
+            docsFinaisIncluidos: totalDocs,
+            usuarioEquipe: usuarioAdmin.equipe,
+            usuarioRole: usuarioAdmin.role
+        });
+        
+        console.log(`[DEBUG] Total de solicitações processadas: ${totalDocs} de ${snapshot.size} encontradas`);
+        console.log(`[DEBUG] Filtradas: ${docsFiltrados}, Incluídas: ${totalDocs}`);
+        console.log(`[DEBUG] Solicitações por equipe:`, Object.keys(equipes).map(e => `${e}: ${equipes[e].length}`));
+        
         // Ordenação manual para garantir ordem correta (mais recentes primeiro)
         solicitacoes.sort((a, b) => {
             const timestampA = a.timestamp?.toMillis() || a.dataCriacao?.toMillis() || 0;
@@ -2352,7 +2395,7 @@ async function carregarSolicitacoes() {
             });
         });
         
-        console.log(`[DEBUG] Total de solicitações processadas: ${totalDocs}`);
+        console.log(`[DEBUG] Dados ordenados e prontos para renderização`);
         console.log(`[DEBUG] Solicitações por equipe:`, Object.keys(equipes).map(e => `${e}: ${equipes[e].length}`));
         
         // RENDERIZAÇÃO BASEADA NO TIPO DE USUÁRIO
