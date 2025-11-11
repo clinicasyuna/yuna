@@ -2402,10 +2402,11 @@ async function carregarSolicitacoes() {
         // Atualizar métricas do painel
         atualizarMetricasPainel(totalDocs, pendentes, finalizadasHoje, quartosAtivos.size);
         
-        // Se não há dados, mostrar dados simulados para teste
+        // Log do resultado final (sem criar dados de exemplo em produção)
         if (totalDocs === 0) {
-            debugLog('[DEBUG] Nenhuma solicitação encontrada, criando dados de exemplo');
-            criarDadosExemplo();
+            debugLog('[DEBUG] Nenhuma solicitação encontrada - painel vazio em produção');
+            // Mostrar interface vazia sem dados simulados
+            mostrarInterfaceVazia();
         }
         
         ocultarIndicadorCarregamento();
@@ -2429,8 +2430,8 @@ async function carregarSolicitacoes() {
                 } catch (retryError) {
                     console.error('[ERRO] Falha na segunda tentativa:', retryError);
                     showToast('Erro', 'Falha ao carregar dados. Recarregue a página (Ctrl+F5)', 'error');
-                    // Carregar dados simulados como fallback
-                    criarDadosExemplo();
+                    // EM PRODUÇÃO: Não carregar dados simulados, apenas mostrar erro
+                    debugLog('[DEBUG] Sistema em produção - não gerando dados de exemplo');
                 }
             }, 3000);
             
@@ -2441,8 +2442,8 @@ async function carregarSolicitacoes() {
             showToast('Erro', 'Acesso negado. Verifique suas permissões', 'error');
         } else {
             showToast('Erro', 'Não foi possível carregar as solicitações', 'error');
-            // Carregar dados simulados como fallback
-            criarDadosExemplo();
+            // EM PRODUÇÃO: Não carregar dados simulados
+            debugLog('[DEBUG] Sistema em produção - não gerando dados de exemplo em caso de erro');
         }
     } finally {
         carregandoSolicitacoes = false;
@@ -2718,29 +2719,29 @@ function carregarDadosOffline() {
     renderizarCardsEquipe(dadosOffline);
 }
 
-function criarDadosExemplo() {
-    debugLog('[DEBUG] Criando dados de exemplo para demonstração');
+// Função para mostrar interface vazia em produção (sem dados simulados)
+function mostrarInterfaceVazia() {
+    debugLog('[DEBUG] Mostrando interface vazia - nenhuma solicitação encontrada');
     
-    const dadosExemplo = {
-        manutencao: [
-            { id: 'ex1', status: 'pendente', titulo: 'Reparo elétrico', quarto: '201A', dataCriacao: new Date().toISOString().slice(0,10), nome: 'João Silva' },
-            { id: 'ex2', status: 'em-andamento', titulo: 'Manutenção AC', quarto: '205B', dataCriacao: new Date().toISOString().slice(0,10), nome: 'Maria Santos' }
-        ],
-        nutricao: [
-            { id: 'ex3', status: 'pendente', titulo: 'Dieta sem glúten', quarto: '103C', dataCriacao: new Date().toISOString().slice(0,10), nome: 'Pedro Costa' }
-        ],
-        higienizacao: [
-            { id: 'ex4', status: 'finalizada', titulo: 'Limpeza completa', quarto: '107A', dataCriacao: new Date().toISOString().slice(0,10), nome: 'Ana Paula' }
-        ],
-        hotelaria: [
-            { id: 'ex5', status: 'pendente', titulo: 'Amenities extras', quarto: '210B', dataCriacao: new Date().toISOString().slice(0,10), nome: 'Carlos Lima' }
-        ]
-    };
+    const teamsGrid = document.querySelector('.teams-grid');
+    if (teamsGrid) {
+        teamsGrid.innerHTML = `
+            <div style="grid-column: 1 / -1; text-align: center; padding: 3rem; color: #6b7280;">
+                <div style="font-size: 3rem; margin-bottom: 1rem;">📋</div>
+                <h3 style="margin-bottom: 1rem; color: #374151;">Nenhuma solicitação encontrada</h3>
+                <p style="margin-bottom: 2rem;">Não há solicitações para exibir no momento.</p>
+                <div style="display: flex; gap: 1rem; justify-content: center; flex-wrap: wrap;">
+                    <button onclick="location.reload()" 
+                            style="background: #3b82f6; color: white; padding: 0.75rem 1.5rem; border: none; border-radius: 0.375rem; cursor: pointer;">
+                        🔄 Atualizar
+                    </button>
+                </div>
+            </div>
+        `;
+    }
     
-    atualizarMetricasPainel(5, 3, 1, 5);
-    renderizarCardsEquipe(dadosExemplo);
-    
-    showToast('Info', 'Dados de exemplo carregados para demonstração', 'success');
+    // Zerar métricas
+    atualizarMetricasPainel(0, 0, 0, 0);
 }
 
 function atualizarMetricasPainel(total, pendentes, finalizadasHoje, quartosAtivos) {
