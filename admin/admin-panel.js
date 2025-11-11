@@ -2244,8 +2244,11 @@ async function carregarSolicitacoes() {
         const timeoutPromise = new Promise((_, reject) => {
             setTimeout(() => reject(new Error('Timeout ao carregar solicitações')), 10000);
         });
-        
-        const firestorePromise = window.db.collection('solicitacoes').get();
+
+        // Buscar todas as solicitações ordenadas por timestamp (mais recentes primeiro)
+        const firestorePromise = window.db.collection('solicitacoes')
+            .orderBy('timestamp', 'desc')
+            .get();
         
         // Buscar todas as solicitações com timeout
         const snapshot = await Promise.race([firestorePromise, timeoutPromise]);
@@ -2391,6 +2394,12 @@ async function carregarSolicitacoes() {
     } finally {
         carregandoSolicitacoes = false;
         
+        // Configurar listener de notificações em tempo real apenas uma vez
+        if (!window.notificationListenerConfigured) {
+            configurarListenerNotificacoes();
+            window.notificationListenerConfigured = true;
+        }
+        
         // Garantir que a interface está visível após carregamento
         setTimeout(() => {
             const adminPanel = document.getElementById('admin-panel');
@@ -2436,6 +2445,187 @@ function recarregarSolicitacoes(delay = 1000) {
         
         carregarSolicitacoesAgrupadas();
     }, delay);
+}
+
+// === SISTEMA DE NOTIFICAÇÕES EM TEMPO REAL ===
+function configurarListenerNotificacoes() {
+    try {
+        debugLog('[NOTIFICATION] Configurando listener de notificações...');
+        
+        const usuarioAdmin = window.usuarioAdmin || JSON.parse(localStorage.getItem('usuarioAdmin') || '{}');
+        if (!usuarioAdmin || !usuarioAdmin.uid) {
+            debugLog('[NOTIFICATION] Usuário não está logado - não configurando notificações');
+            return;
+        }
+        
+        // Armazenar timestamp da última verificação para evitar notificar solicitações existentes
+        const agora = Date.now();
+        window.lastNotificationCheck = agora;
+        
+        debugLog('[NOTIFICATION] Iniciando listener para solicitações...', {
+            usuario: usuarioAdmin.email,
+            equipe: usuarioAdmin.equipe,
+            role: usuarioAdmin.role,
+            lastCheck: new Date(agora).toLocaleString()
+        });
+        
+        // Listener para novas solicitações
+        window.db.collection('solicitacoes')
+            .orderBy('timestamp', 'desc')
+            .onSnapshot((snapshot) => {
+                if (!snapshot.metadata.hasPendingWrites) { // Ignorar mudanças locais
+                    snapshot.docChanges().forEach((change) => {
+                        if (change.type === 'added') {
+                            const novaSolicitacao = { id: change.doc.id, ...change.doc.data() };
+                            
+                            // Verificar se é uma solicitação realmente nova (criada após o login)
+                            const timestampSolicitacao = novaSolicitacao.timestamp?.toMillis() || 0;
+                            if (timestampSolicitacao > window.lastNotificationCheck) {
+                                
+                                // Verificar se o usuário tem permissão para ver esta solicitação
+                                if (podeVerSolicitacaoJS(usuarioAdmin, novaSolicitacao)) {
+                                    debugLog('[NOTIFICATION] Nova solicitação detectada:', novaSolicitacao);
+                                    mostrarNotificacaoNovaSolicitacao(novaSolicitacao);
+                                    
+                                    // Recarregar as solicitações para mostrar a nova no topo
+                                    setTimeout(() => {
+                                        carregarSolicitacoes();
+                                    }, 1000);
+                                }
+                            }
+                        }
+                    });
+                }
+            }, (error) => {
+                console.error('[ERRO] Erro no listener de notificações:', error);
+                debugLog('[NOTIFICATION] Erro no listener - tentando reconfigurar em 5s...');
+                setTimeout(() => {
+                    window.notificationListenerConfigured = false;
+                    configurarListenerNotificacoes();
+                }, 5000);
+            });
+            
+    } catch (error) {
+        console.error('[ERRO] configurarListenerNotificacoes:', error);
+    }
+}
+
+function mostrarNotificacaoNovaSolicitacao(solicitacao) {
+    try {
+        debugLog('[NOTIFICATION] Exibindo notificação para:', solicitacao);
+        
+        // Determinar tipo de serviço e emoji
+        let tipoServico = solicitacao.equipe || solicitacao.tipoServico || 'solicitação';
+        let emoji = '📋';
+        
+        switch(tipoServico.toLowerCase()) {
+            case 'manutencao':
+            case 'manutenção':
+                emoji = '🔧';
+                tipoServico = 'Manutenção';
+                break;
+            case 'nutricao':
+            case 'nutrição':
+                emoji = '🍽️';
+                tipoServico = 'Nutrição';
+                break;
+            case 'higienizacao':
+            case 'higienização':
+                emoji = '🧹';
+                tipoServico = 'Higienização';
+                break;
+            case 'hotelaria':
+                emoji = '🏨';
+                tipoServico = 'Hotelaria';
+                break;
+        }
+        
+        // Criar pop-up de notificação
+        const popup = document.createElement('div');
+        popup.className = 'notification-popup';
+        popup.style.cssText = `
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            z-index: 10000;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 20px;
+            border-radius: 12px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+            min-width: 320px;
+            max-width: 400px;
+            font-family: system-ui, -apple-system, sans-serif;
+            animation: slideInRight 0.5s ease-out;
+            border-left: 5px solid #fff;
+        `;
+        
+        popup.innerHTML = `
+            <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 12px;">
+                <div style="font-size: 24px;">${emoji}</div>
+                <div>
+                    <div style="font-weight: bold; font-size: 16px;">Nova Solicitação!</div>
+                    <div style="font-size: 14px; opacity: 0.9;">${tipoServico}</div>
+                </div>
+                <button onclick="this.parentElement.parentElement.remove()" 
+                        style="margin-left: auto; background: rgba(255,255,255,0.2); border: none; color: white; 
+                               padding: 4px 8px; border-radius: 4px; cursor: pointer;">✕</button>
+            </div>
+            <div style="font-size: 14px; line-height: 1.4;">
+                <strong>Quarto:</strong> ${solicitacao.quarto || 'Não especificado'}<br>
+                <strong>Descrição:</strong> ${solicitacao.descricao || solicitacao.titulo || 'Nova solicitação de atendimento'}
+            </div>
+            <div style="margin-top: 12px; font-size: 12px; opacity: 0.8;">
+                ${new Date().toLocaleString('pt-BR')}
+            </div>
+        `;
+        
+        // Adicionar CSS de animação se não existir
+        if (!document.getElementById('notification-styles')) {
+            const style = document.createElement('style');
+            style.id = 'notification-styles';
+            style.textContent = `
+                @keyframes slideInRight {
+                    from { transform: translateX(100%); opacity: 0; }
+                    to { transform: translateX(0); opacity: 1; }
+                }
+                .notification-popup:hover {
+                    transform: translateY(-2px);
+                    box-shadow: 0 15px 40px rgba(0,0,0,0.4);
+                    transition: all 0.3s ease;
+                }
+            `;
+            document.head.appendChild(style);
+        }
+        
+        // Adicionar ao DOM
+        document.body.appendChild(popup);
+        
+        // Som de notificação (opcional - só se suportado)
+        try {
+            if ('Audio' in window) {
+                // Usar um som de notificação simples se disponível
+                const audio = new Audio('data:audio/wav;base64,UklGRnoGAABXQVZFZm10IBAAAAABAAEAQB8AAEAfAAABAAgAZGF0YQoGAACBhYqFbF1fdJivrJBhNjVgodDbq2EcBj+a2/LDciUFLIHO8tiJNwgZaLvt559NEAxQp+PwtmMcBjiR1/LMeSwFJHfH8N2QQAoUXrTp66hVFApGn+DyvmAcBz2c3+7AdSIBII/J8N6OSAgQYrPm56VUEwpJmOLosmIdBDSK1O7HdSII');
+                audio.volume = 0.3;
+                audio.play().catch(() => {}); // Ignorar erro se não conseguir tocar
+            }
+        } catch (e) {
+            // Ignorar erro de áudio
+        }
+        
+        // Remover automaticamente após 7 segundos
+        setTimeout(() => {
+            if (popup && popup.parentNode) {
+                popup.style.animation = 'slideInRight 0.3s ease-in reverse';
+                setTimeout(() => popup.remove(), 300);
+            }
+        }, 7000);
+        
+        debugLog('[NOTIFICATION] Notificação exibida com sucesso');
+        
+    } catch (error) {
+        console.error('[ERRO] mostrarNotificacaoNovaSolicitacao:', error);
+    }
 }
 
 function mostrarIndicadorCarregamento() {
