@@ -1591,24 +1591,32 @@ window.mostrarRelatorios = function() {
         
         debugLog('[DEBUG] mostrarRelatorios: verificando se deve carregar solicitações');
         
-        // Carregar dados de relatórios
+        // Carregar dados de relatórios de forma não-bloqueante
         debugLog('[DEBUG] mostrarRelatorios: carregando dados de relatórios...');
         
         // Carregar solicitações para exibir na tela de relatórios
-        try {
-            await window.carregarSolicitacoes();
-            debugLog('[DEBUG] mostrarRelatorios: solicitações carregadas com sucesso');
-        } catch (error) {
-            console.error('[ERRO] mostrarRelatorios: erro ao carregar solicitações:', error);
-        }
+        setTimeout(() => {
+            try {
+                if (typeof window.carregarSolicitacoes === 'function') {
+                    window.carregarSolicitacoes();
+                    debugLog('[DEBUG] mostrarRelatorios: solicitações carregadas com sucesso');
+                }
+            } catch (error) {
+                console.error('[ERRO] mostrarRelatorios: erro ao carregar solicitações:', error);
+            }
+        }, 100);
         
         // Carregar estatísticas do sistema
-        try {
-            await window.verificarEstatisticas();
-            debugLog('[DEBUG] mostrarRelatorios: estatísticas verificadas com sucesso');
-        } catch (error) {
-            console.error('[ERRO] mostrarRelatorios: erro ao verificar estatísticas:', error);
-        }
+        setTimeout(() => {
+            try {
+                if (typeof window.verificarEstatisticas === 'function') {
+                    window.verificarEstatisticas();
+                    debugLog('[DEBUG] mostrarRelatorios: estatísticas verificadas com sucesso');
+                }
+            } catch (error) {
+                console.error('[ERRO] mostrarRelatorios: erro ao verificar estatísticas:', error);
+            }
+        }, 200);
         
         // Adicionar botões de manutenção apenas para super_admin
         if (userRole === 'super_admin') {
