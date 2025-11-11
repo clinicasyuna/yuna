@@ -1120,9 +1120,8 @@ window.handleLogin = async function(event) {
         painel.appendChild(loader);
         window._mainLoader = loader;
         
-        // Mostrar painel diretamente após login
-        debugLog('[DEBUG] Mostrando painel após login...');
-        mostrarSecaoPainel('painel');
+        // NÃO chamar mostrarSecaoPainel aqui - será chamado pelo onAuthStateChanged
+        debugLog('[DEBUG] Login concluído, aguardando onAuthStateChanged carregar dados do usuário...');
         
     } catch (error) {
         console.error('[ERRO] handleLogin: falha no login:', error);
@@ -2203,20 +2202,42 @@ async function carregarSolicitacoes() {
         return;
     }
     
-    // Verificação mais robusta do usuário
-    const usuarioAdmin = window.usuarioAdmin || JSON.parse(localStorage.getItem('usuarioAdmin') || '{}');
+    // Verificação mais robusta do usuário com aguardo
+    let usuarioAdmin = window.usuarioAdmin || JSON.parse(localStorage.getItem('usuarioAdmin') || '{}');
+    
+    // Se usuário não está carregado, aguardar um pouco
     if (!usuarioAdmin || !usuarioAdmin.uid || !usuarioAdmin.email) {
-        console.warn('[AVISO] carregarSolicitacoes: Usuário admin não completamente carregado');
+        debugLog('[DEBUG] carregarSolicitacoes: Usuário ainda não carregado, aguardando...');
         
-        // Se estamos na tela de login, não mostrar erro
-        const authSection = document.getElementById('auth-section');
-        if (!authSection || !authSection.classList.contains('hidden')) {
-            debugLog('[DEBUG] carregarSolicitacoes: Ainda na tela de login, ignorando...');
-            return;
+        // Tentar aguardar até 3 segundos pelo carregamento do usuário
+        let tentativas = 0;
+        const maxTentativas = 6; // 6 tentativas de 500ms = 3 segundos
+        
+        while (tentativas < maxTentativas) {
+            await new Promise(resolve => setTimeout(resolve, 500));
+            usuarioAdmin = window.usuarioAdmin || JSON.parse(localStorage.getItem('usuarioAdmin') || '{}');
+            
+            if (usuarioAdmin && usuarioAdmin.uid && usuarioAdmin.email) {
+                debugLog('[DEBUG] carregarSolicitacoes: Usuário carregado após aguardo');
+                break;
+            }
+            tentativas++;
         }
         
-        debugLog('[DEBUG] Usuário ainda não carregado completamente');
-        return;
+        // Se após aguardar ainda não temos usuário válido
+        if (!usuarioAdmin || !usuarioAdmin.uid || !usuarioAdmin.email) {
+            debugLog('[DEBUG] carregarSolicitacoes: Usuário não carregou após aguardo, cancelando...');
+            
+            // Se estamos na tela de login, não mostrar erro
+            const authSection = document.getElementById('auth-section');
+            if (!authSection || !authSection.classList.contains('hidden')) {
+                debugLog('[DEBUG] carregarSolicitacoes: Ainda na tela de login, ignorando...');
+                return;
+            }
+            
+            console.warn('[AVISO] carregarSolicitacoes: Timeout aguardando dados do usuário');
+            return;
+        }
     }
     
     try {
@@ -2246,12 +2267,28 @@ async function carregarSolicitacoes() {
         });
 
         // Buscar todas as solicitações ordenadas por timestamp (mais recentes primeiro)
-        const firestorePromise = window.db.collection('solicitacoes')
-            .orderBy('timestamp', 'desc')
-            .get();
+        let firestorePromise;
+        try {
+            // Tentar com ordenação primeiro
+            firestorePromise = window.db.collection('solicitacoes')
+                .orderBy('timestamp', 'desc')
+                .get();
+        } catch (orderError) {
+            debugLog('[DEBUG] Erro na ordenação, usando query simples:', orderError.message);
+            // Fallback: buscar sem ordenação
+            firestorePromise = window.db.collection('solicitacoes').get();
+        }
         
         // Buscar todas as solicitações com timeout
-        const snapshot = await Promise.race([firestorePromise, timeoutPromise]);
+        let snapshot;
+        try {
+            snapshot = await Promise.race([firestorePromise, timeoutPromise]);
+        } catch (queryError) {
+            console.warn('[AVISO] Erro na query ordenada, tentando sem ordenação:', queryError.message);
+            // Fallback final: query simples
+            const simpleFallback = window.db.collection('solicitacoes').get();
+            snapshot = await Promise.race([simpleFallback, timeoutPromise]);
+        }
         debugLog('[DEBUG] Snapshot recebido:', snapshot.size, 'documentos');
         
         if (snapshot.empty) {
@@ -2297,6 +2334,22 @@ async function carregarSolicitacoes() {
             if (data.equipe && equipes[data.equipe] !== undefined) {
                 equipes[data.equipe].push(item);
             }
+        });
+        
+        // Ordenação manual para garantir ordem correta (mais recentes primeiro)
+        solicitacoes.sort((a, b) => {
+            const timestampA = a.timestamp?.toMillis() || a.dataCriacao?.toMillis() || 0;
+            const timestampB = b.timestamp?.toMillis() || b.dataCriacao?.toMillis() || 0;
+            return timestampB - timestampA; // Ordem decrescente (mais recentes primeiro)
+        });
+        
+        // Ordenar também dentro de cada equipe
+        Object.keys(equipes).forEach(equipeNome => {
+            equipes[equipeNome].sort((a, b) => {
+                const timestampA = a.timestamp?.toMillis() || a.dataCriacao?.toMillis() || 0;
+                const timestampB = b.timestamp?.toMillis() || b.dataCriacao?.toMillis() || 0;
+                return timestampB - timestampA;
+            });
         });
         
         console.log(`[DEBUG] Total de solicitações processadas: ${totalDocs}`);
