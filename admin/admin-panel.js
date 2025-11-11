@@ -1828,7 +1828,7 @@ window.verificarUsuariosExistentes = async function() {
         
         if (user) {
             try {
-                const userData = await obterDadosUsuario(user.uid);
+                const userData = await window.verificarUsuarioAdminJS(user);
                 if (userData && (userData.role === 'super_admin' || userData.role === 'admin')) {
                     console.log('👥 [VERIFICAR] Verificando usuarios_acompanhantes...');
                     const acompSnap = await window.db.collection('usuarios_acompanhantes').get();
@@ -1904,8 +1904,8 @@ window.editarUsuario = async function(userId) {
             }
         }
         
-        // Tentar em usuarios_acompanhantes se não encontrou
-        if (!userData) {
+        // Tentar em usuarios_acompanhantes se não encontrou (somente para super_admin e admin)
+        if (!userData && (usuarioAdmin.role === 'super_admin' || usuarioAdmin.role === 'admin')) {
             try {
                 const acompDoc = await window.db.collection('usuarios_acompanhantes').doc(userId).get();
                 if (acompDoc.exists) {
@@ -1913,7 +1913,7 @@ window.editarUsuario = async function(userId) {
                     userCollection = 'usuarios_acompanhantes';
                 }
             } catch (error) {
-                debugLog('[DEBUG] Usuário não encontrado em usuarios_acompanhantes');
+                debugLog('[DEBUG] Usuário não encontrado em usuarios_acompanhantes ou sem permissão');
             }
         }
         
@@ -4578,10 +4578,26 @@ async function buscarNomeAcompanhante(solicitacao) {
     }
 
     try {
+        // Verificar se o usuário atual tem permissão para acessar usuarios_acompanhantes
+        const user = window.auth.currentUser;
+        if (!user) {
+            return solicitacao.nome || solicitacao.nomeAcompanhante || 'Acompanhante não identificado';
+        }
+
+        try {
+            const userData = await window.verificarUsuarioAdminJS(user);
+            if (!userData || (userData.role !== 'super_admin' && userData.role !== 'admin')) {
+                // Usuário sem permissão - retornar dados da própria solicitação
+                return solicitacao.nome || solicitacao.nomeAcompanhante || 'Acompanhante não identificado';
+            }
+        } catch (permError) {
+            return solicitacao.nome || solicitacao.nomeAcompanhante || 'Acompanhante não identificado';
+        }
+
         // Tentar buscar nas duas possíveis coleções
         const userId = solicitacao.usuarioId || solicitacao.solicitanteId;
         
-        // Primeiro tentar na coleção usuarios_acompanhantes
+        // Primeiro tentar na coleção usuarios_acompanhantes (somente se tiver permissão)
         const acompanhanteRef = await window.db.collection('usuarios_acompanhantes').doc(userId).get();
         
         if (acompanhanteRef.exists) {
@@ -6287,15 +6303,30 @@ async function verificarQuartoOcupado(quarto) {
         }
         
         // Verificar também na coleção de usuários acompanhantes como backup
-        const acompSnap = await window.db.collection('usuarios_acompanhantes')
-            .where('quarto', '==', quarto.trim()).get();
+        // Mas somente se o usuário tiver permissão
+        let temAcompanhante = false;
+        const user = window.auth.currentUser;
         
-        const temAcompanhante = !acompSnap.empty;
-        console.log(`[DEBUG] verificarQuartoOcupado: quarto ${quarto} tem acompanhante na coleção usuarios_acompanhantes?`, temAcompanhante);
-        
-        if (temAcompanhante) {
-            const acompanhantes = acompSnap.docs.map(doc => doc.data());
-            console.log(`[DEBUG] verificarQuartoOcupado: acompanhantes encontrados no quarto:`, acompanhantes);
+        if (user) {
+            try {
+                const userData = await window.verificarUsuarioAdminJS(user);
+                if (userData && (userData.role === 'super_admin' || userData.role === 'admin')) {
+                    const acompSnap = await window.db.collection('usuarios_acompanhantes')
+                        .where('quarto', '==', quarto.trim()).get();
+                    
+                    temAcompanhante = !acompSnap.empty;
+                    console.log(`[DEBUG] verificarQuartoOcupado: quarto ${quarto} tem acompanhante na coleção usuarios_acompanhantes?`, temAcompanhante);
+                    
+                    if (temAcompanhante) {
+                        const acompanhantes = acompSnap.docs.map(doc => doc.data());
+                        console.log(`[DEBUG] verificarQuartoOcupado: acompanhantes encontrados no quarto:`, acompanhantes);
+                    }
+                } else {
+                    console.log(`[DEBUG] verificarQuartoOcupado: usuário sem permissão para verificar usuarios_acompanhantes`);
+                }
+            } catch (permError) {
+                console.log(`[DEBUG] verificarQuartoOcupado: erro de permissão ao acessar usuarios_acompanhantes:`, permError.message);
+            }
         }
         
         // Retornar true se encontrou em qualquer uma das verificações
@@ -6331,7 +6362,7 @@ async function configurarListenerAcompanhantes() {
     }
 
     try {
-        const userData = await obterDadosUsuario(user.uid);
+        const userData = await window.verificarUsuarioAdminJS(user);
         if (!userData || (userData.role !== 'super_admin' && userData.role !== 'admin')) {
             debugLog('[DEBUG] configurarListenerAcompanhantes: usuário sem permissão para acompanhantes');
             return;
@@ -6982,12 +7013,28 @@ window.verificarEstatisticas = async function() {
         // Contar usuários
         const adminSnapshot = await window.db.collection('usuarios_admin').get();
         const equipeSnapshot = await window.db.collection('usuarios_equipe').get();
-        const acompanhantesSnapshot = await window.db.collection('usuarios_acompanhantes').get();
+        
+        // Verificar permissões antes de acessar usuarios_acompanhantes
+        let acompanhantesCount = 0;
+        const user = window.auth.currentUser;
+        if (user) {
+            try {
+                const userData = await window.verificarUsuarioAdminJS(user);
+                if (userData && (userData.role === 'super_admin' || userData.role === 'admin')) {
+                    const acompanhantesSnapshot = await window.db.collection('usuarios_acompanhantes').get();
+                    acompanhantesCount = acompanhantesSnapshot.size;
+                } else {
+                    console.log('[STATS] Usuário sem permissão para contar acompanhantes');
+                }
+            } catch (permError) {
+                console.log('[STATS] Erro de permissão ao acessar acompanhantes:', permError.message);
+            }
+        }
         
         stats.usuarios = {
             admins: adminSnapshot.size,
             equipe: equipeSnapshot.size,
-            acompanhantes: acompanhantesSnapshot.size
+            acompanhantes: acompanhantesCount
         };
         
         console.log('[STATS] Estatísticas coletadas:', stats);
