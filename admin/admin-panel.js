@@ -2307,6 +2307,19 @@ async function carregarSolicitacoes() {
         if (snapshot.empty) {
             console.warn('[AVISO] Coleção solicitacoes está vazia no Firestore');
             debugLog('[DEBUG] Verificar se há dados na coleção solicitacoes no projeto:', window.db.app.options.projectId);
+            
+            // TESTE: Verificar outras possíveis coleções
+            const testeColes = ['solicitacao', 'pedidos', 'requests', 'tickets'];
+            for (const nomeCole of testeColes) {
+                try {
+                    const testSnapshot = await window.db.collection(nomeCole).limit(1).get();
+                    if (!testSnapshot.empty) {
+                        console.log(`🔍 ENCONTRADA: Coleção '${nomeCole}' tem ${testSnapshot.size} documento(s)`);
+                    }
+                } catch (e) {
+                    // Ignorar coleções inexistentes
+                }
+            }
         } else {
             debugLog('[DEBUG] Processando', snapshot.size, 'documentos da coleção solicitacoes');
         }
