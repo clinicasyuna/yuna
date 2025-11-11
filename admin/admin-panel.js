@@ -1622,55 +1622,103 @@ window.voltarPainelPrincipal = function() {
 
 // --- Firestore: Usuários ---
 window.preencherTabelaUsuarios = function(listaUsuarios) {
+    console.log('[USUARIOS] ===== PREENCHENDO TABELA =====');
+    console.log('[USUARIOS] Lista recebida:', listaUsuarios);
+    
     const usersList = document.getElementById('users-list');
     const totalCount = document.getElementById('total-users-count');
-    if (!usersList) return;
+    
+    console.log('[USUARIOS] Elementos encontrados:', {
+        usersList: !!usersList,
+        totalCount: !!totalCount,
+        usersListId: usersList?.id,
+        totalCountId: totalCount?.id
+    });
+    
+    if (!usersList) {
+        console.error('[USUARIOS] Elemento users-list não encontrado!');
+        console.log('[USUARIOS] Tentando encontrar elemento alternativo...');
+        
+        // Listar todos os elementos disponíveis para debug
+        const allElements = document.querySelectorAll('[id*="user"], [id*="list"], [class*="user"], [class*="list"]');
+        console.log('[USUARIOS] Elementos relacionados encontrados:', Array.from(allElements).map(el => ({
+            id: el.id,
+            className: el.className,
+            tagName: el.tagName
+        })));
+        
+        return;
+    }
+    
     if (listaUsuarios.length === 0) {
+        console.log('[USUARIOS] Nenhum usuário para exibir');
         usersList.innerHTML = `<div style='text-align:center; color:#6b7280; padding:2rem;'>Nenhum usuário cadastrado.</div>`;
         if (totalCount) totalCount.textContent = '0';
         return;
     }
-    usersList.innerHTML = listaUsuarios.map(user => `
+    
+    console.log('[USUARIOS] Criando HTML para', listaUsuarios.length, 'usuários');
+    const htmlContent = listaUsuarios.map(user => `
         <div class='user-row' style='display:flex; align-items:center; gap:1.5rem; background:#fff; border-radius:12px; box-shadow:0 2px 8px rgba(0,0,0,0.04); padding:1rem 2rem;'>
-            <span style='font-weight:600; color:#374151;'>${user.nome}</span>
+            <span style='font-weight:600; color:#374151;'>${user.nome || 'Nome não informado'}</span>
             <span style='color:#2563eb;'>${user.departamento || user.equipe || '-'}</span>
             <span style='color:#f59e0b;'>${user.tipo || '-'}</span>
-            <span style='color:#6b7280;'>${user.email}</span>
+            <span style='color:#6b7280;'>${user.email || 'Email não informado'}</span>
             <button onclick="editarUsuario('${user.id}')" style='background:#6366f1; color:#fff; border:none; border-radius:8px; padding:6px 16px; cursor:pointer;'>Editar</button>
             <button onclick="removerUsuario('${user.id}')" style='background:#ef4444; color:#fff; border:none; border-radius:8px; padding:6px 16px; cursor:pointer;'>Remover</button>
         </div>
     `).join('');
-    if (totalCount) totalCount.textContent = listaUsuarios.length;
+    
+    console.log('[USUARIOS] HTML criado, inserindo no DOM...');
+    usersList.innerHTML = htmlContent;
+    
+    if (totalCount) {
+        totalCount.textContent = listaUsuarios.length;
+        console.log('[USUARIOS] Total atualizado para:', listaUsuarios.length);
+    }
+    
+    console.log('[USUARIOS] ===== TABELA PREENCHIDA COM SUCESSO =====');
 };
 window.carregarUsuarios = async function() {
+    console.log('[USUARIOS] ===== INICIANDO CARREGAMENTO =====');
     debugLog('[DEBUG] carregarUsuarios: iniciando (APENAS equipe e admin)...');
     
     if (!window.db) {
+        console.error('[USUARIOS] Firestore não inicializado!');
         showToast('Erro', 'Firestore não inicializado!', 'error');
         return;
     }
     
     try {
         // Busca usuários de equipe
+        console.log('[USUARIOS] Buscando usuarios_equipe...');
         debugLog('[DEBUG] carregarUsuarios: buscando usuarios_equipe...');
         const equipeSnap = await window.db.collection('usuarios_equipe').get();
         const listaEquipe = [];
         equipeSnap.forEach(doc => {
-            listaEquipe.push({ id: doc.id, ...doc.data(), tipo: 'Equipe' });
+            const userData = { id: doc.id, ...doc.data(), tipo: 'Equipe' };
+            listaEquipe.push(userData);
+            console.log('[USUARIOS] Usuário equipe encontrado:', userData);
         });
+        console.log('[USUARIOS] Total equipe encontrados:', listaEquipe.length);
         debugLog('[DEBUG] carregarUsuarios: encontrados', listaEquipe.length, 'usuários de equipe');
         
         // Busca usuários admin
+        console.log('[USUARIOS] Buscando usuarios_admin...');
         debugLog('[DEBUG] carregarUsuarios: buscando usuarios_admin...');
         const adminSnap = await window.db.collection('usuarios_admin').get();
         const listaAdmin = [];
         adminSnap.forEach(doc => {
-            listaAdmin.push({ id: doc.id, ...doc.data(), tipo: 'Admin' });
+            const userData = { id: doc.id, ...doc.data(), tipo: 'Admin' };
+            listaAdmin.push(userData);
+            console.log('[USUARIOS] Usuário admin encontrado:', userData);
         });
+        console.log('[USUARIOS] Total admin encontrados:', listaAdmin.length);
         debugLog('[DEBUG] carregarUsuarios: encontrados', listaAdmin.length, 'usuários admin');
         
         // Junta APENAS equipe e admin (SEM acompanhantes)
         const listaUsuarios = [...listaEquipe, ...listaAdmin];
+        console.log('[USUARIOS] LISTA FINAL:', listaUsuarios);
         debugLog('[DEBUG] carregarUsuarios: total de usuários para tabela:', listaUsuarios.length);
         
         window.preencherTabelaUsuarios(listaUsuarios);
