@@ -2597,6 +2597,9 @@ function recarregarSolicitacoes(delay = 1000) {
             return;
         }
         
+        // Limpar flags de carregamento para permitir atualização
+        window.carregandoSolicitacoes = false;
+        
         carregarSolicitacoes();
     }, delay);
 }
