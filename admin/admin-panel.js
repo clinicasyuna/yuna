@@ -2378,15 +2378,15 @@ async function carregarSolicitacoes() {
                 quarto: data.quarto
             });
             
-            // DEBUG ESPECÍFICO PARA CAMPO QUARTO
-            if (data.titulo === 'refeicao-extra' || data.descricao?.includes('refeicao')) {
-                console.log('[DEBUG-QUARTO] Solicitação de nutrição:', {
-                    id: doc.id,
-                    quartoValue: data.quarto,
-                    quartoType: typeof data.quarto,
-                    dataCompleta: data
-                });
-            }
+            // DEBUG ESPECÍFICO PARA CAMPO QUARTO - TODAS AS SOLICITAÇÕES
+            console.log('[🏠 DEBUG-QUARTO]', {
+                id: doc.id,
+                titulo: data.titulo || data.tipo || data.descricao,
+                quartoRaw: data.quarto,
+                quartoType: typeof data.quarto,
+                quartoIsEmpty: !data.quarto,
+                quartoLength: data.quarto ? data.quarto.length : 0
+            });
             
             // FILTRO RIGOROSO USANDO A FUNÇÃO DE PERMISSÕES
             if (!podeVerSolicitacaoJS(usuarioAdmin, data)) {
