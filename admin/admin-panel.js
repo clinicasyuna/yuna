@@ -2378,6 +2378,16 @@ async function carregarSolicitacoes() {
                 quarto: data.quarto
             });
             
+            // DEBUG ESPECÍFICO PARA CAMPO QUARTO
+            if (data.titulo === 'refeicao-extra' || data.descricao?.includes('refeicao')) {
+                console.log('[DEBUG-QUARTO] Solicitação de nutrição:', {
+                    id: doc.id,
+                    quartoValue: data.quarto,
+                    quartoType: typeof data.quarto,
+                    dataCompleta: data
+                });
+            }
+            
             // FILTRO RIGOROSO USANDO A FUNÇÃO DE PERMISSÕES
             if (!podeVerSolicitacaoJS(usuarioAdmin, data)) {
                 docsFiltrados++;
