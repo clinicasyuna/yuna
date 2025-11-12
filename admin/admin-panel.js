@@ -2634,6 +2634,9 @@ function adicionarNovaSolicitacao(novaSolicitacao) {
 
 // === SISTEMA DE NOTIFICAÇÕES EM TEMPO REAL ===
 function configurarListenerNotificacoes() {
+    console.log('[NOTIFICATION] Listener DESABILITADO para resolver loops - retornando imediatamente');
+    return; // DESABILITADO COMPLETAMENTE
+    
     try {
         console.log('[NOTIFICATION] Configurando listener de notificações...');
         
