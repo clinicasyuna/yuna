@@ -2881,54 +2881,6 @@ function exibirPopupNotificacao(solicitacao, dadosAcompanhante) {
         // Som de notificação (opcional - só se suportado)
         try {
             if ('Audio' in window) {
-                // Usar um som de notificação simples se disponível
-                const audio = new Audio('data:audio/wav;base64,UklGRnoGAABXQVZFZm10IBAAAAABAAEAQB8AAEAfAAABAAgAZGF0YQoGAACBhYqFbF1fdJivrJBhNjVgodDbq2EcBj+a2/LDciUFLIHO8tiJNwgZaLvt559NEAxQp+PwtmMcBjiR1/LMeSwFJHfH8N2QQAoUXrTp66hVFApGn+DyvmAcBz2c3+7AdSIBII/J8N6OSAgQYrPm56VUEwpJmOLosmIdBDSK1O7HdSII');
-                audio.volume = 0.3;
-                audio.play().catch(() => {}); // Ignorar erro se não conseguir tocar
-            }
-        } catch (e) {
-            // Ignorar erro de áudio
-        }
-        
-        // Remover automaticamente após 7 segundos
-        setTimeout(() => {
-            if (popup && popup.parentNode) {
-                popup.style.animation = 'slideInRight 0.3s ease-in reverse';
-                setTimeout(() => popup.remove(), 300);
-            }
-        }, 7000);
-        
-        console.log('[NOTIFICATION] Notificação exibida com sucesso');
-        
-    } catch (error) {
-        console.error('[ERRO] exibirPopupNotificacao:', error);
-    }
-        
-        // Adicionar CSS de animação se não existir
-        if (!document.getElementById('notification-styles')) {
-            const style = document.createElement('style');
-            style.id = 'notification-styles';
-            style.textContent = `
-                @keyframes slideInRight {
-                    from { transform: translateX(100%); opacity: 0; }
-                    to { transform: translateX(0); opacity: 1; }
-                }
-                .notification-popup:hover {
-                    transform: translateY(-2px);
-                    box-shadow: 0 15px 40px rgba(0,0,0,0.4);
-                    transition: all 0.3s ease;
-                }
-            `;
-            document.head.appendChild(style);
-        }
-        
-        // Adicionar ao DOM
-        document.body.appendChild(popup);
-        
-        // Som de notificação (opcional - só se suportado)
-        try {
-            if ('Audio' in window) {
-                // Usar um som de notificação simples se disponível
                 const audio = new Audio('data:audio/wav;base64,UklGRnoGAABXQVZFZm10IBAAAAABAAEAQB8AAEAfAAABAAgAZGF0YQoGAACBhYqFbF1fdJivrJBhNjVgodDbq2EcBj+a2/LDciUFLIHO8tiJNwgZaLvt559NEAxQp+PwtmMcBjiR1/LMeSwFJHfH8N2QQAoUXrTp66hVFApGn+DyvmAcBz2c3+7AdSIBII/J8N6OSAgQYrPm56VUEwpJmOLosmIdBDSK1O7HdSII');
                 audio.volume = 0.3;
                 audio.play().catch(() => {}); // Ignorar erro se não conseguir tocar
