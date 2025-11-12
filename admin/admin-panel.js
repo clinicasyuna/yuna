@@ -2461,7 +2461,10 @@ async function carregarSolicitacoes() {
             equipeFiltrada[usuarioAdmin.equipe] = equipes[usuarioAdmin.equipe] || [];
             
             console.log(`[DEBUG] Renderizando apenas equipe: ${usuarioAdmin.equipe} com ${equipeFiltrada[usuarioAdmin.equipe].length} solicitações`);
-            renderizarCardsEquipe(equipeFiltrada);
+            
+            // Enriquecer dados antes de renderizar
+            const equipeFiltradaEnriquecida = await enriquecerSolicitacoesComDados(equipeFiltrada);
+            renderizarCardsEquipe(equipeFiltradaEnriquecida);
             
             // Ajustar visibilidade dos painéis (mostrar apenas o da equipe)
             setTimeout(() => {
@@ -2481,7 +2484,10 @@ async function carregarSolicitacoes() {
         } else if (isSuperAdmin) {
             // Super admin: mostrar TODAS as equipes
             debugLog('[DEBUG] Renderizando todas as equipes para super admin');
-            renderizarCardsEquipe(equipes);
+            
+            // Enriquecer dados antes de renderizar
+            const equipesEnriquecidas = await enriquecerSolicitacoesComDados(equipes);
+            renderizarCardsEquipe(equipesEnriquecidas);
             
             // Mostrar todos os painéis
             setTimeout(() => {
@@ -4863,6 +4869,31 @@ window.carregarDadosDesenvolvimento = function() {
     console.log('[DEV] Dados simulados carregados');
 };
 
+// Função para enriquecer solicitações com dados do acompanhante
+async function enriquecerSolicitacoesComDados(equipes) {
+    const equipesEnriquecidas = {};
+    
+    for (const [nomeEquipe, solicitacoes] of Object.entries(equipes)) {
+        equipesEnriquecidas[nomeEquipe] = await Promise.all(
+            solicitacoes.map(async (solicitacao) => {
+                try {
+                    const dadosAcompanhante = await buscarDadosAcompanhante(solicitacao);
+                    return {
+                        ...solicitacao,
+                        nomeAcompanhante: dadosAcompanhante.nome !== 'N/A' ? dadosAcompanhante.nome : null,
+                        quartoAcompanhante: dadosAcompanhante.quarto !== 'N/A' ? dadosAcompanhante.quarto : null
+                    };
+                } catch (error) {
+                    console.warn('[WARN] Erro ao buscar dados do acompanhante para solicitação', solicitacao.id, ':', error);
+                    return solicitacao; // Retorna dados originais em caso de erro
+                }
+            })
+        );
+    }
+    
+    return equipesEnriquecidas;
+}
+
 function renderizarCardsEquipe(equipes) {
     // Remove loader visual ao finalizar renderização dos cards
     if (window._mainLoader) {
@@ -5049,17 +5080,20 @@ function renderizarCardsEquipe(equipes) {
                             </div>
                             
                             <div class="card-details">
-                                ${solicitacao.quarto ? `
+                                ${(solicitacao.quartoAcompanhante || solicitacao.quarto) && 
+                                  (solicitacao.quartoAcompanhante || solicitacao.quarto) !== 'N/A' ? `
                                     <div class="card-detail">
                                         <i class="fas fa-bed"></i>
-                                        <span>Quarto ${solicitacao.quarto}</span>
+                                        <span>Quarto ${solicitacao.quartoAcompanhante || solicitacao.quarto}</span>
                                     </div>
                                 ` : ''}
                                 
-                                ${solicitacao.nome ? `
+                                ${(solicitacao.nomeAcompanhante || solicitacao.nome || solicitacao.usuarioNome) && 
+                                  (solicitacao.nomeAcompanhante || solicitacao.nome || solicitacao.usuarioNome) !== 'N/A' && 
+                                  (solicitacao.nomeAcompanhante || solicitacao.nome || solicitacao.usuarioNome) !== 'aguardando' ? `
                                     <div class="card-detail">
                                         <i class="fas fa-user"></i>
-                                        <span>${solicitacao.nome}</span>
+                                        <span>${solicitacao.nomeAcompanhante || solicitacao.nome || solicitacao.usuarioNome}</span>
                                     </div>
                                 ` : ''}
                                 
