@@ -4260,7 +4260,10 @@ async function confirmarFinalizacao(solicitacaoId) {
         
         // Fechar modal principal e recarregar dados
         fecharSolicitacaoModal();
-        carregarSolicitacoes();
+        
+        // CORREÇÃO CRÍTICA: Usar recarregarSolicitacoes() que limpa AMBAS as flags
+        // ao invés de carregarSolicitacoes() diretamente
+        recarregarSolicitacoes(0); // 0 = sem delay, recarregar imediatamente
         
     } catch (error) {
         console.error('Erro ao finalizar solicitação:', error);
