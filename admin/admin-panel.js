@@ -2766,6 +2766,20 @@ function mostrarNotificacaoNovaSolicitacao(solicitacao) {
     try {
         console.log('[NOTIFICATION] Exibindo notificação para:', solicitacao);
         
+        // Buscar dados completos do acompanhante antes de exibir
+        buscarDadosAcompanhante(solicitacao).then(dadosAcompanhante => {
+            exibirPopupNotificacao(solicitacao, dadosAcompanhante);
+        });
+        
+    } catch (error) {
+        console.error('[NOTIFICATION] Erro ao exibir notificação:', error);
+    }
+}
+
+function exibirPopupNotificacao(solicitacao, dadosAcompanhante) {
+    try {
+        console.log('[NOTIFICATION] Exibindo popup com dados:', { solicitacao: solicitacao.id, dadosAcompanhante });
+        
         // Determinar tipo de serviço e emoji
         let tipoServico = solicitacao.equipe || solicitacao.tipoServico || 'solicitação';
         let emoji = '📋';
@@ -2824,7 +2838,8 @@ function mostrarNotificacaoNovaSolicitacao(solicitacao) {
                                padding: 4px 8px; border-radius: 4px; cursor: pointer;">✕</button>
             </div>
             <div style="font-size: 14px; line-height: 1.4;">
-                <strong>Quarto:</strong> ${solicitacao.quarto || 'Não especificado'}<br>
+                <strong>Quarto:</strong> ${dadosAcompanhante?.quarto || solicitacao.quarto || 'Não especificado'}<br>
+                <strong>Solicitante:</strong> ${dadosAcompanhante?.nome || solicitacao.usuarioNome || solicitacao.nome || 'Não informado'}<br>
                 <strong>Descrição:</strong> ${solicitacao.descricao || solicitacao.titulo || 'Nova solicitação de atendimento'}
             </div>
             <div style="margin-top: 12px; font-size: 12px; opacity: 0.8;">
@@ -2876,7 +2891,54 @@ function mostrarNotificacaoNovaSolicitacao(solicitacao) {
         console.log('[NOTIFICATION] Notificação exibida com sucesso');
         
     } catch (error) {
-        console.error('[ERRO] mostrarNotificacaoNovaSolicitacao:', error);
+        console.error('[ERRO] exibirPopupNotificacao:', error);
+    }
+        
+        // Adicionar CSS de animação se não existir
+        if (!document.getElementById('notification-styles')) {
+            const style = document.createElement('style');
+            style.id = 'notification-styles';
+            style.textContent = `
+                @keyframes slideInRight {
+                    from { transform: translateX(100%); opacity: 0; }
+                    to { transform: translateX(0); opacity: 1; }
+                }
+                .notification-popup:hover {
+                    transform: translateY(-2px);
+                    box-shadow: 0 15px 40px rgba(0,0,0,0.4);
+                    transition: all 0.3s ease;
+                }
+            `;
+            document.head.appendChild(style);
+        }
+        
+        // Adicionar ao DOM
+        document.body.appendChild(popup);
+        
+        // Som de notificação (opcional - só se suportado)
+        try {
+            if ('Audio' in window) {
+                // Usar um som de notificação simples se disponível
+                const audio = new Audio('data:audio/wav;base64,UklGRnoGAABXQVZFZm10IBAAAAABAAEAQB8AAEAfAAABAAgAZGF0YQoGAACBhYqFbF1fdJivrJBhNjVgodDbq2EcBj+a2/LDciUFLIHO8tiJNwgZaLvt559NEAxQp+PwtmMcBjiR1/LMeSwFJHfH8N2QQAoUXrTp66hVFApGn+DyvmAcBz2c3+7AdSIBII/J8N6OSAgQYrPm56VUEwpJmOLosmIdBDSK1O7HdSII');
+                audio.volume = 0.3;
+                audio.play().catch(() => {}); // Ignorar erro se não conseguir tocar
+            }
+        } catch (e) {
+            // Ignorar erro de áudio
+        }
+        
+        // Remover automaticamente após 7 segundos
+        setTimeout(() => {
+            if (popup && popup.parentNode) {
+                popup.style.animation = 'slideInRight 0.3s ease-in reverse';
+                setTimeout(() => popup.remove(), 300);
+            }
+        }, 7000);
+        
+        console.log('[NOTIFICATION] Notificação exibida com sucesso');
+        
+    } catch (error) {
+        console.error('[ERRO] exibirPopupNotificacao:', error);
     }
 }
 
