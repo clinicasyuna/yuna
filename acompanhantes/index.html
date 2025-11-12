@@ -2708,6 +2708,11 @@
                 // Obter dados do usuário do Firestore
                 const userDoc = await window.db.collection('usuarios_acompanhantes').doc(currentUser.uid).get();
                 const userData = userDoc.data();
+                
+                // DEBUG: Verificar dados do usuário
+                console.log('[DEBUG] userData completo:', userData);
+                console.log('[DEBUG] userData.quarto:', userData?.quarto);
+                console.log('[DEBUG] Valor que será salvo no quarto:', userData?.quarto || 'N/A');
 
                 const agora = new Date();
                 let dadosSolicitacao = {
