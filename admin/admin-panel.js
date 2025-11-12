@@ -5179,12 +5179,27 @@ function mostrarModal(solicitacao) {
 
 // Função para buscar dados completos do acompanhante (nome + quarto)
 async function buscarDadosAcompanhante(solicitacao) {
+    console.log('[DEBUG-ACOMPANHANTE] === INICIANDO BUSCA DE DADOS ===');
+    console.log('[DEBUG-ACOMPANHANTE] Solicitação recebida:', {
+        id: solicitacao.id,
+        titulo: solicitacao.titulo,
+        usuarioId: solicitacao.usuarioId,
+        solicitanteId: solicitacao.solicitanteId,
+        nome: solicitacao.nome,
+        usuarioNome: solicitacao.usuarioNome,
+        quarto: solicitacao.quarto,
+        allKeys: Object.keys(solicitacao)
+    });
+    
     const resultado = {
         nome: solicitacao.usuarioNome || solicitacao.nome || 'N/A',
         quarto: solicitacao.quarto || 'N/A'
     };
 
+    console.log('[DEBUG-ACOMPANHANTE] Resultado inicial:', resultado);
+
     if (!solicitacao.usuarioId && !solicitacao.solicitanteId) {
+        console.log('[DEBUG-ACOMPANHANTE] ❌ Nenhum usuarioId ou solicitanteId encontrado - retornando dados da solicitação');
         return resultado;
     }
 
@@ -5192,40 +5207,67 @@ async function buscarDadosAcompanhante(solicitacao) {
         // Verificar se o usuário atual tem permissão para acessar usuarios_acompanhantes
         const user = window.auth.currentUser;
         if (!user) {
+            console.log('[DEBUG-ACOMPANHANTE] ❌ Usuário não autenticado');
             return resultado;
         }
 
+        console.log('[DEBUG-ACOMPANHANTE] ✅ Usuário autenticado:', user.uid);
+
         try {
             const userData = await window.verificarUsuarioAdminJS(user);
+            console.log('[DEBUG-ACOMPANHANTE] Dados do usuário admin:', userData);
+            
             if (!userData || (userData.role !== 'super_admin' && userData.role !== 'admin')) {
-                // Usuário sem permissão - retornar dados da própria solicitação
+                console.log('[DEBUG-ACOMPANHANTE] ❌ Usuário sem permissão - role:', userData?.role);
                 return resultado;
             }
+            
+            console.log('[DEBUG-ACOMPANHANTE] ✅ Usuário tem permissões adequadas:', userData.role);
         } catch (permError) {
+            console.log('[DEBUG-ACOMPANHANTE] ❌ Erro ao verificar permissões:', permError);
             return resultado;
         }
 
         // Tentar buscar dados completos na coleção usuarios_acompanhantes
         const userId = solicitacao.usuarioId || solicitacao.solicitanteId;
         
-        console.log('[DADOS-ACOMPANHANTE] Buscando dados para usuarioId:', userId);
+        console.log('[DEBUG-ACOMPANHANTE] 🔍 Buscando no Firestore...');
+        console.log('[DEBUG-ACOMPANHANTE] UserId para busca:', userId);
+        console.log('[DEBUG-ACOMPANHANTE] Coleção: usuarios_acompanhantes');
+        console.log('[DEBUG-ACOMPANHANTE] Projeto Firebase:', window.db.app.options.projectId);
         
         const acompanhanteRef = await window.db.collection('usuarios_acompanhantes').doc(userId).get();
         
+        console.log('[DEBUG-ACOMPANHANTE] Resposta do Firestore:', {
+            exists: acompanhanteRef.exists,
+            documentId: acompanhanteRef.id,
+            metadata: acompanhanteRef.metadata
+        });
+        
         if (acompanhanteRef.exists) {
             const data = acompanhanteRef.data();
-            console.log('[DADOS-ACOMPANHANTE] Dados encontrados:', data);
+            console.log('[DEBUG-ACOMPANHANTE] ✅ Dados encontrados:', data);
+            
+            const nomeOriginal = resultado.nome;
+            const quartoOriginal = resultado.quarto;
             
             resultado.nome = data.nome || data.nomeCompleto || resultado.nome;
             resultado.quarto = data.quarto || resultado.quarto;
+            
+            console.log('[DEBUG-ACOMPANHANTE] 📋 Comparação de dados:');
+            console.log('[DEBUG-ACOMPANHANTE] Nome - Antes:', nomeOriginal, '| Depois:', resultado.nome);
+            console.log('[DEBUG-ACOMPANHANTE] Quarto - Antes:', quartoOriginal, '| Depois:', resultado.quarto);
         } else {
-            console.log('[DADOS-ACOMPANHANTE] Nenhum documento encontrado para userId:', userId);
+            console.log('[DEBUG-ACOMPANHANTE] ❌ Documento não encontrado para userId:', userId);
+            console.log('[DEBUG-ACOMPANHANTE] 💡 Verificar se existe documento com esse ID na coleção usuarios_acompanhantes');
         }
         
+        console.log('[DEBUG-ACOMPANHANTE] 🎯 Resultado final:', resultado);
         return resultado;
         
     } catch (error) {
-        console.error('[DADOS-ACOMPANHANTE] Erro ao buscar dados:', error);
+        console.error('[DEBUG-ACOMPANHANTE] 💥 Erro geral:', error);
+        console.error('[DEBUG-ACOMPANHANTE] Error stack:', error.stack);
         return resultado;
     }
 }
