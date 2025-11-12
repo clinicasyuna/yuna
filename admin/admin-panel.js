@@ -5217,7 +5217,13 @@ async function buscarDadosAcompanhante(solicitacao) {
             const userData = await window.verificarUsuarioAdminJS(user);
             console.log('[DEBUG-ACOMPANHANTE] Dados do usuário admin:', userData);
             
-            if (!userData || (userData.role !== 'super_admin' && userData.role !== 'admin')) {
+            if (!userData || !userData.role) {
+                console.log('[DEBUG-ACOMPANHANTE] ❌ Usuário sem dados de role');
+                return resultado;
+            }
+            
+            // Permitir acesso para super_admin, admin E equipe
+            if (userData.role !== 'super_admin' && userData.role !== 'admin' && userData.role !== 'equipe') {
                 console.log('[DEBUG-ACOMPANHANTE] ❌ Usuário sem permissão - role:', userData?.role);
                 return resultado;
             }
