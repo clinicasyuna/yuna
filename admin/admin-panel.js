@@ -2181,12 +2181,21 @@ let carregandoSolicitacoes = false;
 let timeoutRecarregar = null;
 
 async function carregarSolicitacoes() {
+    // Verificar se já está carregando para evitar loops
+    if (window.carregandoSolicitacoes) {
+        console.log('[DEBUG] carregarSolicitacoes já está executando, ignorando...');
+        return;
+    }
+    
+    window.carregandoSolicitacoes = true;
+    
     // Verificar se estamos na tela de relatórios - se sim, não carregar cards
     const relatoriosSection = document.getElementById('relatorios-section');
     const adminPanel = document.getElementById('admin-panel');
     
     if (relatoriosSection && !relatoriosSection.classList.contains('hidden')) {
         debugLog('[DEBUG] carregarSolicitacoes: Na tela de relatórios - não carregando cards de solicitações');
+        window.carregandoSolicitacoes = false;
         return;
     }
     
@@ -2261,11 +2270,6 @@ async function carregarSolicitacoes() {
             equipe: usuarioAdmin?.equipe 
         });
         
-        // Timeout de segurança para a consulta do Firestore
-        const timeoutPromise = new Promise((_, reject) => {
-            setTimeout(() => reject(new Error('Timeout ao carregar solicitações')), 10000);
-        });
-
         // Buscar todas as solicitações ordenadas por timestamp (mais recentes primeiro)
         console.log('[DEBUG] Iniciando busca no Firestore...');
         console.log('[DEBUG] Projeto:', window.db.app.options.projectId);
@@ -2493,7 +2497,7 @@ async function carregarSolicitacoes() {
             
             setTimeout(async () => {
                 try {
-                    carregandoSolicitacoes = false; // Reset flag
+                    window.carregandoSolicitacoes = false; // Reset flag
                     await carregarSolicitacoes();
                 } catch (retryError) {
                     console.error('[ERRO] Falha na segunda tentativa:', retryError);
@@ -2517,7 +2521,7 @@ async function carregarSolicitacoes() {
         console.log('[DEBUG] Finalizando carregarSolicitacoes - indo para finally...');
     } finally {
         console.log('[DEBUG] FINALLY: Entrando no finally block');
-        carregandoSolicitacoes = false;
+        window.carregandoSolicitacoes = false;
         
         // Configurar listener de notificações em tempo real apenas uma vez
         if (!window.notificationListenerConfigured) {
@@ -2576,7 +2580,7 @@ function recarregarSolicitacoes(delay = 1000) {
             return;
         }
         
-        carregarSolicitacoesAgrupadas();
+        carregarSolicitacoes();
     }, delay);
 }
 
@@ -2589,12 +2593,34 @@ function configurarAtualizacaoAutomatica() {
         window.autoUpdateInterval = setInterval(() => {
             // Só atualizar se estiver logado e não carregando
             if (window.usuarioAdmin && !window.carregandoSolicitacoes) {
-                console.log('[AUTO-UPDATE] Recarregando solicitações automaticamente...');
-                carregarSolicitacoes();
+                console.log('[AUTO-UPDATE] Recarregamento automático suave...');
+                recarregarSolicitacoes(5000); // Usar recarregamento com debounce
             }
-        }, 30000); // 30 segundos
+        }, 60000); // Aumentado para 60 segundos
         
         console.log('[AUTO-UPDATE] Intervalo configurado com sucesso');
+    }
+}
+
+// === FUNÇÃO PARA ADICIONAR NOVA SOLICITAÇÃO SEM RECARREGAR TUDO ===
+function adicionarNovaSolicitacao(novaSolicitacao) {
+    try {
+        console.log('[NOTIFICATION] Nova solicitação detectada:', novaSolicitacao.id);
+        
+        // Verificar se pode ver a solicitação
+        const usuarioAdmin = window.usuarioAdmin || JSON.parse(localStorage.getItem('usuarioAdmin') || '{}');
+        const podeVer = podeVerSolicitacaoJS(usuarioAdmin, novaSolicitacao);
+        if (!podeVer) {
+            console.log('[NOTIFICATION] Sem permissão para ver esta solicitação');
+            return;
+        }
+        
+        // Recarregar com debounce para evitar loops
+        console.log('[NOTIFICATION] Recarregando painel com debounce...');
+        recarregarSolicitacoes(2000); // 2 segundos de delay
+        
+    } catch (error) {
+        console.error('[ERRO] Erro ao processar nova solicitação:', error);
     }
 }
 
@@ -2686,8 +2712,10 @@ function configurarListenerNotificacoes() {
                                     
                                     // Recarregar as solicitações para mostrar a nova no topo
                                     setTimeout(() => {
-                                        console.log('[NOTIFICATION] Recarregando lista após nova solicitação...');
-                                        carregarSolicitacoes();
+                                        console.log('[NOTIFICATION] Adicionando nova solicitação sem recarregar tudo...');
+                                        // Evitar loop - usar função específica para adicionar
+                                        // carregarSolicitacoes();
+                                        adicionarNovaSolicitacao(novaSolicitacao);
                                     }, 1000);
                                 } else {
                                     console.log('[NOTIFICATION] ❌ Sem permissão para ver esta solicitação');
