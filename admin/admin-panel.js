@@ -2542,8 +2542,8 @@ async function carregarSolicitacoes() {
         
         // Configurar listener de notificações em tempo real apenas uma vez
         if (!window.notificationListenerConfigured) {
-            console.log('[NOTIFICATION] Listener DESABILITADO temporariamente para debug');
-            // configurarListenerNotificacoes();
+            console.log('[NOTIFICATION] Configurando listener de notificações...');
+            configurarListenerNotificacoes();
             window.notificationListenerConfigured = true;
             
             console.log('[AUTO-UPDATE] Auto-update já foi configurado anteriormente');
@@ -2648,9 +2648,6 @@ function adicionarNovaSolicitacao(novaSolicitacao) {
 
 // === SISTEMA DE NOTIFICAÇÕES EM TEMPO REAL ===
 function configurarListenerNotificacoes() {
-    console.log('[NOTIFICATION] Listener DESABILITADO para resolver loops - retornando imediatamente');
-    return; // DESABILITADO COMPLETAMENTE
-    
     try {
         console.log('[NOTIFICATION] Configurando listener de notificações...');
         
@@ -5113,16 +5110,69 @@ function mostrarModal(solicitacao) {
         document.body.appendChild(modal);
     }
 
-    // Buscar nome do acompanhante baseado no usuarioId
-    buscarNomeAcompanhante(solicitacao).then(nomeAcompanhante => {
-        preencherDetalhesModal(solicitacao, nomeAcompanhante);
+    // Buscar dados completos do acompanhante (nome + quarto)
+    buscarDadosAcompanhante(solicitacao).then(dadosAcompanhante => {
+        preencherDetalhesModal(solicitacao, dadosAcompanhante);
     });
 
     // Mostrar modal imediatamente
     modal.classList.remove('hidden');
 }
 
-// Função para buscar nome do acompanhante
+// Função para buscar dados completos do acompanhante (nome + quarto)
+async function buscarDadosAcompanhante(solicitacao) {
+    const resultado = {
+        nome: solicitacao.usuarioNome || solicitacao.nome || 'N/A',
+        quarto: solicitacao.quarto || 'N/A'
+    };
+
+    if (!solicitacao.usuarioId && !solicitacao.solicitanteId) {
+        return resultado;
+    }
+
+    try {
+        // Verificar se o usuário atual tem permissão para acessar usuarios_acompanhantes
+        const user = window.auth.currentUser;
+        if (!user) {
+            return resultado;
+        }
+
+        try {
+            const userData = await window.verificarUsuarioAdminJS(user);
+            if (!userData || (userData.role !== 'super_admin' && userData.role !== 'admin')) {
+                // Usuário sem permissão - retornar dados da própria solicitação
+                return resultado;
+            }
+        } catch (permError) {
+            return resultado;
+        }
+
+        // Tentar buscar dados completos na coleção usuarios_acompanhantes
+        const userId = solicitacao.usuarioId || solicitacao.solicitanteId;
+        
+        console.log('[DADOS-ACOMPANHANTE] Buscando dados para usuarioId:', userId);
+        
+        const acompanhanteRef = await window.db.collection('usuarios_acompanhantes').doc(userId).get();
+        
+        if (acompanhanteRef.exists) {
+            const data = acompanhanteRef.data();
+            console.log('[DADOS-ACOMPANHANTE] Dados encontrados:', data);
+            
+            resultado.nome = data.nome || data.nomeCompleto || resultado.nome;
+            resultado.quarto = data.quarto || resultado.quarto;
+        } else {
+            console.log('[DADOS-ACOMPANHANTE] Nenhum documento encontrado para userId:', userId);
+        }
+        
+        return resultado;
+        
+    } catch (error) {
+        console.error('[DADOS-ACOMPANHANTE] Erro ao buscar dados:', error);
+        return resultado;
+    }
+}
+
+// Função para buscar nome do acompanhante (mantida para compatibilidade)
 async function buscarNomeAcompanhante(solicitacao) {
     if (!solicitacao.usuarioId && !solicitacao.solicitanteId) {
         return solicitacao.nome || 'Acompanhante não identificado';
@@ -5167,9 +5217,14 @@ async function buscarNomeAcompanhante(solicitacao) {
 }
 
 // Função para preencher detalhes do modal
-function preencherDetalhesModal(solicitacao, nomeAcompanhante) {
+function preencherDetalhesModal(solicitacao, dadosAcompanhante) {
     const detalhesEl = document.getElementById('modal-detalhes');
     const acoesEl = document.getElementById('modal-acoes');
+    
+    // Se dadosAcompanhante for string (compatibilidade), converter para objeto
+    if (typeof dadosAcompanhante === 'string') {
+        dadosAcompanhante = { nome: dadosAcompanhante, quarto: solicitacao.quarto || 'N/A' };
+    }
     
     if (detalhesEl && solicitacao) {
         const statusInfo = {
@@ -5273,8 +5328,8 @@ function preencherDetalhesModal(solicitacao, nomeAcompanhante) {
             <div><strong>ID:</strong> ${solicitacao.id || 'N/A'}</div>
             <div><strong>Equipe:</strong> ${solicitacao.equipe || 'N/A'}</div>
             <div><strong>Descrição:</strong> ${solicitacao.descricao || 'N/A'}</div>
-            <div><strong>Quarto:</strong> ${solicitacao.quarto || 'N/A'}</div>
-            <div><strong>Solicitante:</strong> ${solicitacao.usuarioNome || solicitacao.nome || 'N/A'}</div>
+            <div><strong>Quarto:</strong> ${dadosAcompanhante?.quarto || solicitacao.quarto || 'N/A'}</div>
+            <div><strong>Solicitante:</strong> ${dadosAcompanhante?.nome || solicitacao.usuarioNome || solicitacao.nome || 'N/A'}</div>
             ${solicitacao.responsavel ? `<div><strong>Responsável:</strong> ${solicitacao.responsavel}</div>` : ''}
             ${solicitacao.solucao ? `<div><strong>Solução:</strong> ${solicitacao.solucao}</div>` : ''}
             ${gerarSecaoEvidencias(solicitacao)}
