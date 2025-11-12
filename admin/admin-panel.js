@@ -2388,33 +2388,6 @@ async function carregarSolicitacoes() {
                 quartoLength: data.quarto ? data.quarto.length : 0
             });
             
-            // CORREÇÃO AUTOMÁTICA: Buscar dados do usuário se quarto for N/A
-            if ((!data.quarto || data.quarto === 'N/A') && (data.usuarioId || data.userId)) {
-                try {
-                    const userId = data.usuarioId || data.userId;
-                    console.log(`[🔧 CORREÇÃO] Buscando dados do usuário ${userId} para corrigir quarto N/A`);
-                    
-                    const userDoc = await window.db.collection('usuarios_acompanhantes').doc(userId).get();
-                    if (userDoc.exists) {
-                        const userData = userDoc.data();
-                        if (userData.quarto) {
-                            console.log(`[✅ CORREÇÃO QUARTO] "${data.quarto}" → "${userData.quarto}" (ID: ${doc.id})`);
-                            data.quarto = userData.quarto;
-                            item.quarto = userData.quarto;
-                        }
-                        if (userData.nome && (!data.usuarioNome || data.usuarioNome === 'Usuário')) {
-                            console.log(`[✅ CORREÇÃO NOME] "${data.usuarioNome}" → "${userData.nome}" (ID: ${doc.id})`);
-                            data.usuarioNome = userData.nome;
-                            item.usuarioNome = userData.nome;
-                        }
-                    } else {
-                        console.warn(`[❌ CORREÇÃO] Usuário ${userId} não encontrado`);
-                    }
-                } catch (error) {
-                    console.error('[❌ CORREÇÃO] Erro ao buscar dados do usuário:', error);
-                }
-            }
-            
             // FILTRO RIGOROSO USANDO A FUNÇÃO DE PERMISSÕES
             if (!podeVerSolicitacaoJS(usuarioAdmin, data)) {
                 docsFiltrados++;
