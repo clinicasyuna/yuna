@@ -2599,6 +2599,7 @@ function recarregarSolicitacoes(delay = 1000) {
         
         // Limpar flags de carregamento para permitir atualização
         window.carregandoSolicitacoes = false;
+        carregandoSolicitacoes = false;  // Limpar TAMBÉM a flag local
         
         carregarSolicitacoes();
     }, delay);
