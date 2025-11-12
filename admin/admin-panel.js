@@ -2187,6 +2187,13 @@ async function carregarSolicitacoes() {
         return;
     }
     
+    // Limpar qualquer interval de auto-update ativo
+    if (window.autoUpdateInterval) {
+        console.log('[DEBUG] Limpando interval de auto-update ativo...');
+        clearInterval(window.autoUpdateInterval);
+        window.autoUpdateInterval = null;
+    }
+    
     window.carregandoSolicitacoes = true;
     
     // Verificar se estamos na tela de relatórios - se sim, não carregar cards
@@ -2525,16 +2532,16 @@ async function carregarSolicitacoes() {
         
         // Configurar listener de notificações em tempo real apenas uma vez
         if (!window.notificationListenerConfigured) {
-            console.log('[NOTIFICATION] Configurando listener pela primeira vez...');
-            configurarListenerNotificacoes();
+            console.log('[NOTIFICATION] Listener DESABILITADO temporariamente para debug');
+            // configurarListenerNotificacoes();
             window.notificationListenerConfigured = true;
             
-            console.log('[AUTO-UPDATE] Configurando atualização automática a cada 30 segundos...');
+            console.log('[AUTO-UPDATE] Auto-update já foi configurado anteriormente');
             
-            // ADICIONAL: Configurar atualização periódica como backup
-            configurarAtualizacaoAutomatica();
+            // REMOVIDO: Configuração automática para evitar loops
+            // configurarAtualizacaoAutomatica();
         } else {
-            console.log('[NOTIFICATION] Listener já configurado, pulando...');
+            console.log('[NOTIFICATION] Listener já configurado (DESABILITADO), pulando...');
         }
         
         // Garantir que a interface está visível após carregamento
@@ -2590,15 +2597,16 @@ function configurarAtualizacaoAutomatica() {
     
     // Só configurar se não foi configurado ainda
     if (!window.autoUpdateInterval) {
-        window.autoUpdateInterval = setInterval(() => {
-            // Só atualizar se estiver logado e não carregando
-            if (window.usuarioAdmin && !window.carregandoSolicitacoes) {
-                console.log('[AUTO-UPDATE] Recarregamento automático suave...');
-                recarregarSolicitacoes(5000); // Usar recarregamento com debounce
-            }
-        }, 60000); // Aumentado para 60 segundos
+        console.log('[AUTO-UPDATE] Auto-update DESABILITADO temporariamente para debug');
+        // window.autoUpdateInterval = setInterval(() => {
+        //     // Só atualizar se estiver logado e não carregando
+        //     if (window.usuarioAdmin && !window.carregandoSolicitacoes) {
+        //         console.log('[AUTO-UPDATE] Recarregamento automático suave...');
+        //         recarregarSolicitacoes(5000); // Usar recarregamento com debounce
+        //     }
+        // }, 60000); // Aumentado para 60 segundos
         
-        console.log('[AUTO-UPDATE] Intervalo configurado com sucesso');
+        console.log('[AUTO-UPDATE] Intervalo DESABILITADO com sucesso');
     }
 }
 
