@@ -219,11 +219,17 @@ window.addEventListener('DOMContentLoaded', function() {
 
 // Função para alternar tipo de acesso (definida cedo para HTML poder chamar)
 window.alterarTipoAcesso = function() {
-    debugLog('[DEBUG] alterarTipoAcesso: função chamada');
+    console.log('[DEBUG] alterarTipoAcesso: função chamada');
     
     const tipoSelect = document.getElementById('tipo-acesso');
     const departamentoSection = document.getElementById('departamento-section');
     const departamentoSelect = document.getElementById('departamento');
+    
+    console.log('[DEBUG] alterarTipoAcesso: elementos encontrados:', {
+        tipoSelect: !!tipoSelect,
+        departamentoSection: !!departamentoSection,
+        departamentoSelect: !!departamentoSelect
+    });
     
     if (!tipoSelect || !departamentoSection) {
         console.error('[ERRO] alterarTipoAcesso: elementos não encontrados');
@@ -231,19 +237,23 @@ window.alterarTipoAcesso = function() {
     }
     
     const tipo = tipoSelect.value;
-    debugLog('[DEBUG] alterarTipoAcesso: tipo selecionado =', tipo);
+    console.log('[DEBUG] alterarTipoAcesso: tipo selecionado =', tipo);
     
     if (tipo === 'equipe') {
         // Mostrar seção de departamento para equipe
         departamentoSection.classList.remove('hidden');
-        debugLog('[DEBUG] alterarTipoAcesso: mostrando departamento-section');
+        departamentoSection.style.display = 'block'; // Force show
+        console.log('[DEBUG] alterarTipoAcesso: mostrando departamento-section');
+        console.log('[DEBUG] Classes após remoção:', departamentoSection.className);
+        console.log('[DEBUG] Style display após mudança:', departamentoSection.style.display);
     } else {
         // Ocultar seção de departamento para admin
         departamentoSection.classList.add('hidden');
+        departamentoSection.style.display = 'none'; // Force hide
         if (departamentoSelect) {
             departamentoSelect.value = ''; // Limpar seleção
         }
-        debugLog('[DEBUG] alterarTipoAcesso: ocultando departamento-section');
+        console.log('[DEBUG] alterarTipoAcesso: ocultando departamento-section');
     }
 };
 

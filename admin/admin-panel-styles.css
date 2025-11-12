@@ -1471,3 +1471,8 @@ h2.finalizar-solicitacao {
     justify-content: center;
   }
 }
+
+/* CLASSE HIDDEN ESSENCIAL - FALTAVA! */
+.hidden {
+  display: none !important;
+}
