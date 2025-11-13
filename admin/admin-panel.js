@@ -21,6 +21,12 @@ let limparDadosTeste, verificarEstatisticas, adicionarPainelManutencao;
     
     // Função de limpeza extremamente agressiva
     function removeUnwantedButtons() {
+        // Verificar se o DOM está carregado
+        if (!document.body) {
+            setTimeout(removeUnwantedButtons, 100);
+            return;
+        }
+        
         const debugTexts = ['usuários direto', 'debug', 'relatórios direto', 'usuario direto', 'relatorio direto'];
         let removed = 0;
         
