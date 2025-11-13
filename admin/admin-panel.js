@@ -4871,30 +4871,67 @@ window.carregarDadosDesenvolvimento = function() {
 
 // Função para enriquecer solicitações com dados do acompanhante
 async function enriquecerSolicitacoesComDados(equipes) {
+    console.log('[ENRIQUECIMENTO] === INICIANDO ENRIQUECIMENTO DE DADOS ===');
+    console.log('[ENRIQUECIMENTO] Equipes recebidas:', Object.keys(equipes));
+    
     const equipesEnriquecidas = {};
     
     for (const [nomeEquipe, solicitacoes] of Object.entries(equipes)) {
+        console.log(`[ENRIQUECIMENTO] Processando equipe: ${nomeEquipe} com ${solicitacoes.length} solicitações`);
+        
         equipesEnriquecidas[nomeEquipe] = await Promise.all(
-            solicitacoes.map(async (solicitacao) => {
+            solicitacoes.map(async (solicitacao, index) => {
                 try {
+                    console.log(`[ENRIQUECIMENTO] [${index + 1}/${solicitacoes.length}] Processando solicitação:`, solicitacao.id);
+                    
                     const dadosAcompanhante = await buscarDadosAcompanhante(solicitacao);
-                    return {
+                    
+                    const solicitacaoEnriquecida = {
                         ...solicitacao,
-                        nomeAcompanhante: dadosAcompanhante.nome !== 'N/A' ? dadosAcompanhante.nome : null,
+                        nomeAcompanhante: dadosAcompanhante.nome !== 'N/A' && dadosAcompanhante.nome !== 'Usuário' ? dadosAcompanhante.nome : null,
                         quartoAcompanhante: dadosAcompanhante.quarto !== 'N/A' ? dadosAcompanhante.quarto : null
                     };
+                    
+                    console.log(`[ENRIQUECIMENTO] Resultado enriquecimento:`, {
+                        id: solicitacao.id,
+                        nomeOriginal: solicitacao.nome || solicitacao.usuarioNome,
+                        quartoOriginal: solicitacao.quarto,
+                        nomeEnriquecido: solicitacaoEnriquecida.nomeAcompanhante,
+                        quartoEnriquecido: solicitacaoEnriquecida.quartoAcompanhante,
+                        dadosAcompanhante
+                    });
+                    
+                    return solicitacaoEnriquecida;
                 } catch (error) {
-                    console.warn('[WARN] Erro ao buscar dados do acompanhante para solicitação', solicitacao.id, ':', error);
+                    console.warn('[ENRIQUECIMENTO] Erro ao buscar dados do acompanhante para solicitação', solicitacao.id, ':', error);
                     return solicitacao; // Retorna dados originais em caso de erro
                 }
             })
         );
     }
     
+    console.log('[ENRIQUECIMENTO] === ENRIQUECIMENTO CONCLUÍDO ===');
     return equipesEnriquecidas;
 }
 
 function renderizarCardsEquipe(equipes) {
+    // DEBUG para verificar se dados chegaram enriquecidos
+    console.log('[RENDER-DEBUG] renderizarCardsEquipe chamada com:', {
+        equipes: Object.keys(equipes),
+        totalSolicitacoes: Object.values(equipes).reduce((total, sols) => total + sols.length, 0),
+        primeirasSolicitacoes: Object.entries(equipes).slice(0, 2).map(([equipe, sols]) => ({
+            equipe,
+            quantidade: sols.length,
+            primeiroItem: sols[0] ? {
+                id: sols[0].id,
+                nomeAcompanhante: sols[0].nomeAcompanhante,
+                quartoAcompanhante: sols[0].quartoAcompanhante,
+                nome: sols[0].nome,
+                quarto: sols[0].quarto
+            } : null
+        }))
+    });
+    
     // Remove loader visual ao finalizar renderização dos cards
     if (window._mainLoader) {
         window._mainLoader.remove();
@@ -5052,8 +5089,21 @@ function renderizarCardsEquipe(equipes) {
                         <p>Nenhuma solicitação de ${equipesNomes[equipe].toLowerCase()}</p>
                     </div>
                 ` : `
-                    ${solicitacoesOrdenadas.map((solicitacao, index) => `
-                        <div class="solicitacao-card" 
+                    ${solicitacoesOrdenadas.map((solicitacao, index) => {
+                        // DEBUG para rastrear dados da solicitação na renderização
+                        console.log(`[RENDER-DEBUG] Renderizando card ${index + 1}:`, {
+                            id: solicitacao.id,
+                            titulo: solicitacao.titulo || solicitacao.tipo,
+                            nomeAcompanhante: solicitacao.nomeAcompanhante,
+                            nome: solicitacao.nome,
+                            usuarioNome: solicitacao.usuarioNome,
+                            quartoAcompanhante: solicitacao.quartoAcompanhante,
+                            quarto: solicitacao.quarto,
+                            nomeParaExibir: solicitacao.nomeAcompanhante || solicitacao.nome || solicitacao.usuarioNome,
+                            quartoParaExibir: solicitacao.quartoAcompanhante || solicitacao.quarto
+                        });
+                        
+                        return `<div class="solicitacao-card" 
                              data-solicitacao='${JSON.stringify(solicitacao).replace(/'/g, '&apos;')}' 
                              data-equipe="${equipe}" 
                              data-index="${index}" 
@@ -5126,7 +5176,7 @@ function renderizarCardsEquipe(equipes) {
                                 </div>
                             </div>
                         </div>
-                    `).join('')}
+                    `}).join('')}
                 `}
             </div>
         `;
