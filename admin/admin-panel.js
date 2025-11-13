@@ -5251,11 +5251,12 @@ async function buscarDadosAcompanhante(solicitacao) {
         usuarioEmail: solicitacao.usuarioEmail,
         usuarioNome: solicitacao.usuarioNome,
         nome: solicitacao.nome,
-        quarto: solicitacao.quarto
+        quarto: solicitacao.quarto,
+        usuarioId: solicitacao.usuarioId
     });
     
     try {
-        // **ESTRATÉGIA SIMPLES: Usar apenas dados da solicitação**
+        // **ESTRATÉGIA 1: Usar dados da solicitação primeiro**
         let nomeEncontrado = 'Acompanhante'; // fallback padrão
         let quartoEncontrado = 'N/A'; // fallback padrão
         
@@ -5279,16 +5280,35 @@ async function buscarDadosAcompanhante(solicitacao) {
             }
         }
         
-        // 3. Usar quarto se disponível
+        // 3. Usar quarto da solicitação se disponível
         if (solicitacao.quarto && solicitacao.quarto !== 'N/A') {
             quartoEncontrado = solicitacao.quarto;
-            console.log('[DEBUG-ACOMPANHANTE] Quarto encontrado:', quartoEncontrado);
+            console.log('[DEBUG-ACOMPANHANTE] Quarto encontrado na solicitação:', quartoEncontrado);
+        } else if (solicitacao.usuarioId) {
+            // **ESTRATÉGIA 2: Se quarto não está na solicitação, buscar no Firestore**
+            console.log('[DEBUG-ACOMPANHANTE] 🔍 Quarto não encontrado na solicitação, buscando no Firestore...');
+            try {
+                const userDoc = await window.db.collection('usuarios_acompanhantes').doc(solicitacao.usuarioId).get();
+                if (userDoc.exists) {
+                    const userData = userDoc.data();
+                    console.log('[DEBUG-ACOMPANHANTE] Dados do usuário encontrados no Firestore:', userData);
+                    
+                    if (userData.quarto && userData.quarto !== 'N/A') {
+                        quartoEncontrado = userData.quarto;
+                        console.log('[DEBUG-ACOMPANHANTE] ✅ Quarto encontrado no Firestore:', quartoEncontrado);
+                    }
+                } else {
+                    console.log('[DEBUG-ACOMPANHANTE] ❌ Usuário não encontrado no Firestore');
+                }
+            } catch (error) {
+                console.log('[DEBUG-ACOMPANHANTE] ⚠️ Erro ao buscar no Firestore:', error);
+            }
         }
         
         const resultado = {
             nome: nomeEncontrado,
             quarto: quartoEncontrado,
-            fonte: 'solicitacao_simples',
+            fonte: quartoEncontrado !== 'N/A' ? 'solicitacao+firestore' : 'solicitacao_simples',
             encontrado: true
         };
         
