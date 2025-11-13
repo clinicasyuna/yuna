@@ -2723,8 +2723,18 @@
                     nomeParaUsar = emailPart;
                 }
                 
+                // **GARANTIR QUE QUARTO SEJA SEMPRE VÁLIDO**
+                let quartoParaUsar = 'N/A'; // fallback padrão
+                if (userData?.quarto && userData.quarto.trim() !== '' && userData.quarto !== 'N/A') {
+                    quartoParaUsar = userData.quarto;
+                    console.log('[DEBUG] ✅ Quarto válido encontrado:', quartoParaUsar);
+                } else {
+                    console.log('[DEBUG] ❌ Quarto não encontrado ou inválido, usando N/A');
+                    console.log('[DEBUG] userData.quarto valor:', userData?.quarto);
+                }
+                
                 console.log('[DEBUG] Nome final a ser usado:', nomeParaUsar);
-                console.log('[DEBUG] Valor que será salvo no quarto:', userData?.quarto || 'N/A');
+                console.log('[DEBUG] Quarto final a ser usado:', quartoParaUsar);
 
                 const agora = new Date();
                 let dadosSolicitacao = {
@@ -2736,7 +2746,7 @@
                     userId: currentUser.uid,
                     usuarioEmail: currentUser.email,
                     usuarioNome: nomeParaUsar,
-                    quarto: userData?.quarto || 'N/A',
+                    quarto: quartoParaUsar,
                     dataAbertura: firebase.firestore.FieldValue.serverTimestamp(),
                     dataAberturaLocal: agora.toLocaleString('pt-BR'),
                     cronometro: {
