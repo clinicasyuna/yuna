@@ -2711,7 +2711,19 @@
                 
                 // DEBUG: Verificar dados do usuário
                 console.log('[DEBUG] userData completo:', userData);
+                console.log('[DEBUG] userData.nome:', userData?.nome);
                 console.log('[DEBUG] userData.quarto:', userData?.quarto);
+                console.log('[DEBUG] currentUser.email:', currentUser.email);
+                
+                // Determinar melhor nome para usar
+                let nomeParaUsar = userData?.nome;
+                if (!nomeParaUsar || nomeParaUsar.trim() === '') {
+                    // Se não tem nome cadastrado, usar parte do email
+                    const emailPart = currentUser.email.split('@')[0];
+                    nomeParaUsar = emailPart;
+                }
+                
+                console.log('[DEBUG] Nome final a ser usado:', nomeParaUsar);
                 console.log('[DEBUG] Valor que será salvo no quarto:', userData?.quarto || 'N/A');
 
                 const agora = new Date();
@@ -2723,7 +2735,7 @@
                     usuarioId: currentUser.uid,
                     userId: currentUser.uid,
                     usuarioEmail: currentUser.email,
-                    usuarioNome: userData?.nome || 'Usuário',
+                    usuarioNome: nomeParaUsar,
                     quarto: userData?.quarto || 'N/A',
                     dataAbertura: firebase.firestore.FieldValue.serverTimestamp(),
                     dataAberturaLocal: agora.toLocaleString('pt-BR'),

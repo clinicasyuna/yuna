@@ -5243,25 +5243,45 @@ async function buscarDadosAcompanhante(solicitacao) {
         solicitanteId: solicitacao.solicitanteId,
         nome: solicitacao.nome,
         usuarioNome: solicitacao.usuarioNome,
-        solicitante: solicitacao.solicitante,
+        usuarioEmail: solicitacao.usuarioEmail,
         quarto: solicitacao.quarto,
         allKeys: Object.keys(solicitacao)
     });
     
-    // **PRIORIDADE 1: Usar dados da própria solicitação primeiro**
-    const nomeDisponivel = solicitacao.solicitante || solicitacao.usuarioNome || solicitacao.nome;
-    const quartoDisponivel = solicitacao.quarto;
+    // **PRIORIDADE 1: Verificar se já temos dados na solicitação**
+    let nomeEncontrado = null;
+    let quartoEncontrado = null;
     
-    console.log('[DEBUG-ACOMPANHANTE] Dados encontrados na solicitação:', {
-        nome: nomeDisponivel,
-        quarto: quartoDisponivel
+    // Usar usuarioEmail como identificador do nome se disponível (mais confiável que usuarioNome)
+    if (solicitacao.usuarioEmail && solicitacao.usuarioEmail !== currentUser?.email) {
+        // Extrair parte do email antes do @ como nome mais específico
+        const emailPart = solicitacao.usuarioEmail.split('@')[0];
+        if (emailPart && emailPart !== 'teste2') { // Evitar emails genéricos
+            nomeEncontrado = emailPart;
+        }
+    }
+    
+    // Se não encontrou nome do email, usar usuarioNome se não for genérico
+    if (!nomeEncontrado && solicitacao.usuarioNome && solicitacao.usuarioNome !== 'Usuário' && solicitacao.usuarioNome !== 'N/A') {
+        nomeEncontrado = solicitacao.usuarioNome;
+    }
+    
+    // Usar quarto da solicitação se disponível
+    if (solicitacao.quarto && solicitacao.quarto !== 'N/A') {
+        quartoEncontrado = solicitacao.quarto;
+    }
+    
+    console.log('[DEBUG-ACOMPANHANTE] Dados extraídos da solicitação:', {
+        nomeEncontrado,
+        quartoEncontrado,
+        usuarioEmail: solicitacao.usuarioEmail
     });
     
-    // Se temos dados suficientes na própria solicitação, usar diretamente
-    if (nomeDisponivel && nomeDisponivel !== 'N/A' && nomeDisponivel !== 'Usuário') {
+    // Se encontramos dados úteis na solicitação, usar diretamente
+    if (nomeEncontrado) {
         const resultado = {
-            nome: nomeDisponivel,
-            quarto: quartoDisponivel || 'N/A',
+            nome: nomeEncontrado,
+            quarto: quartoEncontrado || 'N/A',
             fonte: 'solicitacao',
             encontrado: true
         };
@@ -5270,7 +5290,7 @@ async function buscarDadosAcompanhante(solicitacao) {
         return resultado;
     }
     
-    // Fallback para os dados básicos se não encontrarmos dados melhores
+    // **FALLBACK: Tentar buscar no Firestore se não temos dados suficientes**
     const resultado = {
         nome: nomeDisponivel || 'N/A',
         quarto: quartoDisponivel || 'N/A'
