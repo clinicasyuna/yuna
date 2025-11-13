@@ -5253,7 +5253,7 @@ async function buscarDadosAcompanhante(solicitacao) {
     let quartoEncontrado = null;
     
     // Usar usuarioEmail como identificador do nome se disponível (mais confiável que usuarioNome)
-    if (solicitacao.usuarioEmail && solicitacao.usuarioEmail !== currentUser?.email) {
+    if (solicitacao.usuarioEmail && solicitacao.usuarioEmail !== window.auth.currentUser?.email) {
         // Extrair parte do email antes do @ como nome mais específico
         const emailPart = solicitacao.usuarioEmail.split('@')[0];
         if (emailPart && emailPart !== 'teste2') { // Evitar emails genéricos
