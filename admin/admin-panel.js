@@ -5224,13 +5224,22 @@ function mostrarModal(solicitacao) {
         document.body.appendChild(modal);
     }
 
-    // Buscar dados completos do acompanhante (nome + quarto)
+    // Buscar dados completos do acompanhante (nome + quarto) ANTES de mostrar o modal
     buscarDadosAcompanhante(solicitacao).then(dadosAcompanhante => {
         preencherDetalhesModal(solicitacao, dadosAcompanhante);
+        // Só mostrar modal DEPOIS que os dados foram carregados
+        modal.classList.remove('hidden');
+    }).catch(error => {
+        console.error('[MODAL] Erro ao buscar dados do acompanhante:', error);
+        // Se der erro, usar dados da própria solicitação e mostrar mesmo assim
+        const dadosBasicos = {
+            nome: solicitacao.usuarioNome || solicitacao.nome || 'Acompanhante',
+            quarto: solicitacao.quarto || 'N/A',
+            fonte: 'solicitacao-erro'
+        };
+        preencherDetalhesModal(solicitacao, dadosBasicos);
+        modal.classList.remove('hidden');
     });
-
-    // Mostrar modal imediatamente
-    modal.classList.remove('hidden');
 }
 
 // Função para buscar dados completos do acompanhante (nome + quarto)
@@ -5239,165 +5248,64 @@ async function buscarDadosAcompanhante(solicitacao) {
     console.log('[DEBUG-ACOMPANHANTE] Solicitação recebida:', {
         id: solicitacao.id,
         titulo: solicitacao.titulo,
-        usuarioId: solicitacao.usuarioId,
-        solicitanteId: solicitacao.solicitanteId,
-        nome: solicitacao.nome,
-        usuarioNome: solicitacao.usuarioNome,
         usuarioEmail: solicitacao.usuarioEmail,
-        quarto: solicitacao.quarto,
-        allKeys: Object.keys(solicitacao)
+        usuarioNome: solicitacao.usuarioNome,
+        nome: solicitacao.nome,
+        quarto: solicitacao.quarto
     });
     
-    // **PRIORIDADE 1: Verificar se já temos dados na solicitação**
-    let nomeEncontrado = null;
-    let quartoEncontrado = null;
-    
-    // Usar usuarioEmail como identificador do nome se disponível (mais confiável que usuarioNome)
-    if (solicitacao.usuarioEmail && solicitacao.usuarioEmail !== window.auth.currentUser?.email) {
-        // Extrair parte do email antes do @ como nome mais específico
-        const emailPart = solicitacao.usuarioEmail.split('@')[0];
-        if (emailPart && emailPart !== 'teste2') { // Evitar emails genéricos
-            nomeEncontrado = emailPart;
+    try {
+        // **ESTRATÉGIA SIMPLES: Usar apenas dados da solicitação**
+        let nomeEncontrado = 'Acompanhante'; // fallback padrão
+        let quartoEncontrado = 'N/A'; // fallback padrão
+        
+        // 1. Tentar extrair nome do email
+        if (solicitacao.usuarioEmail) {
+            const emailPart = solicitacao.usuarioEmail.split('@')[0];
+            if (emailPart && emailPart.length > 0) {
+                nomeEncontrado = emailPart;
+                console.log('[DEBUG-ACOMPANHANTE] Nome extraído do email:', nomeEncontrado);
+            }
         }
-    }
-    
-    // Se não encontrou nome do email, usar usuarioNome se não for genérico
-    if (!nomeEncontrado && solicitacao.usuarioNome && solicitacao.usuarioNome !== 'Usuário' && solicitacao.usuarioNome !== 'N/A') {
-        nomeEncontrado = solicitacao.usuarioNome;
-    }
-    
-    // Usar quarto da solicitação se disponível
-    if (solicitacao.quarto && solicitacao.quarto !== 'N/A') {
-        quartoEncontrado = solicitacao.quarto;
-    }
-    
-    console.log('[DEBUG-ACOMPANHANTE] Dados extraídos da solicitação:', {
-        nomeEncontrado,
-        quartoEncontrado,
-        usuarioEmail: solicitacao.usuarioEmail
-    });
-    
-    // Se encontramos dados úteis na solicitação, usar diretamente
-    if (nomeEncontrado) {
+        
+        // 2. Se não tem email, usar usuarioNome ou nome
+        if (nomeEncontrado === 'Acompanhante') {
+            if (solicitacao.usuarioNome && solicitacao.usuarioNome !== 'Usuário') {
+                nomeEncontrado = solicitacao.usuarioNome;
+                console.log('[DEBUG-ACOMPANHANTE] Nome do usuarioNome:', nomeEncontrado);
+            } else if (solicitacao.nome && solicitacao.nome !== 'N/A') {
+                nomeEncontrado = solicitacao.nome;
+                console.log('[DEBUG-ACOMPANHANTE] Nome do campo nome:', nomeEncontrado);
+            }
+        }
+        
+        // 3. Usar quarto se disponível
+        if (solicitacao.quarto && solicitacao.quarto !== 'N/A') {
+            quartoEncontrado = solicitacao.quarto;
+            console.log('[DEBUG-ACOMPANHANTE] Quarto encontrado:', quartoEncontrado);
+        }
+        
         const resultado = {
             nome: nomeEncontrado,
-            quarto: quartoEncontrado || 'N/A',
-            fonte: 'solicitacao',
+            quarto: quartoEncontrado,
+            fonte: 'solicitacao_simples',
             encontrado: true
         };
         
-        console.log('[DEBUG-ACOMPANHANTE] ✅ USANDO DADOS DA SOLICITAÇÃO:', resultado);
+        console.log('[DEBUG-ACOMPANHANTE] ✅ RESULTADO FINAL:', resultado);
         return resultado;
-    }
-    
-    // **FALLBACK: Tentar buscar no Firestore se não temos dados suficientes**
-    const resultado = {
-        nome: nomeDisponivel || 'N/A',
-        quarto: quartoDisponivel || 'N/A'
-    };
-
-    console.log('[DEBUG-ACOMPANHANTE] Resultado inicial (fallback):', resultado);
-
-    if (!solicitacao.usuarioId && !solicitacao.solicitanteId) {
-        console.log('[DEBUG-ACOMPANHANTE] ❌ Nenhum usuarioId ou solicitanteId encontrado - retornando dados da solicitação');
-        return resultado;
-    }
-
-    try {
-        // Verificar se o usuário atual tem permissão para acessar usuarios_acompanhantes
-        const user = window.auth.currentUser;
-        if (!user) {
-            console.log('[DEBUG-ACOMPANHANTE] ❌ Usuário não autenticado');
-            return resultado;
-        }
-
-        console.log('[DEBUG-ACOMPANHANTE] ✅ Usuário autenticado:', user.uid);
-
-        try {
-            const userData = await window.verificarUsuarioAdminJS(user);
-            console.log('[DEBUG-ACOMPANHANTE] Dados do usuário admin:', userData);
-            
-            if (!userData || !userData.role) {
-                console.log('[DEBUG-ACOMPANHANTE] ❌ Usuário sem dados de role');
-                return resultado;
-            }
-            
-            // Permitir acesso para super_admin, admin E equipe
-            if (userData.role !== 'super_admin' && userData.role !== 'admin' && userData.role !== 'equipe') {
-                console.log('[DEBUG-ACOMPANHANTE] ❌ Usuário sem permissão - role:', userData?.role);
-                return resultado;
-            }
-            
-            console.log('[DEBUG-ACOMPANHANTE] ✅ Usuário tem permissões adequadas:', userData.role);
-        } catch (permError) {
-            console.log('[DEBUG-ACOMPANHANTE] ❌ Erro ao verificar permissões:', permError);
-            return resultado;
-        }
-
-        // **BUSCA MÚLTIPLA EM TODAS AS COLEÇÕES POSSÍVEIS**
-        const userId = solicitacao.usuarioId || solicitacao.solicitanteId;
-        console.log('[DEBUG-ACOMPANHANTE] 🔍 Iniciando busca múltipla...');
-        console.log('[DEBUG-ACOMPANHANTE] UserId para busca:', userId);
-        
-        const colecoesPossíveis = [
-            'usuarios_acompanhantes',
-            'usuarios_equipe', 
-            'usuarios_admin',
-            'usuarios'
-        ];
-        
-        for (const nomeColecao of colecoesPossíveis) {
-            try {
-                console.log(`[DEBUG-ACOMPANHANTE] 📁 Buscando em: ${nomeColecao}`);
-                
-                const docRef = window.db.collection(nomeColecao).doc(userId);
-                const doc = await docRef.get();
-                
-                console.log(`[DEBUG-ACOMPANHANTE] Resposta de ${nomeColecao}:`, {
-                    exists: doc.exists,
-                    id: doc.id,
-                    data: doc.exists ? doc.data() : null
-                });
-                
-                if (doc.exists) {
-                    const dados = doc.data();
-                    console.log(`[DEBUG-ACOMPANHANTE] ✅ ENCONTRADO em ${nomeColecao}:`, dados);
-                    
-                    // Extrair nome de diferentes campos possíveis
-                    const nome = dados.nome || dados.nomeCompleto || dados.displayName || dados.nomeAcompanhante || resultado.nome;
-                    
-                    // Extrair quarto de diferentes campos possíveis  
-                    const quarto = dados.quarto || dados.numeroQuarto || dados.quartoAtribuido || dados.quartoOcupado || resultado.quarto;
-                    
-                    resultado.nome = nome;
-                    resultado.quarto = quarto;
-                    resultado.fonte = nomeColecao;
-                    resultado.encontrado = true;
-                    
-                    console.log(`[DEBUG-ACOMPANHANTE] 🎯 DADOS FINAIS extraídos de ${nomeColecao}:`, resultado);
-                    break; // Parar na primeira coleção que tiver o usuário
-                }
-                
-            } catch (error) {
-                console.log(`[DEBUG-ACOMPANHANTE] ⚠️ Erro ao buscar em ${nomeColecao}:`, error);
-                continue; // Tentar próxima coleção
-            }
-        }
-        
-        if (!resultado.encontrado) {
-            console.log('[DEBUG-ACOMPANHANTE] ❌ Usuário não encontrado em NENHUMA coleção');
-            console.log('[DEBUG-ACOMPANHANTE] 💡 Possíveis causas:');
-            console.log('[DEBUG-ACOMPANHANTE] - ID não existe no Firestore');  
-            console.log('[DEBUG-ACOMPANHANTE] - Problemas de conectividade');
-            console.log('[DEBUG-ACOMPANHANTE] - Regras de segurança bloqueando acesso');
-        }
         
     } catch (error) {
-        console.log('[DEBUG-ACOMPANHANTE] ❌ ERRO GERAL:', error);
+        console.error('[DEBUG-ACOMPANHANTE] ❌ ERRO:', error);
+        
+        // Retorno de emergência
+        return {
+            nome: solicitacao.usuarioNome || solicitacao.nome || 'Acompanhante',
+            quarto: solicitacao.quarto || 'N/A',
+            fonte: 'erro_fallback',
+            encontrado: false
+        };
     }
-    
-    console.log('[DEBUG-ACOMPANHANTE] 🎯 Resultado final:', resultado);
-    return resultado;
 }
 
 // Função para buscar nome do acompanhante (mantida para compatibilidade)
