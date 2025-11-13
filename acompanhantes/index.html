@@ -2705,36 +2705,27 @@
             }
 
             try {
-                // Obter dados do usuário do Firestore
+                // **SEMPRE BUSCAR DADOS ATUALIZADOS DO FIRESTORE**
+                console.log('[DEBUG] Buscando dados atualizados do usuário no Firestore...');
                 const userDoc = await window.db.collection('usuarios_acompanhantes').doc(currentUser.uid).get();
+                
+                if (!userDoc.exists) {
+                    console.error('[ERROR] Usuário não encontrado na coleção usuarios_acompanhantes!');
+                    showToast('Erro', 'Dados do usuário não encontrados! Verifique se seu perfil está cadastrado.', 'error');
+                    return;
+                }
+                
                 const userData = userDoc.data();
+                console.log('[DEBUG] ✅ Dados atualizados do usuário encontrados:', userData);
                 
-                // DEBUG: Verificar dados do usuário
-                console.log('[DEBUG] userData completo:', userData);
-                console.log('[DEBUG] userData.nome:', userData?.nome);
-                console.log('[DEBUG] userData.quarto:', userData?.quarto);
-                console.log('[DEBUG] currentUser.email:', currentUser.email);
+                // Extrair dados sempre atualizados do Firestore
+                const nomeAtualizado = userData.nome || currentUser.email.split('@')[0];
+                const quartoAtualizado = userData.quarto || 'N/A';
                 
-                // Determinar melhor nome para usar
-                let nomeParaUsar = userData?.nome;
-                if (!nomeParaUsar || nomeParaUsar.trim() === '') {
-                    // Se não tem nome cadastrado, usar parte do email
-                    const emailPart = currentUser.email.split('@')[0];
-                    nomeParaUsar = emailPart;
-                }
-                
-                // **GARANTIR QUE QUARTO SEJA SEMPRE VÁLIDO**
-                let quartoParaUsar = 'N/A'; // fallback padrão
-                if (userData?.quarto && userData.quarto.trim() !== '' && userData.quarto !== 'N/A') {
-                    quartoParaUsar = userData.quarto;
-                    console.log('[DEBUG] ✅ Quarto válido encontrado:', quartoParaUsar);
-                } else {
-                    console.log('[DEBUG] ❌ Quarto não encontrado ou inválido, usando N/A');
-                    console.log('[DEBUG] userData.quarto valor:', userData?.quarto);
-                }
-                
-                console.log('[DEBUG] Nome final a ser usado:', nomeParaUsar);
-                console.log('[DEBUG] Quarto final a ser usado:', quartoParaUsar);
+                console.log('[DEBUG] 📋 Dados para a solicitação:');
+                console.log('[DEBUG] - Nome:', nomeAtualizado);
+                console.log('[DEBUG] - Quarto:', quartoAtualizado);
+                console.log('[DEBUG] - Email:', currentUser.email);
 
                 const agora = new Date();
                 let dadosSolicitacao = {
@@ -2745,8 +2736,8 @@
                     usuarioId: currentUser.uid,
                     userId: currentUser.uid,
                     usuarioEmail: currentUser.email,
-                    usuarioNome: nomeParaUsar,
-                    quarto: quartoParaUsar,
+                    usuarioNome: nomeAtualizado,
+                    quarto: quartoAtualizado,
                     dataAbertura: firebase.firestore.FieldValue.serverTimestamp(),
                     dataAberturaLocal: agora.toLocaleString('pt-BR'),
                     cronometro: {

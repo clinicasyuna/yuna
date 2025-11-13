@@ -5256,59 +5256,33 @@ async function buscarDadosAcompanhante(solicitacao) {
     });
     
     try {
-        // **ESTRATÉGIA 1: Usar dados da solicitação primeiro**
-        let nomeEncontrado = 'Acompanhante'; // fallback padrão
-        let quartoEncontrado = 'N/A'; // fallback padrão
+        // **PRIORIDADE TOTAL: Dados da solicitação (agora sempre atualizados)**
+        let nomeEncontrado = 'Acompanhante'; // fallback
+        let quartoEncontrado = 'N/A'; // fallback
         
-        // 1. Tentar extrair nome do email
-        if (solicitacao.usuarioEmail) {
+        // 1. Nome: priorizar usuarioNome da solicitação
+        if (solicitacao.usuarioNome && solicitacao.usuarioNome !== 'Usuário') {
+            nomeEncontrado = solicitacao.usuarioNome;
+            console.log('[DEBUG-ACOMPANHANTE] ✅ Nome da solicitação (usuarioNome):', nomeEncontrado);
+        } else if (solicitacao.usuarioEmail) {
+            // Fallback: extrair do email
             const emailPart = solicitacao.usuarioEmail.split('@')[0];
-            if (emailPart && emailPart.length > 0) {
-                nomeEncontrado = emailPart;
-                console.log('[DEBUG-ACOMPANHANTE] Nome extraído do email:', nomeEncontrado);
-            }
+            nomeEncontrado = emailPart;
+            console.log('[DEBUG-ACOMPANHANTE] ✅ Nome extraído do email:', nomeEncontrado);
         }
         
-        // 2. Se não tem email, usar usuarioNome ou nome
-        if (nomeEncontrado === 'Acompanhante') {
-            if (solicitacao.usuarioNome && solicitacao.usuarioNome !== 'Usuário') {
-                nomeEncontrado = solicitacao.usuarioNome;
-                console.log('[DEBUG-ACOMPANHANTE] Nome do usuarioNome:', nomeEncontrado);
-            } else if (solicitacao.nome && solicitacao.nome !== 'N/A') {
-                nomeEncontrado = solicitacao.nome;
-                console.log('[DEBUG-ACOMPANHANTE] Nome do campo nome:', nomeEncontrado);
-            }
-        }
-        
-        // 3. Usar quarto da solicitação se disponível
+        // 2. Quarto: usar sempre da solicitação (agora sempre atualizado)
         if (solicitacao.quarto && solicitacao.quarto !== 'N/A') {
             quartoEncontrado = solicitacao.quarto;
-            console.log('[DEBUG-ACOMPANHANTE] Quarto encontrado na solicitação:', quartoEncontrado);
-        } else if (solicitacao.usuarioId) {
-            // **ESTRATÉGIA 2: Se quarto não está na solicitação, buscar no Firestore**
-            console.log('[DEBUG-ACOMPANHANTE] 🔍 Quarto não encontrado na solicitação, buscando no Firestore...');
-            try {
-                const userDoc = await window.db.collection('usuarios_acompanhantes').doc(solicitacao.usuarioId).get();
-                if (userDoc.exists) {
-                    const userData = userDoc.data();
-                    console.log('[DEBUG-ACOMPANHANTE] Dados do usuário encontrados no Firestore:', userData);
-                    
-                    if (userData.quarto && userData.quarto !== 'N/A') {
-                        quartoEncontrado = userData.quarto;
-                        console.log('[DEBUG-ACOMPANHANTE] ✅ Quarto encontrado no Firestore:', quartoEncontrado);
-                    }
-                } else {
-                    console.log('[DEBUG-ACOMPANHANTE] ❌ Usuário não encontrado no Firestore');
-                }
-            } catch (error) {
-                console.log('[DEBUG-ACOMPANHANTE] ⚠️ Erro ao buscar no Firestore:', error);
-            }
+            console.log('[DEBUG-ACOMPANHANTE] ✅ Quarto da solicitação:', quartoEncontrado);
+        } else {
+            console.log('[DEBUG-ACOMPANHANTE] ⚠️ Quarto N/A na solicitação');
         }
         
         const resultado = {
             nome: nomeEncontrado,
             quarto: quartoEncontrado,
-            fonte: quartoEncontrado !== 'N/A' ? 'solicitacao+firestore' : 'solicitacao_simples',
+            fonte: 'solicitacao_atualizada',
             encontrado: true
         };
         
