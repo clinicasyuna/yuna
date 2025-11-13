@@ -5278,12 +5278,45 @@ async function buscarDadosAcompanhante(solicitacao) {
             console.log('[DEBUG-ACOMPANHANTE] ✅ Nome extraído do email:', nomeEncontrado);
         }
         
-        // 2. Quarto: usar sempre da solicitação (agora sempre atualizado)
+        // 2. Quarto: primeiro tentar da solicitação, depois Firestore se necessário
         if (solicitacao.quarto && solicitacao.quarto !== 'N/A') {
             quartoEncontrado = solicitacao.quarto;
             console.log('[DEBUG-ACOMPANHANTE] ✅ Quarto da solicitação:', quartoEncontrado);
         } else {
-            console.log('[DEBUG-ACOMPANHANTE] ⚠️ Quarto N/A na solicitação');
+            console.log('[DEBUG-ACOMPANHANTE] ⚠️ Quarto N/A na solicitação - buscando no Firestore...');
+            
+            // **BUSCAR NO FIRESTORE POR EMAIL SE QUARTO FOR N/A**
+            if (solicitacao.usuarioEmail) {
+                try {
+                    console.log('[DEBUG-ACOMPANHANTE] 🔍 Buscando por email:', solicitacao.usuarioEmail);
+                    
+                    const usersSnapshot = await window.db.collection('usuarios_acompanhantes')
+                        .where('email', '==', solicitacao.usuarioEmail)
+                        .get();
+                    
+                    if (!usersSnapshot.empty) {
+                        const userDoc = usersSnapshot.docs[0];
+                        const userData = userDoc.data();
+                        console.log('[DEBUG-ACOMPANHANTE] ✅ Dados encontrados no Firestore:', userData);
+                        
+                        // Atualizar nome se não temos um melhor
+                        if (!solicitacao.usuarioNome && userData.nome) {
+                            nomeEncontrado = userData.nome;
+                            console.log('[DEBUG-ACOMPANHANTE] ✅ Nome atualizado do Firestore:', nomeEncontrado);
+                        }
+                        
+                        // Atualizar quarto se encontrado
+                        if (userData.quarto) {
+                            quartoEncontrado = userData.quarto;
+                            console.log('[DEBUG-ACOMPANHANTE] 🏠 Quarto encontrado no Firestore:', quartoEncontrado);
+                        }
+                    } else {
+                        console.log('[DEBUG-ACOMPANHANTE] ⚠️ Usuário não encontrado no Firestore por email');
+                    }
+                } catch (firestoreError) {
+                    console.error('[DEBUG-ACOMPANHANTE] ❌ Erro ao buscar no Firestore:', firestoreError);
+                }
+            }
         }
         
         const resultado = {
