@@ -2697,7 +2697,8 @@ function configurarListenerNotificacoes() {
         setTimeout(() => {
             window.isInitialLoad = false;
             console.log('[NOTIFICATION] Carregamento inicial finalizado - notificações ativas');
-        }, 5000); // 5 segundos para carregamento inicial
+            console.log('[NOTIFICATION] 🔔 isInitialLoad definido como FALSE - pop-ups agora ativos!');
+        }, 2000); // Reduzido para 2 segundos para permitir notificações mais rápido
         
         // Listener para novas solicitações (SEM ORDERBY para evitar problemas de índice)
         window.db.collection('solicitacoes')
@@ -2786,11 +2787,16 @@ function configurarListenerNotificacoes() {
 
 function mostrarNotificacaoNovaSolicitacao(solicitacao) {
     try {
-        console.log('[NOTIFICATION] Exibindo notificação para:', solicitacao);
+        console.log('[NOTIFICATION] 🎯 EXECUTANDO mostrarNotificacaoNovaSolicitacao para:', solicitacao.id);
         
         // Buscar dados completos do acompanhante antes de exibir
         buscarDadosAcompanhante(solicitacao).then(dadosAcompanhante => {
+            console.log('[NOTIFICATION] 📋 Dados obtidos para popup:', dadosAcompanhante);
             exibirPopupNotificacao(solicitacao, dadosAcompanhante);
+        }).catch(error => {
+            console.error('[NOTIFICATION] ❌ Erro ao buscar dados do acompanhante:', error);
+            // Mesmo assim, exibir popup com dados básicos
+            exibirPopupNotificacao(solicitacao, null);
         });
         
     } catch (error) {
@@ -2800,7 +2806,8 @@ function mostrarNotificacaoNovaSolicitacao(solicitacao) {
 
 function exibirPopupNotificacao(solicitacao, dadosAcompanhante) {
     try {
-        console.log('[NOTIFICATION] Exibindo popup com dados:', { solicitacao: solicitacao.id, dadosAcompanhante });
+        console.log('[NOTIFICATION] 🎉 CRIANDO POPUP para solicitação:', solicitacao.id);
+        console.log('[NOTIFICATION] 📊 Dados do acompanhante recebidos:', dadosAcompanhante);
         
         // Determinar tipo de serviço e emoji
         let tipoServico = solicitacao.equipe || solicitacao.tipoServico || 'solicitação';
