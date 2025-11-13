@@ -2705,24 +2705,39 @@
             }
 
             try {
-                // **SEMPRE BUSCAR DADOS ATUALIZADOS DO FIRESTORE**
-                console.log('[DEBUG] Buscando dados atualizados do usuário no Firestore...');
-                const userDoc = await window.db.collection('usuarios_acompanhantes').doc(currentUser.uid).get();
+                // **BUSCAR POR EMAIL PORQUE A COLEÇÃO USA IDs PERSONALIZADOS**
+                console.log('[DEBUG] Buscando usuário por email...');
+                console.log('[DEBUG] UID do usuário (Firebase Auth):', currentUser.uid);
+                console.log('[DEBUG] Email do usuário:', currentUser.email);
                 
-                if (!userDoc.exists) {
-                    console.error('[ERROR] Usuário não encontrado na coleção usuarios_acompanhantes!');
-                    showToast('Erro', 'Dados do usuário não encontrados! Verifique se seu perfil está cadastrado.', 'error');
-                    return;
+                // Buscar por email em vez de UID
+                const usersSnapshot = await window.db.collection('usuarios_acompanhantes')
+                    .where('email', '==', currentUser.email)
+                    .get();
+                
+                let nomeAtualizado = currentUser.email.split('@')[0]; // fallback seguro
+                let quartoAtualizado = 'N/A'; // fallback seguro
+                
+                if (!usersSnapshot.empty) {
+                    // Usuário encontrado
+                    const userDoc = usersSnapshot.docs[0];
+                    const userData = userDoc.data();
+                    console.log('[DEBUG] ✅ Dados do usuário encontrados por email:');
+                    console.log('[DEBUG] - Document ID:', userDoc.id);
+                    console.log('[DEBUG] - Dados:', userData);
+                    
+                    nomeAtualizado = userData.nome || nomeAtualizado;
+                    quartoAtualizado = userData.quarto || 'N/A';
+                } else {
+                    // Usuário não encontrado por email
+                    console.log('[WARNING] ⚠️ Usuário não encontrado por email em usuarios_acompanhantes');
+                    console.log('[WARNING] Email buscado:', currentUser.email);
+                    console.log('[WARNING] Usando dados básicos do Firebase Auth');
+                    
+                    showToast('Aviso', 'Perfil não encontrado. Usando dados básicos.', 'warning');
                 }
                 
-                const userData = userDoc.data();
-                console.log('[DEBUG] ✅ Dados atualizados do usuário encontrados:', userData);
-                
-                // Extrair dados sempre atualizados do Firestore
-                const nomeAtualizado = userData.nome || currentUser.email.split('@')[0];
-                const quartoAtualizado = userData.quarto || 'N/A';
-                
-                console.log('[DEBUG] 📋 Dados para a solicitação:');
+                console.log('[DEBUG] 📋 Dados finais para a solicitação:');
                 console.log('[DEBUG] - Nome:', nomeAtualizado);
                 console.log('[DEBUG] - Quarto:', quartoAtualizado);
                 console.log('[DEBUG] - Email:', currentUser.email);
