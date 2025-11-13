@@ -5237,16 +5237,40 @@ async function buscarDadosAcompanhante(solicitacao) {
         solicitanteId: solicitacao.solicitanteId,
         nome: solicitacao.nome,
         usuarioNome: solicitacao.usuarioNome,
+        solicitante: solicitacao.solicitante,
         quarto: solicitacao.quarto,
         allKeys: Object.keys(solicitacao)
     });
     
+    // **PRIORIDADE 1: Usar dados da própria solicitação primeiro**
+    const nomeDisponivel = solicitacao.solicitante || solicitacao.usuarioNome || solicitacao.nome;
+    const quartoDisponivel = solicitacao.quarto;
+    
+    console.log('[DEBUG-ACOMPANHANTE] Dados encontrados na solicitação:', {
+        nome: nomeDisponivel,
+        quarto: quartoDisponivel
+    });
+    
+    // Se temos dados suficientes na própria solicitação, usar diretamente
+    if (nomeDisponivel && nomeDisponivel !== 'N/A' && nomeDisponivel !== 'Usuário') {
+        const resultado = {
+            nome: nomeDisponivel,
+            quarto: quartoDisponivel || 'N/A',
+            fonte: 'solicitacao',
+            encontrado: true
+        };
+        
+        console.log('[DEBUG-ACOMPANHANTE] ✅ USANDO DADOS DA SOLICITAÇÃO:', resultado);
+        return resultado;
+    }
+    
+    // Fallback para os dados básicos se não encontrarmos dados melhores
     const resultado = {
-        nome: solicitacao.usuarioNome || solicitacao.nome || 'N/A',
-        quarto: solicitacao.quarto || 'N/A'
+        nome: nomeDisponivel || 'N/A',
+        quarto: quartoDisponivel || 'N/A'
     };
 
-    console.log('[DEBUG-ACOMPANHANTE] Resultado inicial:', resultado);
+    console.log('[DEBUG-ACOMPANHANTE] Resultado inicial (fallback):', resultado);
 
     if (!solicitacao.usuarioId && !solicitacao.solicitanteId) {
         console.log('[DEBUG-ACOMPANHANTE] ❌ Nenhum usuarioId ou solicitanteId encontrado - retornando dados da solicitação');
