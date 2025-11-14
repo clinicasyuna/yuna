@@ -2705,32 +2705,66 @@
             }
 
             try {
-                // **BUSCAR POR EMAIL PORQUE A COLEÇÃO USA IDs PERSONALIZADOS**
+                // **BUSCAR EM MÚLTIPLAS COLEÇÕES PORQUE USUÁRIOS PODEM ESTAR EM DIFERENTES COLEÇÕES**
                 console.log('[DEBUG] Buscando usuário por email...');
                 console.log('[DEBUG] UID do usuário (Firebase Auth):', currentUser.uid);
                 console.log('[DEBUG] Email do usuário:', currentUser.email);
                 
-                // Buscar por email em vez de UID
-                const usersSnapshot = await window.db.collection('usuarios_acompanhantes')
+                let nomeAtualizado = currentUser.email.split('@')[0]; // fallback seguro
+                let quartoAtualizado = 'N/A'; // fallback seguro
+                let usuarioEncontrado = false;
+                
+                // 1. Tentar em usuarios_acompanhantes primeiro
+                console.log('[DEBUG] 🔍 Buscando em usuarios_acompanhantes...');
+                const acompanhantesSnapshot = await window.db.collection('usuarios_acompanhantes')
                     .where('email', '==', currentUser.email)
                     .get();
                 
-                let nomeAtualizado = currentUser.email.split('@')[0]; // fallback seguro
-                let quartoAtualizado = 'N/A'; // fallback seguro
-                
-                if (!usersSnapshot.empty) {
-                    // Usuário encontrado
-                    const userDoc = usersSnapshot.docs[0];
+                if (!acompanhantesSnapshot.empty) {
+                    const userDoc = acompanhantesSnapshot.docs[0];
                     const userData = userDoc.data();
-                    console.log('[DEBUG] ✅ Dados do usuário encontrados por email:');
-                    console.log('[DEBUG] - Document ID:', userDoc.id);
-                    console.log('[DEBUG] - Dados:', userData);
+                    console.log('[DEBUG] ✅ Usuário encontrado em usuarios_acompanhantes:', userData);
                     
                     nomeAtualizado = userData.nome || nomeAtualizado;
                     quartoAtualizado = userData.quarto || 'N/A';
+                    usuarioEncontrado = true;
                 } else {
-                    // Usuário não encontrado por email
-                    console.log('[WARNING] ⚠️ Usuário não encontrado por email em usuarios_acompanhantes');
+                    // 2. Se não encontrou, tentar em usuarios_equipe
+                    console.log('[DEBUG] 🔍 Buscando em usuarios_equipe...');
+                    const equipeSnapshot = await window.db.collection('usuarios_equipe')
+                        .where('email', '==', currentUser.email)
+                        .get();
+                    
+                    if (!equipeSnapshot.empty) {
+                        const userDoc = equipeSnapshot.docs[0];
+                        const userData = userDoc.data();
+                        console.log('[DEBUG] ✅ Usuário encontrado em usuarios_equipe:', userData);
+                        
+                        nomeAtualizado = userData.nome || nomeAtualizado;
+                        // Usuários da equipe não têm quarto fixo, usar uma designação especial
+                        quartoAtualizado = `EQUIPE-${userData.equipe?.toUpperCase() || 'GERAL'}`;
+                        usuarioEncontrado = true;
+                    } else {
+                        // 3. Se não encontrou em nenhuma, tentar usuarios_admin
+                        console.log('[DEBUG] 🔍 Buscando em usuarios_admin...');
+                        const adminSnapshot = await window.db.collection('usuarios_admin')
+                            .where('email', '==', currentUser.email)
+                            .get();
+                        
+                        if (!adminSnapshot.empty) {
+                            const userDoc = adminSnapshot.docs[0];
+                            const userData = userDoc.data();
+                            console.log('[DEBUG] ✅ Usuário encontrado em usuarios_admin:', userData);
+                            
+                            nomeAtualizado = userData.nome || nomeAtualizado;
+                            quartoAtualizado = 'ADMIN';
+                            usuarioEncontrado = true;
+                        }
+                    }
+                }
+                
+                if (!usuarioEncontrado) {
+                    console.log('[WARNING] ⚠️ Usuário não encontrado em nenhuma coleção');
                     console.log('[WARNING] Email buscado:', currentUser.email);
                     console.log('[WARNING] Usando dados básicos do Firebase Auth');
                     
