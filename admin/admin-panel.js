@@ -6119,6 +6119,12 @@ async function abrirDashboardSatisfacao() {
                 quartoSolicitacao: data.quartoSolicitacao,
                 quartoNumero: data.quartoNumero
             });
+            console.log('[DEBUG-SATISFACAO] VALORES REAIS DOS QUARTOS:', {
+                'data.quarto': JSON.stringify(data.quarto),
+                'data.numeroQuarto': JSON.stringify(data.numeroQuarto),
+                'data.quartoSolicitacao': JSON.stringify(data.quartoSolicitacao),
+                'data.quartoNumero': JSON.stringify(data.quartoNumero)
+            });
             console.log('[DEBUG-SATISFACAO] Tipos dos campos:', {
                 avaliacao: typeof data.avaliacao,
                 nota: typeof data.nota,
