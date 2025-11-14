@@ -6110,8 +6110,13 @@ async function abrirDashboardSatisfacao() {
         
         const avaliacoes = [];
         avaliacoesSnapshot.forEach(doc => {
-            avaliacoes.push({ id: doc.id, ...doc.data() });
+            const data = doc.data();
+            console.log('[DEBUG-SATISFACAO] Dados brutos da avaliação:', data);
+            avaliacoes.push({ id: doc.id, ...data });
         });
+        
+        console.log('[DEBUG-SATISFACAO] Total de avaliações encontradas:', avaliacoes.length);
+        console.log('[DEBUG-SATISFACAO] Primeira avaliação (se existir):', avaliacoes[0]);
         
         // Criar modal do dashboard
         const modalDashboard = document.createElement('div');
@@ -6233,19 +6238,19 @@ async function abrirDashboardSatisfacao() {
                         </h3>
                         <div style="max-height: 400px; overflow-y: auto;">
                             ${avaliacoes.slice(0, 20).map(avaliacao => `
-                                <div style="background: white; padding: 16px; border-radius: 8px; margin-bottom: 12px; border-left: 4px solid ${getCorAvaliacao(avaliacao.avaliacao)};">
+                                <div style="background: white; padding: 16px; border-radius: 8px; margin-bottom: 12px; border-left: 4px solid ${getCorAvaliacao(Number(avaliacao.avaliacao) || 0)};">
                                     <div style="display: flex; justify-content: space-between; align-items: start; margin-bottom: 8px;">
                                         <div>
                                             <div style="font-weight: bold; color: #374151;">
-                                                ${getEstrelasVisuais(avaliacao.avaliacao)} 
-                                                <span style="color: #6b7280;">(${avaliacao.avaliacao}/5)</span>
+                                                ${getEstrelasVisuais(Number(avaliacao.avaliacao) || 0)} 
+                                                <span style="color: #6b7280;">(${Number(avaliacao.avaliacao) || 0}/5)</span>
                                             </div>
                                             <div style="color: #6b7280; font-size: 14px; margin-top: 4px;">
-                                                Equipe: ${avaliacao.equipaAvaliada} | Quarto: ${avaliacao.quarto || 'N/A'}
+                                                Equipe: ${avaliacao.equipaAvaliada || 'N/A'} | Quarto: ${avaliacao.quarto || 'N/A'}
                                             </div>
                                         </div>
                                         <div style="text-align: right; color: #6b7280; font-size: 12px;">
-                                            ${formatarDataHora(avaliacao.dataAvaliacao)}
+                                            ${formatarDataHora(avaliacao.dataAvaliacao) || 'Data inválida'}
                                         </div>
                                     </div>
                                     ${avaliacao.comentario ? `
@@ -6368,7 +6373,31 @@ Tem certeza de que deseja continuar?`);
 }
 
 function calcularMetricasSatisfacao(avaliacoes) {
-    if (avaliacoes.length === 0) {
+    console.log('[DEBUG-METRICAS] Calculando métricas para:', avaliacoes.length, 'avaliações');
+    
+    if (!avaliacoes || avaliacoes.length === 0) {
+        console.log('[DEBUG-METRICAS] Nenhuma avaliação encontrada, retornando valores padrão');
+        return {
+            mediaGeral: 0,
+            percentualPositivo: 0,
+            melhorEquipe: 'N/A',
+            porEquipe: {}
+        };
+    }
+    
+    // Filtrar avaliações válidas
+    const avaliacoesValidas = avaliacoes.filter(a => {
+        const nota = Number(a.avaliacao);
+        const valida = !isNaN(nota) && nota >= 1 && nota <= 5;
+        if (!valida) {
+            console.log('[DEBUG-METRICAS] Avaliação inválida encontrada:', a);
+        }
+        return valida;
+    });
+    
+    console.log('[DEBUG-METRICAS] Avaliações válidas:', avaliacoesValidas.length);
+    
+    if (avaliacoesValidas.length === 0) {
         return {
             mediaGeral: 0,
             percentualPositivo: 0,
@@ -6378,16 +6407,20 @@ function calcularMetricasSatisfacao(avaliacoes) {
     }
     
     // Calcular média geral
-    const somaTotal = avaliacoes.reduce((soma, avaliacao) => soma + avaliacao.avaliacao, 0);
-    const mediaGeral = somaTotal / avaliacoes.length;
+    const somaTotal = avaliacoesValidas.reduce((soma, avaliacao) => soma + Number(avaliacao.avaliacao), 0);
+    const mediaGeral = somaTotal / avaliacoesValidas.length;
+    
+    console.log('[DEBUG-METRICAS] Soma total:', somaTotal, 'Média geral:', mediaGeral);
     
     // Calcular percentual positivo (4 e 5 estrelas)
-    const avaliacoesPositivas = avaliacoes.filter(a => a.avaliacao >= 4).length;
-    const percentualPositivo = Math.round((avaliacoesPositivas / avaliacoes.length) * 100);
+    const avaliacoesPositivas = avaliacoesValidas.filter(a => Number(a.avaliacao) >= 4).length;
+    const percentualPositivo = Math.round((avaliacoesPositivas / avaliacoesValidas.length) * 100);
+    
+    console.log('[DEBUG-METRICAS] Avaliações positivas:', avaliacoesPositivas, 'Percentual:', percentualPositivo);
     
     // Calcular métricas por equipe
     const porEquipe = {};
-    avaliacoes.forEach(avaliacao => {
+    avaliacoesValidas.forEach(avaliacao => {
         const equipe = avaliacao.equipaAvaliada;
         if (!porEquipe[equipe]) {
             porEquipe[equipe] = { total: 0, soma: 0, media: 0 };
@@ -6696,8 +6729,22 @@ function getEstrelasVisuais(nota) {
 }
 
 function formatarDataHora(dataISO) {
-    const data = new Date(dataISO);
-    return data.toLocaleDateString('pt-BR') + ' ' + data.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' });
+    try {
+        if (!dataISO) return 'Data não informada';
+        
+        const data = new Date(dataISO);
+        
+        // Verificar se a data é válida
+        if (isNaN(data.getTime())) {
+            console.warn('[FORMATACAO] Data inválida recebida:', dataISO);
+            return 'Data inválida';
+        }
+        
+        return data.toLocaleDateString('pt-BR') + ' ' + data.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' });
+    } catch (error) {
+        console.error('[FORMATACAO] Erro ao formatar data:', error);
+        return 'Erro na data';
+    }
 }
 
 function fecharDashboardSatisfacao() {
