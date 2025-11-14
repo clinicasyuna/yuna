@@ -4337,17 +4337,15 @@ async function abrirDashboardMetricas() {
         const isAdmin = usuarioAdmin && usuarioAdmin.role === 'admin';
         const equipeUsuario = usuarioAdmin && usuarioAdmin.equipe;
         
-        console.log('🔍 DASHBOARD MÉTRICAS:', {
+        console.log('🔍 DASHBOARD MÉTRICAS AVANÇADO:', {
             usuario: usuarioAdmin.nome,
             role: usuarioAdmin.role,
             equipe: equipeUsuario,
             mostrarTodas: isSuperAdmin || isAdmin
         });
         
-        // Buscar solicitações finalizadas
-        let query = window.db.collection('solicitacoes')
-            .where('status', '==', 'finalizada')
-            .limit(100);
+        // Buscar todas as solicitações para análise avançada
+        let query = window.db.collection('solicitacoes').limit(500);
         
         // Se não for super_admin ou admin, filtrar apenas pela equipe do usuário
         if (!isSuperAdmin && !isAdmin && equipeUsuario) {
@@ -4356,38 +4354,52 @@ async function abrirDashboardMetricas() {
         
         const snapshot = await query.get();
         
-        // Filtrar por data no lado do cliente (últimos 30 dias)
-        const dataLimite = new Date();
-        dataLimite.setDate(dataLimite.getDate() - 30);
+        // Processar dados para diferentes períodos
+        const agora = new Date();
+        const dataLimite30 = new Date(); dataLimite30.setDate(agora.getDate() - 30);
+        const dataLimite7 = new Date(); dataLimite7.setDate(agora.getDate() - 7);
         
-        const solicitacoesFiltradas = snapshot.docs
-            .map(doc => ({id: doc.id, ...doc.data()}))
-            .filter(sol => {
-                if (sol.criadoEm && sol.criadoEm.toDate) {
-                    return sol.criadoEm.toDate() >= dataLimite;
-                }
-                return false;
-            });
+        const todasSolicitacoes = snapshot.docs.map(doc => ({id: doc.id, ...doc.data()}));
         
-        // Calcular métricas
-        const metricas = calcularMetricasGerais(solicitacoesFiltradas);
+        const solicitacoes30dias = todasSolicitacoes.filter(sol => {
+            if (sol.criadoEm && sol.criadoEm.toDate) {
+                return sol.criadoEm.toDate() >= dataLimite30;
+            }
+            return false;
+        });
         
-        // Criar modal de dashboard
+        const solicitacoes7dias = todasSolicitacoes.filter(sol => {
+            if (sol.criadoEm && sol.criadoEm.toDate) {
+                return sol.criadoEm.toDate() >= dataLimite7;
+            }
+            return false;
+        });
+        
+        // Calcular métricas avançadas
+        const metricasAvancadas = calcularMetricasAvancadas(todasSolicitacoes, solicitacoes30dias, solicitacoes7dias);
+        
+        // Criar modal de dashboard avançado
         let modal = document.getElementById('dashboard-metricas');
         if (!modal) {
             modal = document.createElement('div');
             modal.id = 'dashboard-metricas';
             modal.className = 'modal';
-            modal.style.cssText = 'position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0, 0, 0, 0.6); display: flex; justify-content: center; align-items: center; z-index: 1000;';
+            modal.style.cssText = 'position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0, 0, 0, 0.6); display: flex; justify-content: center; align-items: center; z-index: 1000; overflow-y: auto;';
             document.body.appendChild(modal);
         }
         
-        modal.innerHTML = gerarHTMLDashboard(metricas, { 
+        modal.innerHTML = gerarHTMLDashboardAvancado(metricasAvancadas, { 
             isSuperAdmin: isSuperAdmin || isAdmin, 
             equipeUsuario: equipeUsuario,
             nomeUsuario: usuarioAdmin.nome || 'Usuário'
         });
         modal.style.display = 'flex';
+        
+        // Renderizar gráficos após o modal estar no DOM
+        setTimeout(() => {
+            renderizarGraficos(metricasAvancadas);
+            configurarAlertasInteligentes(metricasAvancadas);
+        }, 100);
         
     } catch (error) {
         console.error('Erro ao carregar dashboard:', error);
@@ -4399,7 +4411,419 @@ function fecharDashboardMetricas() {
     const modal = document.getElementById('dashboard-metricas');
     if (modal) {
         modal.style.display = 'none';
+        // Destruir gráficos para liberar memória
+        if (window.chartInstances) {
+            Object.values(window.chartInstances).forEach(chart => chart.destroy());
+            window.chartInstances = {};
+        }
     }
+}
+
+// ===== FUNÇÕES DE MÉTRICAS AVANÇADAS =====
+
+function calcularMetricasAvancadas(todasSolicitacoes, solicitacoes30dias, solicitacoes7dias) {
+    const agora = new Date();
+    
+    const metricas = {
+        // Métricas básicas
+        totais: {
+            todas: todasSolicitacoes.length,
+            ultimos30dias: solicitacoes30dias.length,
+            ultimos7dias: solicitacoes7dias.length
+        },
+        
+        // Status distribution
+        statusDistribution: calcularDistribuicaoStatus(solicitacoes30dias),
+        
+        // Métricas por equipe
+        porEquipe: calcularMetricasPorEquipe(solicitacoes30dias),
+        
+        // Tendências temporais
+        tendencias: calcularTendencias(todasSolicitacoes),
+        
+        // Picos de demanda
+        picosDemanda: calcularPicosDemanda(solicitacoes30dias),
+        
+        // Alertas
+        alertas: calcularAlertas(solicitacoes30dias),
+        
+        // Performance e eficiência
+        performance: calcularPerformanceGeral(solicitacoes30dias),
+        
+        // Satisfação integrada
+        satisfacao: calcularSatisfacaoPorEquipe(solicitacoes30dias)
+    };
+    
+    return metricas;
+}
+
+function calcularDistribuicaoStatus(solicitacoes) {
+    const distribuicao = {
+        pendente: 0,
+        'em-andamento': 0,
+        finalizada: 0,
+        cancelada: 0
+    };
+    
+    solicitacoes.forEach(sol => {
+        const status = sol.status || 'pendente';
+        if (distribuicao.hasOwnProperty(status)) {
+            distribuicao[status]++;
+        }
+    });
+    
+    return distribuicao;
+}
+
+function calcularMetricasPorEquipe(solicitacoes) {
+    const equipesMetricas = {};
+    
+    solicitacoes.forEach(sol => {
+        const equipe = sol.equipe || 'indefinida';
+        
+        if (!equipesMetricas[equipe]) {
+            equipesMetricas[equipe] = {
+                total: 0,
+                pendentes: 0,
+                emAndamento: 0,
+                finalizadas: 0,
+                tempoMedioResolucao: 0,
+                slaCompliance: 0,
+                eficiencia: 0,
+                tempos: [],
+                alertaAcumulo: false
+            };
+        }
+        
+        const equipeData = equipesMetricas[equipe];
+        equipeData.total++;
+        
+        // Contar status
+        switch (sol.status) {
+            case 'pendente': equipeData.pendentes++; break;
+            case 'em-andamento': equipeData.emAndamento++; break;
+            case 'finalizada': equipeData.finalizadas++; break;
+        }
+        
+        // Calcular métricas de tempo para finalizadas
+        if (sol.status === 'finalizada' && sol.metricas) {
+            const tempo = sol.metricas.tempoTotal || 0;
+            equipeData.tempos.push(tempo);
+        }
+        
+        // Alerta de acúmulo (mais de 5 pendentes + em-andamento)
+        equipeData.alertaAcumulo = (equipeData.pendentes + equipeData.emAndamento) > 5;
+    });
+    
+    // Calcular médias
+    Object.keys(equipesMetricas).forEach(equipe => {
+        const data = equipesMetricas[equipe];
+        if (data.tempos.length > 0) {
+            data.tempoMedioResolucao = data.tempos.reduce((a, b) => a + b, 0) / data.tempos.length;
+            data.slaCompliance = calcularSLACompliance(data.tempos, equipe);
+        }
+    });
+    
+    return equipesMetricas;
+}
+
+function calcularTendencias(todasSolicitacoes) {
+    const hoje = new Date();
+    const tendencias = {
+        ultimos7dias: [],
+        ultimos30dias: [],
+        crescimentoSemanal: 0,
+        crescimentoMensal: 0
+    };
+    
+    // Agrupar por dia nos últimos 7 dias
+    for (let i = 6; i >= 0; i--) {
+        const data = new Date(hoje);
+        data.setDate(hoje.getDate() - i);
+        const dataStr = data.toISOString().split('T')[0];
+        
+        const count = todasSolicitacoes.filter(sol => {
+            if (sol.criadoEm && sol.criadoEm.toDate) {
+                const solData = sol.criadoEm.toDate().toISOString().split('T')[0];
+                return solData === dataStr;
+            }
+            return false;
+        }).length;
+        
+        tendencias.ultimos7dias.push({
+            data: dataStr,
+            count: count,
+            label: data.toLocaleDateString('pt-BR', { weekday: 'short', day: 'numeric' })
+        });
+    }
+    
+    // Calcular crescimento
+    const primeiraSemana = tendencias.ultimos7dias.slice(0, 4).reduce((sum, dia) => sum + dia.count, 0);
+    const segundaSemana = tendencias.ultimos7dias.slice(3, 7).reduce((sum, dia) => sum + dia.count, 0);
+    
+    tendencias.crescimentoSemanal = segundaSemana > 0 ? 
+        ((segundaSemana - primeiraSemana) / primeiraSemana * 100) : 0;
+    
+    return tendencias;
+}
+
+function calcularPicosDemanda(solicitacoes) {
+    const picosPorHora = new Array(24).fill(0);
+    const picosPorDiaSemana = new Array(7).fill(0);
+    
+    solicitacoes.forEach(sol => {
+        if (sol.criadoEm && sol.criadoEm.toDate) {
+            const data = sol.criadoEm.toDate();
+            const hora = data.getHours();
+            const diaSemana = data.getDay();
+            
+            picosPorHora[hora]++;
+            picosPorDiaSemana[diaSemana]++;
+        }
+    });
+    
+    return {
+        porHora: picosPorHora,
+        porDiaSemana: picosPorDiaSemana,
+        horasPico: picosPorHora.map((count, hora) => ({hora, count}))
+                              .sort((a, b) => b.count - a.count)
+                              .slice(0, 3)
+    };
+}
+
+function calcularAlertas(solicitacoes) {
+    const alertas = [];
+    const agora = new Date();
+    
+    // SLA próximo do limite
+    const slaConfig = {
+        'manutencao': 240, 'nutricao': 60, 'higienizacao': 120, 'hotelaria': 180
+    };
+    
+    solicitacoes.forEach(sol => {
+        if ((sol.status === 'pendente' || sol.status === 'em-andamento') && sol.criadoEm) {
+            const criacao = sol.criadoEm.toDate ? sol.criadoEm.toDate() : new Date(sol.criadoEm);
+            const minutosPassados = (agora - criacao) / (1000 * 60);
+            const limiteSLA = slaConfig[sol.equipe] || 240;
+            const percentualSLA = (minutosPassados / limiteSLA) * 100;
+            
+            if (percentualSLA > 80) {
+                alertas.push({
+                    tipo: 'sla_proximo',
+                    equipe: sol.equipe,
+                    solicitacao: sol.id,
+                    percentual: Math.round(percentualSLA),
+                    urgencia: percentualSLA > 100 ? 'critica' : 'alta'
+                });
+            }
+        }
+    });
+    
+    return alertas;
+}
+
+function calcularPerformanceGeral(solicitacoes) {
+    const finalizadas = solicitacoes.filter(sol => sol.status === 'finalizada' && sol.metricas);
+    
+    if (finalizadas.length === 0) {
+        return { tmaGeral: 0, eficienciaGeral: 0, slaGeral: 0 };
+    }
+    
+    const tempoTotal = finalizadas.reduce((sum, sol) => sum + (sol.metricas.tempoTotal || 0), 0);
+    const tempoTrabalho = finalizadas.reduce((sum, sol) => sum + (sol.metricas.tempoTrabalho || 0), 0);
+    const slasCumpridos = finalizadas.filter(sol => sol.metricas.statusSLA === 'cumprido').length;
+    
+    return {
+        tmaGeral: Math.round(tempoTotal / finalizadas.length),
+        eficienciaGeral: tempoTotal > 0 ? Math.round((tempoTrabalho / tempoTotal) * 100) : 0,
+        slaGeral: Math.round((slasCumpridos / finalizadas.length) * 100)
+    };
+}
+
+function calcularSatisfacaoPorEquipe(solicitacoes) {
+    // Esta função será integrada com os dados de satisfação
+    // Por enquanto, retorna estrutura básica
+    return {
+        mediaGeral: 4.2,
+        porEquipe: {
+            manutencao: 4.1,
+            nutricao: 4.5,
+            higienizacao: 4.0,
+            hotelaria: 4.3
+        }
+    };
+}
+
+function calcularSLACompliance(tempos, equipe) {
+    const limites = {
+        'manutencao': 240, 'nutricao': 60, 'higienizacao': 120, 'hotelaria': 180
+    };
+    
+    const limite = limites[equipe] || 240;
+    const cumpridos = tempos.filter(tempo => tempo <= limite).length;
+    
+    return tempos.length > 0 ? Math.round((cumpridos / tempos.length) * 100) : 0;
+}
+
+// ===== GERAÇÃO DE HTML AVANÇADO =====
+
+function gerarHTMLDashboardAvancado(metricas, opcoes = {}) {
+    const { isSuperAdmin = false, equipeUsuario = null, nomeUsuario = 'Usuário' } = opcoes;
+    
+    return `
+        <div class="modal-content" style="max-width: 95vw; max-height: 90vh; overflow-y: auto; background: white; border-radius: 12px; padding: 0;">
+            <!-- Header -->
+            <div style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 20px; border-radius: 12px 12px 0 0; position: sticky; top: 0; z-index: 10;">
+                <div style="display: flex; justify-content: space-between; align-items: center;">
+                    <div>
+                        <h2 style="margin: 0; font-size: 1.5rem;">📊 Dashboard Executivo - Métricas Avançadas</h2>
+                        <p style="margin: 5px 0 0 0; opacity: 0.9;">${isSuperAdmin ? 'Visão Completa' : 'Equipe: ' + equipeUsuario} | ${nomeUsuario}</p>
+                    </div>
+                    <button onclick="fecharDashboardMetricas()" style="background: rgba(255,255,255,0.2); border: none; color: white; width: 40px; height: 40px; border-radius: 50%; font-size: 20px; cursor: pointer;">×</button>
+                </div>
+            </div>
+            
+            <!-- Alertas Inteligentes -->
+            <div style="padding: 20px; background: #fef3c7; border-left: 4px solid #f59e0b; margin: 20px;">
+                <h3 style="margin: 0 0 10px 0; color: #92400e; display: flex; align-items: center;">
+                    <i class="fas fa-exclamation-triangle" style="margin-right: 8px;"></i>
+                    Alertas Inteligentes
+                </h3>
+                <div id="alertas-container">
+                    ${gerarHTMLAlertas(metricas.alertas)}
+                </div>
+            </div>
+
+            <!-- KPIs Principais -->
+            <div style="padding: 0 20px;">
+                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px; margin-bottom: 20px;">
+                    ${gerarCardsKPI(metricas)}
+                </div>
+            </div>
+
+            <!-- Gráficos -->
+            <div style="padding: 0 20px;">
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-bottom: 20px;">
+                    <!-- Gráfico de Status -->
+                    <div style="background: white; border: 1px solid #e5e7eb; border-radius: 8px; padding: 20px;">
+                        <h3 style="margin: 0 0 15px 0; color: #374151;">Status das Solicitações</h3>
+                        <canvas id="grafico-status" width="300" height="200"></canvas>
+                    </div>
+                    
+                    <!-- Gráfico de Performance por Equipe -->
+                    <div style="background: white; border: 1px solid #e5e7eb; border-radius: 8px; padding: 20px;">
+                        <h3 style="margin: 0 0 15px 0; color: #374151;">Performance por Equipe</h3>
+                        <canvas id="grafico-equipes" width="300" height="200"></canvas>
+                    </div>
+                </div>
+
+                <div style="display: grid; grid-template-columns: 2fr 1fr; gap: 20px; margin-bottom: 20px;">
+                    <!-- Tendências -->
+                    <div style="background: white; border: 1px solid #e5e7eb; border-radius: 8px; padding: 20px;">
+                        <h3 style="margin: 0 0 15px 0; color: #374151;">Tendência de Demanda (7 dias)</h3>
+                        <canvas id="grafico-tendencias" width="500" height="200"></canvas>
+                    </div>
+                    
+                    <!-- Picos de Demanda -->
+                    <div style="background: white; border: 1px solid #e5e7eb; border-radius: 8px; padding: 20px;">
+                        <h3 style="margin: 0 0 15px 0; color: #374151;">Picos por Hora</h3>
+                        <canvas id="grafico-picos" width="250" height="200"></canvas>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Métricas Detalhadas por Equipe -->
+            <div style="padding: 20px;">
+                <h3 style="margin: 0 0 20px 0; color: #374151;">Análise Detalhada por Equipe</h3>
+                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 15px;">
+                    ${gerarCardsEquipes(metricas.porEquipe)}
+                </div>
+            </div>
+
+            <!-- Footer -->
+            <div style="background: #f9fafb; padding: 15px 20px; text-align: center; color: #6b7280; font-size: 0.9rem; border-radius: 0 0 12px 12px;">
+                Atualizado em: ${new Date().toLocaleString('pt-BR')} | Sistema YUNA v2.0
+            </div>
+        </div>
+    `;
+}
+
+function gerarHTMLAlertas(alertas) {
+    if (!alertas || alertas.length === 0) {
+        return '<p style="color: #059669; margin: 0;"><i class="fas fa-check-circle"></i> Nenhum alerta no momento!</p>';
+    }
+    
+    return alertas.map(alerta => {
+        const cores = {
+            critica: { bg: '#fecaca', text: '#991b1b', icon: 'exclamation-circle' },
+            alta: { bg: '#fed7aa', text: '#9a3412', icon: 'exclamation-triangle' },
+            media: { bg: '#fef3c7', text: '#92400e', icon: 'clock' }
+        };
+        
+        const cor = cores[alerta.urgencia] || cores.media;
+        
+        return `
+            <div style="background: ${cor.bg}; color: ${cor.text}; padding: 10px; border-radius: 6px; margin-bottom: 8px; font-size: 0.9rem;">
+                <i class="fas fa-${cor.icon}" style="margin-right: 8px;"></i>
+                <strong>${alerta.equipe}:</strong> SLA ${alerta.percentual}% - Solicitação ${alerta.solicitacao}
+            </div>
+        `;
+    }).join('');
+}
+
+function gerarCardsKPI(metricas) {
+    return `
+        <div style="background: linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%); color: white; padding: 20px; border-radius: 8px; text-align: center;">
+            <div style="font-size: 2rem; font-weight: bold; margin-bottom: 5px;">${metricas.totais.ultimos30dias}</div>
+            <div style="opacity: 0.9;">Total 30 dias</div>
+        </div>
+        
+        <div style="background: linear-gradient(135deg, #10b981 0%, #047857 100%); color: white; padding: 20px; border-radius: 8px; text-align: center;">
+            <div style="font-size: 2rem; font-weight: bold; margin-bottom: 5px;">${metricas.performance.slaGeral}%</div>
+            <div style="opacity: 0.9;">SLA Compliance</div>
+        </div>
+        
+        <div style="background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%); color: white; padding: 20px; border-radius: 8px; text-align: center;">
+            <div style="font-size: 2rem; font-weight: bold; margin-bottom: 5px;">${metricas.performance.tmaGeral}min</div>
+            <div style="opacity: 0.9;">TMA Médio</div>
+        </div>
+        
+        <div style="background: linear-gradient(135deg, #8b5cf6 0%, #7c3aed 100%); color: white; padding: 20px; border-radius: 8px; text-align: center;">
+            <div style="font-size: 2rem; font-weight: bold; margin-bottom: 5px;">${metricas.performance.eficienciaGeral}%</div>
+            <div style="opacity: 0.9;">Eficiência</div>
+        </div>
+    `;
+}
+
+function gerarCardsEquipes(equipesMetricas) {
+    const equipesNomes = {
+        manutencao: 'Manutenção',
+        nutricao: 'Nutrição', 
+        higienizacao: 'Higienização',
+        hotelaria: 'Hotelaria'
+    };
+    
+    return Object.entries(equipesMetricas).map(([equipe, dados]) => {
+        const nome = equipesNomes[equipe] || equipe;
+        const corAlerta = dados.alertaAcumulo ? '#fecaca' : '#f3f4f6';
+        
+        return `
+            <div style="background: ${corAlerta}; border: 1px solid #e5e7eb; border-radius: 8px; padding: 15px;">
+                <h4 style="margin: 0 0 15px 0; color: #374151; display: flex; align-items: center; justify-content: space-between;">
+                    ${nome}
+                    ${dados.alertaAcumulo ? '<i class="fas fa-exclamation-triangle" style="color: #dc2626;"></i>' : ''}
+                </h4>
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; font-size: 0.9rem;">
+                    <div><strong>Total:</strong> ${dados.total}</div>
+                    <div><strong>Pendentes:</strong> ${dados.pendentes}</div>
+                    <div><strong>Em Andamento:</strong> ${dados.emAndamento}</div>
+                    <div><strong>Finalizadas:</strong> ${dados.finalizadas}</div>
+                    <div><strong>TMA:</strong> ${Math.round(dados.tempoMedioResolucao)}min</div>
+                    <div><strong>SLA:</strong> ${dados.slaCompliance}%</div>
+                </div>
+            </div>
+        `;
+    }).join('');
 }
 
 function calcularMetricasGerais(solicitacoes) {
@@ -8650,3 +9074,298 @@ if (!document.getElementById('filter-styles')) {
         debugLog('[PRODUCTION] CSS de ocultação aplicado');
     }
 })();
+
+// ===== FUNÇÕES DE GRÁFICOS E ALERTAS INTELIGENTES =====
+
+function renderizarGraficos(metricas) {
+    console.log('🎨 Renderizando gráficos com dados:', metricas);
+    
+    // Inicializar objeto global para armazenar instâncias dos gráficos
+    if (!window.chartInstances) {
+        window.chartInstances = {};
+    }
+    
+    // Renderizar cada gráfico
+    renderizarGraficoStatus(metricas.statusDistribution);
+    renderizarGraficoEquipes(metricas.porEquipe);
+    renderizarGraficoTendencias(metricas.tendencias);
+    renderizarGraficoPicos(metricas.picosDemanda);
+}
+
+function renderizarGraficoStatus(statusData) {
+    const ctx = document.getElementById('grafico-status');
+    if (!ctx) return;
+    
+    // Destruir gráfico anterior se existir
+    if (window.chartInstances.status) {
+        window.chartInstances.status.destroy();
+    }
+    
+    const data = {
+        labels: ['Pendente', 'Em Andamento', 'Finalizada', 'Cancelada'],
+        datasets: [{
+            data: [
+                statusData.pendente || 0,
+                statusData['em-andamento'] || 0,
+                statusData.finalizada || 0,
+                statusData.cancelada || 0
+            ],
+            backgroundColor: [
+                '#f59e0b',  // Pendente - Amarelo
+                '#3b82f6',  // Em andamento - Azul
+                '#10b981',  // Finalizada - Verde
+                '#ef4444'   // Cancelada - Vermelho
+            ],
+            borderColor: '#ffffff',
+            borderWidth: 2
+        }]
+    };
+    
+    window.chartInstances.status = new Chart(ctx, {
+        type: 'doughnut',
+        data: data,
+        options: {
+            responsive: true,
+            plugins: {
+                legend: {
+                    position: 'bottom'
+                }
+            }
+        }
+    });
+}
+
+function renderizarGraficoEquipes(equipesData) {
+    const ctx = document.getElementById('grafico-equipes');
+    if (!ctx) return;
+    
+    // Destruir gráfico anterior se existir
+    if (window.chartInstances.equipes) {
+        window.chartInstances.equipes.destroy();
+    }
+    
+    const equipesNomes = {
+        manutencao: 'Manutenção',
+        nutricao: 'Nutrição', 
+        higienizacao: 'Higienização',
+        hotelaria: 'Hotelaria'
+    };
+    
+    const labels = Object.keys(equipesData).map(equipe => equipesNomes[equipe] || equipe);
+    const totals = Object.values(equipesData).map(dados => dados.total);
+    const slaCompliance = Object.values(equipesData).map(dados => dados.slaCompliance);
+    
+    const data = {
+        labels: labels,
+        datasets: [
+            {
+                label: 'Total Solicitações',
+                data: totals,
+                backgroundColor: 'rgba(59, 130, 246, 0.8)',
+                borderColor: 'rgba(59, 130, 246, 1)',
+                borderWidth: 1,
+                yAxisID: 'y'
+            },
+            {
+                label: 'SLA Compliance (%)',
+                data: slaCompliance,
+                backgroundColor: 'rgba(16, 185, 129, 0.8)',
+                borderColor: 'rgba(16, 185, 129, 1)',
+                borderWidth: 1,
+                type: 'line',
+                yAxisID: 'y1'
+            }
+        ]
+    };
+    
+    window.chartInstances.equipes = new Chart(ctx, {
+        type: 'bar',
+        data: data,
+        options: {
+            responsive: true,
+            scales: {
+                y: {
+                    type: 'linear',
+                    display: true,
+                    position: 'left',
+                    title: {
+                        display: true,
+                        text: 'Solicitações'
+                    }
+                },
+                y1: {
+                    type: 'linear',
+                    display: true,
+                    position: 'right',
+                    title: {
+                        display: true,
+                        text: 'SLA %'
+                    },
+                    grid: {
+                        drawOnChartArea: false,
+                    },
+                    max: 100
+                }
+            }
+        }
+    });
+}
+
+function renderizarGraficoTendencias(tendenciasData) {
+    const ctx = document.getElementById('grafico-tendencias');
+    if (!ctx) return;
+    
+    // Destruir gráfico anterior se existir
+    if (window.chartInstances.tendencias) {
+        window.chartInstances.tendencias.destroy();
+    }
+    
+    const labels = tendenciasData.ultimos7dias.map(dia => dia.label);
+    const dados = tendenciasData.ultimos7dias.map(dia => dia.count);
+    
+    const data = {
+        labels: labels,
+        datasets: [{
+            label: 'Solicitações por Dia',
+            data: dados,
+            fill: true,
+            backgroundColor: 'rgba(139, 92, 246, 0.1)',
+            borderColor: 'rgba(139, 92, 246, 1)',
+            borderWidth: 2,
+            tension: 0.4,
+            pointBackgroundColor: 'rgba(139, 92, 246, 1)',
+            pointBorderColor: '#ffffff',
+            pointBorderWidth: 2,
+            pointRadius: 5
+        }]
+    };
+    
+    window.chartInstances.tendencias = new Chart(ctx, {
+        type: 'line',
+        data: data,
+        options: {
+            responsive: true,
+            scales: {
+                y: {
+                    beginAtZero: true,
+                    title: {
+                        display: true,
+                        text: 'Número de Solicitações'
+                    }
+                }
+            },
+            plugins: {
+                legend: {
+                    display: false
+                }
+            }
+        }
+    });
+}
+
+function renderizarGraficoPicos(picosData) {
+    const ctx = document.getElementById('grafico-picos');
+    if (!ctx) return;
+    
+    // Destruir gráfico anterior se existir
+    if (window.chartInstances.picos) {
+        window.chartInstances.picos.destroy();
+    }
+    
+    const horasLabels = [];
+    for (let i = 0; i < 24; i++) {
+        horasLabels.push(i.toString().padStart(2, '0') + ':00');
+    }
+    
+    const data = {
+        labels: horasLabels,
+        datasets: [{
+            label: 'Solicitações por Hora',
+            data: picosData.porHora,
+            backgroundColor: 'rgba(245, 158, 11, 0.8)',
+            borderColor: 'rgba(245, 158, 11, 1)',
+            borderWidth: 1
+        }]
+    };
+    
+    window.chartInstances.picos = new Chart(ctx, {
+        type: 'bar',
+        data: data,
+        options: {
+            responsive: true,
+            scales: {
+                y: {
+                    beginAtZero: true,
+                    title: {
+                        display: true,
+                        text: 'Quantidade'
+                    }
+                },
+                x: {
+                    title: {
+                        display: true,
+                        text: 'Hora do Dia'
+                    }
+                }
+            },
+            plugins: {
+                legend: {
+                    display: false
+                }
+            }
+        }
+    });
+}
+
+function configurarAlertasInteligentes(metricas) {
+    console.log('🚨 Configurando alertas inteligentes:', metricas.alertas);
+    
+    // Atualizar contador de alertas na interface principal
+    atualizarContadorAlertas(metricas.alertas.length);
+    
+    // Configurar notificações automáticas para alertas críticos
+    metricas.alertas.forEach(alerta => {
+        if (alerta.urgencia === 'critica') {
+            showToast('Alerta Crítico!', `SLA ${alerta.percentual}% na equipe ${alerta.equipe}`, 'error');
+        }
+    });
+}
+
+function atualizarContadorAlertas(quantidade) {
+    // Verificar se existe elemento para mostrar alertas na interface principal
+    let alertaBadge = document.getElementById('alertas-badge');
+    if (!alertaBadge && quantidade > 0) {
+        // Criar badge de alertas no botão de métricas
+        const metricasBtn = document.getElementById('metricas-btn');
+        if (metricasBtn) {
+            alertaBadge = document.createElement('span');
+            alertaBadge.id = 'alertas-badge';
+            alertaBadge.style.cssText = `
+                position: absolute;
+                top: -5px;
+                right: -5px;
+                background: #ef4444;
+                color: white;
+                border-radius: 50%;
+                width: 20px;
+                height: 20px;
+                font-size: 12px;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                font-weight: bold;
+            `;
+            metricasBtn.style.position = 'relative';
+            metricasBtn.appendChild(alertaBadge);
+        }
+    }
+    
+    if (alertaBadge) {
+        if (quantidade > 0) {
+            alertaBadge.textContent = quantidade;
+            alertaBadge.style.display = 'flex';
+        } else {
+            alertaBadge.style.display = 'none';
+        }
+    }
+}
