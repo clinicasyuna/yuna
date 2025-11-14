@@ -2724,9 +2724,17 @@
                     const userDoc = acompanhantesSnapshot.docs[0];
                     const userData = userDoc.data();
                     console.log('[DEBUG] ✅ Usuário encontrado em usuarios_acompanhantes:', userData);
+                    console.log('[DEBUG] 🏠 Quarto no Firestore (ORIGINAL):', userData.quarto);
+                    console.log('[DEBUG] 🏠 Tipo do quarto:', typeof userData.quarto);
+                    console.log('[DEBUG] 🏠 Quarto é null?:', userData.quarto === null);
+                    console.log('[DEBUG] 🏠 Quarto é undefined?:', userData.quarto === undefined);
                     
                     nomeAtualizado = userData.nome || nomeAtualizado;
                     quartoAtualizado = userData.quarto || 'N/A';
+                    
+                    console.log('[DEBUG] ✅ Nome atualizado para:', nomeAtualizado);
+                    console.log('[DEBUG] 🏠 Quarto atualizado para:', quartoAtualizado);
+                    
                     usuarioEncontrado = true;
                 } else {
                     // 2. Se não encontrou, tentar em usuarios_equipe
