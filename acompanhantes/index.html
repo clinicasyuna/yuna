@@ -3291,6 +3291,9 @@
                     usuarioEmail: currentUser.email,
                     usuarioNome: dadosSolicitacaoAvaliar.nomeUsuario || dadosSolicitacaoAvaliar.nome || 'Usuário',
                     
+                    // Dados do local (NOVO: Incluindo quarto)
+                    quarto: dadosSolicitacaoAvaliar.quarto || dadosSolicitacaoAvaliar.numeroQuarto || null,
+                    
                     // Dados do serviço - com fallbacks para compatibilidade
                     tipoServico: dadosSolicitacaoAvaliar.tipoServico || dadosSolicitacaoAvaliar.equipe || dadosSolicitacaoAvaliar.tipo || 'manutencao',
                     descricaoServico: dadosSolicitacaoAvaliar.descricao || dadosSolicitacaoAvaliar.titulo || 'Sem descrição',

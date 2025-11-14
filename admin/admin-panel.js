@@ -6113,6 +6113,12 @@ async function abrirDashboardSatisfacao() {
             const data = doc.data();
             console.log('[DEBUG-SATISFACAO] Dados brutos da avaliação:', data);
             console.log('[DEBUG-SATISFACAO] Campos da avaliação:', Object.keys(data));
+            console.log('[DEBUG-SATISFACAO] QUARTOS disponíveis:', {
+                quarto: data.quarto,
+                numeroQuarto: data.numeroQuarto,
+                quartoSolicitacao: data.quartoSolicitacao,
+                quartoNumero: data.quartoNumero
+            });
             console.log('[DEBUG-SATISFACAO] Tipos dos campos:', {
                 avaliacao: typeof data.avaliacao,
                 nota: typeof data.nota,
@@ -6256,6 +6262,9 @@ async function abrirDashboardSatisfacao() {
                                 }
                                 if (isNaN(nota)) nota = 0;
                                 
+                                // Tentar diferentes campos para obter o quarto
+                                const quarto = avaliacao.quarto || avaliacao.numeroQuarto || avaliacao.quartoSolicitacao || avaliacao.quartoNumero || 'N/A';
+                                
                                 // Tentar diferentes campos para obter a equipe
                                 const equipe = avaliacao.equipaAvaliada || avaliacao.equipe || avaliacao.equipeResponsavel || 'N/A';
                                 
@@ -6276,7 +6285,7 @@ async function abrirDashboardSatisfacao() {
                                                 <span style="color: #6b7280;">(${nota}/5)</span>
                                             </div>
                                             <div style="color: #6b7280; font-size: 14px; margin-top: 4px;">
-                                                Equipe: ${equipe} | Quarto: ${avaliacao.quarto || 'N/A'}
+                                                Equipe: ${equipe} | Quarto: ${quarto}
                                             </div>
                                         </div>
                                         <div style="text-align: right; color: #6b7280; font-size: 12px;">
