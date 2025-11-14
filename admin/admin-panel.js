@@ -1,3 +1,15 @@
+/**
+ * Sistema YUNA - Painel Administrativo
+ * Copyright © 2025 [SEU NOME]. Todos os direitos reservados.
+ * 
+ * Este software é propriedade intelectual protegida por direitos autorais.
+ * Uso não autorizado é estritamente proibido.
+ * 
+ * Versão: 2.0.0
+ * Data de Criação: 14 de novembro de 2025
+ * Última atualização: 14/11/2025
+ */
+
 // admin-panel.js - Painel Administrativo YUNA
 
 // === CONFIGURAÇÃO DE MODO DE PRODUÇÃO ===
