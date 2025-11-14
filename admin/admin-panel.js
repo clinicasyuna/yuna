@@ -5139,7 +5139,15 @@ function renderizarCardsEquipe(equipes) {
                             </div>
                             
                             <div class="card-title">
-                                ${solicitacao.titulo || solicitacao.tipo || solicitacao.descricao || solicitacao.nome || 'Solicitação sem título'}
+                                ${(() => {
+                                    // Priorizar titulo ou tipo, mas se não houver, usar o campo de descrição da equipe
+                                    if (solicitacao.titulo) return solicitacao.titulo;
+                                    if (solicitacao.tipo) return solicitacao.tipo;
+                                    if (solicitacao.descricao) return solicitacao.descricao;
+                                    if (solicitacao.detalhes) return solicitacao.detalhes;
+                                    if (solicitacao.observacoes) return solicitacao.observacoes;
+                                    return 'Solicitação sem título';
+                                })()}
                             </div>
                             
                             <div class="card-details">
@@ -5160,14 +5168,26 @@ function renderizarCardsEquipe(equipes) {
                                     </div>
                                 ` : ''}
                                 
-                                ${solicitacao.descricao && solicitacao.descricao !== solicitacao.titulo ? `
-                                    <div class="card-detail">
-                                        <i class="fas fa-comment"></i>
-                                        <span>${solicitacao.descricao.length > 60 ? 
-                                            solicitacao.descricao.substring(0, 60) + '...' : 
-                                            solicitacao.descricao}</span>
-                                    </div>
-                                ` : ''}
+                                ${(() => {
+                                    // Determinar o campo de descrição baseado na equipe
+                                    let descricaoTexto = '';
+                                    if (solicitacao.descricao && solicitacao.descricao !== solicitacao.titulo) {
+                                        descricaoTexto = solicitacao.descricao; // Manutenção
+                                    } else if (solicitacao.detalhes) {
+                                        descricaoTexto = solicitacao.detalhes; // Nutrição e Hotelaria
+                                    } else if (solicitacao.observacoes) {
+                                        descricaoTexto = solicitacao.observacoes; // Higienização
+                                    }
+                                    
+                                    return descricaoTexto ? `
+                                        <div class="card-detail">
+                                            <i class="fas fa-comment"></i>
+                                            <span>${descricaoTexto.length > 60 ? 
+                                                descricaoTexto.substring(0, 60) + '...' : 
+                                                descricaoTexto}</span>
+                                        </div>
+                                    ` : '';
+                                })()}
                                 
                                 ${solicitacao.status === 'finalizada' && solicitacao.dataFinalizacao ? `
                                     <div class="card-detail highlight">
@@ -5493,11 +5513,23 @@ function preencherDetalhesModal(solicitacao, dadosAcompanhante) {
                     <i class="fas fa-${info.icone}" style="color: ${info.cor}; margin-right: 8px; font-size: 18px;"></i>
                     <span style="font-weight: 600; color: ${info.cor}; font-size: 16px;">${info.texto}</span>
                 </div>
-                <div style="font-size: 18px; font-weight: 600; color: #374151;">${solicitacao.titulo || solicitacao.tipo || solicitacao.descricao || 'Solicitação'}</div>
+                <div style="font-size: 18px; font-weight: 600; color: #374151;">${(() => {
+                    if (solicitacao.titulo) return solicitacao.titulo;
+                    if (solicitacao.tipo) return solicitacao.tipo;
+                    if (solicitacao.descricao) return solicitacao.descricao;
+                    if (solicitacao.detalhes) return solicitacao.detalhes;
+                    if (solicitacao.observacoes) return solicitacao.observacoes;
+                    return 'Solicitação';
+                })()}</div>
             </div>
             <div><strong>ID:</strong> ${solicitacao.id || 'N/A'}</div>
             <div><strong>Equipe:</strong> ${solicitacao.equipe || 'N/A'}</div>
-            <div><strong>Descrição:</strong> ${solicitacao.descricao || 'N/A'}</div>
+            <div><strong>Descrição:</strong> ${(() => {
+                if (solicitacao.descricao) return solicitacao.descricao;
+                if (solicitacao.detalhes) return solicitacao.detalhes;
+                if (solicitacao.observacoes) return solicitacao.observacoes;
+                return 'N/A';
+            })()}</div>
             <div><strong>Quarto:</strong> ${dadosAcompanhante?.quarto || solicitacao.quarto || 'N/A'}</div>
             <div><strong>Solicitante:</strong> ${dadosAcompanhante?.nome || solicitacao.usuarioNome || solicitacao.nome || 'N/A'}</div>
             ${solicitacao.responsavel ? `<div><strong>Responsável:</strong> ${solicitacao.responsavel}</div>` : ''}
