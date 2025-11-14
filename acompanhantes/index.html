@@ -3438,8 +3438,11 @@
                 
                 // Obter dados atuais do usuário
                 const userDoc = await window.db.collection('usuarios_acompanhantes').doc(currentUser.uid).get();
-                const userData = userDoc.data();
+                const userData = userDoc.exists ? userDoc.data() : {};
                 const quartoAtual = userData?.quarto;
+                
+                console.log('[DEBUG] userData obtido:', userData);
+                console.log('[DEBUG] userDoc.exists:', userDoc.exists);
                 
                 // Verificar se houve mudança de quarto
                 const quartoNormalizado = novoQuarto.toString().trim().toUpperCase().replace(/\s+/g, '');
@@ -3484,15 +3487,34 @@
                     dataAlteracao: firebase.firestore.FieldValue.serverTimestamp()
                 };
                 
-                // Detectar mudanças
-                if (userData.nome !== nome) historico.alteracoes.nome = { antes: userData.nome, depois: nome };
-                if (userData.email !== email) historico.alteracoes.email = { antes: userData.email, depois: email };
-                if (userData.telefone !== telefone) historico.alteracoes.telefone = { antes: userData.telefone || '', depois: telefone };
+                // Detectar mudanças (com proteção contra undefined)
+                const nomeAnterior = userData?.nome || '';
+                const emailAnterior = userData?.email || currentUser.email;
+                const telefoneAnterior = userData?.telefone || '';
+                
+                if (nomeAnterior !== nome) historico.alteracoes.nome = { antes: nomeAnterior, depois: nome };
+                if (emailAnterior !== email) historico.alteracoes.email = { antes: emailAnterior, depois: email };
+                if (telefoneAnterior !== telefone) historico.alteracoes.telefone = { antes: telefoneAnterior, depois: telefone };
                 if (mudouQuarto) historico.alteracoes.quarto = { antes: quartoAtual, depois: quartoNormalizado };
                 if (novaSenha) historico.alteracoes.senha = { alterada: true };
                 
-                // Atualizar dados do usuário
-                await window.db.collection('usuarios_acompanhantes').doc(currentUser.uid).update(dadosAtualizados);
+                console.log('[DEBUG] Histórico de alterações:', historico);
+                
+                // Verificar se o documento do usuário existe
+                let operacaoFirestore;
+                if (userDoc.exists) {
+                    // Atualizar dados existentes
+                    operacaoFirestore = window.db.collection('usuarios_acompanhantes').doc(currentUser.uid).update(dadosAtualizados);
+                    console.log('[DEBUG] Atualizando documento existente');
+                } else {
+                    // Criar novo documento
+                    dadosAtualizados.uid = currentUser.uid;
+                    dadosAtualizados.criadoEm = firebase.firestore.FieldValue.serverTimestamp();
+                    operacaoFirestore = window.db.collection('usuarios_acompanhantes').doc(currentUser.uid).set(dadosAtualizados);
+                    console.log('[DEBUG] Criando novo documento');
+                }
+                
+                await operacaoFirestore;
                 
                 // Salvar histórico
                 if (Object.keys(historico.alteracoes).length > 0) {
