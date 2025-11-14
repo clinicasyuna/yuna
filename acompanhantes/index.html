@@ -2959,12 +2959,11 @@
 
                 showToast('Carregando...', 'Buscando seu histórico de solicitações...', 'info');
 
-                // Buscar todas as solicitações do usuário ordenadas por data
+                // Buscar todas as solicitações do usuário (sem orderBy para evitar erro de índice)
                 console.log('[DEBUG-HISTORICO] Buscando solicitações para usuarioId:', user.uid);
                 
                 const snapshot = await window.db.collection('solicitacoes')
                     .where('usuarioId', '==', user.uid)  // CORRETO: usar usuarioId
-                    .orderBy('criadoEm', 'desc')
                     .limit(50) // Últimas 50 solicitações
                     .get();
 
@@ -2997,9 +2996,23 @@
                 const listaElement = document.getElementById('historico-lista');
                 let historicoItens = '';
 
+                // Converter snapshot em array e ordenar por data (mais recentes primeiro)
+                const solicitacoes = [];
                 snapshot.forEach(doc => {
                     const data = doc.data();
-                    console.log('[DEBUG-HISTORICO] Processando:', doc.id, data.titulo, data.status);
+                    data.id = doc.id;
+                    solicitacoes.push(data);
+                });
+                
+                // Ordenar por data de criação (mais recentes primeiro)
+                solicitacoes.sort((a, b) => {
+                    const dataA = a.criadoEm && a.criadoEm.toDate ? a.criadoEm.toDate() : new Date(a.criadoEm);
+                    const dataB = b.criadoEm && b.criadoEm.toDate ? b.criadoEm.toDate() : new Date(b.criadoEm);
+                    return dataB - dataA; // Ordem decrescente (mais recentes primeiro)
+                });
+
+                solicitacoes.forEach(data => {
+                    console.log('[DEBUG-HISTORICO] Processando:', data.id, data.titulo, data.status);
                     
                     const criadoEm = data.criadoEm && data.criadoEm.toDate ? data.criadoEm.toDate() : new Date(data.criadoEm);
                     const statusClass = {
