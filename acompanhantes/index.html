@@ -3216,7 +3216,26 @@
             
             document.getElementById('service-icon-eval').className = serviceIcons[tipoServico] || 'fas fa-tools';
             document.getElementById('service-name-eval').textContent = serviceNames[tipoServico] || 'Serviço';
-            document.getElementById('service-description-eval').textContent = dadosSolicitacao.descricao || dadosSolicitacao.titulo || 'Sem descrição';
+            const descricaoTexto = (() => {
+                // Verificar todos os campos possíveis de descrição conforme a equipe
+                if (dadosSolicitacao.descricao) return dadosSolicitacao.descricao;      // Manutenção
+                if (dadosSolicitacao.detalhes) return dadosSolicitacao.detalhes;        // Nutrição e Hotelaria
+                if (dadosSolicitacao.observacoes) return dadosSolicitacao.observacoes;  // Higienização
+                if (dadosSolicitacao.titulo) return dadosSolicitacao.titulo;
+                return 'Sem descrição';
+            })();
+            
+            console.log('[DEBUG-DESCRICAO] Campos disponíveis:', {
+                descricao: dadosSolicitacao.descricao,
+                detalhes: dadosSolicitacao.detalhes,
+                observacoes: dadosSolicitacao.observacoes,
+                titulo: dadosSolicitacao.titulo,
+                equipe: dadosSolicitacao.equipe,
+                tipoServico: dadosSolicitacao.tipoServico,
+                descricaoFinal: descricaoTexto
+            });
+            
+            document.getElementById('service-description-eval').textContent = descricaoTexto;
             
             // Calcular tempo de finalização
             const agora = new Date();
@@ -3309,7 +3328,19 @@
                     
                     // Dados do serviço - com fallbacks para compatibilidade
                     tipoServico: dadosCompletos.tipoServico || dadosCompletos.equipe || dadosCompletos.tipo || dadosSolicitacaoAvaliar.tipoServico || dadosSolicitacaoAvaliar.equipe || dadosSolicitacaoAvaliar.tipo || 'manutencao',
-                    descricaoServico: dadosCompletos.descricao || dadosCompletos.titulo || dadosSolicitacaoAvaliar.descricao || dadosSolicitacaoAvaliar.titulo || 'Sem descrição',
+                    descricaoServico: (() => {
+                        // Verificar todos os campos possíveis de descrição conforme a equipe
+                        if (dadosCompletos.descricao) return dadosCompletos.descricao;      // Manutenção
+                        if (dadosCompletos.detalhes) return dadosCompletos.detalhes;        // Nutrição e Hotelaria
+                        if (dadosCompletos.observacoes) return dadosCompletos.observacoes;  // Higienização
+                        if (dadosCompletos.titulo) return dadosCompletos.titulo;
+                        // Fallback para dados da solicitação original
+                        if (dadosSolicitacaoAvaliar.descricao) return dadosSolicitacaoAvaliar.descricao;
+                        if (dadosSolicitacaoAvaliar.detalhes) return dadosSolicitacaoAvaliar.detalhes;
+                        if (dadosSolicitacaoAvaliar.observacoes) return dadosSolicitacaoAvaliar.observacoes;
+                        if (dadosSolicitacaoAvaliar.titulo) return dadosSolicitacaoAvaliar.titulo;
+                        return 'Sem descrição';
+                    })(),
                     equipeResponsavel: dadosCompletos.equipeDepartamento || dadosCompletos.equipe || dadosCompletos.tipoServico || dadosSolicitacaoAvaliar.equipeDepartamento || dadosSolicitacaoAvaliar.equipe || dadosSolicitacaoAvaliar.tipoServico || 'manutencao',
                     
                     // Avaliação principal
