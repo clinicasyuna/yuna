@@ -6257,7 +6257,7 @@ async function abrirDashboardSatisfacao() {
                                 if (isNaN(nota)) nota = 0;
                                 
                                 // Tentar diferentes campos para obter a equipe
-                                const equipe = avaliacao.equipaAvaliada || avaliacao.equipe || 'N/A';
+                                const equipe = avaliacao.equipaAvaliada || avaliacao.equipe || avaliacao.equipeResponsavel || 'N/A';
                                 
                                 // Tentar diferentes campos para obter a data
                                 const dataFormatada = formatarDataHora(
@@ -6283,9 +6283,9 @@ async function abrirDashboardSatisfacao() {
                                             ${dataFormatada}
                                         </div>
                                     </div>
-                                    ${avaliacao.comentario ? `
+                                    ${avaliacao.comentario || avaliacao.comentarios ? `
                                         <div style="background: #f3f4f6; padding: 8px 12px; border-radius: 6px; color: #374151; font-style: italic; font-size: 14px;">
-                                            "${avaliacao.comentario}"
+                                            "${avaliacao.comentario || avaliacao.comentarios}"
                                         </div>
                                     ` : ''}
                                 </div>`;
@@ -6473,17 +6473,19 @@ function calcularMetricasSatisfacao(avaliacoes) {
     // Calcular métricas por equipe
     const porEquipe = {};
     avaliacoesValidas.forEach(avaliacao => {
-        const equipe = avaliacao.equipaAvaliada || avaliacao.equipe;
+        const equipe = avaliacao.equipaAvaliada || avaliacao.equipe || avaliacao.equipeResponsavel;
         let nota = avaliacao.avaliacao || avaliacao.nota || avaliacao.rating || avaliacao.estrelas;
         if (typeof nota === 'string') {
             nota = Number(nota);
         }
         
-        if (!porEquipe[equipe]) {
+        if (equipe && !porEquipe[equipe]) {
             porEquipe[equipe] = { total: 0, soma: 0, media: 0 };
         }
-        porEquipe[equipe].total++;
-        porEquipe[equipe].soma += nota;
+        if (equipe) {
+            porEquipe[equipe].total++;
+            porEquipe[equipe].soma += nota;
+        }
     });
     
     // Calcular médias por equipe
@@ -6796,12 +6798,19 @@ function formatarDataHora(dataISO) {
         
         let data;
         
-        // Se for um timestamp do Firestore
-        if (dataISO && typeof dataISO === 'object' && dataISO.toDate) {
+        // Se for um timestamp do Firestore (objeto com seconds e nanoseconds)
+        if (dataISO && typeof dataISO === 'object' && dataISO.seconds) {
+            console.log('[FORMATACAO] Timestamp Firestore detectado:', { seconds: dataISO.seconds, nanoseconds: dataISO.nanoseconds });
+            data = new Date(dataISO.seconds * 1000 + (dataISO.nanoseconds || 0) / 1000000);
+        }
+        // Se for um timestamp do Firestore com método toDate()
+        else if (dataISO && typeof dataISO === 'object' && dataISO.toDate) {
+            console.log('[FORMATACAO] Timestamp Firestore com toDate() detectado');
             data = dataISO.toDate();
         }
         // Se for um número (timestamp em milissegundos)
         else if (typeof dataISO === 'number') {
+            console.log('[FORMATACAO] Timestamp numérico detectado:', dataISO);
             data = new Date(dataISO);
         }
         // Se for string
@@ -6811,10 +6820,12 @@ function formatarDataHora(dataISO) {
                 console.warn('[FORMATACAO] Data muito curta (truncada):', dataISO);
                 return 'Data truncada';
             }
+            console.log('[FORMATACAO] String de data detectada:', dataISO);
             data = new Date(dataISO);
         }
         // Outros casos
         else {
+            console.log('[FORMATACAO] Tentando conversão direta para Date');
             data = new Date(dataISO);
         }
         
@@ -6824,7 +6835,10 @@ function formatarDataHora(dataISO) {
             return 'Data inválida';
         }
         
-        return data.toLocaleDateString('pt-BR') + ' ' + data.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' });
+        const resultado = data.toLocaleDateString('pt-BR') + ' ' + data.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' });
+        console.log('[FORMATACAO] Data formatada com sucesso:', resultado);
+        return resultado;
+        
     } catch (error) {
         console.error('[FORMATACAO] Erro ao formatar data:', error, 'Data original:', dataISO);
         return 'Erro na data';
