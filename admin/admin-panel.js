@@ -6125,6 +6125,7 @@ async function abrirDashboardSatisfacao() {
                 'data.quartoSolicitacao': JSON.stringify(data.quartoSolicitacao),
                 'data.quartoNumero': JSON.stringify(data.quartoNumero)
             });
+            console.log('[DEBUG-SATISFACAO] TESTE DIRETO - quarto:', data.quarto, '| numeroQuarto:', data.numeroQuarto);
             console.log('[DEBUG-SATISFACAO] Tipos dos campos:', {
                 avaliacao: typeof data.avaliacao,
                 nota: typeof data.nota,

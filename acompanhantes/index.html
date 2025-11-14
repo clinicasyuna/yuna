@@ -3284,20 +3284,33 @@
                 btnEnviar.disabled = true;
                 btnEnviar.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Enviando...';
                 
+                // Buscar dados completos da solicitação para garantir que temos o quarto
+                console.log('[DEBUG-QUARTO] Buscando dados completos da solicitação:', solicitacaoParaAvaliar);
+                const solicitacaoDoc = await window.db.collection('solicitacoes').doc(solicitacaoParaAvaliar).get();
+                const dadosCompletos = solicitacaoDoc.exists ? solicitacaoDoc.data() : dadosSolicitacaoAvaliar;
+                
+                console.log('[DEBUG-QUARTO] Dados completos da solicitação:', dadosCompletos);
+                console.log('[DEBUG-QUARTO] Quartos disponíveis nos dados completos:', {
+                    quarto: dadosCompletos.quarto,
+                    numeroQuarto: dadosCompletos.numeroQuarto,
+                    quartoNumero: dadosCompletos.quartoNumero,
+                    quartoSolicitacao: dadosCompletos.quartoSolicitacao
+                });
+                
                 // Criar avaliação completa no Firestore
                 const avaliacaoData = {
                     solicitacaoId: solicitacaoParaAvaliar,
                     usuarioId: currentUser.uid,
                     usuarioEmail: currentUser.email,
-                    usuarioNome: dadosSolicitacaoAvaliar.nomeUsuario || dadosSolicitacaoAvaliar.nome || 'Usuário',
+                    usuarioNome: dadosCompletos.nomeUsuario || dadosCompletos.nome || dadosSolicitacaoAvaliar.nomeUsuario || dadosSolicitacaoAvaliar.nome || 'Usuário',
                     
-                    // Dados do local (NOVO: Incluindo quarto)
-                    quarto: dadosSolicitacaoAvaliar.quarto || dadosSolicitacaoAvaliar.numeroQuarto || null,
+                    // Dados do local (CORRIGIDO: Buscando em dados completos)
+                    quarto: dadosCompletos.quarto || dadosCompletos.numeroQuarto || dadosSolicitacaoAvaliar.quarto || dadosSolicitacaoAvaliar.numeroQuarto || null,
                     
                     // Dados do serviço - com fallbacks para compatibilidade
-                    tipoServico: dadosSolicitacaoAvaliar.tipoServico || dadosSolicitacaoAvaliar.equipe || dadosSolicitacaoAvaliar.tipo || 'manutencao',
-                    descricaoServico: dadosSolicitacaoAvaliar.descricao || dadosSolicitacaoAvaliar.titulo || 'Sem descrição',
-                    equipeResponsavel: dadosSolicitacaoAvaliar.equipeDepartamento || dadosSolicitacaoAvaliar.equipe || dadosSolicitacaoAvaliar.tipoServico || 'manutencao',
+                    tipoServico: dadosCompletos.tipoServico || dadosCompletos.equipe || dadosCompletos.tipo || dadosSolicitacaoAvaliar.tipoServico || dadosSolicitacaoAvaliar.equipe || dadosSolicitacaoAvaliar.tipo || 'manutencao',
+                    descricaoServico: dadosCompletos.descricao || dadosCompletos.titulo || dadosSolicitacaoAvaliar.descricao || dadosSolicitacaoAvaliar.titulo || 'Sem descrição',
+                    equipeResponsavel: dadosCompletos.equipeDepartamento || dadosCompletos.equipe || dadosCompletos.tipoServico || dadosSolicitacaoAvaliar.equipeDepartamento || dadosSolicitacaoAvaliar.equipe || dadosSolicitacaoAvaliar.tipoServico || 'manutencao',
                     
                     // Avaliação principal
                     nota: avaliacaoAtual.nota,
@@ -3317,14 +3330,26 @@
                     status: 'enviada',
                     
                     // Dados para análise (com verificações de existência)
-                    tempoResposta: (dadosSolicitacaoAvaliar.finalizadoEm && dadosSolicitacaoAvaliar.criadoEm) ? 
+                    tempoResposta: (dadosCompletos.finalizadoEm && dadosCompletos.criadoEm) ? 
+                        (dadosCompletos.finalizadoEm.toDate() - dadosCompletos.criadoEm.toDate()) / (1000 * 60) : 
+                        (dadosSolicitacaoAvaliar.finalizadoEm && dadosSolicitacaoAvaliar.criadoEm) ? 
                         (dadosSolicitacaoAvaliar.finalizadoEm.toDate() - dadosSolicitacaoAvaliar.criadoEm.toDate()) / (1000 * 60) : null,
-                    prioridadeOriginal: dadosSolicitacaoAvaliar.prioridade || 'normal'
+                    prioridadeOriginal: dadosCompletos.prioridade || dadosSolicitacaoAvaliar.prioridade || 'normal'
                 };
                 
                 // Debug para verificar os dados antes do envio
                 console.log('[DEBUG] Dados da avaliação antes do envio:', avaliacaoData);
                 console.log('[DEBUG] Dados originais da solicitação:', dadosSolicitacaoAvaliar);
+                console.log('[DEBUG] Dados completos da solicitação:', dadosCompletos);
+                console.log('[DEBUG-QUARTO-AVALIACAO] Buscando campo quarto em dadosSolicitacaoAvaliar:', {
+                    quarto: dadosSolicitacaoAvaliar.quarto,
+                    numeroQuarto: dadosSolicitacaoAvaliar.numeroQuarto,
+                    quartoNumero: dadosSolicitacaoAvaliar.quartoNumero,
+                    quartoSolicitacao: dadosSolicitacaoAvaliar.quartoSolicitacao,
+                    nomeUsuario: dadosSolicitacaoAvaliar.nomeUsuario,
+                    todosCampos: Object.keys(dadosSolicitacaoAvaliar)
+                });
+                console.log('[DEBUG-QUARTO-AVALIACAO] Campo quarto final na avaliação:', avaliacaoData.quarto);
                 
                 await window.db.collection('avaliacoes_satisfacao').add(avaliacaoData);
                 
