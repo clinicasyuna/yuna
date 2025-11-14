@@ -1780,29 +1780,74 @@
         // Função para atualizar o resumo das solicitações do usuário logado
         async function atualizarResumoSolicitacoes(userId) {
             try {
+                console.log('[DEBUG-RESUMO] Buscando solicitações para userId:', userId);
+                
                 const snapshot = await window.db.collection('solicitacoes')
-                    .where('userId', '==', userId)
+                    .where('usuarioId', '==', userId)  // CORRETO: usar usuarioId
                     .get();
+                
                 let total = 0, pendentes = 0, concluidas = 0, atrasadas = 0;
                 const agora = new Date();
+                
+                console.log('[DEBUG-RESUMO] Documentos encontrados:', snapshot.size);
+                
                 snapshot.forEach(doc => {
                     const data = doc.data();
                     total++;
-                    if (data.status === 'pendente') pendentes++;
-                    if (data.status === 'finalizada') concluidas++;
-                    // Atrasadas: status pendente e data/hora preferencial já passou
-                    if (data.status === 'pendente' && data.horarioPreferencial) {
-                        let horario = data.horarioPreferencial;
-                        let dataPreferencial = new Date(horario);
-                        if (!isNaN(dataPreferencial) && dataPreferencial < agora) {
-                            atrasadas++;
+                    
+                    console.log('[DEBUG-RESUMO] Processando solicitação:', {
+                        id: doc.id,
+                        status: data.status,
+                        titulo: data.titulo,
+                        tipo: data.tipo,
+                        criadoEm: data.criadoEm
+                    });
+                    
+                    // Contar pendentes (incluindo em-andamento como pendente)
+                    if (data.status === 'pendente' || data.status === 'em-andamento') {
+                        pendentes++;
+                    }
+                    
+                    // Contar finalizadas
+                    if (data.status === 'finalizada') {
+                        concluidas++;
+                    }
+                    
+                    // Atrasadas: status pendente/em-andamento e tempo limite excedido
+                    if ((data.status === 'pendente' || data.status === 'em-andamento')) {
+                        // Verificar se está atrasada baseado no tempo de criação
+                        let dataCriacao = null;
+                        if (data.criadoEm && typeof data.criadoEm.toDate === 'function') {
+                            dataCriacao = data.criadoEm.toDate();
+                        } else if (data.criadoEm) {
+                            dataCriacao = new Date(data.criadoEm);
+                        } else if (data.dataAbertura && typeof data.dataAbertura.toDate === 'function') {
+                            dataCriacao = data.dataAbertura.toDate();
+                        }
+                        
+                        if (dataCriacao) {
+                            const horasPassadas = (agora - dataCriacao) / (1000 * 60 * 60);
+                            // Considerar atrasada se passou mais de 4 horas
+                            if (horasPassadas > 4) {
+                                atrasadas++;
+                            }
                         }
                     }
                 });
+                
+                console.log('[DEBUG-RESUMO] Métricas finais:', {
+                    total,
+                    pendentes,
+                    concluidas,
+                    atrasadas
+                });
+                
+                // Atualizar elementos na tela
                 document.getElementById('total-solicitacoes').textContent = total;
                 document.getElementById('pendentes-count').textContent = pendentes;
                 document.getElementById('concluidas-count').textContent = concluidas;
                 document.getElementById('atrasadas-count').textContent = atrasadas;
+                
             } catch (error) {
                 console.error('Erro ao atualizar resumo:', error);
             }
@@ -2915,11 +2960,15 @@
                 showToast('Carregando...', 'Buscando seu histórico de solicitações...', 'info');
 
                 // Buscar todas as solicitações do usuário ordenadas por data
+                console.log('[DEBUG-HISTORICO] Buscando solicitações para usuarioId:', user.uid);
+                
                 const snapshot = await window.db.collection('solicitacoes')
-                    .where('userId', '==', user.uid)
+                    .where('usuarioId', '==', user.uid)  // CORRETO: usar usuarioId
                     .orderBy('criadoEm', 'desc')
                     .limit(50) // Últimas 50 solicitações
                     .get();
+
+                console.log('[DEBUG-HISTORICO] Solicitações encontradas:', snapshot.size);
 
                 if (snapshot.empty) {
                     showToast('Info', 'Você ainda não possui solicitações.', 'info');
@@ -2950,17 +2999,19 @@
 
                 snapshot.forEach(doc => {
                     const data = doc.data();
-                    const criadoEm = data.criadoEm.toDate();
+                    console.log('[DEBUG-HISTORICO] Processando:', doc.id, data.titulo, data.status);
+                    
+                    const criadoEm = data.criadoEm && data.criadoEm.toDate ? data.criadoEm.toDate() : new Date(data.criadoEm);
                     const statusClass = {
                         'pendente': 'warning',
-                        'em_andamento': 'info', 
+                        'em-andamento': 'info',  // CORRETO: com hífen
                         'finalizada': 'success',
                         'cancelada': 'danger'
                     };
 
                     const statusTexto = {
                         'pendente': 'Pendente',
-                        'em_andamento': 'Em Andamento',
+                        'em-andamento': 'Em Andamento',  // CORRETO: com hífen
                         'finalizada': 'Finalizada',
                         'cancelada': 'Cancelada'
                     };
@@ -2971,21 +3022,36 @@
                         'higienizacao': 'Higienização',
                         'hotelaria': 'Hotelaria'
                     };
+                    
+                    // Determinar descrição correta baseada na equipe
+                    let descricaoTexto = 'undefined';
+                    if (data.descricao) {
+                        descricaoTexto = data.descricao;
+                    } else if (data.detalhes) {
+                        descricaoTexto = data.detalhes;
+                    } else if (data.observacoes) {
+                        descricaoTexto = data.observacoes;
+                    } else if (data.titulo) {
+                        descricaoTexto = data.titulo;
+                    }
+                    
+                    // Determinar tipo de serviço correto
+                    const tipoServico = data.equipe || data.tipoServico || 'manutencao';
+                    const tituloDisplay = data.titulo || tipoServicoTexto[tipoServico] || tipoServico;
 
                     historicoItens += `
                         <div class="historico-item" style="border: 1px solid #e5e7eb; border-radius: 8px; padding: 16px; margin-bottom: 12px; background: white;">
                             <div style="display: flex; justify-content: space-between; margin-bottom: 8px;">
-                                <strong style="color: #374151;">${tipoServicoTexto[data.tipoServico] || data.tipoServico}</strong>
-                                <span class="status-badge status-${statusClass[data.status]}" style="padding: 4px 8px; border-radius: 12px; font-size: 12px; font-weight: bold;">
+                                <strong style="color: #374151;">${tituloDisplay}</strong>
+                                <span class="status-badge status-${statusClass[data.status] || 'warning'}" style="padding: 4px 8px; border-radius: 12px; font-size: 12px; font-weight: bold;">
                                     ${statusTexto[data.status] || data.status}
                                 </span>
                             </div>
-                            <p style="margin: 8px 0; color: #6b7280;"><strong>Descrição:</strong> ${data.descricao}</p>
+                            <p style="margin: 8px 0; color: #6b7280;"><strong>Descrição:</strong> ${descricaoTexto}</p>
                             <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-top: 12px;">
                                 <small style="color: #9ca3af;"><strong>Criado em:</strong> ${criadoEm.toLocaleDateString('pt-BR')} às ${criadoEm.toLocaleTimeString('pt-BR')}</small>
-                                ${data.finalizadoEm ? `<small style="color: #9ca3af;"><strong>Finalizado em:</strong> ${data.finalizadoEm.toDate().toLocaleDateString('pt-BR')} às ${data.finalizadoEm.toDate().toLocaleTimeString('pt-BR')}</small>` : ''}
+                                ${data.finalizadoEm ? `<small style="color: #9ca3af;"><strong>Finalizado em:</strong> ${data.finalizadoEm.toDate ? data.finalizadoEm.toDate().toLocaleDateString('pt-BR') + ' às ' + data.finalizadoEm.toDate().toLocaleTimeString('pt-BR') : new Date(data.finalizadoEm).toLocaleDateString('pt-BR')}</small>` : ''}
                             </div>
-                            ${data.observacoes ? `<p style="margin: 8px 0 0 0; color: #6b7280; font-style: italic;"><strong>Observações:</strong> ${data.observacoes}</p>` : ''}
                         </div>
                     `;
                 });
