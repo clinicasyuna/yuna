@@ -6112,6 +6112,17 @@ async function abrirDashboardSatisfacao() {
         avaliacoesSnapshot.forEach(doc => {
             const data = doc.data();
             console.log('[DEBUG-SATISFACAO] Dados brutos da avaliação:', data);
+            console.log('[DEBUG-SATISFACAO] Campos da avaliação:', Object.keys(data));
+            console.log('[DEBUG-SATISFACAO] Tipos dos campos:', {
+                avaliacao: typeof data.avaliacao,
+                nota: typeof data.nota,
+                rating: typeof data.rating,
+                dataAvaliacao: typeof data.dataAvaliacao,
+                timestamp: typeof data.timestamp,
+                equipaAvaliada: typeof data.equipaAvaliada,
+                equipe: typeof data.equipe,
+                quarto: typeof data.quarto
+            });
             avaliacoes.push({ id: doc.id, ...data });
         });
         
@@ -6237,20 +6248,39 @@ async function abrirDashboardSatisfacao() {
                             Avaliações Recentes
                         </h3>
                         <div style="max-height: 400px; overflow-y: auto;">
-                            ${avaliacoes.slice(0, 20).map(avaliacao => `
-                                <div style="background: white; padding: 16px; border-radius: 8px; margin-bottom: 12px; border-left: 4px solid ${getCorAvaliacao(Number(avaliacao.avaliacao) || 0)};">
+                            ${avaliacoes.slice(0, 20).map(avaliacao => {
+                                // Tentar diferentes campos para obter a nota
+                                let nota = avaliacao.avaliacao || avaliacao.nota || avaliacao.rating || avaliacao.estrelas || 0;
+                                if (typeof nota === 'string') {
+                                    nota = Number(nota);
+                                }
+                                if (isNaN(nota)) nota = 0;
+                                
+                                // Tentar diferentes campos para obter a equipe
+                                const equipe = avaliacao.equipaAvaliada || avaliacao.equipe || 'N/A';
+                                
+                                // Tentar diferentes campos para obter a data
+                                const dataFormatada = formatarDataHora(
+                                    avaliacao.dataAvaliacao || 
+                                    avaliacao.timestamp || 
+                                    avaliacao.data || 
+                                    avaliacao.created_at
+                                );
+                                
+                                return `
+                                <div style="background: white; padding: 16px; border-radius: 8px; margin-bottom: 12px; border-left: 4px solid ${getCorAvaliacao(nota)};">
                                     <div style="display: flex; justify-content: space-between; align-items: start; margin-bottom: 8px;">
                                         <div>
                                             <div style="font-weight: bold; color: #374151;">
-                                                ${getEstrelasVisuais(Number(avaliacao.avaliacao) || 0)} 
-                                                <span style="color: #6b7280;">(${Number(avaliacao.avaliacao) || 0}/5)</span>
+                                                ${getEstrelasVisuais(nota)} 
+                                                <span style="color: #6b7280;">(${nota}/5)</span>
                                             </div>
                                             <div style="color: #6b7280; font-size: 14px; margin-top: 4px;">
-                                                Equipe: ${avaliacao.equipaAvaliada || 'N/A'} | Quarto: ${avaliacao.quarto || 'N/A'}
+                                                Equipe: ${equipe} | Quarto: ${avaliacao.quarto || 'N/A'}
                                             </div>
                                         </div>
                                         <div style="text-align: right; color: #6b7280; font-size: 12px;">
-                                            ${formatarDataHora(avaliacao.dataAvaliacao) || 'Data inválida'}
+                                            ${dataFormatada}
                                         </div>
                                     </div>
                                     ${avaliacao.comentario ? `
@@ -6258,8 +6288,8 @@ async function abrirDashboardSatisfacao() {
                                             "${avaliacao.comentario}"
                                         </div>
                                     ` : ''}
-                                </div>
-                            `).join('')}
+                                </div>`;
+                            }).join('')}
                         </div>
                     </div>
                     
@@ -6387,10 +6417,20 @@ function calcularMetricasSatisfacao(avaliacoes) {
     
     // Filtrar avaliações válidas
     const avaliacoesValidas = avaliacoes.filter(a => {
-        const nota = Number(a.avaliacao);
+        // Tentar diferentes campos para a nota
+        let nota = a.avaliacao || a.nota || a.rating || a.estrelas;
+        if (typeof nota === 'string') {
+            nota = Number(nota);
+        }
+        
         const valida = !isNaN(nota) && nota >= 1 && nota <= 5;
         if (!valida) {
-            console.log('[DEBUG-METRICAS] Avaliação inválida encontrada:', a);
+            console.log('[DEBUG-METRICAS] Avaliação inválida encontrada:', {
+                id: a.id,
+                notaOriginal: a.avaliacao,
+                notaProcessada: nota,
+                campos: Object.keys(a)
+            });
         }
         return valida;
     });
@@ -6407,13 +6447,25 @@ function calcularMetricasSatisfacao(avaliacoes) {
     }
     
     // Calcular média geral
-    const somaTotal = avaliacoesValidas.reduce((soma, avaliacao) => soma + Number(avaliacao.avaliacao), 0);
+    const somaTotal = avaliacoesValidas.reduce((soma, avaliacao) => {
+        let nota = avaliacao.avaliacao || avaliacao.nota || avaliacao.rating || avaliacao.estrelas;
+        if (typeof nota === 'string') {
+            nota = Number(nota);
+        }
+        return soma + nota;
+    }, 0);
     const mediaGeral = somaTotal / avaliacoesValidas.length;
     
     console.log('[DEBUG-METRICAS] Soma total:', somaTotal, 'Média geral:', mediaGeral);
     
     // Calcular percentual positivo (4 e 5 estrelas)
-    const avaliacoesPositivas = avaliacoesValidas.filter(a => Number(a.avaliacao) >= 4).length;
+    const avaliacoesPositivas = avaliacoesValidas.filter(a => {
+        let nota = a.avaliacao || a.nota || a.rating || a.estrelas;
+        if (typeof nota === 'string') {
+            nota = Number(nota);
+        }
+        return nota >= 4;
+    }).length;
     const percentualPositivo = Math.round((avaliacoesPositivas / avaliacoesValidas.length) * 100);
     
     console.log('[DEBUG-METRICAS] Avaliações positivas:', avaliacoesPositivas, 'Percentual:', percentualPositivo);
@@ -6421,12 +6473,17 @@ function calcularMetricasSatisfacao(avaliacoes) {
     // Calcular métricas por equipe
     const porEquipe = {};
     avaliacoesValidas.forEach(avaliacao => {
-        const equipe = avaliacao.equipaAvaliada;
+        const equipe = avaliacao.equipaAvaliada || avaliacao.equipe;
+        let nota = avaliacao.avaliacao || avaliacao.nota || avaliacao.rating || avaliacao.estrelas;
+        if (typeof nota === 'string') {
+            nota = Number(nota);
+        }
+        
         if (!porEquipe[equipe]) {
             porEquipe[equipe] = { total: 0, soma: 0, media: 0 };
         }
         porEquipe[equipe].total++;
-        porEquipe[equipe].soma += avaliacao.avaliacao;
+        porEquipe[equipe].soma += nota;
     });
     
     // Calcular médias por equipe
@@ -6730,19 +6787,46 @@ function getEstrelasVisuais(nota) {
 
 function formatarDataHora(dataISO) {
     try {
-        if (!dataISO) return 'Data não informada';
+        if (!dataISO) {
+            console.warn('[FORMATACAO] Data não fornecida');
+            return 'Data não informada';
+        }
         
-        const data = new Date(dataISO);
+        console.log('[FORMATACAO] Processando data:', dataISO, 'Tipo:', typeof dataISO);
+        
+        let data;
+        
+        // Se for um timestamp do Firestore
+        if (dataISO && typeof dataISO === 'object' && dataISO.toDate) {
+            data = dataISO.toDate();
+        }
+        // Se for um número (timestamp em milissegundos)
+        else if (typeof dataISO === 'number') {
+            data = new Date(dataISO);
+        }
+        // Se for string
+        else if (typeof dataISO === 'string') {
+            // Se for muito curto, pode estar truncado
+            if (dataISO.length < 5) {
+                console.warn('[FORMATACAO] Data muito curta (truncada):', dataISO);
+                return 'Data truncada';
+            }
+            data = new Date(dataISO);
+        }
+        // Outros casos
+        else {
+            data = new Date(dataISO);
+        }
         
         // Verificar se a data é válida
         if (isNaN(data.getTime())) {
-            console.warn('[FORMATACAO] Data inválida recebida:', dataISO);
+            console.warn('[FORMATACAO] Data inválida após conversão:', dataISO);
             return 'Data inválida';
         }
         
         return data.toLocaleDateString('pt-BR') + ' ' + data.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' });
     } catch (error) {
-        console.error('[FORMATACAO] Erro ao formatar data:', error);
+        console.error('[FORMATACAO] Erro ao formatar data:', error, 'Data original:', dataISO);
         return 'Erro na data';
     }
 }
