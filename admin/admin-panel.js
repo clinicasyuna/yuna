@@ -6163,7 +6163,7 @@ async function abrirDashboardSatisfacao() {
                     
                     <h2 style="margin: 0; font-size: 28px; font-weight: 600; display: flex; align-items: center; gap: 12px;">
                         <i class="fas fa-star"></i>
-                        Dashboard de Satisfação
+                        Dashboard de Pesquisa de Satisfação
                     </h2>
                     <p style="margin: 8px 0 0 0; opacity: 0.9; font-size: 16px;">
                         Análise das avaliações de satisfação dos serviços
@@ -6257,6 +6257,21 @@ async function abrirDashboardSatisfacao() {
                             `).join('')}
                         </div>
                     </div>
+                    
+                    <!-- Botão de Exclusão de Pesquisas -->
+                    <div style="border-top: 1px solid #e5e7eb; margin-top: 32px; padding-top: 24px;">
+                        <div style="display: flex; justify-content: center; align-items: center; gap: 12px;">
+                            <button onclick="confirmarExclusaoPesquisasSatisfacao()" 
+                                    style="background: #dc2626; color: white; border: none; padding: 12px 24px; border-radius: 8px; 
+                                           font-weight: 600; cursor: pointer; transition: all 0.3s ease; display: flex; align-items: center; gap: 8px;">
+                                <i class="fas fa-trash-alt"></i>
+                                Excluir Todas as Pesquisas de Satisfação
+                            </button>
+                            <div style="color: #6b7280; font-size: 14px; max-width: 300px; text-align: center;">
+                                Esta ação remove permanentemente todas as avaliações de satisfação do sistema
+                            </div>
+                        </div>
+                    </div>
                 </div>
             </div>
         `;
@@ -6266,6 +6281,89 @@ async function abrirDashboardSatisfacao() {
     } catch (error) {
         console.error('Erro ao carregar dashboard de satisfação:', error);
         showToast('Erro', 'Não foi possível carregar o dashboard de satisfação.', 'error');
+    }
+}
+
+// === FUNÇÃO PARA EXCLUIR PESQUISAS DE SATISFAÇÃO ===
+async function confirmarExclusaoPesquisasSatisfacao() {
+    const confirmacao = confirm(`⚠️ ATENÇÃO: EXCLUSÃO DE PESQUISAS DE SATISFAÇÃO
+
+Esta ação irá excluir PERMANENTEMENTE:
+
+📊 Todas as avaliações de satisfação da coleção 'avaliacoes_satisfacao'
+📝 Todos os dados de avaliação em solicitações existentes
+📈 Todo o histórico de pesquisas de satisfação
+
+❌ ESTA AÇÃO NÃO PODE SER DESFEITA!
+
+Tem certeza de que deseja continuar?`);
+
+    if (!confirmacao) {
+        console.log('[SATISFACAO-CLEANUP] Operação cancelada pelo usuário');
+        return;
+    }
+
+    try {
+        console.log('[SATISFACAO-CLEANUP] 🧹 Iniciando exclusão de pesquisas de satisfação...');
+        showToast('Info', 'Iniciando exclusão das pesquisas de satisfação...', 'info');
+
+        let totalExcluidos = 0;
+
+        // 1. Excluir coleção avaliacoes_satisfacao
+        console.log('[SATISFACAO-CLEANUP] Buscando documentos da coleção avaliacoes_satisfacao...');
+        const avaliacoesSnapshot = await window.db.collection('avaliacoes_satisfacao').get();
+        
+        if (!avaliacoesSnapshot.empty) {
+            const batch = window.db.batch();
+            avaliacoesSnapshot.docs.forEach(doc => {
+                batch.delete(doc.ref);
+                totalExcluidos++;
+            });
+            
+            await batch.commit();
+            console.log(`[SATISFACAO-CLEANUP] ✅ ${totalExcluidos} avaliações excluídas da coleção avaliacoes_satisfacao`);
+        }
+
+        // 2. Limpar campos de avaliação das solicitações
+        console.log('[SATISFACAO-CLEANUP] Limpando dados de avaliação das solicitações...');
+        const solicitacoesSnapshot = await window.db.collection('solicitacoes')
+            .where('avaliacaoSolicitada', '==', true)
+            .get();
+
+        if (!solicitacoesSnapshot.empty) {
+            const batchSolicitacoes = window.db.batch();
+            let solicitacoesAtualizadas = 0;
+            
+            solicitacoesSnapshot.docs.forEach(doc => {
+                batchSolicitacoes.update(doc.ref, {
+                    avaliacaoSolicitada: false,
+                    avaliacaoEnviada: false,
+                    avaliacao: null,
+                    comentarioAvaliacao: null,
+                    dataAvaliacao: null,
+                    avaliadoEm: null
+                });
+                solicitacoesAtualizadas++;
+            });
+            
+            await batchSolicitacoes.commit();
+            console.log(`[SATISFACAO-CLEANUP] ✅ ${solicitacoesAtualizadas} solicitações com dados de avaliação limpos`);
+        }
+
+        console.log(`[SATISFACAO-CLEANUP] ✅ Limpeza concluída! Total de registros processados: ${totalExcluidos + (solicitacoesSnapshot?.size || 0)}`);
+        
+        showToast('Sucesso', `Pesquisas de satisfação excluídas com sucesso! ${totalExcluidos} avaliações removidas.`, 'success');
+        
+        // Fechar modal e reabrir para mostrar dados limpos
+        document.querySelectorAll('.modal').forEach(modal => modal.remove());
+        
+        setTimeout(() => {
+            abrirDashboardSatisfacao();
+        }, 1000);
+
+    } catch (error) {
+        console.error('[SATISFACAO-CLEANUP] ❌ Erro durante a exclusão:', error);
+        showToast('Erro', `Erro ao excluir pesquisas: ${error.message}`, 'error');
     }
 }
 
