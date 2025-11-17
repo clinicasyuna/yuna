@@ -748,6 +748,8 @@ window.addEventListener('DOMContentLoaded', async function() {
         forcarVisibilidadeBotaoMinhaSenha();
         // Iniciar watchdog para manter o botão sempre visível
         iniciarWatchdogBotaoMinhaSenha();
+        // Iniciar observer para detectar remoções do botão
+        iniciarObserverBotaoMinhaSenha();
     }, 100);
     
     // Tentar inicializar Firebase
@@ -3402,12 +3404,58 @@ function forcarVisibilidadeBotaoMinhaSenha() {
             align-items: center !important;
             gap: 0.5rem !important;
             font-weight: 500 !important;
+            position: relative !important;
+            z-index: 999 !important;
         `;
         btnMinhaSenha.setAttribute('style', btnMinhaSenha.style.cssText);
         console.log('[🔑 MINHA SENHA] Botão forçado para ser visível');
         return true;
     } else {
         console.warn('[🔑 MINHA SENHA] Botão não encontrado no DOM');
+        // Tentar recriar o botão se não existir
+        recriarBotaoMinhaSenha();
+        return false;
+    }
+}
+
+// Função para recriar o botão se ele não existir
+function recriarBotaoMinhaSenha() {
+    console.log('[🔑 RECRIAR] Tentando recriar botão Minha Senha...');
+    
+    const userInfo = document.querySelector('.header .user-info');
+    const logoutBtn = document.getElementById('logout-btn');
+    
+    if (userInfo && logoutBtn) {
+        // Criar o botão
+        const btnMinhaSenha = document.createElement('button');
+        btnMinhaSenha.id = 'alterar-senha-btn';
+        btnMinhaSenha.className = 'btn-primary';
+        btnMinhaSenha.onclick = () => window.abrirMinhaSenha && window.abrirMinhaSenha();
+        btnMinhaSenha.title = 'Alterar minha senha';
+        btnMinhaSenha.innerHTML = '<i class="fas fa-key"></i> Minha Senha';
+        btnMinhaSenha.style.cssText = `
+            background: #10b981 !important;
+            display: inline-flex !important; 
+            visibility: visible !important;
+            opacity: 1 !important;
+            color: white !important;
+            border: none !important;
+            padding: 0.5rem 1rem !important;
+            border-radius: 0.375rem !important;
+            cursor: pointer !important;
+            align-items: center !important;
+            gap: 0.5rem !important;
+            font-weight: 500 !important;
+            position: relative !important;
+            z-index: 999 !important;
+        `;
+        
+        // Inserir antes do botão de logout
+        userInfo.insertBefore(btnMinhaSenha, logoutBtn);
+        console.log('[🔑 RECRIAR] Botão Minha Senha recriado com sucesso!');
+        return true;
+    } else {
+        console.error('[🔑 RECRIAR] Não foi possível encontrar local para inserir o botão');
         return false;
     }
 }
@@ -3422,8 +3470,32 @@ function iniciarWatchdogBotaoMinhaSenha() {
                 console.log('[🔑 WATCHDOG] Botão "Minha Senha" invisível - forçando visibilidade...');
                 forcarVisibilidadeBotaoMinhaSenha();
             }
+        } else {
+            console.log('[🔑 WATCHDOG] Botão "Minha Senha" não encontrado - recriando...');
+            recriarBotaoMinhaSenha();
         }
     }, 2000); // Verificar a cada 2 segundos
+}
+
+// Observer para monitorar mudanças no DOM
+function iniciarObserverBotaoMinhaSenha() {
+    const userInfo = document.querySelector('.header .user-info');
+    if (userInfo) {
+        const observer = new MutationObserver(() => {
+            const btnMinhaSenha = document.getElementById('alterar-senha-btn');
+            if (!btnMinhaSenha) {
+                console.log('[🔑 OBSERVER] Botão removido - recriando...');
+                setTimeout(() => recriarBotaoMinhaSenha(), 100);
+            }
+        });
+        
+        observer.observe(userInfo, {
+            childList: true,
+            subtree: true
+        });
+        
+        console.log('[🔑 OBSERVER] Observer do botão Minha Senha iniciado');
+    }
 }
 
 // Nova função para atualizar visibilidade dos botões
@@ -3562,7 +3634,21 @@ function atualizarVisibilidadeBotoes() {
     }
 
     // Botão Minha Senha - TODOS os usuários (equipes, admins, super_admins)
+    console.log('[🔑 DEBUG] Iniciando configuração do botão Minha Senha...');
+    
+    // Tentar multiple vezes para garantir que funcione
     forcarVisibilidadeBotaoMinhaSenha();
+    
+    setTimeout(() => {
+        console.log('[🔑 DEBUG] Segunda tentativa de forçar visibilidade...');
+        forcarVisibilidadeBotaoMinhaSenha();
+    }, 500);
+    
+    setTimeout(() => {
+        console.log('[🔑 DEBUG] Terceira tentativa de forçar visibilidade...');
+        forcarVisibilidadeBotaoMinhaSenha();
+    }, 1000);
+    
     debugLog('[DEBUG] Botão Minha Senha sempre exibido para todos os usuários');
 
     // Botão Limpeza - APENAS super_admin
