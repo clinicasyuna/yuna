@@ -3499,6 +3499,16 @@ function atualizarVisibilidadeBotoes() {
         }
     }
 
+    // Botão Minha Senha - TODOS os usuários (equipes, admins, super_admins)
+    const btnMinhaSenha = document.getElementById('alterar-senha-btn');
+    if (btnMinhaSenha) {
+        // Garantir que SEMPRE esteja visível para todos os usuários logados
+        btnMinhaSenha.classList.remove('btn-hide', 'hidden');
+        btnMinhaSenha.style.display = 'inline-flex';
+        btnMinhaSenha.style.visibility = 'visible';
+        debugLog('[DEBUG] Botão Minha Senha sempre exibido para todos os usuários');
+    }
+
     // Botão Limpeza - APENAS super_admin
     console.log('[🧹 LIMPEZA-CHECK] Verificando:', { btnLimpeza: !!btnLimpeza, isSuperAdmin }); 
     
@@ -3548,6 +3558,7 @@ function atualizarVisibilidadeBotoes() {
     }
     
     // Log final do estado dos botões
+    const btnMinhaSenha = document.getElementById('alterar-senha-btn');
     debugLog('[DEBUG] Estado final dos botões:', {
         role: usuarioAdmin?.role,
         equipe: usuarioAdmin?.equipe,
@@ -3558,6 +3569,7 @@ function atualizarVisibilidadeBotoes() {
         btnGerenciarUsuarios: btnGerenciarUsuarios ? !btnGerenciarUsuarios.classList.contains('btn-hide') : 'não encontrado',
         btnAcompanhantes: btnAcompanhantes ? !btnAcompanhantes.classList.contains('btn-hide') : 'não encontrado',
         btnRelatorios: btnRelatorios ? !btnRelatorios.classList.contains('btn-hide') : 'não encontrado',
+        btnMinhaSenha: btnMinhaSenha ? !btnMinhaSenha.classList.contains('btn-hide') : 'não encontrado',
         btnLimpeza: btnLimpeza ? !btnLimpeza.classList.contains('btn-hide') : 'não encontrado'
     });
     
