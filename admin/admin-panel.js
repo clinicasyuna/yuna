@@ -3384,6 +3384,7 @@ function atualizarVisibilidadeBotoes() {
     const btnAcompanhantes = document.getElementById('acompanhantes-btn');
     const btnRelatorios = document.getElementById('relatorios-btn');
     const btnLimpeza = document.getElementById('limpeza-btn');
+    const btnMinhaSenha = document.getElementById('alterar-senha-btn');
     const msgPermissao = document.getElementById('admin-permission-msg');
     const userRoleBadge = document.getElementById('user-role-badge');
     const panelTitle = document.getElementById('panel-title');
@@ -3500,7 +3501,6 @@ function atualizarVisibilidadeBotoes() {
     }
 
     // Botão Minha Senha - TODOS os usuários (equipes, admins, super_admins)
-    const btnMinhaSenha = document.getElementById('alterar-senha-btn');
     if (btnMinhaSenha) {
         // Garantir que SEMPRE esteja visível para todos os usuários logados
         btnMinhaSenha.classList.remove('btn-hide', 'hidden');
@@ -3558,7 +3558,6 @@ function atualizarVisibilidadeBotoes() {
     }
     
     // Log final do estado dos botões
-    const btnMinhaSenha = document.getElementById('alterar-senha-btn');
     debugLog('[DEBUG] Estado final dos botões:', {
         role: usuarioAdmin?.role,
         equipe: usuarioAdmin?.equipe,
