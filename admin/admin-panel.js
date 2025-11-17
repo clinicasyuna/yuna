@@ -609,6 +609,11 @@ async function mostrarSecaoPainel(secao) {
             document.querySelector('.teams-grid')?.classList.remove('hidden');
             debugLog('[DEBUG] mostrarSecaoPainel: exibindo painel principal');
             
+            // Garantir que o botão "Minha Senha" esteja sempre visível
+            setTimeout(() => {
+                forcarVisibilidadeBotaoMinhaSenha();
+            }, 100);
+            
             // Recarregar solicitações de forma simplificada
             if (typeof carregarSolicitacoes === 'function') {
                 debugLog('[DEBUG] mostrarSecaoPainel: carregando solicitações...');
@@ -737,6 +742,13 @@ window.addEventListener('DOMContentLoaded', async function() {
     
     // Configurar eventos imediatamente
     configurarEventosBotoes();
+    
+    // Forçar visibilidade do botão "Minha Senha" desde o início
+    setTimeout(() => {
+        forcarVisibilidadeBotaoMinhaSenha();
+        // Iniciar watchdog para manter o botão sempre visível
+        iniciarWatchdogBotaoMinhaSenha();
+    }, 100);
     
     // Tentar inicializar Firebase
     try {
@@ -893,11 +905,17 @@ window.addEventListener('DOMContentLoaded', async function() {
                         atualizarVisibilidadeBotoes();
                         configurarEventosBotoes();
                         
+                        // Forçar visibilidade do botão "Minha Senha" imediatamente
+                        forcarVisibilidadeBotaoMinhaSenha();
+                        
                         // Configuração adicional após um pequeno delay para garantir DOM estável
                         setTimeout(() => {
                             debugLog('[DEBUG] Reconfiguração de segurança dos botões...');
                             atualizarVisibilidadeBotoes();
                             configurarEventosBotoes();
+                            
+                            // Forçar novamente o botão "Minha Senha"
+                            forcarVisibilidadeBotaoMinhaSenha();
                             
                             // Forçar exibição do botão de limpeza para super_admin
                             if (window.usuarioAdmin && window.usuarioAdmin.role === 'super_admin') {
@@ -3365,6 +3383,49 @@ function atualizarMetricasPainel(total, pendentes, finalizadasHoje, quartosAtivo
 // Variável global para controlar reconfiguração de botões
 let reconfigurando = false;
 
+// Função específica para garantir visibilidade do botão Minha Senha
+function forcarVisibilidadeBotaoMinhaSenha() {
+    const btnMinhaSenha = document.getElementById('alterar-senha-btn');
+    if (btnMinhaSenha) {
+        // Forçar visibilidade com múltiplas abordagens
+        btnMinhaSenha.classList.remove('btn-hide', 'hidden', 'd-none');
+        btnMinhaSenha.style.cssText = `
+            display: inline-flex !important; 
+            visibility: visible !important; 
+            opacity: 1 !important;
+            background: #10b981 !important;
+            color: white !important;
+            border: none !important;
+            padding: 0.5rem 1rem !important;
+            border-radius: 0.375rem !important;
+            cursor: pointer !important;
+            align-items: center !important;
+            gap: 0.5rem !important;
+            font-weight: 500 !important;
+        `;
+        btnMinhaSenha.setAttribute('style', btnMinhaSenha.style.cssText);
+        console.log('[🔑 MINHA SENHA] Botão forçado para ser visível');
+        return true;
+    } else {
+        console.warn('[🔑 MINHA SENHA] Botão não encontrado no DOM');
+        return false;
+    }
+}
+
+// Watchdog para garantir que o botão sempre esteja visível
+function iniciarWatchdogBotaoMinhaSenha() {
+    setInterval(() => {
+        const btnMinhaSenha = document.getElementById('alterar-senha-btn');
+        if (btnMinhaSenha) {
+            const isVisible = btnMinhaSenha.offsetWidth > 0 && btnMinhaSenha.offsetHeight > 0;
+            if (!isVisible) {
+                console.log('[🔑 WATCHDOG] Botão "Minha Senha" invisível - forçando visibilidade...');
+                forcarVisibilidadeBotaoMinhaSenha();
+            }
+        }
+    }, 2000); // Verificar a cada 2 segundos
+}
+
 // Nova função para atualizar visibilidade dos botões
 function atualizarVisibilidadeBotoes() {
     console.log('🔥🔥🔥 EXECUTANDO atualizarVisibilidadeBotoes - TESTE LIMPEZA 🔥🔥🔥');
@@ -3501,13 +3562,8 @@ function atualizarVisibilidadeBotoes() {
     }
 
     // Botão Minha Senha - TODOS os usuários (equipes, admins, super_admins)
-    if (btnMinhaSenha) {
-        // Garantir que SEMPRE esteja visível para todos os usuários logados
-        btnMinhaSenha.classList.remove('btn-hide', 'hidden');
-        btnMinhaSenha.style.display = 'inline-flex';
-        btnMinhaSenha.style.visibility = 'visible';
-        debugLog('[DEBUG] Botão Minha Senha sempre exibido para todos os usuários');
-    }
+    forcarVisibilidadeBotaoMinhaSenha();
+    debugLog('[DEBUG] Botão Minha Senha sempre exibido para todos os usuários');
 
     // Botão Limpeza - APENAS super_admin
     console.log('[🧹 LIMPEZA-CHECK] Verificando:', { btnLimpeza: !!btnLimpeza, isSuperAdmin }); 
