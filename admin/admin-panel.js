@@ -1,6 +1,6 @@
 /**
  * Sistema YUNA - Painel Administrativo
- * Copyright © 2025 [SEU NOME]. Todos os direitos reservados.
+ * Copyright © 2025 Samuel dos Reis Lacerda Junior. Todos os direitos reservados.
  * 
  * Este software é propriedade intelectual protegida por direitos autorais.
  * Uso não autorizado é estritamente proibido.
@@ -2066,6 +2066,10 @@ window.editarUsuario = async function(userId) {
                 ` : ''}
                 
                 <div style="display: flex; gap: 12px; justify-content: flex-end; margin-top: 24px;">
+                    <button onclick="abrirModalAlterarSenha('${userId}', '${userCollection}')" 
+                            style="padding: 8px 16px; border: 1px solid #f59e0b; background: #fef3c7; color: #92400e; border-radius: 6px; cursor: pointer;">
+                        🔑 Alterar Senha
+                    </button>
                     <button onclick="fecharModalEditarUsuario()" 
                             style="padding: 8px 16px; border: 1px solid #d1d5db; background: white; color: #374151; border-radius: 6px; cursor: pointer;">
                         Cancelar
@@ -2138,6 +2142,321 @@ window.salvarUsuarioEditado = async function(userId, collection) {
     } catch (error) {
         console.error('[ERRO] Falha ao salvar usuário:', error);
         showToast('Erro', 'Não foi possível salvar as alterações', 'error');
+    }
+};
+
+// ===== FUNÇÕES DE ALTERAÇÃO DE SENHA =====
+
+// Função para abrir modal de alteração de senha (Admin alterando senha de outros usuários)
+window.abrirModalAlterarSenha = async function(userId, collection) {
+    try {
+        // Verificar se é super admin
+        const usuarioAdmin = window.usuarioAdmin || JSON.parse(localStorage.getItem('usuarioAdmin') || '{}');
+        if (!usuarioAdmin || usuarioAdmin.role !== 'super_admin') {
+            showToast('Erro', 'Apenas super administradores podem alterar senhas', 'error');
+            return;
+        }
+
+        // Buscar dados do usuário para exibir nome/email
+        let userData = null;
+        const doc = await window.db.collection(collection).doc(userId).get();
+        if (doc.exists) {
+            userData = doc.data();
+        } else {
+            showToast('Erro', 'Usuário não encontrado', 'error');
+            return;
+        }
+
+        // Criar modal de alteração de senha
+        const senhaModal = document.createElement('div');
+        senhaModal.id = 'alterar-senha-modal';
+        senhaModal.style.cssText = `
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0,0,0,0.6); z-index: 100001; display: flex;
+            align-items: center; justify-content: center;
+        `;
+        
+        senhaModal.innerHTML = `
+            <div style="background: white; border-radius: 12px; padding: 24px; max-width: 450px; width: 90%; box-shadow: 0 10px 30px rgba(0,0,0,0.2);">
+                <div style="display: flex; align-items: center; margin-bottom: 20px;">
+                    <span style="font-size: 24px; margin-right: 12px;">🔑</span>
+                    <h3 style="margin: 0; color: #374151;">Alterar Senha do Usuário</h3>
+                </div>
+                
+                <div style="background: #f3f4f6; padding: 16px; border-radius: 8px; margin-bottom: 20px;">
+                    <p style="margin: 0; color: #6b7280; font-size: 14px;"><strong>Usuário:</strong> ${userData.nome}</p>
+                    <p style="margin: 4px 0 0 0; color: #6b7280; font-size: 14px;"><strong>Email:</strong> ${userData.email}</p>
+                </div>
+                
+                <div style="margin-bottom: 16px;">
+                    <label style="display: block; margin-bottom: 4px; color: #374151; font-weight: 500;">Nova Senha:</label>
+                    <input type="password" id="nova-senha-admin" placeholder="Digite a nova senha" 
+                           style="width: 100%; padding: 8px 12px; border: 1px solid #d1d5db; border-radius: 6px; font-size: 14px;">
+                    <small style="color: #6b7280; font-size: 12px;">Mínimo de 6 caracteres</small>
+                </div>
+                
+                <div style="margin-bottom: 20px;">
+                    <label style="display: block; margin-bottom: 4px; color: #374151; font-weight: 500;">Confirmar Nova Senha:</label>
+                    <input type="password" id="confirmar-senha-admin" placeholder="Confirme a nova senha" 
+                           style="width: 100%; padding: 8px 12px; border: 1px solid #d1d5db; border-radius: 6px; font-size: 14px;">
+                </div>
+                
+                <div style="display: flex; gap: 12px; justify-content: flex-end;">
+                    <button onclick="fecharModalAlterarSenha()" 
+                            style="padding: 10px 20px; border: 1px solid #d1d5db; background: white; color: #374151; border-radius: 6px; cursor: pointer;">
+                        Cancelar
+                    </button>
+                    <button onclick="confirmarAlteracaoSenhaAdmin('${userId}', '${userData.email}')" 
+                            style="padding: 10px 20px; border: none; background: #ef4444; color: white; border-radius: 6px; cursor: pointer;">
+                        🔑 Alterar Senha
+                    </button>
+                </div>
+            </div>
+        `;
+        
+        document.body.appendChild(senhaModal);
+        
+        // Focar no primeiro campo
+        setTimeout(() => {
+            document.getElementById('nova-senha-admin').focus();
+        }, 100);
+        
+    } catch (error) {
+        console.error('[ERRO] Erro ao abrir modal de alteração de senha:', error);
+        showToast('Erro', 'Erro interno. Tente novamente.', 'error');
+    }
+};
+
+// Função para confirmar alteração de senha pelo admin
+window.confirmarAlteracaoSenhaAdmin = async function(userId, userEmail) {
+    try {
+        const novaSenha = document.getElementById('nova-senha-admin').value;
+        const confirmarSenha = document.getElementById('confirmar-senha-admin').value;
+        
+        // Validações
+        if (!novaSenha || !confirmarSenha) {
+            showToast('Erro', 'Preencha todos os campos', 'error');
+            return;
+        }
+        
+        if (novaSenha.length < 6) {
+            showToast('Erro', 'A senha deve ter pelo menos 6 caracteres', 'error');
+            return;
+        }
+        
+        if (novaSenha !== confirmarSenha) {
+            showToast('Erro', 'As senhas não coincidem', 'error');
+            return;
+        }
+
+        // Confirmar ação
+        const confirmacao = confirm(`ATENÇÃO: Você está alterando a senha do usuário!\n\nEmail: ${userEmail}\n\nEsta ação não pode ser desfeita. Confirma?`);
+        if (!confirmacao) return;
+
+        // Desabilitar botão para evitar cliques duplos
+        const botao = event.target;
+        botao.disabled = true;
+        botao.textContent = 'Alterando...';
+
+        // Usar Firebase Admin SDK via Cloud Function para alterar senha
+        // Como não temos acesso direto ao Admin SDK no frontend, vamos usar um método alternativo
+        
+        // MÉTODO: Enviar email de redefinição de senha
+        await window.auth.sendPasswordResetEmail(userEmail);
+        
+        showToast('Sucesso', `Email de redefinição de senha enviado para ${userEmail}. O usuário deve verificar a caixa de entrada.`, 'success');
+        
+        // Registrar na auditoria
+        if (window.registrarLogAuditoria) {
+            window.registrarLogAuditoria('PASSWORD_RESET_SENT', {
+                targetUserId: userId,
+                targetUserEmail: userEmail,
+                method: 'admin_initiated'
+            });
+        }
+        
+        fecharModalAlterarSenha();
+        
+    } catch (error) {
+        console.error('[ERRO] Erro ao alterar senha:', error);
+        
+        let mensagem = 'Erro ao alterar senha. Tente novamente.';
+        if (error.code === 'auth/user-not-found') {
+            mensagem = 'Usuário não encontrado no Firebase Authentication.';
+        } else if (error.code === 'auth/invalid-email') {
+            mensagem = 'Email inválido.';
+        }
+        
+        showToast('Erro', mensagem, 'error');
+        
+        // Reabilitar botão
+        const botao = event.target;
+        botao.disabled = false;
+        botao.textContent = '🔑 Alterar Senha';
+    }
+};
+
+// Função para fechar modal de alteração de senha
+window.fecharModalAlterarSenha = function() {
+    const modal = document.getElementById('alterar-senha-modal');
+    if (modal) {
+        modal.remove();
+    }
+};
+
+// Função para o próprio usuário alterar sua senha
+window.abrirMinhaSenha = function() {
+    // Criar modal para o usuário logado alterar sua própria senha
+    const senhaModal = document.createElement('div');
+    senhaModal.id = 'minha-senha-modal';
+    senhaModal.style.cssText = `
+        position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+        background: rgba(0,0,0,0.6); z-index: 100001; display: flex;
+        align-items: center; justify-content: center;
+    `;
+    
+    const usuarioLogado = window.usuarioAdmin || JSON.parse(localStorage.getItem('usuarioAdmin') || '{}');
+    
+    senhaModal.innerHTML = `
+        <div style="background: white; border-radius: 12px; padding: 24px; max-width: 450px; width: 90%; box-shadow: 0 10px 30px rgba(0,0,0,0.2);">
+            <div style="display: flex; align-items: center; margin-bottom: 20px;">
+                <span style="font-size: 24px; margin-right: 12px;">🔐</span>
+                <h3 style="margin: 0; color: #374151;">Alterar Minha Senha</h3>
+            </div>
+            
+            <div style="background: #f3f4f6; padding: 16px; border-radius: 8px; margin-bottom: 20px;">
+                <p style="margin: 0; color: #6b7280; font-size: 14px;"><strong>Usuário:</strong> ${usuarioLogado.nome}</p>
+                <p style="margin: 4px 0 0 0; color: #6b7280; font-size: 14px;"><strong>Email:</strong> ${usuarioLogado.email}</p>
+            </div>
+            
+            <div style="margin-bottom: 16px;">
+                <label style="display: block; margin-bottom: 4px; color: #374151; font-weight: 500;">Senha Atual:</label>
+                <input type="password" id="senha-atual" placeholder="Digite sua senha atual" 
+                       style="width: 100%; padding: 8px 12px; border: 1px solid #d1d5db; border-radius: 6px; font-size: 14px;">
+            </div>
+            
+            <div style="margin-bottom: 16px;">
+                <label style="display: block; margin-bottom: 4px; color: #374151; font-weight: 500;">Nova Senha:</label>
+                <input type="password" id="nova-senha-propria" placeholder="Digite a nova senha" 
+                       style="width: 100%; padding: 8px 12px; border: 1px solid #d1d5db; border-radius: 6px; font-size: 14px;">
+                <small style="color: #6b7280; font-size: 12px;">Mínimo de 6 caracteres</small>
+            </div>
+            
+            <div style="margin-bottom: 20px;">
+                <label style="display: block; margin-bottom: 4px; color: #374151; font-weight: 500;">Confirmar Nova Senha:</label>
+                <input type="password" id="confirmar-nova-senha-propria" placeholder="Confirme a nova senha" 
+                       style="width: 100%; padding: 8px 12px; border: 1px solid #d1d5db; border-radius: 6px; font-size: 14px;">
+            </div>
+            
+            <div style="display: flex; gap: 12px; justify-content: flex-end;">
+                <button onclick="fecharModalMinhaSenha()" 
+                        style="padding: 10px 20px; border: 1px solid #d1d5db; background: white; color: #374151; border-radius: 6px; cursor: pointer;">
+                    Cancelar
+                </button>
+                <button onclick="alterarMinhaSenha()" 
+                        style="padding: 10px 20px; border: none; background: #10b981; color: white; border-radius: 6px; cursor: pointer;">
+                    🔐 Alterar Minha Senha
+                </button>
+            </div>
+        </div>
+    `;
+    
+    document.body.appendChild(senhaModal);
+    
+    // Focar no primeiro campo
+    setTimeout(() => {
+        document.getElementById('senha-atual').focus();
+    }, 100);
+};
+
+// Função para alterar a própria senha
+window.alterarMinhaSenha = async function() {
+    try {
+        const senhaAtual = document.getElementById('senha-atual').value;
+        const novaSenha = document.getElementById('nova-senha-propria').value;
+        const confirmarSenha = document.getElementById('confirmar-nova-senha-propria').value;
+        
+        // Validações
+        if (!senhaAtual || !novaSenha || !confirmarSenha) {
+            showToast('Erro', 'Preencha todos os campos', 'error');
+            return;
+        }
+        
+        if (novaSenha.length < 6) {
+            showToast('Erro', 'A nova senha deve ter pelo menos 6 caracteres', 'error');
+            return;
+        }
+        
+        if (novaSenha !== confirmarSenha) {
+            showToast('Erro', 'A nova senha e a confirmação não coincidem', 'error');
+            return;
+        }
+        
+        if (senhaAtual === novaSenha) {
+            showToast('Erro', 'A nova senha deve ser diferente da senha atual', 'error');
+            return;
+        }
+
+        // Desabilitar botão para evitar cliques duplos
+        const botao = event.target;
+        botao.disabled = true;
+        botao.textContent = 'Alterando...';
+
+        const user = window.auth.currentUser;
+        if (!user) {
+            throw new Error('Usuário não autenticado');
+        }
+
+        // Reautenticar o usuário com a senha atual
+        const credential = window.auth.EmailAuthProvider.credential(user.email, senhaAtual);
+        await user.reauthenticateWithCredential(credential);
+        
+        // Alterar para a nova senha
+        await user.updatePassword(novaSenha);
+        
+        showToast('Sucesso', 'Sua senha foi alterada com sucesso!', 'success');
+        
+        // Registrar na auditoria
+        if (window.registrarLogAuditoria) {
+            window.registrarLogAuditoria('PASSWORD_CHANGED', {
+                method: 'self_service',
+                userId: user.uid
+            });
+        }
+        
+        fecharModalMinhaSenha();
+        
+        // Opcional: Fazer logout forçado para relogin com nova senha
+        // setTimeout(() => {
+        //     window.auth.signOut();
+        // }, 2000);
+        
+    } catch (error) {
+        console.error('[ERRO] Erro ao alterar senha:', error);
+        
+        let mensagem = 'Erro ao alterar senha. Tente novamente.';
+        if (error.code === 'auth/wrong-password') {
+            mensagem = 'Senha atual incorreta.';
+        } else if (error.code === 'auth/weak-password') {
+            mensagem = 'A nova senha é muito fraca. Use pelo menos 6 caracteres.';
+        } else if (error.code === 'auth/requires-recent-login') {
+            mensagem = 'Por segurança, faça login novamente antes de alterar a senha.';
+        }
+        
+        showToast('Erro', mensagem, 'error');
+        
+        // Reabilitar botão
+        const botao = event.target;
+        botao.disabled = false;
+        botao.textContent = '🔐 Alterar Minha Senha';
+    }
+};
+
+// Função para fechar modal da própria senha
+window.fecharModalMinhaSenha = function() {
+    const modal = document.getElementById('minha-senha-modal');
+    if (modal) {
+        modal.remove();
     }
 };
 
