@@ -563,6 +563,29 @@
             border: 2px solid #e5e7eb;
             transition: all 0.3s ease;
             position: relative;
+        }
+
+        .summary-clickable {
+            cursor: pointer;
+        }
+
+        .summary-clickable:hover {
+            transform: translateY(-4px) scale(1.02);
+            box-shadow: 0 8px 24px rgba(0,0,0,0.15);
+            border-color: #3b82f6;
+        }
+
+        .summary-clickable:active {
+            transform: translateY(-1px) scale(1.01);
+        }
+            transform: translateY(-4px) scale(1.02);
+            box-shadow: 0 8px 24px rgba(0,0,0,0.15);
+            border-color: #3b82f6;
+        }
+
+        .summary-clickable:active {
+            transform: translateY(-1px) scale(1.01);
+        }
             overflow: hidden;
         }
 
@@ -934,7 +957,6 @@
                 margin: 0 auto 1rem auto;
                 display: block;
                 font-size: 2.5rem;
-            }
             }
         }
 
@@ -1444,22 +1466,22 @@
             <div class="summary-section">
                 <h3 class="section-title">📈 Resumo das Minhas Solicitações</h3>
                 <div class="summary-grid">
-                    <div class="summary-card">
+                    <div class="summary-card summary-clickable" onclick="abrirModalSolicitacoesPorStatus('total')" title="Clique para ver todas as solicitações">
                         <div class="summary-icon">📊</div>
                         <div class="summary-value" id="total-solicitacoes">0</div>
                         <div class="summary-label">Total</div>
                     </div>
-                    <div class="summary-card summary-warning">
+                    <div class="summary-card summary-warning summary-clickable" onclick="abrirModalSolicitacoesPorStatus('pendente')" title="Clique para ver solicitações pendentes">
                         <div class="summary-icon">⏰</div>
                         <div class="summary-value" id="pendentes-count">0</div>
                         <div class="summary-label">Pendentes</div>
                     </div>
-                    <div class="summary-card summary-success">
+                    <div class="summary-card summary-success summary-clickable" onclick="abrirModalSolicitacoesPorStatus('finalizada')" title="Clique para ver solicitações concluídas">
                         <div class="summary-icon">✅</div>
                         <div class="summary-value" id="concluidas-count">0</div>
                         <div class="summary-label">Concluídas</div>
                     </div>
-                    <div class="summary-card summary-danger">
+                    <div class="summary-card summary-danger summary-clickable" onclick="abrirModalSolicitacoesPorStatus('atrasada')" title="Clique para ver solicitações atrasadas">
                         <div class="summary-icon">🚨</div>
                         <div class="summary-value" id="atrasadas-count">0</div>
                         <div class="summary-label">Atrasadas</div>
@@ -1877,6 +1899,207 @@
             } catch (error) {
                 console.error('Erro ao atualizar resumo:', error);
             }
+        }
+        
+        // Função para abrir modal com solicitações por status
+        async function abrirModalSolicitacoesPorStatus(status) {
+            try {
+                console.log(`[DEBUG] Abrindo modal para status: ${status}`);
+                
+                if (!window.auth.currentUser) {
+                    showToast('Erro', 'Você precisa estar logado para ver suas solicitações.', 'error');
+                    return;
+                }
+                
+                // Buscar solicitações do usuário
+                const query = window.db.collection('solicitacoes')
+                    .where('usuarioId', '==', window.auth.currentUser.uid)
+                    .orderBy('dataAbertura', 'desc');
+                
+                const snapshot = await query.get();
+                let solicitacoes = [];
+                
+                snapshot.forEach(doc => {
+                    const data = doc.data();
+                    solicitacoes.push({
+                        id: doc.id,
+                        ...data
+                    });
+                });
+                
+                // Filtrar por status
+                let solicitacoesFiltradas = [];
+                let tituloModal = '';
+                let corHeader = '';
+                let iconeHeader = '';
+                
+                const agora = new Date();
+                
+                if (status === 'total') {
+                    solicitacoesFiltradas = solicitacoes;
+                    tituloModal = 'Todas as Solicitações';
+                    corHeader = '#3b82f6';
+                    iconeHeader = '📊';
+                } else if (status === 'pendente') {
+                    solicitacoesFiltradas = solicitacoes.filter(s => s.status === 'pendente');
+                    tituloModal = 'Solicitações Pendentes';
+                    corHeader = '#f59e0b';
+                    iconeHeader = '⏰';
+                } else if (status === 'finalizada') {
+                    solicitacoesFiltradas = solicitacoes.filter(s => s.status === 'finalizada');
+                    tituloModal = 'Solicitações Concluídas';
+                    corHeader = '#10b981';
+                    iconeHeader = '✅';
+                } else if (status === 'atrasada') {
+                    solicitacoesFiltradas = solicitacoes.filter(s => {
+                        if (s.status !== 'pendente') return false;
+                        const dataAbertura = s.dataAbertura?.toDate();
+                        if (!dataAbertura) return false;
+                        const diffHoras = (agora - dataAbertura) / (1000 * 60 * 60);
+                        return diffHoras > 24;
+                    });
+                    tituloModal = 'Solicitações Atrasadas';
+                    corHeader = '#ef4444';
+                    iconeHeader = '🚨';
+                }
+                
+                // Criar modal
+                const modal = document.createElement('div');
+                modal.className = 'modal';
+                modal.style.cssText = `
+                    position: fixed;
+                    top: 0;
+                    left: 0;
+                    width: 100%;
+                    height: 100%;
+                    background: rgba(0,0,0,0.5);
+                    display: flex;
+                    justify-content: center;
+                    align-items: center;
+                    z-index: 10000;
+                    padding: 20px;
+                `;
+                
+                // Construir HTML das solicitações
+                let solicitacoesHTML = '';
+                
+                if (solicitacoesFiltradas.length === 0) {
+                    solicitacoesHTML = `
+                        <div style="text-align: center; padding: 40px; color: #6b7280;">
+                            <div style="font-size: 48px; margin-bottom: 16px;">📭</div>
+                            <h3 style="margin: 0 0 8px 0; color: #374151;">Nenhuma solicitação encontrada</h3>
+                            <p style="margin: 0; font-size: 14px;">Não há solicitações com este status.</p>
+                        </div>
+                    `;
+                } else {
+                    solicitacoesHTML = solicitacoesFiltradas.map(sol => {
+                        const dataFormatada = sol.dataAbertura ? 
+                            new Date(sol.dataAbertura.seconds * 1000).toLocaleString('pt-BR') : 
+                            'Data não disponível';
+                        
+                        const statusInfo = getStatusInfo(sol.status);
+                        const tipoIcon = getTipoIcon(sol.tipo || sol.equipe);
+                        
+                        return `
+                            <div style="background: white; border-radius: 12px; padding: 20px; margin-bottom: 12px; box-shadow: 0 2px 8px rgba(0,0,0,0.1); border-left: 4px solid ${statusInfo.cor};">
+                                <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 12px;">
+                                    <div style="display: flex; align-items: center; gap: 8px;">
+                                        <span style="font-size: 24px;">${tipoIcon}</span>
+                                        <div>
+                                            <h4 style="margin: 0; color: #374151; font-size: 16px; font-weight: 600;">
+                                                ${sol.tipo || sol.equipe || 'Serviço'} - ${sol.prioridade || 'normal'}
+                                            </h4>
+                                            <p style="margin: 4px 0 0 0; font-size: 12px; color: #6b7280;">
+                                                ID: ${sol.id.substring(0, 8)}...
+                                            </p>
+                                        </div>
+                                    </div>
+                                    <div style="text-align: right;">
+                                        <span style="background: ${statusInfo.cor}; color: white; padding: 4px 8px; border-radius: 12px; font-size: 12px; font-weight: 500;">
+                                            ${statusInfo.texto}
+                                        </span>
+                                        <div style="font-size: 11px; color: #6b7280; margin-top: 4px;">
+                                            ${dataFormatada}
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                ${sol.descricao ? `
+                                    <div style="background: #f9fafb; padding: 12px; border-radius: 8px; margin-bottom: 12px;">
+                                        <p style="margin: 0; font-size: 14px; color: #374151; line-height: 1.4;">
+                                            ${sol.descricao}
+                                        </p>
+                                    </div>
+                                ` : ''}
+                                
+                                <div style="display: flex; justify-content: space-between; align-items: center; font-size: 12px; color: #6b7280;">
+                                    <span>📍 Quarto: ${sol.quarto || 'N/A'}</span>
+                                    <span>👥 ${sol.equipe || 'Equipe não definida'}</span>
+                                </div>
+                            </div>
+                        `;
+                    }).join('');
+                }
+                
+                modal.innerHTML = `
+                    <div style="background: white; border-radius: 16px; max-width: 600px; width: 100%; max-height: 80vh; overflow: hidden; box-shadow: 0 20px 60px rgba(0,0,0,0.3);">
+                        <div style="background: ${corHeader}; color: white; padding: 24px; border-radius: 16px 16px 0 0;">
+                            <div style="display: flex; justify-content: space-between; align-items: center;">
+                                <div style="display: flex; align-items: center; gap: 12px;">
+                                    <span style="font-size: 32px;">${iconeHeader}</span>
+                                    <div>
+                                        <h2 style="margin: 0; font-size: 24px; font-weight: 600;">${tituloModal}</h2>
+                                        <p style="margin: 4px 0 0 0; opacity: 0.9; font-size: 14px;">${solicitacoesFiltradas.length} ${solicitacoesFiltradas.length === 1 ? 'solicitação encontrada' : 'solicitações encontradas'}</p>
+                                    </div>
+                                </div>
+                                <button onclick="this.closest('.modal').remove()" style="background: rgba(255,255,255,0.2); border: none; color: white; font-size: 24px; width: 40px; height: 40px; border-radius: 50%; cursor: pointer; display: flex; align-items: center; justify-content: center;">×</button>
+                            </div>
+                        </div>
+                        
+                        <div style="padding: 24px; max-height: 60vh; overflow-y: auto;">
+                            ${solicitacoesHTML}
+                        </div>
+                    </div>
+                `;
+                
+                // Adicionar modal ao DOM
+                document.body.appendChild(modal);
+                
+                // Remover modal ao clicar fora
+                modal.addEventListener('click', (e) => {
+                    if (e.target === modal) {
+                        modal.remove();
+                    }
+                });
+                
+            } catch (error) {
+                console.error('Erro ao abrir modal de solicitações:', error);
+                showToast('Erro', 'Não foi possível carregar as solicitações.', 'error');
+            }
+        }
+        
+        // Funções auxiliares para o modal
+        function getStatusInfo(status) {
+            const statusMap = {
+                'pendente': { texto: 'Pendente', cor: '#f59e0b' },
+                'em-andamento': { texto: 'Em Andamento', cor: '#3b82f6' },
+                'finalizada': { texto: 'Concluída', cor: '#10b981' },
+                'cancelada': { texto: 'Cancelada', cor: '#6b7280' }
+            };
+            return statusMap[status] || { texto: 'Desconhecido', cor: '#6b7280' };
+        }
+        
+        function getTipoIcon(tipo) {
+            const tipoMap = {
+                'manutencao': '🔧',
+                'nutricao': '🍽️',
+                'higienizacao': '🧽',
+                'hotelaria': '🏨',
+                'eletrico': '⚡',
+                'hidraulico': '🚰',
+                'ar-condicionado': '❄️'
+            };
+            return tipoMap[tipo?.toLowerCase()] || '🔧';
         }
         
         // Função para esqueci a senha (definir ANTES de expor no window)
