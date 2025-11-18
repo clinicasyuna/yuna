@@ -868,6 +868,37 @@ window.addEventListener('DOMContentLoaded', async function() {
                             
                             debugLog('[DEBUG] Interface configurada para super admin');
                             
+                        } else if (dadosAdmin.role === 'admin') {
+                            debugLog('[DEBUG] Usuário ADMIN - mostrando painel completo com permissões restritas');
+                            
+                            // Esconder login e mostrar painel (mesmo comportamento do super_admin)
+                            const authSection = document.getElementById('auth-section');
+                            const adminPanel = document.getElementById('admin-panel');
+                            
+                            if (authSection) {
+                                authSection.classList.add('hidden');
+                                authSection.style.display = 'none';
+                            }
+                            
+                            if (adminPanel) {
+                                adminPanel.classList.remove('hidden');
+                                adminPanel.style.display = 'block';
+                                adminPanel.style.visibility = 'visible';
+                            }
+                            
+                            // Mostrar todos os cards para admin
+                            const teamsGrid = document.querySelector('.teams-grid');
+                            if (teamsGrid) {
+                                teamsGrid.classList.remove('hidden');
+                                teamsGrid.style.display = 'grid';
+                            }
+                            
+                            // Garantir que elementos críticos estão visíveis
+                            document.body.style.display = 'block';
+                            document.body.style.visibility = 'visible';
+                            
+                            debugLog('[DEBUG] Interface configurada para admin');
+                            
                         } else if (dadosAdmin.isEquipe && dadosAdmin.equipe) {
                             debugLog('[DEBUG] Usuário EQUIPE - mostrando apenas cards do departamento:', dadosAdmin.equipe);
                             // Usuário de equipe vê apenas seu departamento
@@ -4277,7 +4308,14 @@ window.criarUsuarioTeste = async function() {
                 email: emailTeste,
                 role: 'admin',
                 criadoEm: new Date().toISOString(),
-                ativo: true
+                ativo: true,
+                permissoes: {
+                    criarUsuarios: false,
+                    gerenciarDepartamentos: true,
+                    verRelatorios: true,
+                    gerenciarSolicitacoes: true,
+                    gerenciarAcompanhantes: true
+                }
             });
             console.log('✅ Usuário adicionado como admin no Firestore');
         }
