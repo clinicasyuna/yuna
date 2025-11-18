@@ -1462,11 +1462,13 @@ window.criarNovoUsuario = async function() {
                 criadoEm: firebase.firestore.FieldValue.serverTimestamp(),
                 criadoPor: usuarioAdmin.email,
                 permissoes: {
-                    criarUsuarios: false,
-                    gerenciarDepartamentos: true,
-                    verRelatorios: true,
-                    gerenciarSolicitacoes: true,
-                    gerenciarAcompanhantes: true
+                    criarUsuarios: false,              // Apenas super_admin
+                    gerenciarDepartamentos: false,     // Apenas super_admin
+                    verRelatorios: true,               // Admin pode acessar
+                    gerenciarSolicitacoes: true,       // Admin pode gerenciar solicitações
+                    gerenciarAcompanhantes: false,     // Apenas super_admin
+                    verMetricas: true,                 // Admin pode ver métricas
+                    verPesquisaSatisfacao: true        // Admin pode ver pesquisa satisfação
                 }
             };
         } else if (tipo === 'equipe') {
@@ -3625,22 +3627,22 @@ function atualizarVisibilidadeBotoes() {
         }
     }
     
-    // Botão Gerenciar Usuários - super_admin e admin
+    // Botão Gerenciar Usuários - APENAS super_admin
     if (btnGerenciarUsuarios) {
-        if (isSuperAdmin || isAdmin) {
+        if (isSuperAdmin) {
             btnGerenciarUsuarios.classList.remove('btn-hide');
             btnGerenciarUsuarios.style.display = 'inline-flex';
-            debugLog('[DEBUG] Botão Gerenciar Usuários exibido para', isSuperAdmin ? 'super_admin' : 'admin');
+            debugLog('[DEBUG] Botão Gerenciar Usuários exibido para super_admin');
         } else {
             btnGerenciarUsuarios.classList.add('btn-hide');
             btnGerenciarUsuarios.style.display = 'none';
-            debugLog('[DEBUG] Botão Gerenciar Usuários ocultado para usuário não admin');
+            debugLog('[DEBUG] Botão Gerenciar Usuários ocultado para usuário não super_admin');
         }
     }
 
-    // Botão Acompanhantes - super_admin e admin
+    // Botão Acompanhantes - APENAS super_admin
     if (btnAcompanhantes) {
-        if (isSuperAdmin || isAdmin) {
+        if (isSuperAdmin) {
             btnAcompanhantes.classList.remove('btn-hide');
             btnAcompanhantes.style.display = 'inline-flex';
             debugLog('[DEBUG] Botão Acompanhantes exibido para', isSuperAdmin ? 'super_admin' : 'admin');
@@ -4310,11 +4312,13 @@ window.criarUsuarioTeste = async function() {
                 criadoEm: new Date().toISOString(),
                 ativo: true,
                 permissoes: {
-                    criarUsuarios: false,
-                    gerenciarDepartamentos: true,
-                    verRelatorios: true,
-                    gerenciarSolicitacoes: true,
-                    gerenciarAcompanhantes: true
+                    criarUsuarios: false,              // Apenas super_admin
+                    gerenciarDepartamentos: false,     // Apenas super_admin
+                    verRelatorios: true,               // Admin pode acessar
+                    gerenciarSolicitacoes: true,       // Admin pode gerenciar solicitações
+                    gerenciarAcompanhantes: false,     // Apenas super_admin
+                    verMetricas: true,                 // Admin pode ver métricas
+                    verPesquisaSatisfacao: true        // Admin pode ver pesquisa satisfação
                 }
             });
             console.log('✅ Usuário adicionado como admin no Firestore');
