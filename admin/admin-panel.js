@@ -8016,6 +8016,12 @@ function gerarRelatorioHTML(solicitacoes) {
                 </div>
             </div>
 
+            <!-- Lista Detalhada de Solicitações por Equipe -->
+            <div style="margin-bottom: 20px;">
+                <h3 style="margin: 0 0 15px 0; color: #374151;">📋 Lista Completa de Solicitações por Equipe</h3>
+                ${gerarListaDetalhada(solicitacoes, stats)}
+            </div>
+
             <!-- Botões de Ação -->
             <div style="display: flex; gap: 10px; justify-content: center; border-top: 1px solid #e5e7eb; padding-top: 20px;">
                 <button onclick="imprimirRelatorio()" style="background: #6366f1; color: white; border: none; padding: 10px 20px; border-radius: 6px; cursor: pointer;">
@@ -8074,6 +8080,126 @@ function calcularEstatisticas(solicitacoes) {
     });
 
     return stats;
+}
+
+// Função para gerar lista detalhada por equipe
+function gerarListaDetalhada(solicitacoes, stats) {
+    const solicitacoesPorEquipe = {};
+    
+    // Agrupar solicitações por equipe
+    solicitacoes.forEach(sol => {
+        const equipe = sol.equipe || 'sem-equipe';
+        if (!solicitacoesPorEquipe[equipe]) {
+            solicitacoesPorEquipe[equipe] = [];
+        }
+        solicitacoesPorEquipe[equipe].push(sol);
+    });
+    
+    // Gerar HTML para cada equipe
+    return Object.entries(solicitacoesPorEquipe).map(([equipe, solicitacoesEquipe]) => {
+        // Ordenar por data (mais recentes primeiro)
+        const solicitacoesOrdenadas = solicitacoesEquipe.sort((a, b) => {
+            const dataA = a.dataAbertura?.seconds || 0;
+            const dataB = b.dataAbertura?.seconds || 0;
+            return dataB - dataA;
+        });
+        
+        return `
+            <div style="margin-bottom: 25px; border: 1px solid #e5e7eb; border-radius: 8px; overflow: hidden;">
+                <div style="background: ${getCorEquipe(equipe)}; color: white; padding: 15px;">
+                    <h4 style="margin: 0; text-transform: capitalize;">
+                        <i class="fas fa-users"></i> ${equipe} (${solicitacoesEquipe.length} solicitações)
+                    </h4>
+                </div>
+                <div style="max-height: 400px; overflow-y: auto;">
+                    <table style="width: 100%; border-collapse: collapse;">
+                        <thead style="background: #f8fafc; position: sticky; top: 0;">
+                            <tr>
+                                <th style="padding: 10px; border-bottom: 1px solid #e5e7eb; text-align: left; font-size: 12px;">Data</th>
+                                <th style="padding: 10px; border-bottom: 1px solid #e5e7eb; text-align: left; font-size: 12px;">Tipo</th>
+                                <th style="padding: 10px; border-bottom: 1px solid #e5e7eb; text-align: left; font-size: 12px;">Descrição</th>
+                                <th style="padding: 10px; border-bottom: 1px solid #e5e7eb; text-align: left; font-size: 12px;">Quarto</th>
+                                <th style="padding: 10px; border-bottom: 1px solid #e5e7eb; text-align: left; font-size: 12px;">Status</th>
+                                <th style="padding: 10px; border-bottom: 1px solid #e5e7eb; text-align: left; font-size: 12px;">Prioridade</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            ${solicitacoesOrdenadas.map(sol => `
+                                <tr style="border-bottom: 1px solid #f3f4f6;">
+                                    <td style="padding: 8px 10px; font-size: 11px;">
+                                        ${sol.dataAbertura ? new Date(sol.dataAbertura.seconds * 1000).toLocaleDateString('pt-BR') : '--'}
+                                    </td>
+                                    <td style="padding: 8px 10px; font-size: 11px;">
+                                        ${sol.tipo || sol.equipe || '--'}
+                                    </td>
+                                    <td style="padding: 8px 10px; font-size: 11px; max-width: 200px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">
+                                        ${sol.descricao || sol.detalhes || '--'}
+                                    </td>
+                                    <td style="padding: 8px 10px; font-size: 11px;">
+                                        ${sol.quarto || '--'}
+                                    </td>
+                                    <td style="padding: 8px 10px; font-size: 11px;">
+                                        <span style="padding: 2px 6px; border-radius: 12px; font-size: 10px; background: ${getCorStatus(sol.status)}; color: white;">
+                                            ${getTextoStatus(sol.status)}
+                                        </span>
+                                    </td>
+                                    <td style="padding: 8px 10px; font-size: 11px;">
+                                        <span style="color: ${getCorPrioridade(sol.prioridade)}; font-weight: bold;">
+                                            ${sol.prioridade || 'Normal'}
+                                        </span>
+                                    </td>
+                                </tr>
+                            `).join('')}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        `;
+    }).join('');
+}
+
+// Funções auxiliares para formatação
+function getCorEquipe(equipe) {
+    const cores = {
+        'manutencao': '#ef4444',
+        'nutrição': '#22c55e',
+        'nutricao': '#22c55e',
+        'higienização': '#3b82f6',
+        'higienizacao': '#3b82f6',
+        'hotelaria': '#a855f7',
+        'default': '#6b7280'
+    };
+    return cores[equipe?.toLowerCase()] || cores.default;
+}
+
+function getCorStatus(status) {
+    const cores = {
+        'pendente': '#f59e0b',
+        'em-andamento': '#3b82f6',
+        'finalizada': '#10b981',
+        'cancelada': '#ef4444'
+    };
+    return cores[status] || '#6b7280';
+}
+
+function getTextoStatus(status) {
+    const textos = {
+        'pendente': 'Pendente',
+        'em-andamento': 'Em Andamento',
+        'finalizada': 'Finalizada',
+        'cancelada': 'Cancelada'
+    };
+    return textos[status] || status;
+}
+
+function getCorPrioridade(prioridade) {
+    const cores = {
+        'urgente': '#dc2626',
+        'alta': '#ea580c',
+        'normal': '#059669',
+        'baixa': '#0891b2'
+    };
+    return cores[prioridade?.toLowerCase()] || cores.normal;
 }
 
 // Função para exportar dados para Excel
