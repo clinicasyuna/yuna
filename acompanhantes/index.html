@@ -613,6 +613,11 @@
             font-size: 1.5rem;
             margin-bottom: 0.5rem;
             opacity: 0.8;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            height: 1.5rem;
+            line-height: 1;
         }
 
         .summary-value {
@@ -1482,7 +1487,7 @@
                         <div class="summary-label">Concluídas</div>
                     </div>
                     <div class="summary-card summary-danger summary-clickable" onclick="abrirModalSolicitacoesPorStatus('atrasada')" title="Clique para ver solicitações atrasadas">
-                        <div class="summary-icon">🚨</div>
+                        <div class="summary-icon">⚠️</div>
                         <div class="summary-value" id="atrasadas-count">0</div>
                         <div class="summary-label">Atrasadas</div>
                     </div>
@@ -1911,10 +1916,9 @@
                     return;
                 }
                 
-                // Buscar solicitações do usuário
+                // Buscar solicitações do usuário (sem orderBy para evitar índice composto)
                 const query = window.db.collection('solicitacoes')
-                    .where('usuarioId', '==', window.auth.currentUser.uid)
-                    .orderBy('dataAbertura', 'desc');
+                    .where('usuarioId', '==', window.auth.currentUser.uid);
                 
                 const snapshot = await query.get();
                 let solicitacoes = [];
@@ -1925,6 +1929,13 @@
                         id: doc.id,
                         ...data
                     });
+                });
+                
+                // Ordenar por data no cliente
+                solicitacoes.sort((a, b) => {
+                    const dataA = a.dataAbertura ? a.dataAbertura.seconds : 0;
+                    const dataB = b.dataAbertura ? b.dataAbertura.seconds : 0;
+                    return dataB - dataA; // Mais recente primeiro
                 });
                 
                 // Filtrar por status
@@ -1960,7 +1971,7 @@
                     });
                     tituloModal = 'Solicitações Atrasadas';
                     corHeader = '#ef4444';
-                    iconeHeader = '🚨';
+                    iconeHeader = '⚠️';
                 }
                 
                 // Criar modal
