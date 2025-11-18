@@ -4349,7 +4349,54 @@ window.mostrarAjudaDev = function() {
     }
 };
 
-// 5. Função para mostrar todas as opções disponíveis
+// 6. Função para atualizar permissões de usuários admin existentes
+window.atualizarPermissoesAdmin = async function() {
+    console.log('🔧 ATUALIZANDO PERMISSÕES DE USUÁRIOS ADMIN...');
+    
+    if (!window.db) {
+        console.error('Firestore não disponível');
+        return 'Firestore não disponível';
+    }
+    
+    try {
+        // Buscar todos os usuários admin
+        const adminSnapshot = await window.db.collection('usuarios_admin').get();
+        let atualizados = 0;
+        
+        for (const doc of adminSnapshot.docs) {
+            const userData = doc.data();
+            
+            // Se for admin (não super_admin) e tem permissões antigas
+            if (userData.role === 'admin') {
+                console.log(`Atualizando permissões para: ${userData.email}`);
+                
+                await window.db.collection('usuarios_admin').doc(doc.id).update({
+                    'permissoes.criarUsuarios': false,
+                    'permissoes.gerenciarDepartamentos': false,
+                    'permissoes.verRelatorios': true,
+                    'permissoes.gerenciarSolicitacoes': true,
+                    'permissoes.gerenciarAcompanhantes': false,
+                    'permissoes.verMetricas': true,
+                    'permissoes.verPesquisaSatisfacao': true,
+                    'atualizadoEm': new Date().toISOString()
+                });
+                
+                atualizados++;
+                console.log(`✅ Permissões atualizadas para: ${userData.email}`);
+            }
+        }
+        
+        showToast('Sucesso', `${atualizados} usuários admin atualizados`, 'success');
+        return `${atualizados} usuários admin atualizados com novas permissões`;
+        
+    } catch (error) {
+        console.error('❌ Erro ao atualizar permissões:', error);
+        showToast('Erro', 'Erro ao atualizar permissões', 'error');
+        return 'Erro ao atualizar permissões: ' + error.message;
+    }
+};
+
+// 7. Função para mostrar todas as opções disponíveis
 window.ajuda = function() {
     console.log(`
 🆘 === FUNÇÕES DE AJUDA DISPONÍVEIS ===
@@ -4358,6 +4405,7 @@ PARA PROBLEMAS DE LOGIN:
 • loginRapido() - Login rápido em modo desenvolvimento
 • corrigirTudo() - Corrige todos os problemas de uma vez
 • criarUsuarioTeste() - Cria usuário admin@teste.com / 123456
+• atualizarPermissoesAdmin() - Atualiza permissões de usuários admin existentes
 
 PARA PROBLEMAS DE BOTÕES:
 • solucionarBotoes() - Força funcionamento dos botões
@@ -4372,6 +4420,9 @@ PARA DEBUG:
 EXEMPLO DE USO:
 Se os botões não funcionam após login, execute:
 corrigirTudo()
+
+Se precisar atualizar permissões de admins, execute:
+atualizarPermissoesAdmin()
 
 ==========================================
     `);
