@@ -2787,10 +2787,18 @@ async function carregarSolicitacoes() {
             });
             
             // FILTRO RIGOROSO USANDO A FUNÇÃO DE PERMISSÕES
+            console.log('[DEBUG-PERMISSAO] Verificando permissão para:', {
+                solicitacaoId: doc.id,
+                solicitacaoEquipe: data.equipe,
+                usuarioRole: usuarioAdmin.role,
+                usuarioEquipe: usuarioAdmin.equipe,
+                usuarioIsEquipe: usuarioAdmin.isEquipe
+            });
+            
             if (!podeVerSolicitacaoJS(usuarioAdmin, data)) {
                 docsFiltrados++;
                 // Pular esta solicitação se o usuário não tem permissão para vê-la
-                console.log(`[DEBUG] Solicitação filtrada (sem permissão):`, item.titulo || item.tipo, 'equipe:', data.equipe, 'usuário equipe:', usuarioAdmin.equipe);
+                console.log(`[DEBUG] Solicitação filtrada (sem permissão):`, item.titulo || item.tipo, 'equipe:', data.equipe, 'usuário equipe:', usuarioAdmin.equipe, 'role:', usuarioAdmin.role);
                 return;
             }
             
@@ -6130,13 +6138,31 @@ function renderizarCardsEquipe(equipes) {
                             quartoParaExibir: solicitacao.quartoAcompanhante || solicitacao.quarto
                         });
                         
-                        return `<div class="solicitacao-card" 
+                        // Verificar se usuário pode interagir com esta solicitação ou apenas visualizar
+                        const usuarioAdmin = window.usuarioAdmin || JSON.parse(localStorage.getItem('usuarioAdmin') || '{}');
+                        const podeInteragir = usuarioAdmin.role === 'super_admin' || 
+                                            (usuarioAdmin.isEquipe && usuarioAdmin.equipe === solicitacao.equipe);
+                        const apenasVisualizar = usuarioAdmin.role === 'admin' && !usuarioAdmin.isEquipe;
+                        
+                        console.log('[DEBUG-INTERACAO] Permissões do card:', {
+                            solicitacaoId: solicitacao.id,
+                            equipe: solicitacao.equipe,
+                            podeInteragir,
+                            apenasVisualizar,
+                            userRole: usuarioAdmin.role,
+                            userEquipe: usuarioAdmin.equipe
+                        });
+                        
+                        return `<div class="solicitacao-card ${apenasVisualizar ? 'visualizacao-apenas' : ''}" 
                              data-solicitacao='${JSON.stringify(solicitacao).replace(/'/g, '&apos;')}' 
                              data-equipe="${equipe}" 
                              data-index="${index}" 
                              data-status="${solicitacao.status || 'pendente'}"
                              data-prioridade="${solicitacao.prioridade || 'normal'}"
-                             onclick="abrirSolicitacaoModal(${JSON.stringify(solicitacao).replace(/'/g, '&apos;')})">
+                             onclick="${podeInteragir ? `abrirSolicitacaoModal(${JSON.stringify(solicitacao).replace(/'/g, '&apos;')})` : `mostrarInfoVisualizacao('${solicitacao.id}')`}"
+                             style="${apenasVisualizar ? 'opacity: 0.8; cursor: help;' : 'cursor: pointer;'}">
+                            
+                            ${apenasVisualizar ? '<div class="badge-visualizacao">👀 Apenas Visualização</div>' : ''}
                             
                             <div class="card-header">
                                 <div class="card-order-info">
@@ -6146,9 +6172,10 @@ function renderizarCardsEquipe(equipes) {
                                     </span>
                                 </div>
                                 <div class="card-actions">
-                                    <button class="action-btn view" title="Ver detalhes">
+                                    <button class="action-btn view" title="${apenasVisualizar ? 'Visualizar detalhes' : 'Ver detalhes'}">
                                         <i class="fas fa-eye"></i>
                                     </button>
+                                    ${apenasVisualizar ? '<span style="font-size: 10px; color: #64748b;">👁️ Somente visualização</span>' : ''}
                                 </div>
                             </div>
                             
@@ -7916,6 +7943,19 @@ function fecharDashboardSatisfacao() {
 
 // Expor função globalmente
 window.abrirDashboardSatisfacao = abrirDashboardSatisfacao;
+
+// Função para mostrar informações de visualização para administradores
+function mostrarInfoVisualizacao(solicitacaoId) {
+    const usuarioAdmin = window.usuarioAdmin || JSON.parse(localStorage.getItem('usuarioAdmin') || '{}');
+    
+    if (usuarioAdmin.role === 'admin') {
+        showToast('Informação', 'Como administrador, você pode visualizar todas as solicitações, mas não pode interagir com elas. Apenas as equipes responsáveis podem dar atendimento às solicitações.', 'info', 5000);
+    } else {
+        showToast('Aviso', 'Você não tem permissão para interagir com esta solicitação.', 'warning');
+    }
+}
+
+window.mostrarInfoVisualizacao = mostrarInfoVisualizacao;
 window.fecharDashboardSatisfacao = fecharDashboardSatisfacao;
 
 // =============== SISTEMA DE RELATÓRIOS ===============

@@ -92,13 +92,37 @@ function temPermissaoJS(usuarioAdmin, permissao) {
 
 // Função para filtrar solicitações por equipe
 function podeVerSolicitacaoJS(usuarioAdmin, solicitacao) {
-  if (!usuarioAdmin) return false;
-  if (usuarioAdmin.role === 'super_admin') return true;
+  console.log('[DEBUG-PERMISSAO] podeVerSolicitacaoJS chamada com:', {
+    usuarioAdmin: !!usuarioAdmin,
+    role: usuarioAdmin?.role,
+    isEquipe: usuarioAdmin?.isEquipe,
+    equipeUsuario: usuarioAdmin?.equipe,
+    equipeSolicitacao: solicitacao?.equipe
+  });
+
+  if (!usuarioAdmin) {
+    console.log('[DEBUG-PERMISSAO] Usuário não encontrado - negando acesso');
+    return false;
+  }
+  
+  if (usuarioAdmin.role === 'super_admin') {
+    console.log('[DEBUG-PERMISSAO] Super admin - permitindo acesso total');
+    return true;
+  }
+  
+  if (usuarioAdmin.role === 'admin') {
+    console.log('[DEBUG-PERMISSAO] Admin - permitindo visualização de todas as solicitações');
+    return true;
+  }
+  
   if (usuarioAdmin.isEquipe && usuarioAdmin.equipe) {
     // Usuário de equipe só vê solicitações da sua equipe
-    return solicitacao.equipe === usuarioAdmin.equipe;
+    const podeVer = solicitacao.equipe === usuarioAdmin.equipe;
+    console.log('[DEBUG-PERMISSAO] Usuário de equipe - acesso:', podeVer);
+    return podeVer;
   }
-  // Para outros casos (admin geral), mostrar todas
+  
+  console.log('[DEBUG-PERMISSAO] Caso padrão - permitindo acesso');
   return true;
 }
 

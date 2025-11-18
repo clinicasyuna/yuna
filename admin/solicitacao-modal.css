@@ -33,3 +33,27 @@
   margin-top: 24px;
   font-size: 1.1em;
 }
+
+/* Estilos para cards de visualização apenas */
+.solicitacao-card.visualizacao-apenas {
+  border: 2px dashed #e5e7eb;
+  background: linear-gradient(135deg, #f9fafb 0%, #f3f4f6 100%);
+}
+
+.badge-visualizacao {
+  position: absolute;
+  top: -8px;
+  right: -8px;
+  background: #3b82f6;
+  color: white;
+  font-size: 10px;
+  padding: 2px 6px;
+  border-radius: 8px;
+  font-weight: bold;
+  z-index: 2;
+}
+
+.solicitacao-card.visualizacao-apenas:hover {
+  transform: none;
+  box-shadow: 0 2px 8px rgba(59, 130, 246, 0.15);
+}
