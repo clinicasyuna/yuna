@@ -3548,6 +3548,7 @@ function atualizarVisibilidadeBotoes() {
     const btnAcompanhantes = document.getElementById('acompanhantes-btn');
     const btnRelatorios = document.getElementById('relatorios-btn');
     const btnLimpeza = document.getElementById('limpeza-btn');
+    const btnSatisfacao = document.getElementById('satisfacao-btn');
     const btnMinhaSenha = document.getElementById('alterar-senha-btn');
     const msgPermissao = document.getElementById('admin-permission-msg');
     const userRoleBadge = document.getElementById('user-role-badge');
@@ -3558,7 +3559,8 @@ function atualizarVisibilidadeBotoes() {
         btnGerenciarUsuarios: !!btnGerenciarUsuarios,
         btnAcompanhantes: !!btnAcompanhantes,
         btnRelatorios: !!btnRelatorios,
-        btnLimpeza: !!btnLimpeza
+        btnLimpeza: !!btnLimpeza,
+        btnSatisfacao: !!btnSatisfacao
     });
     
     debugLog('[DEBUG] Atualizando botões para usuário:', usuarioAdmin);
@@ -3701,6 +3703,19 @@ function atualizarVisibilidadeBotoes() {
             btnLimpeza.classList.add('btn-hide');
             btnLimpeza.style.display = 'none';
             debugLog('[DEBUG] Botão Limpeza ocultado para usuário não super_admin');
+        }
+    }
+
+    // Botão Pesquisa de Satisfação - admin e super_admin
+    if (btnSatisfacao) {
+        if (isSuperAdmin || isAdmin) {
+            btnSatisfacao.classList.remove('btn-hide');
+            btnSatisfacao.style.display = 'inline-flex';
+            debugLog('[DEBUG] Botão Satisfação exibido para admin/super_admin');
+        } else {
+            btnSatisfacao.classList.add('btn-hide');
+            btnSatisfacao.style.display = 'none';
+            debugLog('[DEBUG] Botão Satisfação ocultado para usuário sem permissões de admin');
         }
     }
     
@@ -7123,12 +7138,12 @@ window.testarPesquisaSatisfacao = function() {
 async function abrirDashboardSatisfacao() {
     debugLog('[DEBUG] Abrindo dashboard de satisfação...');
     
-    // Verificar permissões (apenas super_admin)
+    // Verificar permissões (super_admin e admin)
     const usuarioAdmin = window.usuarioAdmin || JSON.parse(localStorage.getItem('usuarioAdmin') || '{}');
     const userRole = window.userRole || usuarioAdmin.role;
     
-    if (!userRole || userRole !== 'super_admin') {
-        showToast('Erro', 'Acesso negado. Apenas super administradores podem ver relatórios de satisfação.', 'error');
+    if (!userRole || (userRole !== 'super_admin' && userRole !== 'admin')) {
+        showToast('Erro', 'Acesso negado. Apenas administradores podem ver relatórios de satisfação.', 'error');
         return;
     }
     
