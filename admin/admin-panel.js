@@ -1671,32 +1671,30 @@ window.mostrarRelatorios = function() {
         
         debugLog('[DEBUG] mostrarRelatorios: verificando se deve carregar solicitações');
         
-        // Carregar dados de relatórios de forma não-bloqueante
-        debugLog('[DEBUG] mostrarRelatorios: carregando dados de relatórios...');
+        // Gerar relatório HTML completo em vez de apenas estatísticas
+        debugLog('[DEBUG] mostrarRelatorios: gerando relatório HTML...');
         
-        // Carregar solicitações para exibir na tela de relatórios
-        setTimeout(() => {
+        // Gerar relatório completo em vez de apenas carregar dados
+        setTimeout(async () => {
             try {
-                if (typeof window.carregarSolicitacoes === 'function') {
-                    window.carregarSolicitacoes();
-                    debugLog('[DEBUG] mostrarRelatorios: solicitações carregadas com sucesso');
+                debugLog('[DEBUG] mostrarRelatorios: chamando gerarRelatorioAdmin...');
+                
+                // Chamar função que gera relatório HTML completo
+                if (typeof window.gerarRelatorioAdmin === 'function') {
+                    await window.gerarRelatorioAdmin();
+                    debugLog('[DEBUG] mostrarRelatorios: relatório HTML gerado com sucesso');
+                } else {
+                    console.error('[ERRO] mostrarRelatorios: função gerarRelatorioAdmin não encontrada');
+                    // Fallback: carregar apenas dados básicos
+                    if (typeof window.carregarSolicitacoes === 'function') {
+                        window.carregarSolicitacoes();
+                    }
                 }
             } catch (error) {
-                console.error('[ERRO] mostrarRelatorios: erro ao carregar solicitações:', error);
+                console.error('[ERRO] mostrarRelatorios: erro ao gerar relatório:', error);
+                showToast('Erro', 'Falha ao gerar relatório', 'error');
             }
         }, 100);
-        
-        // Carregar estatísticas do sistema
-        setTimeout(() => {
-            try {
-                if (typeof window.verificarEstatisticas === 'function') {
-                    window.verificarEstatisticas();
-                    debugLog('[DEBUG] mostrarRelatorios: estatísticas verificadas com sucesso');
-                }
-            } catch (error) {
-                console.error('[ERRO] mostrarRelatorios: erro ao verificar estatísticas:', error);
-            }
-        }, 200);
         
         // Adicionar botões de manutenção apenas para super_admin
         if (userRole === 'super_admin') {
