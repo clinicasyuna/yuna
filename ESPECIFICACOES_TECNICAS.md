@@ -380,4 +380,5 @@ getTTFB(sendToAnalytics);
 **© 2024-2025 Samuel dos Reis Lacerda Junior - Todos os direitos reservados**  
 **Sistema YUNA - Especificações Técnicas Proprietárias**  
 **Desenvolvido por:** Samuel dos Reis Lacerda Junior  
-**CNPJ:** 55.004.442 SAMUEL DOS REIS LACERDA JUNIOR
+**CNPJ:** 55.004.442 SAMUEL DOS REIS LACERDA JUNIOR  
+**Contato:** samukajr82@gmail.com | +55 11 94586-4671

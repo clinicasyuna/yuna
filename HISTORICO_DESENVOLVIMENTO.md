@@ -259,6 +259,7 @@ Nov 2025: 25 commits (v1.0 final)
 **🏥 Sistema YUNA - Desenvolvido com inovação e dedicação**  
 **© 2024-2025 Samuel dos Reis Lacerda Junior - Todos os direitos autorais reservados**  
 **Desenvolvedor:** Samuel dos Reis Lacerda Junior  
-**CNPJ:** 55.004.442 SAMUEL DOS REIS LACERDA JUNIOR
+**CNPJ:** 55.004.442 SAMUEL DOS REIS LACERDA JUNIOR  
+**Contato:** samukajr82@gmail.com | +55 11 94586-4671
 
 *Este documento comprova o histórico completo de desenvolvimento do Sistema YUNA, evidenciando sua originalidade e evolução contínua ao longo de 12 meses de trabalho dedicado por Samuel dos Reis Lacerda Junior.*

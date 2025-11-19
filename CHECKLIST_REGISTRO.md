@@ -92,8 +92,8 @@ powershell Compress-Archive -Path * -DestinationPath "sistema-yuna-codigo-fonte.
 #### **Identificação do Autor:**
 - **Nome completo:** Samuel dos Reis Lacerda Junior
 - **CNPJ:** 55.004.442 SAMUEL DOS REIS LACERDA JUNIOR
-- **Endereço completo:** [Preencher com seu endereço]
-- **Telefone/Email:** [Preencher com seus contatos]
+- **Endereço completo:** Rua Eugene Carrieri nº17 Bloco C AP 81 CEP: 05541-100
+- **Telefone/Email:** +55 11 94586-4671 / samukajr82@gmail.com
 
 #### **Identificação da Obra:**
 - **Título:** Sistema YUNA - Gerenciamento de Solicitações Hospitalares
@@ -202,4 +202,6 @@ O material criado é **profissional e completo**, demonstrando claramente:
 **© 2024-2025 Samuel dos Reis Lacerda Junior - Todos os direitos reservados**  
 **Sistema YUNA - Documentação para Registro de Direitos Autorais Completa**  
 **Desenvolvido por:** Samuel dos Reis Lacerda Junior  
-**CNPJ:** 55.004.442 SAMUEL DOS REIS LACERDA JUNIOR
+**CNPJ:** 55.004.442 SAMUEL DOS REIS LACERDA JUNIOR  
+**Endereço:** Rua Eugene Carrieri nº17 Bloco C AP 81 CEP: 05541-100  
+**Contato:** samukajr82@gmail.com | +55 11 94586-4671
