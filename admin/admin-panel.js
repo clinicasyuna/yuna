@@ -3752,8 +3752,13 @@ function atualizarVisibilidadeBotoes() {
             msgPermissao.style.display = 'block';
             msgPermissao.style.color = '#059669';
             msgPermissao.style.fontWeight = '500';
-        } else if (!isSuperAdmin) {
-            msgPermissao.textContent = 'Sem permissões administrativas';
+        } else if (isAdmin) {
+            // Admin: não mostrar mensagem de permissão (evitar confusão)
+            msgPermissao.classList.add('msg-permissao-hide');
+            msgPermissao.style.display = 'none';
+        } else if (!isSuperAdmin && !isEquipe && !isAdmin) {
+            // Apenas para usuários sem nenhum tipo de permissão definida
+            msgPermissao.textContent = 'Sem permissões definidas';
             msgPermissao.classList.remove('msg-permissao-hide');
             msgPermissao.style.display = 'block';
             msgPermissao.style.color = '#dc2626';
