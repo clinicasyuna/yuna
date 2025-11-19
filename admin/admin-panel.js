@@ -2666,12 +2666,14 @@ async function carregarSolicitacoes() {
         const usuarioAdmin = window.usuarioAdmin || JSON.parse(localStorage.getItem('usuarioAdmin') || '{}');
         const isEquipe = usuarioAdmin && (usuarioAdmin.role === 'equipe' || usuarioAdmin.isEquipe);
         const isSuperAdmin = usuarioAdmin && usuarioAdmin.role === 'super_admin';
+        const isAdmin = usuarioAdmin && usuarioAdmin.role === 'admin';
         
         debugLog('[DEBUG] Carregando para usuário:', { 
             email: usuarioAdmin?.email,
             role: usuarioAdmin?.role, 
             isEquipe, 
-            isSuperAdmin, 
+            isSuperAdmin,
+            isAdmin, 
             equipe: usuarioAdmin?.equipe 
         });
         
@@ -2787,18 +2789,9 @@ async function carregarSolicitacoes() {
             });
             
             // FILTRO RIGOROSO USANDO A FUNÇÃO DE PERMISSÕES
-            console.log('[DEBUG-PERMISSAO] Verificando permissão para:', {
-                solicitacaoId: doc.id,
-                solicitacaoEquipe: data.equipe,
-                usuarioRole: usuarioAdmin.role,
-                usuarioEquipe: usuarioAdmin.equipe,
-                usuarioIsEquipe: usuarioAdmin.isEquipe
-            });
-            
             if (!podeVerSolicitacaoJS(usuarioAdmin, data)) {
                 docsFiltrados++;
                 // Pular esta solicitação se o usuário não tem permissão para vê-la
-                console.log(`[DEBUG] Solicitação filtrada (sem permissão):`, item.titulo || item.tipo, 'equipe:', data.equipe, 'usuário equipe:', usuarioAdmin.equipe, 'role:', usuarioAdmin.role);
                 return;
             }
             
@@ -2880,6 +2873,23 @@ async function carregarSolicitacoes() {
         } else if (isSuperAdmin) {
             // Super admin: mostrar TODAS as equipes
             debugLog('[DEBUG] Renderizando todas as equipes para super admin');
+            
+            // Enriquecer dados antes de renderizar
+            const equipesEnriquecidas = await enriquecerSolicitacoesComDados(equipes);
+            renderizarCardsEquipe(equipesEnriquecidas);
+            
+            // Mostrar todos os painéis
+            setTimeout(() => {
+                const allPanels = document.querySelectorAll('.team-panel');
+                allPanels.forEach(panel => {
+                    panel.classList.remove('hidden');
+                    panel.style.display = 'block';
+                });
+            }, 100);
+            
+        } else if (isAdmin) {
+            // Admin: mostrar TODAS as equipes (apenas visualização)
+            debugLog('[DEBUG] Renderizando todas as equipes para administrador (visualização apenas)');
             
             // Enriquecer dados antes de renderizar
             const equipesEnriquecidas = await enriquecerSolicitacoesComDados(equipes);
@@ -6143,15 +6153,6 @@ function renderizarCardsEquipe(equipes) {
                         const podeInteragir = usuarioAdmin.role === 'super_admin' || 
                                             (usuarioAdmin.isEquipe && usuarioAdmin.equipe === solicitacao.equipe);
                         const apenasVisualizar = usuarioAdmin.role === 'admin' && !usuarioAdmin.isEquipe;
-                        
-                        console.log('[DEBUG-INTERACAO] Permissões do card:', {
-                            solicitacaoId: solicitacao.id,
-                            equipe: solicitacao.equipe,
-                            podeInteragir,
-                            apenasVisualizar,
-                            userRole: usuarioAdmin.role,
-                            userEquipe: usuarioAdmin.equipe
-                        });
                         
                         return `<div class="solicitacao-card ${apenasVisualizar ? 'visualizacao-apenas' : ''}" 
                              data-solicitacao='${JSON.stringify(solicitacao).replace(/'/g, '&apos;')}' 
