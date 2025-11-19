@@ -8277,21 +8277,77 @@ async function exportarDados() {
             return;
         }
 
+        // Debug: Verificar campos de data disponíveis
+        if (solicitacoes.length > 0) {
+            const primeiroItem = solicitacoes[0];
+            console.log('[DEBUG] Campos de data disponíveis na primeira solicitação:', {
+                dataAbertura: primeiroItem.dataAbertura,
+                criadoEm: primeiroItem.criadoEm,
+                dataCriacao: primeiroItem.dataCriacao,
+                createdAt: primeiroItem.createdAt,
+                timestamp: primeiroItem.timestamp,
+                todasAsChaves: Object.keys(primeiroItem).filter(key => 
+                    key.toLowerCase().includes('data') || 
+                    key.toLowerCase().includes('created') || 
+                    key.toLowerCase().includes('time')
+                )
+            });
+        }
+
         // Preparar dados para Excel
-        const dadosExcel = solicitacoes.map(sol => ({
-            'ID': sol.id,
-            'Data/Hora': sol.criadoEm ? new Date(sol.criadoEm).toLocaleString('pt-BR') : '--',
-            'Tipo': sol.tipo || '--',
-            'Equipe': sol.equipe || '--',
-            'Status': sol.status || '--',
-            'Quarto': sol.quarto || '--',
-            'Solicitante': sol.usuarioNome || sol.nome || '--',
-            'Descrição': sol.descricao || '--',
-            'Responsável': sol.responsavel || '--',
-            'Solução': sol.solucao || '--',
-            'TMA (min)': sol.tempoAtendimentoMinutos || '--',
-            'Avaliação': sol.avaliacaoNota ? `${sol.avaliacaoNota}/5 estrelas` : '--'
-        }));
+        const dadosExcel = solicitacoes.map(sol => {
+            // Função para extrair data/hora dos diferentes campos possíveis
+            const extrairDataHora = (solicitacao) => {
+                // Tentar diferentes campos de data em ordem de prioridade
+                const camposData = [
+                    solicitacao.dataAbertura,
+                    solicitacao.criadoEm,
+                    solicitacao.dataCriacao,
+                    solicitacao.createdAt,
+                    solicitacao.timestamp
+                ];
+                
+                for (const campo of camposData) {
+                    if (campo) {
+                        try {
+                            // Se for timestamp do Firebase (objeto com seconds)
+                            if (campo.seconds) {
+                                return new Date(campo.seconds * 1000).toLocaleString('pt-BR');
+                            }
+                            // Se for timestamp normal
+                            else if (typeof campo === 'number') {
+                                return new Date(campo).toLocaleString('pt-BR');
+                            }
+                            // Se for string de data
+                            else if (typeof campo === 'string') {
+                                const data = new Date(campo);
+                                if (!isNaN(data.getTime())) {
+                                    return data.toLocaleString('pt-BR');
+                                }
+                            }
+                        } catch (error) {
+                            console.log('[DEBUG] Erro ao processar campo de data:', campo, error);
+                        }
+                    }
+                }
+                return 'Invalid Date';
+            };
+
+            return {
+                'ID': sol.id,
+                'Data/Hora': extrairDataHora(sol),
+                'Tipo': sol.tipo || '--',
+                'Equipe': sol.equipe || '--',
+                'Status': sol.status || '--',
+                'Quarto': sol.quarto || '--',
+                'Solicitante': sol.usuarioNome || sol.nome || '--',
+                'Descrição': sol.descricao || '--',
+                'Responsável': sol.responsavel || '--',
+                'Solução': sol.solucao || '--',
+                'TMA (min)': sol.tempoAtendimentoMinutos || '--',
+                'Avaliação': sol.avaliacaoNota ? `${sol.avaliacaoNota}/5 estrelas` : '--'
+            };
+        });
 
         // Criar workbook
         const workbook = XLSX.utils.book_new();
