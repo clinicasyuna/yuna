@@ -32,10 +32,13 @@ let limparDadosTeste, verificarEstatisticas, adicionarPainelManutencao;
 // Variável global para controlar o listener de autenticação
 let unsubscribeAuthListener = null;
 let sistemaInicializado = false;
+let logoutEmAndamento = false;
 
 // Função para limpar listeners ativos
 function limparListenersAtivos() {
     try {
+        debugLog('[DEBUG] Iniciando limpeza completa de listeners...');
+        
         // Remover listener de autenticação
         if (unsubscribeAuthListener) {
             unsubscribeAuthListener();
@@ -62,7 +65,16 @@ function limparListenersAtivos() {
             el.removeAttribute('data-listener-active');
         });
         
-        debugLog('[DEBUG] Listeners limpos com sucesso');
+        // Limpar cache do navegador
+        if ('serviceWorker' in navigator) {
+            navigator.serviceWorker.getRegistrations().then(registrations => {
+                registrations.forEach(registration => {
+                    registration.update();
+                });
+            });
+        }
+        
+        debugLog('[DEBUG] Listeners e cache limpos com sucesso');
     } catch (error) {
         console.error('[ERRO] Falha ao limpar listeners:', error);
     }
@@ -1141,6 +1153,13 @@ window.addEventListener('DOMContentLoaded', async function() {
     if (logoutBtn) {
         logoutBtn.onclick = async function() {
             try {
+                // Prevenir logout múltiplo
+                if (logoutEmAndamento) {
+                    console.log('[DEBUG] Logout já em andamento, ignorando...');
+                    return;
+                }
+                logoutEmAndamento = true;
+                
                 debugLog('[DEBUG] Iniciando processo de logout...');
                 
                 // Remover listener de autenticação ANTES do signOut
@@ -1166,8 +1185,10 @@ window.addEventListener('DOMContentLoaded', async function() {
                 // Resetar variáveis de estado
                 sistemaInicializado = false;
                 
-                // Usar função de limpeza completa
-                limparInterfaceCompleta();
+                // Forçar recarregamento da página para limpeza completa
+                setTimeout(() => {
+                    window.location.reload(true);
+                }, 500);
                 
                 // Limpar campos de login
                 const emailField = document.getElementById('login-email');
@@ -3181,6 +3202,12 @@ function configurarListenerNotificacoes() {
     try {
         console.log('[NOTIFICATION] Configurando listener de notificações...');
         
+        // Verificar autenticação ANTES de configurar
+        if (!window.auth?.currentUser) {
+            console.log('[NOTIFICATION] Usuário não autenticado - abortando configuração');
+            return;
+        }
+        
         const usuarioAdmin = window.usuarioAdmin || JSON.parse(localStorage.getItem('usuarioAdmin') || '{}');
         if (!usuarioAdmin || !usuarioAdmin.uid) {
             console.log('[NOTIFICATION] Usuário não está logado - não configurando notificações');
@@ -3281,11 +3308,20 @@ function configurarListenerNotificacoes() {
                 }
             }, (error) => {
                 console.error('[ERRO] Erro no listener de notificações:', error);
-                console.log('[NOTIFICATION] Erro no listener - tentando reconfigurar em 5s...');
-                setTimeout(() => {
+                // NÃO reconfigurar automaticamente após erro - pode ser logout
+                // Verificar se ainda está autenticado antes de tentar reconfigurar
+                if (window.auth?.currentUser && window.usuarioAdmin) {
+                    console.log('[NOTIFICATION] Erro no listener - tentando reconfigurar em 10s...');
+                    setTimeout(() => {
+                        if (window.auth?.currentUser && window.usuarioAdmin) {
+                            window.notificationListenerConfigured = false;
+                            configurarListenerNotificacoes();
+                        }
+                    }, 10000); // Aumentado para 10s
+                } else {
+                    console.log('[NOTIFICATION] Usuário não autenticado - não reconfigurar listener');
                     window.notificationListenerConfigured = false;
-                    configurarListenerNotificacoes();
-                }, 5000);
+                }
             });
             
     } catch (error) {
