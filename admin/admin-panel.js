@@ -8289,6 +8289,33 @@ async function gerarRelatorioAdmin() {
     }
 }
 
+// Função para fechar relatório e voltar ao painel inicial
+function fecharRelatorioEVoltarPainel() {
+    try {
+        // Remover modal de relatório
+        const modal = document.getElementById('modal-relatorio');
+        if (modal) {
+            modal.remove();
+            debugLog('[DEBUG] Modal de relatório removido');
+        }
+        
+        // Voltar para o painel inicial de cards
+        if (typeof window.mostrarSecaoPainel === 'function') {
+            window.mostrarSecaoPainel('painel');
+            debugLog('[DEBUG] Voltando para painel inicial após fechar relatório');
+        } else {
+            console.error('[ERRO] Função mostrarSecaoPainel não disponível');
+            // Fallback: recarregar a página
+            window.location.reload();
+        }
+        
+    } catch (error) {
+        console.error('[ERRO] fecharRelatorioEVoltarPainel:', error);
+        // Em caso de erro, tentar recarregar a página
+        window.location.reload();
+    }
+}
+
 // Função para gerar relatório visual em HTML
 function gerarRelatorioHTML(solicitacoes) {
     const agora = new Date();
@@ -8314,7 +8341,7 @@ function gerarRelatorioHTML(solicitacoes) {
                     <h2 style="margin: 0; color: #1f2937;">📊 Relatório de Solicitações</h2>
                     <p style="margin: 5px 0 0 0; color: #6b7280; font-size: 14px;">Gerado em ${dataRelatorio} às ${horaRelatorio}</p>
                 </div>
-                <button onclick="document.getElementById('modal-relatorio').remove()" 
+                <button onclick="fecharRelatorioEVoltarPainel()" 
                         style="background: #ef4444; color: white; border: none; padding: 8px 12px; border-radius: 6px; cursor: pointer;">
                     <i class="fas fa-times"></i> Fechar
                 </button>
@@ -8380,6 +8407,22 @@ function gerarRelatorioHTML(solicitacoes) {
             </div>
         </div>
     `;
+
+    // Adicionar evento para fechar ao clicar fora do modal
+    modalRelatorio.addEventListener('click', function(e) {
+        if (e.target === modalRelatorio) {
+            fecharRelatorioEVoltarPainel();
+        }
+    });
+
+    // Adicionar evento para fechar com tecla ESC
+    const handleEscape = function(e) {
+        if (e.key === 'Escape') {
+            fecharRelatorioEVoltarPainel();
+            document.removeEventListener('keydown', handleEscape);
+        }
+    };
+    document.addEventListener('keydown', handleEscape);
 
     document.body.appendChild(modalRelatorio);
 }
