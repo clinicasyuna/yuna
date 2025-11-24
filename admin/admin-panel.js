@@ -10538,14 +10538,40 @@ function atualizarContadorAlertas(quantidade) {
 
 // Abrir modal de importação
 function abrirImportacaoLote() {
+    console.log('[IMPORTACAO] Função abrirImportacaoLote chamada');
+    
     const modal = document.getElementById('modal-importacao-lote');
+    console.log('[IMPORTACAO] Modal encontrado:', !!modal);
+    
     if (modal) {
+        console.log('[IMPORTACAO] Removendo classe hidden...');
         modal.classList.remove('hidden');
+        
         // Reset dos campos
-        document.getElementById('arquivo-excel').value = '';
-        document.getElementById('preview-dados').style.display = 'none';
-        document.getElementById('log-importacao').style.display = 'none';
-        document.getElementById('btn-processar').disabled = true;
+        const arquivoInput = document.getElementById('arquivo-excel');
+        const previewDiv = document.getElementById('preview-dados');
+        const logDiv = document.getElementById('log-importacao');
+        const btnProcessar = document.getElementById('btn-processar');
+        
+        console.log('[IMPORTACAO] Elementos encontrados:', {
+            arquivoInput: !!arquivoInput,
+            previewDiv: !!previewDiv,
+            logDiv: !!logDiv,
+            btnProcessar: !!btnProcessar
+        });
+        
+        if (arquivoInput) arquivoInput.value = '';
+        if (previewDiv) previewDiv.style.display = 'none';
+        if (logDiv) logDiv.style.display = 'none';
+        if (btnProcessar) btnProcessar.disabled = true;
+        
+        // Reconfigurar listener do arquivo
+        configurarListenerArquivo();
+        
+        console.log('[IMPORTACAO] Modal aberto com sucesso');
+    } else {
+        console.error('[IMPORTACAO] Modal não encontrado!');
+        showToast('Erro', 'Modal de importação não encontrado', 'error');
     }
 }
 
@@ -10583,18 +10609,41 @@ function baixarModeloExcel() {
     showToast('Sucesso', 'Modelo Excel baixado com sucesso!', 'success');
 }
 
-// Event listener para arquivo Excel
-document.addEventListener('DOMContentLoaded', function() {
+// Event listener para arquivo Excel - configurado imediatamente
+function configurarListenerArquivo() {
     const arquivoInput = document.getElementById('arquivo-excel');
+    console.log('[IMPORTACAO] Configurando listener para arquivo:', !!arquivoInput);
+    
     if (arquivoInput) {
-        arquivoInput.addEventListener('change', function(e) {
-            const arquivo = e.target.files[0];
-            if (arquivo) {
-                lerArquivoExcel(arquivo);
-            }
-        });
+        // Remover listener anterior se existir
+        arquivoInput.removeEventListener('change', handleArquivoChange);
+        // Adicionar novo listener
+        arquivoInput.addEventListener('change', handleArquivoChange);
+        console.log('[IMPORTACAO] Listener configurado com sucesso');
+    } else {
+        console.warn('[IMPORTACAO] Input de arquivo não encontrado');
     }
+}
+
+function handleArquivoChange(e) {
+    console.log('[IMPORTACAO] Arquivo selecionado:', e.target.files[0]?.name);
+    const arquivo = e.target.files[0];
+    if (arquivo) {
+        lerArquivoExcel(arquivo);
+    }
+}
+
+// Configurar listener quando DOM estiver pronto
+document.addEventListener('DOMContentLoaded', function() {
+    console.log('[IMPORTACAO] DOM carregado - configurando listeners...');
+    configurarListenerArquivo();
 });
+
+// Também tentar configurar após um delay (para casos onde o DOM já carregou)
+setTimeout(function() {
+    console.log('[IMPORTACAO] Tentativa de configuração tardia...');
+    configurarListenerArquivo();
+}, 1000);
 
 // Ler e preview do arquivo Excel
 function lerArquivoExcel(arquivo) {
@@ -10808,8 +10857,26 @@ async function processarArquivoExcel() {
     }
 }
 
-// Expor funções globalmente
-window.abrirImportacaoLote = abrirImportacaoLote;
+// Expor funções globalmente com fallbacks
+window.abrirImportacaoLote = function() {
+    console.log('[IMPORTACAO] Função global chamada via window');
+    try {
+        abrirImportacaoLote();
+    } catch (error) {
+        console.error('[IMPORTACAO] Erro na função:', error);
+        alert('Erro ao abrir modal de importação: ' + error.message);
+    }
+};
 window.fecharImportacaoLote = fecharImportacaoLote;
 window.baixarModeloExcel = baixarModeloExcel;
 window.processarArquivoExcel = processarArquivoExcel;
+
+// Função auxiliar para debug
+window.testarImportacao = function() {
+    console.log('[DEBUG] Testando elementos de importação...');
+    console.log('Modal:', !!document.getElementById('modal-importacao-lote'));
+    console.log('Arquivo input:', !!document.getElementById('arquivo-excel'));
+    console.log('Preview div:', !!document.getElementById('preview-dados'));
+    console.log('Função abrirImportacaoLote:', typeof window.abrirImportacaoLote);
+    console.log('XLSX library:', typeof XLSX);
+};
