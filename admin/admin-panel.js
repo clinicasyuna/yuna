@@ -5964,7 +5964,6 @@ window.loginDesenvolvimento = function(email = 'admin@dev.local') {
     if (badge) {
         badge.textContent = 'Admin Desenvolvimento (Dev)';
         badge.className = 'priority-badge priority-media';
-    }
         badge.style.backgroundColor = '#f59e0b'; // Cor diferente para modo dev
     }
     
