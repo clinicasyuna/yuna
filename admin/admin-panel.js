@@ -10533,3 +10533,283 @@ function atualizarContadorAlertas(quantidade) {
         }
     }
 }
+
+// =============== SISTEMA DE IMPORTAÇÃO EM LOTE ===============
+
+// Abrir modal de importação
+function abrirImportacaoLote() {
+    const modal = document.getElementById('modal-importacao-lote');
+    if (modal) {
+        modal.classList.remove('hidden');
+        // Reset dos campos
+        document.getElementById('arquivo-excel').value = '';
+        document.getElementById('preview-dados').style.display = 'none';
+        document.getElementById('log-importacao').style.display = 'none';
+        document.getElementById('btn-processar').disabled = true;
+    }
+}
+
+// Fechar modal de importação
+function fecharImportacaoLote() {
+    const modal = document.getElementById('modal-importacao-lote');
+    if (modal) {
+        modal.classList.add('hidden');
+    }
+}
+
+// Baixar modelo Excel
+function baixarModeloExcel() {
+    const dadosModelo = [
+        ['Nome', 'Email', 'Quarto', 'Senha'],
+        ['João Silva', 'joao.silva@email.com', '101', '123456'],
+        ['Maria Santos', 'maria.santos@email.com', '102', 'senha123'],
+        ['Pedro Costa', 'pedro.costa@email.com', '103', 'minhasenha']
+    ];
+    
+    const wb = XLSX.utils.book_new();
+    const ws = XLSX.utils.aoa_to_sheet(dadosModelo);
+    
+    // Definir largura das colunas
+    ws['!cols'] = [
+        { wch: 20 }, // Nome
+        { wch: 25 }, // Email
+        { wch: 10 }, // Quarto
+        { wch: 15 }  // Senha
+    ];
+    
+    XLSX.utils.book_append_sheet(wb, ws, 'Acompanhantes');
+    XLSX.writeFile(wb, 'modelo_acompanhantes_yuna.xlsx');
+    
+    showToast('Sucesso', 'Modelo Excel baixado com sucesso!', 'success');
+}
+
+// Event listener para arquivo Excel
+document.addEventListener('DOMContentLoaded', function() {
+    const arquivoInput = document.getElementById('arquivo-excel');
+    if (arquivoInput) {
+        arquivoInput.addEventListener('change', function(e) {
+            const arquivo = e.target.files[0];
+            if (arquivo) {
+                lerArquivoExcel(arquivo);
+            }
+        });
+    }
+});
+
+// Ler e preview do arquivo Excel
+function lerArquivoExcel(arquivo) {
+    const reader = new FileReader();
+    reader.onload = function(e) {
+        try {
+            const data = new Uint8Array(e.target.result);
+            const workbook = XLSX.read(data, { type: 'array' });
+            const firstSheet = workbook.Sheets[workbook.SheetNames[0]];
+            const jsonData = XLSX.utils.sheet_to_json(firstSheet, { header: 1 });
+            
+            if (jsonData.length < 2) {
+                showToast('Erro', 'Arquivo deve ter pelo menos 1 linha de dados além do cabeçalho', 'error');
+                return;
+            }
+            
+            // Validar cabeçalho
+            const cabecalho = jsonData[0];
+            const cabecalhoEsperado = ['Nome', 'Email', 'Quarto', 'Senha'];
+            
+            if (!cabecalhoEsperado.every(col => cabecalho.includes(col))) {
+                showToast('Erro', 'Cabeçalho inválido. Esperado: Nome, Email, Quarto, Senha', 'error');
+                return;
+            }
+            
+            // Preparar dados para preview
+            const dados = jsonData.slice(1).filter(row => row.length >= 4 && row[0] && row[1] && row[2] && row[3]);
+            
+            if (dados.length === 0) {
+                showToast('Erro', 'Nenhum dado válido encontrado no arquivo', 'error');
+                return;
+            }
+            
+            if (dados.length > 50) {
+                showToast('Erro', 'Máximo de 50 registros por importação. Arquivo tem ' + dados.length + ' registros', 'error');
+                return;
+            }
+            
+            // Armazenar dados globalmente para processamento
+            window.dadosImportacao = dados;
+            
+            // Mostrar preview
+            mostrarPreviewDados(dados, cabecalho);
+            
+        } catch (error) {
+            console.error('Erro ao ler arquivo:', error);
+            showToast('Erro', 'Erro ao ler arquivo Excel: ' + error.message, 'error');
+        }
+    };
+    reader.readAsArrayBuffer(arquivo);
+}
+
+// Mostrar preview dos dados
+function mostrarPreviewDados(dados, cabecalho) {
+    const previewDiv = document.getElementById('preview-dados');
+    const tabelaDiv = document.getElementById('tabela-preview');
+    const contadorP = document.getElementById('contador-registros');
+    
+    // Criar tabela
+    let tabela = '<table style="width: 100%; border-collapse: collapse;">';
+    tabela += '<thead><tr>';
+    cabecalho.forEach(col => {
+        tabela += `<th style="border: 1px solid #e5e7eb; padding: 8px; background: #f8fafc; text-align: left;">${col}</th>`;
+    });
+    tabela += '</tr></thead><tbody>';
+    
+    dados.slice(0, 10).forEach(row => { // Mostrar apenas 10 primeiras linhas
+        tabela += '<tr>';
+        row.forEach(cell => {
+            tabela += `<td style="border: 1px solid #e5e7eb; padding: 8px;">${cell || ''}</td>`;
+        });
+        tabela += '</tr>';
+    });
+    
+    if (dados.length > 10) {
+        tabela += `<tr><td colspan="${cabecalho.length}" style="border: 1px solid #e5e7eb; padding: 8px; text-align: center; font-style: italic; color: #6b7280;">... e mais ${dados.length - 10} registros</td></tr>`;
+    }
+    
+    tabela += '</tbody></table>';
+    
+    tabelaDiv.innerHTML = tabela;
+    contadorP.textContent = `Total: ${dados.length} acompanhantes para importar`;
+    previewDiv.style.display = 'block';
+    
+    // Habilitar botão de processar
+    document.getElementById('btn-processar').disabled = false;
+    
+    showToast('Sucesso', `Arquivo carregado com ${dados.length} registros válidos`, 'success');
+}
+
+// Processar importação em lote
+async function processarArquivoExcel() {
+    if (!window.dadosImportacao || window.dadosImportacao.length === 0) {
+        showToast('Erro', 'Nenhum dado para importar', 'error');
+        return;
+    }
+    
+    const usuarioAdmin = window.usuarioAdmin || JSON.parse(localStorage.getItem('usuarioAdmin') || '{}');
+    if (!usuarioAdmin.role || usuarioAdmin.role !== 'super_admin') {
+        showToast('Erro', 'Apenas Super Administradores podem importar em lote', 'error');
+        return;
+    }
+    
+    const btnProcessar = document.getElementById('btn-processar');
+    const logDiv = document.getElementById('log-importacao');
+    const resultadoDiv = document.getElementById('resultado-importacao');
+    
+    btnProcessar.disabled = true;
+    btnProcessar.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Processando...';
+    logDiv.style.display = 'block';
+    resultadoDiv.innerHTML = '';
+    
+    let sucessos = 0;
+    let erros = 0;
+    const logs = [];
+    
+    try {
+        for (let i = 0; i < window.dadosImportacao.length; i++) {
+            const [nome, email, quarto, senha] = window.dadosImportacao[i];
+            
+            try {
+                // Validações básicas
+                if (!nome || !email || !quarto || !senha) {
+                    throw new Error('Dados incompletos');
+                }
+                
+                if (!email.includes('@')) {
+                    throw new Error('E-mail inválido');
+                }
+                
+                if (senha.length < 6) {
+                    throw new Error('Senha deve ter pelo menos 6 caracteres');
+                }
+                
+                // Verificar se quarto já está ocupado
+                const quartoOcupado = await window.db.collection('quartos_ocupados').doc(quarto.toString()).get();
+                if (quartoOcupado.exists) {
+                    throw new Error(`Quarto ${quarto} já está ocupado`);
+                }
+                
+                // Verificar se e-mail já existe
+                const emailExiste = await window.db.collection('usuarios_acompanhantes')
+                    .where('email', '==', email).get();
+                if (!emailExiste.empty) {
+                    throw new Error('E-mail já cadastrado');
+                }
+                
+                // Criar acompanhante
+                const acompanhanteId = window.db.collection('usuarios_acompanhantes').doc().id;
+                
+                const dadosAcompanhante = {
+                    nome: nome,
+                    email: email,
+                    quarto: quarto.toString(),
+                    senha: senha,
+                    tipo: 'acompanhante',
+                    ativo: true,
+                    preCadastro: true,
+                    criadoEm: new Date().toISOString(),
+                    criadoPor: usuarioAdmin.nome || 'Sistema',
+                    id: acompanhanteId,
+                    importadoEm: new Date().toISOString()
+                };
+                
+                await window.db.collection('usuarios_acompanhantes').doc(acompanhanteId).set(dadosAcompanhante);
+                
+                // Registrar ocupação do quarto
+                await window.db.collection('quartos_ocupados').doc(quarto.toString()).set({
+                    acompanhanteId: acompanhanteId,
+                    acompanhanteNome: nome,
+                    acompanhanteEmail: email,
+                    ocupadoEm: new Date().toISOString()
+                });
+                
+                sucessos++;
+                logs.push(`✅ ${nome} (${email}) - Quarto ${quarto}: Criado com sucesso`);
+                
+            } catch (error) {
+                erros++;
+                logs.push(`❌ ${nome} (${email}) - Quarto ${quarto}: ${error.message}`);
+            }
+            
+            // Atualizar log em tempo real
+            resultadoDiv.innerHTML = logs.join('<br>') + `<br><br><strong>Processando... ${i + 1}/${window.dadosImportacao.length}</strong>`;
+            resultadoDiv.scrollTop = resultadoDiv.scrollHeight;
+            
+            // Pequeno delay para não sobrecarregar o Firebase
+            await new Promise(resolve => setTimeout(resolve, 100));
+        }
+        
+        // Resultado final
+        resultadoDiv.innerHTML = logs.join('<br>') + 
+            `<br><br><strong>🎉 IMPORTAÇÃO CONCLUÍDA!</strong><br>` +
+            `✅ Sucessos: ${sucessos}<br>` +
+            `❌ Erros: ${erros}<br>` +
+            `📊 Total processado: ${window.dadosImportacao.length}`;
+        
+        showToast('Sucesso', `Importação concluída! ${sucessos} sucessos, ${erros} erros`, 'success');
+        
+        // Recarregar lista de acompanhantes se estiver visível
+        if (typeof window.carregarAcompanhantes === 'function') {
+            window.carregarAcompanhantes();
+        }
+        
+    } catch (error) {
+        console.error('Erro na importação:', error);
+        showToast('Erro', 'Erro durante a importação: ' + error.message, 'error');
+    } finally {
+        btnProcessar.disabled = false;
+        btnProcessar.innerHTML = '<i class="fas fa-upload"></i> Importar Dados';
+    }
+}
+
+// Expor funções globalmente
+window.abrirImportacaoLote = abrirImportacaoLote;
+window.fecharImportacaoLote = fecharImportacaoLote;
+window.baixarModeloExcel = baixarModeloExcel;
+window.processarArquivoExcel = processarArquivoExcel;
