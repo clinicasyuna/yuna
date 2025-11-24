@@ -10861,7 +10861,22 @@ async function processarArquivoExcel() {
 window.abrirImportacaoLote = function() {
     console.log('[IMPORTACAO] Função global chamada via window');
     try {
-        abrirImportacaoLote();
+        const modal = document.getElementById('modal-importacao-lote');
+        if (modal) {
+            modal.classList.remove('hidden');
+            // Reset dos campos
+            const arquivoInput = document.getElementById('arquivo-excel');
+            const previewDiv = document.getElementById('preview-dados');
+            const logDiv = document.getElementById('log-importacao');
+            const btnProcessar = document.getElementById('btn-processar');
+            
+            if (arquivoInput) arquivoInput.value = '';
+            if (previewDiv) previewDiv.style.display = 'none';
+            if (logDiv) logDiv.style.display = 'none';
+            if (btnProcessar) btnProcessar.disabled = true;
+            
+            configurarListenerArquivo();
+        }
     } catch (error) {
         console.error('[IMPORTACAO] Erro na função:', error);
         alert('Erro ao abrir modal de importação: ' + error.message);
