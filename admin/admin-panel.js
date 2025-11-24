@@ -1294,13 +1294,20 @@ window.handleLogin = async function(event) {
         // Atualiza badge do menu imediatamente
         const badge = document.getElementById('user-role-badge');
         if (badge) {
-            // Exibe o papel correto do usuário
-            if (window.usuarioAdmin && window.usuarioAdmin.role === 'super_admin') {
-                badge.textContent = 'Super Administrador';
-            } else if (window.usuarioAdmin && window.usuarioAdmin.role === 'admin') {
-                badge.textContent = 'Administrador';
+            // Exibe o papel correto do usuário com nome personalizado
+            const usuario = window.usuarioAdmin;
+            const nomeUsuario = usuario?.nome || usuario?.nomeCompleto || usuario?.email?.split('@')[0] || 'Usuário';
+            
+            if (usuario && usuario.role === 'super_admin') {
+                badge.textContent = `${nomeUsuario} (Super Admin)`;
+            } else if (usuario && usuario.role === 'admin') {
+                badge.textContent = `${nomeUsuario} (Admin)`;
+            } else if (usuario && usuario.isEquipe) {
+                // Para equipe, mostrar nome + departamento
+                const departamento = usuario.equipe ? ` - ${usuario.equipe}` : '';
+                badge.textContent = `${nomeUsuario}${departamento}`;
             } else {
-                badge.textContent = 'Equipe';
+                badge.textContent = `${nomeUsuario} (Equipe)`;
             }
         }
         
@@ -3530,18 +3537,25 @@ function mostrarInterfaceVazia() {
 }
 
 function atualizarMetricasPainel(total, pendentes, finalizadasHoje, quartosAtivos) {
-    // Atualiza badge do menu para mostrar o papel do usuário
+    // Atualiza badge do menu para mostrar o papel do usuário com nome personalizado
     const badge = document.getElementById('user-role-badge');
     if (badge) {
         const usuario = window.usuarioAdmin || JSON.parse(localStorage.getItem('usuarioAdmin') || '{}');
+        const nomeUsuario = usuario?.nome || usuario?.nomeCompleto || usuario?.email?.split('@')[0] || 'Usuário';
+        
         if (usuario.role === 'super_admin') {
-            badge.textContent = 'Super Administrador';
+            badge.textContent = `${nomeUsuario} (Super Admin)`;
             badge.className = 'priority-badge priority-urgente';
         } else if (usuario.role === 'admin') {
-            badge.textContent = 'Administrador';
+            badge.textContent = `${nomeUsuario} (Admin)`;
             badge.className = 'priority-badge priority-alta';
+        } else if (usuario.isEquipe) {
+            // Para equipe, mostrar nome + departamento
+            const departamento = usuario.equipe ? ` - ${usuario.equipe}` : '';
+            badge.textContent = `${nomeUsuario}${departamento}`;
+            badge.className = 'priority-badge priority-media';
         } else {
-            badge.textContent = 'Equipe';
+            badge.textContent = `${nomeUsuario} (Equipe)`;
             badge.className = 'priority-badge priority-media';
         }
     }
@@ -3758,20 +3772,17 @@ function atualizarVisibilidadeBotoes() {
     }
     
     if (userRoleBadge) {
+        const nomeUsuario = usuarioAdmin?.nome || usuarioAdmin?.nomeCompleto || usuarioAdmin?.email?.split('@')[0] || 'Usuário';
+        
         if (isSuperAdmin) {
-            userRoleBadge.textContent = 'Super Administrador';
+            userRoleBadge.textContent = `${nomeUsuario} (Super Admin)`;
             userRoleBadge.className = 'priority-badge priority-alta';
         } else if (isEquipe && usuarioAdmin.equipe) {
-            const nomeEquipe = {
-                'manutencao': 'Equipe Manutenção',
-                'nutricao': 'Equipe Nutrição',
-                'higienizacao': 'Equipe Higienização', 
-                'hotelaria': 'Equipe Hotelaria'
-            }[usuarioAdmin.equipe] || `Equipe ${usuarioAdmin.equipe}`;
-            userRoleBadge.textContent = nomeEquipe;
+            const departamento = usuarioAdmin.equipe;
+            userRoleBadge.textContent = `${nomeUsuario} - ${departamento}`;
             userRoleBadge.className = 'priority-badge priority-media';
         } else if (isAdmin) {
-            userRoleBadge.textContent = 'Administrador';
+            userRoleBadge.textContent = `${nomeUsuario} (Admin)`;
             userRoleBadge.className = 'priority-badge priority-media';
         }
     }
@@ -5951,7 +5962,9 @@ window.loginDesenvolvimento = function(email = 'admin@dev.local') {
     // Atualizar badge
     const badge = document.getElementById('user-role-badge');
     if (badge) {
-        badge.textContent = 'Admin Desenvolvimento';
+        badge.textContent = 'Admin Desenvolvimento (Dev)';
+        badge.className = 'priority-badge priority-media';
+    }
         badge.style.backgroundColor = '#f59e0b'; // Cor diferente para modo dev
     }
     
