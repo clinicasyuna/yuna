@@ -42,6 +42,20 @@ function limparListenersAtivos() {
             unsubscribeAuthListener = null;
         }
         
+        // Remover listener de notificações
+        if (window.notificationUnsubscribe) {
+            window.notificationUnsubscribe();
+            window.notificationUnsubscribe = null;
+        }
+        
+        // Resetar flags de configuração
+        window.notificationListenerConfigured = false;
+        window.lastNotificationCheck = null;
+        window.isInitialLoad = false;
+        
+        // Parar qualquer carregamento em andamento
+        window.carregandoSolicitacoes = false;
+        
         // Limpar outros listeners se necessário
         const elements = document.querySelectorAll('[data-listener-active]');
         elements.forEach(el => {
@@ -392,6 +406,19 @@ function limparInterfaceCompleta() {
         if (container) {
             container.style.display = 'none';
         }
+        
+        // Limpar conteúdo dos cards de solicitações
+        const teamsGrid = document.querySelector('.teams-grid');
+        if (teamsGrid) {
+            teamsGrid.innerHTML = '';
+            teamsGrid.style.display = 'none';
+        }
+        
+        // Limpar todos os cards de solicitação
+        const solicitationCards = document.querySelectorAll('.solicitation-card, .team-card');
+        solicitationCards.forEach(card => {
+            card.remove();
+        });
         
         // Resetar estilo da página principal
         const main = document.querySelector('main');
@@ -2644,6 +2671,22 @@ let carregandoSolicitacoes = false;
 let timeoutRecarregar = null;
 
 async function carregarSolicitacoes() {
+    // Verificar se o usuário ainda está autenticado
+    if (!window.auth?.currentUser) {
+        console.error('[ERRO] Usuário não autenticado!');
+        return;
+    }
+    
+    // Verificar se está em processo de logout
+    if (!window.usuarioAdmin) {
+        console.warn('[AVISO] Dados do usuário não disponíveis - possível logout em andamento');
+        return;
+    }
+    // Verificar se o usuário ainda está autenticado
+    if (!window.auth?.currentUser) {
+        console.error('[ERRO] Usuário não autenticado!');
+        return;
+    }
     // Verificar se já está carregando para evitar loops
     if (window.carregandoSolicitacoes) {
         console.log('[DEBUG] carregarSolicitacoes já está executando, ignorando...');
@@ -3166,7 +3209,7 @@ function configurarListenerNotificacoes() {
         }, 2000); // Reduzido para 2 segundos para permitir notificações mais rápido
         
         // Listener para novas solicitações (SEM ORDERBY para evitar problemas de índice)
-        window.db.collection('solicitacoes')
+        window.notificationUnsubscribe = window.db.collection('solicitacoes')
             .onSnapshot((snapshot) => {
                 console.log('[NOTIFICATION] Snapshot recebido:', {
                     size: snapshot.size,
