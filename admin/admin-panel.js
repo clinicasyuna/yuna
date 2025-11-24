@@ -28,6 +28,53 @@ function debugLog(message, ...args) {
 // Declarações para evitar problemas de ordem de carregamento
 let limparDadosTeste, verificarEstatisticas, adicionarPainelManutencao;
 
+// === CONTROLE DE LISTENERS ===
+// Variável global para controlar o listener de autenticação
+let unsubscribeAuthListener = null;
+let sistemaInicializado = false;
+
+// Função para limpar listeners ativos
+function limparListenersAtivos() {
+    try {
+        // Remover listener de autenticação
+        if (unsubscribeAuthListener) {
+            unsubscribeAuthListener();
+            unsubscribeAuthListener = null;
+        }
+        
+        // Limpar outros listeners se necessário
+        const elements = document.querySelectorAll('[data-listener-active]');
+        elements.forEach(el => {
+            el.removeAttribute('data-listener-active');
+        });
+        
+        debugLog('[DEBUG] Listeners limpos com sucesso');
+    } catch (error) {
+        console.error('[ERRO] Falha ao limpar listeners:', error);
+    }
+}
+
+// Função para limpar listeners ativos
+function limparListenersAtivos() {
+    try {
+        // Remover listener de autenticação
+        if (unsubscribeAuthListener) {
+            unsubscribeAuthListener();
+            unsubscribeAuthListener = null;
+        }
+        
+        // Limpar outros listeners se necessário
+        const elements = document.querySelectorAll('[data-listener-active]');
+        elements.forEach(el => {
+            el.removeAttribute('data-listener-active');
+        });
+        
+        debugLog('[DEBUG] Listeners limpos com sucesso');
+    } catch (error) {
+        console.error('[ERRO] Falha ao limpar listeners:', error);
+    }
+}
+
 // === LIMPEZA IMEDIATA DE CACHE AGRESSIVA ===
 (function forceCleanupDebugElements() {
     
@@ -810,7 +857,13 @@ window.addEventListener('DOMContentLoaded', async function() {
     
     // Listener de autenticação persistente (apenas se Firebase OK)
     if (window.auth) {
-        window.auth.onAuthStateChanged(async function(user) {
+        // Remover listener anterior se existir
+        if (unsubscribeAuthListener) {
+            unsubscribeAuthListener();
+            unsubscribeAuthListener = null;
+        }
+        
+        unsubscribeAuthListener = window.auth.onAuthStateChanged(async function(user) {
             try {
                 if (user) {
                     debugLog('[DEBUG] Usuário autenticado:', user.email);
@@ -1063,6 +1116,12 @@ window.addEventListener('DOMContentLoaded', async function() {
             try {
                 debugLog('[DEBUG] Iniciando processo de logout...');
                 
+                // Remover listener de autenticação ANTES do signOut
+                if (unsubscribeAuthListener) {
+                    unsubscribeAuthListener();
+                    unsubscribeAuthListener = null;
+                }
+                
                 // Registrar logout em auditoria
                 if (window.registrarLogAuditoria) {
                     window.registrarLogAuditoria('USER_LOGOUT', {
@@ -1073,6 +1132,12 @@ window.addEventListener('DOMContentLoaded', async function() {
                 
                 // Fazer logout do Firebase
                 await window.auth.signOut();
+                
+                // Limpar listeners ativos
+                limparListenersAtivos();
+                
+                // Resetar variáveis de estado
+                sistemaInicializado = false;
                 
                 // Usar função de limpeza completa
                 limparInterfaceCompleta();
