@@ -1708,3 +1708,54 @@ h2.finalizar-solicitacao {
 .hidden {
   display: none !important;
 }
+
+/* Estilo do cronômetro nos cards */
+.card-timer {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 0.875rem;
+  font-weight: 600;
+  background: rgba(245, 158, 11, 0.1);
+  padding: 4px 8px;
+  border-radius: 6px;
+  min-width: fit-content;
+}
+
+.card-timer i {
+  font-size: 0.75rem;
+}
+
+/* Variações de cor para diferentes status */
+.solicitacao-card[data-status="finalizada"] .card-timer {
+  background: rgba(16, 185, 129, 0.1);
+}
+
+.solicitacao-card[data-status="em-andamento"] .card-timer {
+  background: rgba(59, 130, 246, 0.1);
+}
+
+.solicitacao-card[data-status="pendente"] .card-timer {
+  background: rgba(245, 158, 11, 0.1);
+}
+
+/* Melhorar layout da meta area */
+.card-meta {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 12px;
+  padding-top: 8px;
+  border-top: 1px solid #f1f5f9;
+}
+
+.card-time {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 0.75rem;
+  color: #64748b;
+  min-width: fit-content;
+}

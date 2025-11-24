@@ -28,79 +28,6 @@ function debugLog(message, ...args) {
 // Declarações para evitar problemas de ordem de carregamento
 let limparDadosTeste, verificarEstatisticas, adicionarPainelManutencao;
 
-// === CONTROLE DE LISTENERS ===
-// Variável global para controlar o listener de autenticação
-let unsubscribeAuthListener = null;
-let sistemaInicializado = false;
-let logoutEmAndamento = false;
-
-// Função para limpar listeners ativos
-function limparListenersAtivos() {
-    try {
-        debugLog('[DEBUG] Iniciando limpeza completa de listeners...');
-        
-        // Remover listener de autenticação
-        if (unsubscribeAuthListener) {
-            unsubscribeAuthListener();
-            unsubscribeAuthListener = null;
-        }
-        
-        // Remover listener de notificações
-        if (window.notificationUnsubscribe) {
-            window.notificationUnsubscribe();
-            window.notificationUnsubscribe = null;
-        }
-        
-        // Resetar flags de configuração
-        window.notificationListenerConfigured = false;
-        window.lastNotificationCheck = null;
-        window.isInitialLoad = false;
-        
-        // Parar qualquer carregamento em andamento
-        window.carregandoSolicitacoes = false;
-        
-        // Limpar outros listeners se necessário
-        const elements = document.querySelectorAll('[data-listener-active]');
-        elements.forEach(el => {
-            el.removeAttribute('data-listener-active');
-        });
-        
-        // Limpar cache do navegador
-        if ('serviceWorker' in navigator) {
-            navigator.serviceWorker.getRegistrations().then(registrations => {
-                registrations.forEach(registration => {
-                    registration.update();
-                });
-            });
-        }
-        
-        debugLog('[DEBUG] Listeners e cache limpos com sucesso');
-    } catch (error) {
-        console.error('[ERRO] Falha ao limpar listeners:', error);
-    }
-}
-
-// Função para limpar listeners ativos
-function limparListenersAtivos() {
-    try {
-        // Remover listener de autenticação
-        if (unsubscribeAuthListener) {
-            unsubscribeAuthListener();
-            unsubscribeAuthListener = null;
-        }
-        
-        // Limpar outros listeners se necessário
-        const elements = document.querySelectorAll('[data-listener-active]');
-        elements.forEach(el => {
-            el.removeAttribute('data-listener-active');
-        });
-        
-        debugLog('[DEBUG] Listeners limpos com sucesso');
-    } catch (error) {
-        console.error('[ERRO] Falha ao limpar listeners:', error);
-    }
-}
-
 // === LIMPEZA IMEDIATA DE CACHE AGRESSIVA ===
 (function forceCleanupDebugElements() {
     
@@ -418,19 +345,6 @@ function limparInterfaceCompleta() {
         if (container) {
             container.style.display = 'none';
         }
-        
-        // Limpar conteúdo dos cards de solicitações
-        const teamsGrid = document.querySelector('.teams-grid');
-        if (teamsGrid) {
-            teamsGrid.innerHTML = '';
-            teamsGrid.style.display = 'none';
-        }
-        
-        // Limpar todos os cards de solicitação
-        const solicitationCards = document.querySelectorAll('.solicitation-card, .team-card');
-        solicitationCards.forEach(card => {
-            card.remove();
-        });
         
         // Resetar estilo da página principal
         const main = document.querySelector('main');
@@ -896,13 +810,7 @@ window.addEventListener('DOMContentLoaded', async function() {
     
     // Listener de autenticação persistente (apenas se Firebase OK)
     if (window.auth) {
-        // Remover listener anterior se existir
-        if (unsubscribeAuthListener) {
-            unsubscribeAuthListener();
-            unsubscribeAuthListener = null;
-        }
-        
-        unsubscribeAuthListener = window.auth.onAuthStateChanged(async function(user) {
+        window.auth.onAuthStateChanged(async function(user) {
             try {
                 if (user) {
                     debugLog('[DEBUG] Usuário autenticado:', user.email);
@@ -1153,20 +1061,7 @@ window.addEventListener('DOMContentLoaded', async function() {
     if (logoutBtn) {
         logoutBtn.onclick = async function() {
             try {
-                // Prevenir logout múltiplo
-                if (logoutEmAndamento) {
-                    console.log('[DEBUG] Logout já em andamento, ignorando...');
-                    return;
-                }
-                logoutEmAndamento = true;
-                
                 debugLog('[DEBUG] Iniciando processo de logout...');
-                
-                // Remover listener de autenticação ANTES do signOut
-                if (unsubscribeAuthListener) {
-                    unsubscribeAuthListener();
-                    unsubscribeAuthListener = null;
-                }
                 
                 // Registrar logout em auditoria
                 if (window.registrarLogAuditoria) {
@@ -1179,16 +1074,8 @@ window.addEventListener('DOMContentLoaded', async function() {
                 // Fazer logout do Firebase
                 await window.auth.signOut();
                 
-                // Limpar listeners ativos
-                limparListenersAtivos();
-                
-                // Resetar variáveis de estado
-                sistemaInicializado = false;
-                
-                // Forçar recarregamento da página para limpeza completa
-                setTimeout(() => {
-                    window.location.reload(true);
-                }, 500);
+                // Usar função de limpeza completa
+                limparInterfaceCompleta();
                 
                 // Limpar campos de login
                 const emailField = document.getElementById('login-email');
@@ -2692,22 +2579,6 @@ let carregandoSolicitacoes = false;
 let timeoutRecarregar = null;
 
 async function carregarSolicitacoes() {
-    // Verificar se o usuário ainda está autenticado
-    if (!window.auth?.currentUser) {
-        console.error('[ERRO] Usuário não autenticado!');
-        return;
-    }
-    
-    // Verificar se está em processo de logout
-    if (!window.usuarioAdmin) {
-        console.warn('[AVISO] Dados do usuário não disponíveis - possível logout em andamento');
-        return;
-    }
-    // Verificar se o usuário ainda está autenticado
-    if (!window.auth?.currentUser) {
-        console.error('[ERRO] Usuário não autenticado!');
-        return;
-    }
     // Verificar se já está carregando para evitar loops
     if (window.carregandoSolicitacoes) {
         console.log('[DEBUG] carregarSolicitacoes já está executando, ignorando...');
@@ -3202,12 +3073,6 @@ function configurarListenerNotificacoes() {
     try {
         console.log('[NOTIFICATION] Configurando listener de notificações...');
         
-        // Verificar autenticação ANTES de configurar
-        if (!window.auth?.currentUser) {
-            console.log('[NOTIFICATION] Usuário não autenticado - abortando configuração');
-            return;
-        }
-        
         const usuarioAdmin = window.usuarioAdmin || JSON.parse(localStorage.getItem('usuarioAdmin') || '{}');
         if (!usuarioAdmin || !usuarioAdmin.uid) {
             console.log('[NOTIFICATION] Usuário não está logado - não configurando notificações');
@@ -3236,7 +3101,7 @@ function configurarListenerNotificacoes() {
         }, 2000); // Reduzido para 2 segundos para permitir notificações mais rápido
         
         // Listener para novas solicitações (SEM ORDERBY para evitar problemas de índice)
-        window.notificationUnsubscribe = window.db.collection('solicitacoes')
+        window.db.collection('solicitacoes')
             .onSnapshot((snapshot) => {
                 console.log('[NOTIFICATION] Snapshot recebido:', {
                     size: snapshot.size,
@@ -3308,20 +3173,11 @@ function configurarListenerNotificacoes() {
                 }
             }, (error) => {
                 console.error('[ERRO] Erro no listener de notificações:', error);
-                // NÃO reconfigurar automaticamente após erro - pode ser logout
-                // Verificar se ainda está autenticado antes de tentar reconfigurar
-                if (window.auth?.currentUser && window.usuarioAdmin) {
-                    console.log('[NOTIFICATION] Erro no listener - tentando reconfigurar em 10s...');
-                    setTimeout(() => {
-                        if (window.auth?.currentUser && window.usuarioAdmin) {
-                            window.notificationListenerConfigured = false;
-                            configurarListenerNotificacoes();
-                        }
-                    }, 10000); // Aumentado para 10s
-                } else {
-                    console.log('[NOTIFICATION] Usuário não autenticado - não reconfigurar listener');
+                console.log('[NOTIFICATION] Erro no listener - tentando reconfigurar em 5s...');
+                setTimeout(() => {
                     window.notificationListenerConfigured = false;
-                }
+                    configurarListenerNotificacoes();
+                }, 5000);
             });
             
     } catch (error) {
@@ -6171,82 +6027,6 @@ function renderizarCardsEquipe(equipes) {
         }
     }
     
-    // Função para calcular tempo decorrido de atendimento
-    function calcularTempoAtendimento(solicitacao) {
-        try {
-            let dataInicio = null;
-            
-            // Tentar obter data de início do cronômetro
-            if (solicitacao.cronometro && solicitacao.cronometro.inicio) {
-                if (typeof solicitacao.cronometro.inicio.toDate === 'function') {
-                    dataInicio = solicitacao.cronometro.inicio.toDate();
-                } else {
-                    dataInicio = new Date(solicitacao.cronometro.inicio);
-                }
-            }
-            // Fallback para data de abertura
-            else if (solicitacao.dataAbertura) {
-                if (typeof solicitacao.dataAbertura.toDate === 'function') {
-                    dataInicio = solicitacao.dataAbertura.toDate();
-                } else {
-                    dataInicio = new Date(solicitacao.dataAbertura);
-                }
-            }
-            // Fallback para criadoEm
-            else if (solicitacao.criadoEm) {
-                if (typeof solicitacao.criadoEm.toDate === 'function') {
-                    dataInicio = solicitacao.criadoEm.toDate();
-                } else {
-                    dataInicio = new Date(solicitacao.criadoEm);
-                }
-            }
-            
-            if (!dataInicio || isNaN(dataInicio.getTime())) {
-                return 'Tempo indisponível';
-            }
-            
-            const agora = new Date();
-            const diffTime = agora - dataInicio;
-            const diffMinutes = Math.floor(diffTime / (1000 * 60));
-            const diffHours = Math.floor(diffMinutes / 60);
-            const diffDays = Math.floor(diffHours / 24);
-            
-            // Se a solicitação foi finalizada, mostrar tempo total
-            if (solicitacao.status === 'finalizada') {
-                let dataFim = null;
-                if (solicitacao.dataFinalizacao) {
-                    if (typeof solicitacao.dataFinalizacao.toDate === 'function') {
-                        dataFim = solicitacao.dataFinalizacao.toDate();
-                    } else {
-                        dataFim = new Date(solicitacao.dataFinalizacao);
-                    }
-                    const tempoTotal = Math.floor((dataFim - dataInicio) / (1000 * 60));
-                    const horasTotal = Math.floor(tempoTotal / 60);
-                    const minutosTotal = tempoTotal % 60;
-                    
-                    if (horasTotal > 0) {
-                        return `✓ ${horasTotal}h ${minutosTotal}min`;
-                    } else {
-                        return `✓ ${minutosTotal}min`;
-                    }
-                }
-            }
-            
-            // Para solicitações ativas, mostrar tempo em execução
-            if (diffDays > 0) {
-                return `⏱️ ${diffDays}d ${diffHours % 24}h`;
-            } else if (diffHours > 0) {
-                return `⏱️ ${diffHours}h ${diffMinutes % 60}min`;
-            } else {
-                return `⏱️ ${diffMinutes}min`;
-            }
-            
-        } catch (error) {
-            console.error('[ERRO] Falha ao calcular tempo de atendimento:', error);
-            return 'Erro no tempo';
-        }
-    }
-    
     // Função para obter prioridade visual baseada no status e tempo
     function obterPrioridade(solicitacao) {
         if (solicitacao.status === 'finalizada') return 'baixa';
@@ -6380,7 +6160,6 @@ function renderizarCardsEquipe(equipes) {
                         const apenasVisualizar = usuarioAdmin.role === 'admin' && !usuarioAdmin.isEquipe;
                         
                         return `<div class="solicitacao-card ${apenasVisualizar ? 'visualizacao-apenas' : ''}" 
-                             data-id="${solicitacao.id}"
                              data-solicitacao='${JSON.stringify(solicitacao).replace(/'/g, '&apos;')}' 
                              data-equipe="${equipe}" 
                              data-index="${index}" 
@@ -6470,12 +6249,6 @@ function renderizarCardsEquipe(equipes) {
                                     <i class="fas fa-clock"></i>
                                     <span>${formatarDataHora(solicitacao.dataCriacao)}</span>
                                 </div>
-                                <div class="card-timer" title="Tempo de atendimento">
-                                    <i class="fas fa-stopwatch" style="color: ${solicitacao.status === 'finalizada' ? '#10b981' : '#f59e0b'};"></i>
-                                    <span style="color: ${solicitacao.status === 'finalizada' ? '#10b981' : '#f59e0b'}; font-weight: 600;">
-                                        ${calcularTempoAtendimento(solicitacao)}
-                                    </span>
-                                </div>
                                 <div class="card-priority priority-${obterPrioridade(solicitacao)}">
                                     ${obterPrioridade(solicitacao) === 'alta' ? '🔴' : 
                                       obterPrioridade(solicitacao) === 'media' ? '🟡' : 
@@ -6494,68 +6267,7 @@ function renderizarCardsEquipe(equipes) {
     // Adicionar eventos aos cards após renderização
     adicionarEventosSolicitacoes();
     
-    // Iniciar atualização automática dos cronômetros
-    iniciarAtualizacaoTempos();
-    
     console.log(`[DEBUG] Cards renderizados para ${equipesParaMostrar.length} equipe(s)`);
-}
-
-// === ATUALIZAÇÃO AUTOMÁTICA DOS CRONÔMETROS ===
-let intervaloCronometros = null;
-
-function iniciarAtualizacaoTempos() {
-    // Limpar intervalo anterior se existir
-    if (intervaloCronometros) {
-        clearInterval(intervaloCronometros);
-    }
-    
-    // Atualizar cronômetros a cada 30 segundos
-    intervaloCronometros = setInterval(() => {
-        atualizarCronometrosNaTela();
-    }, 30000);
-    
-    console.log('[DEBUG] Atualização automática dos cronômetros iniciada');
-}
-
-function atualizarCronometrosNaTela() {
-    if (!cachedSolicitacoes || cachedSolicitacoes.length === 0) {
-        return;
-    }
-    
-    // Atualizar todos os elementos de timer visíveis na tela
-    const timers = document.querySelectorAll('.card-timer span');
-    
-    timers.forEach(timerElement => {
-        const card = timerElement.closest('.solicitacao-card');
-        if (!card) return;
-        
-        const cardId = card.dataset.id;
-        if (!cardId) return;
-        
-        const solicitacao = cachedSolicitacoes.find(sol => sol.id === cardId);
-        if (!solicitacao) return;
-        
-        // Recalcular e atualizar o tempo
-        const novoTempo = calcularTempoAtendimento(solicitacao);
-        timerElement.textContent = novoTempo;
-        
-        // Atualizar cor se necessário
-        const icon = timerElement.parentElement.querySelector('i');
-        const cor = solicitacao.status === 'finalizada' ? '#10b981' : '#f59e0b';
-        
-        if (icon) {
-            icon.style.color = cor;
-        }
-        timerElement.style.color = cor;
-    });
-}
-
-function pararAtualizacaoTempos() {
-    if (intervaloCronometros) {
-        clearInterval(intervaloCronometros);
-        intervaloCronometros = null;
-        console.log('[DEBUG] Atualização automática dos cronômetros parada');
-    }
 }
 
 // === MODAL DE SOLICITAÇÃO (VERSÃO LIMPA) ===
@@ -9802,10 +9514,7 @@ window.logout = async function() {
         window.userEmail = null;
         window.userRole = null;
         
-        // 4. Parar atualizações automáticas
-        pararAtualizacaoTempos();
-        
-        // 5. Resetar campos de login
+        // 4. Resetar campos de login
         const tipoSelect = document.getElementById('tipo-acesso');
         const departamentoSection = document.getElementById('departamento-section');
         const departamentoSelect = document.getElementById('departamento');
