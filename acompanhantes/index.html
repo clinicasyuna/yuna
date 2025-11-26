@@ -1769,6 +1769,146 @@
     <script src="../security-audit.js"></script>
 
     <script>
+        // === SISTEMA DE TIMEOUT DE SESSÃO ===
+        let sessionTimeout;
+        let warningTimeout;
+        let lastActivity = Date.now();
+        const TIMEOUT_DURATION = 10 * 60 * 1000; // 10 minutos
+        const WARNING_TIME = 2 * 60 * 1000; // 2 minutos antes do logout
+
+        // Detectar atividade do usuário
+        function detectUserActivity() {
+            lastActivity = Date.now();
+            resetSessionTimeout();
+        }
+
+        // Resetar timer de timeout
+        function resetSessionTimeout() {
+            clearTimeout(sessionTimeout);
+            clearTimeout(warningTimeout);
+            
+            // Warning 2 minutos antes
+            warningTimeout = setTimeout(() => {
+                showTimeoutWarning();
+            }, TIMEOUT_DURATION - WARNING_TIME);
+            
+            // Logout automático
+            sessionTimeout = setTimeout(() => {
+                performAutoLogout();
+            }, TIMEOUT_DURATION);
+        }
+
+        // Mostrar aviso de timeout
+        function showTimeoutWarning() {
+            const modal = document.createElement('div');
+            modal.id = 'timeout-warning-modal';
+            modal.className = 'fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50';
+            modal.innerHTML = `
+                <div class="bg-white rounded-lg p-6 max-w-md mx-4 shadow-xl">
+                    <div class="flex items-center mb-4">
+                        <div class="flex-shrink-0">
+                            <svg class="h-8 w-8 text-yellow-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L3.732 16.5c-.77.833.192 2.5 1.732 2.5z"></path>
+                            </svg>
+                        </div>
+                        <div class="ml-3">
+                            <h3 class="text-lg font-medium text-gray-900">Sessão Expirando</h3>
+                            <p class="text-sm text-gray-500">Sua sessão será encerrada em <span id="countdown">2:00</span> por inatividade.</p>
+                        </div>
+                    </div>
+                    <div class="flex gap-3">
+                        <button onclick="extendSession()" class="flex-1 bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors">
+                            Continuar Sessão
+                        </button>
+                        <button onclick="performAutoLogout()" class="flex-1 bg-gray-300 text-gray-700 px-4 py-2 rounded-lg hover:bg-gray-400 transition-colors">
+                            Sair Agora
+                        </button>
+                    </div>
+                </div>
+            `;
+            document.body.appendChild(modal);
+            
+            // Countdown de 2 minutos
+            let timeLeft = 120;
+            const countdownEl = document.getElementById('countdown');
+            const countdownInterval = setInterval(() => {
+                timeLeft--;
+                const minutes = Math.floor(timeLeft / 60);
+                const seconds = timeLeft % 60;
+                countdownEl.textContent = `${minutes}:${seconds.toString().padStart(2, '0')}`;
+                
+                if (timeLeft <= 0) {
+                    clearInterval(countdownInterval);
+                    performAutoLogout();
+                }
+            }, 1000);
+            
+            // Salvar interval para limpeza
+            modal.countdownInterval = countdownInterval;
+        }
+
+        // Estender sessão
+        function extendSession() {
+            const modal = document.getElementById('timeout-warning-modal');
+            if (modal) {
+                if (modal.countdownInterval) {
+                    clearInterval(modal.countdownInterval);
+                }
+                modal.remove();
+            }
+            detectUserActivity();
+            showToast('Sucesso', 'Sessão estendida com sucesso!', 'success');
+        }
+
+        // Realizar logout automático
+        function performAutoLogout() {
+            console.log('[TIMEOUT] 🚪 Realizando logout automático por inatividade');
+            
+            // Limpar modal se existir
+            const modal = document.getElementById('timeout-warning-modal');
+            if (modal) {
+                if (modal.countdownInterval) {
+                    clearInterval(modal.countdownInterval);
+                }
+                modal.remove();
+            }
+            
+            // Limpar timeouts
+            clearTimeout(sessionTimeout);
+            clearTimeout(warningTimeout);
+            
+            // Mostrar notificação
+            showToast('Sessão Expirada', 'Você foi desconectado por inatividade.', 'warning');
+            
+            // Realizar logout
+            setTimeout(() => {
+                if (window.auth) {
+                    window.auth.signOut().then(() => {
+                        window.location.reload();
+                    }).catch(() => {
+                        window.location.reload();
+                    });
+                } else {
+                    window.location.reload();
+                }
+            }, 2000);
+        }
+
+        // Inicializar sistema de timeout
+        function initializeSessionTimeout() {
+            console.log('[TIMEOUT] ⏱️ Sistema de timeout inicializado (10 minutos)');
+            
+            // Events de atividade
+            const events = ['mousedown', 'mousemove', 'keypress', 'scroll', 'touchstart', 'click'];
+            
+            events.forEach(event => {
+                document.addEventListener(event, detectUserActivity, true);
+            });
+            
+            // Iniciar timeout
+            resetSessionTimeout();
+        }
+
         // Configuração Firebase
         const firebaseConfig = {
             apiKey: "AIzaSyAogGkN5N24Puss4-kF9Z6npPYyEzVei3M",
@@ -1795,6 +1935,9 @@
                    await atualizarResumoSolicitacoes(user.uid);
                 iniciarListenerSatisfacao(user.uid);
                 showMainSection();
+                
+                // Inicializar sistema de timeout de sessão
+                initializeSessionTimeout();
             } else {
                 console.log('👤 Usuário não logado');
                 showAuthSection();

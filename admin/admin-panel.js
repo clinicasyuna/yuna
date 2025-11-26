@@ -12,6 +12,182 @@
 
 // admin-panel.js - Painel Administrativo YUNA
 
+// === INICIALIZAÇÃO DO CACHE GLOBAL ===
+// CORREÇÃO DEFINITIVA: Criar cache logo no início para evitar erros
+window.cachedSolicitacoes = window.cachedSolicitacoes || [];
+window.cachedUsuarios = window.cachedUsuarios || [];
+console.log('[INIT] ✅ Cache global inicializado');
+
+// === SISTEMA DE TIMEOUT DE SESSÃO ===
+let sessionTimeout;
+let warningTimeout;
+let lastActivity = Date.now();
+const TIMEOUT_DURATION = 10 * 60 * 1000; // 10 minutos
+const WARNING_TIME = 2 * 60 * 1000; // 2 minutos antes do logout
+
+// Detectar atividade do usuário
+function detectUserActivity() {
+    lastActivity = Date.now();
+    resetSessionTimeout();
+}
+
+// Resetar timer de timeout
+function resetSessionTimeout() {
+    clearTimeout(sessionTimeout);
+    clearTimeout(warningTimeout);
+    
+    // Warning 2 minutos antes
+    warningTimeout = setTimeout(() => {
+        showTimeoutWarning();
+    }, TIMEOUT_DURATION - WARNING_TIME);
+    
+    // Logout automático
+    sessionTimeout = setTimeout(() => {
+        performAutoLogout();
+    }, TIMEOUT_DURATION);
+}
+
+// Mostrar aviso de timeout
+function showTimeoutWarning() {
+    const modal = document.createElement('div');
+    modal.id = 'timeout-warning-modal';
+    modal.className = 'fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50';
+    modal.innerHTML = `
+        <div class="bg-white rounded-lg p-6 max-w-md mx-4 shadow-xl">
+            <div class="flex items-center mb-4">
+                <div class="flex-shrink-0">
+                    <svg class="h-8 w-8 text-yellow-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L3.732 16.5c-.77.833.192 2.5 1.732 2.5z"></path>
+                    </svg>
+                </div>
+                <div class="ml-3">
+                    <h3 class="text-lg font-medium text-gray-900">Sessão Expirando</h3>
+                    <p class="text-sm text-gray-500">Sua sessão será encerrada em <span id="countdown">2:00</span> por inatividade.</p>
+                </div>
+            </div>
+            <div class="flex gap-3">
+                <button onclick="extendSession()" class="flex-1 bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors">
+                    Continuar Sessão
+                </button>
+                <button onclick="performAutoLogout()" class="flex-1 bg-gray-300 text-gray-700 px-4 py-2 rounded-lg hover:bg-gray-400 transition-colors">
+                    Sair Agora
+                </button>
+            </div>
+        </div>
+    `;
+    document.body.appendChild(modal);
+    
+    // Countdown de 2 minutos
+    let timeLeft = 120;
+    const countdownEl = document.getElementById('countdown');
+    const countdownInterval = setInterval(() => {
+        timeLeft--;
+        const minutes = Math.floor(timeLeft / 60);
+        const seconds = timeLeft % 60;
+        countdownEl.textContent = `${minutes}:${seconds.toString().padStart(2, '0')}`;
+        
+        if (timeLeft <= 0) {
+            clearInterval(countdownInterval);
+            performAutoLogout();
+        }
+    }, 1000);
+    
+    // Salvar interval para limpeza
+    modal.countdownInterval = countdownInterval;
+}
+
+// Estender sessão
+function extendSession() {
+    const modal = document.getElementById('timeout-warning-modal');
+    if (modal) {
+        if (modal.countdownInterval) {
+            clearInterval(modal.countdownInterval);
+        }
+        modal.remove();
+    }
+    detectUserActivity();
+    showToast('Sucesso', 'Sessão estendida com sucesso!', 'success');
+}
+
+// Realizar logout automático
+function performAutoLogout() {
+    console.log('[TIMEOUT] 🚪 Realizando logout automático por inatividade');
+    
+    // Limpar modal se existir
+    const modal = document.getElementById('timeout-warning-modal');
+    if (modal) {
+        if (modal.countdownInterval) {
+            clearInterval(modal.countdownInterval);
+        }
+        modal.remove();
+    }
+    
+    // Limpar timeouts
+    clearTimeout(sessionTimeout);
+    clearTimeout(warningTimeout);
+    
+    // Mostrar notificação
+    showToast('Sessão Expirada', 'Você foi desconectado por inatividade.', 'warning');
+    
+    // Realizar logout
+    setTimeout(() => {
+        if (window.auth) {
+            window.auth.signOut().then(() => {
+                window.location.reload();
+            }).catch(() => {
+                window.location.reload();
+            });
+        } else {
+            window.location.reload();
+        }
+    }, 2000);
+}
+
+// Inicializar sistema de timeout
+function initializeSessionTimeout() {
+    console.log('[TIMEOUT] ⏱️ Sistema de timeout inicializado (10 minutos)');
+    
+    // Events de atividade
+    const events = ['mousedown', 'mousemove', 'keypress', 'scroll', 'touchstart', 'click'];
+    
+    events.forEach(event => {
+        document.addEventListener(event, detectUserActivity, true);
+    });
+    
+    // Iniciar timeout
+    resetSessionTimeout();
+}
+
+// Expor funções globalmente
+window.extendSession = extendSession;
+window.performAutoLogout = performAutoLogout;
+
+// === FUNÇÕES DE DEBUG PARA TIMEOUT ===
+window.testarTimeout = function() {
+    console.log('🧪 Testando sistema de timeout...');
+    console.log('⏱️ Tempo até warning:', (TIMEOUT_DURATION - WARNING_TIME) / 1000 / 60, 'minutos');
+    console.log('⏱️ Tempo total até logout:', TIMEOUT_DURATION / 1000 / 60, 'minutos');
+    console.log('📊 Última atividade:', new Date(lastActivity).toLocaleTimeString());
+    
+    // Forçar warning para teste (em 5 segundos)
+    clearTimeout(warningTimeout);
+    warningTimeout = setTimeout(() => {
+        console.log('⚠️ Mostrando warning de teste...');
+        showTimeoutWarning();
+    }, 5000);
+    
+    console.log('⚠️ Warning de teste será exibido em 5 segundos...');
+};
+
+window.verificarTimeout = function() {
+    console.log('🔍 Status do sistema de timeout:');
+    console.log('- Última atividade:', new Date(lastActivity).toLocaleString());
+    console.log('- Timeout ativo:', !!sessionTimeout);
+    console.log('- Warning ativo:', !!warningTimeout);
+    console.log('- Tempo restante até warning:', Math.max(0, (lastActivity + TIMEOUT_DURATION - WARNING_TIME - Date.now()) / 1000 / 60).toFixed(1), 'min');
+    console.log('- Tempo restante até logout:', Math.max(0, (lastActivity + TIMEOUT_DURATION - Date.now()) / 1000 / 60).toFixed(1), 'min');
+};
+
 // === CONFIGURAÇÃO DE MODO DE PRODUÇÃO ===
 const MODO_PRODUCAO = window.location.hostname !== 'localhost' && 
                       window.location.hostname !== '127.0.0.1' && 
@@ -33,6 +209,9 @@ let limparDadosTeste, verificarEstatisticas, adicionarPainelManutencao;
 let unsubscribeAuthListener = null;
 let sistemaInicializado = false;
 let logoutEmAndamento = false;
+
+// === CACHE DE DADOS ===
+window.cachedSolicitacoes = []; // Cache global das solicitações para cronômetros
 
 // Função para limpar listeners ativos
 function limparListenersAtivos() {
@@ -960,6 +1139,9 @@ window.addEventListener('DOMContentLoaded', async function() {
                             
                             debugLog('[DEBUG] Interface configurada para super admin');
                             
+                            // Inicializar sistema de timeout de sessão
+                            initializeSessionTimeout();
+                            
                         } else if (dadosAdmin.role === 'admin') {
                             debugLog('[DEBUG] Usuário ADMIN - mostrando painel completo com permissões restritas');
                             
@@ -991,6 +1173,9 @@ window.addEventListener('DOMContentLoaded', async function() {
                             
                             debugLog('[DEBUG] Interface configurada para admin');
                             
+                            // Inicializar sistema de timeout de sessão
+                            initializeSessionTimeout();
+                            
                         } else if (dadosAdmin.isEquipe && dadosAdmin.equipe) {
                             debugLog('[DEBUG] Usuário EQUIPE - mostrando apenas cards do departamento:', dadosAdmin.equipe);
                             // Usuário de equipe vê apenas seu departamento
@@ -1015,6 +1200,9 @@ window.addEventListener('DOMContentLoaded', async function() {
                             } else {
                                 console.warn('[AVISO] Painel não encontrado para departamento:', dadosAdmin.equipe);
                             }
+                            
+                            // Inicializar sistema de timeout de sessão
+                            initializeSessionTimeout();
                             
                         } else {
                             debugLog('[DEBUG] Usuário sem permissões específicas - mantendo na tela de login');
@@ -2979,6 +3167,10 @@ async function carregarSolicitacoes() {
         console.log(`[DEBUG] Dados ordenados e prontos para renderização`);
         console.log(`[DEBUG] Solicitações por equipe:`, Object.keys(equipes).map(e => `${e}: ${equipes[e].length}`));
         
+        // Atualizar cache global para cronômetros
+        window.cachedSolicitacoes = Array.isArray(solicitacoes) ? solicitacoes : [];
+        console.log('[DEBUG] Cache de solicitações atualizado:', window.cachedSolicitacoes.length, 'itens');
+        
         // RENDERIZAÇÃO BASEADA NO TIPO DE USUÁRIO
         if (isEquipe && usuarioAdmin.equipe) {
             // Usuário de equipe: mostrar APENAS sua equipe
@@ -3668,20 +3860,41 @@ function recriarBotaoMinhaSenha() {
 }
 
 // Watchdog para garantir que o botão sempre esteja visível
+let watchdogInterval = null;
 function iniciarWatchdogBotaoMinhaSenha() {
-    setInterval(() => {
+    // Limpar watchdog anterior se existir
+    if (watchdogInterval) {
+        clearInterval(watchdogInterval);
+        watchdogInterval = null;
+    }
+    
+    let tentativas = 0;
+    const maxTentativas = 5; // Limitar tentativas para evitar loop infinito
+    
+    watchdogInterval = setInterval(() => {
+        // Parar se excedeu tentativas ou usuário não está logado
+        if (tentativas >= maxTentativas || !window.usuarioAdmin) {
+            if (watchdogInterval) {
+                clearInterval(watchdogInterval);
+                watchdogInterval = null;
+            }
+            return;
+        }
+        
         const btnMinhaSenha = document.getElementById('alterar-senha-btn');
         if (btnMinhaSenha) {
             const isVisible = btnMinhaSenha.offsetWidth > 0 && btnMinhaSenha.offsetHeight > 0;
-            if (!isVisible) {
-                console.log('[🔑 WATCHDOG] Botão "Minha Senha" invisível - forçando visibilidade...');
+            if (!isVisible && tentativas < maxTentativas) {
+                console.log(`[🔑 WATCHDOG] Botão "Minha Senha" invisível - tentativa ${tentativas + 1}/${maxTentativas}`);
                 forcarVisibilidadeBotaoMinhaSenha();
+                tentativas++;
             }
-        } else {
-            console.log('[🔑 WATCHDOG] Botão "Minha Senha" não encontrado - recriando...');
+        } else if (tentativas < maxTentativas) {
+            console.log(`[🔑 WATCHDOG] Botão "Minha Senha" não encontrado - tentativa ${tentativas + 1}/${maxTentativas}`);
             recriarBotaoMinhaSenha();
+            tentativas++;
         }
-    }, 2000); // Verificar a cada 2 segundos
+    }, 5000); // Verificar a cada 5 segundos (reduzido frequência)
 }
 
 // Observer para monitorar mudanças no DOM
@@ -6510,6 +6723,12 @@ function renderizarCardsEquipe(equipes) {
     iniciarAtualizacaoTempos();
     
     console.log(`[DEBUG] Cards renderizados para ${equipesParaMostrar.length} equipe(s)`);
+    
+    // Atualizar cache global para cronômetros
+    if (typeof solicitacoesProcessadas !== 'undefined' && Array.isArray(solicitacoesProcessadas)) {
+        window.cachedSolicitacoes = solicitacoesProcessadas;
+        console.log('[DEBUG] Cache de solicitações atualizado:', window.cachedSolicitacoes.length, 'itens');
+    }
 }
 
 // === ATUALIZAÇÃO AUTOMÁTICA DOS CRONÔMETROS ===
@@ -6521,6 +6740,12 @@ function iniciarAtualizacaoTempos() {
         clearInterval(intervaloCronometros);
     }
     
+    // Garantir que o cache esteja inicializado
+    if (!window.hasOwnProperty('cachedSolicitacoes')) {
+        window.cachedSolicitacoes = [];
+        console.log('[DEBUG] Cache de solicitações inicializado forçadamente');
+    }
+    
     // Atualizar cronômetros a cada 30 segundos
     intervaloCronometros = setInterval(() => {
         atualizarCronometrosNaTela();
@@ -6530,36 +6755,59 @@ function iniciarAtualizacaoTempos() {
 }
 
 function atualizarCronometrosNaTela() {
-    if (!cachedSolicitacoes || cachedSolicitacoes.length === 0) {
-        return;
-    }
-    
-    // Atualizar todos os elementos de timer visíveis na tela
-    const timers = document.querySelectorAll('.card-timer span');
-    
-    timers.forEach(timerElement => {
-        const card = timerElement.closest('.solicitacao-card');
-        if (!card) return;
-        
-        const cardId = card.dataset.id;
-        if (!cardId) return;
-        
-        const solicitacao = cachedSolicitacoes.find(sol => sol.id === cardId);
-        if (!solicitacao) return;
-        
-        // Recalcular e atualizar o tempo
-        const novoTempo = calcularTempoAtendimento(solicitacao);
-        timerElement.textContent = novoTempo;
-        
-        // Atualizar cor se necessário
-        const icon = timerElement.parentElement.querySelector('i');
-        const cor = solicitacao.status === 'finalizada' ? '#10b981' : '#f59e0b';
-        
-        if (icon) {
-            icon.style.color = cor;
+    // CORREÇÃO DEFINITIVA - Versão super segura
+    try {
+        // Garantir que window.cachedSolicitacoes existe
+        if (typeof window.cachedSolicitacoes === 'undefined') {
+            window.cachedSolicitacoes = [];
+            console.log('[CRONOMETROS] ✅ Cache inicializado');
         }
-        timerElement.style.color = cor;
-    });
+        
+        if (!Array.isArray(window.cachedSolicitacoes)) {
+            window.cachedSolicitacoes = [];
+            console.log('[CRONOMETROS] ✅ Cache convertido para array');
+        }
+        
+        if (window.cachedSolicitacoes.length === 0) {
+            console.log('[CRONOMETROS] Cache vazio, pulando atualização');
+            return;
+        }
+        
+        // Atualizar todos os elementos de timer visíveis na tela
+        const timers = document.querySelectorAll('.card-timer span');
+        
+        timers.forEach(timerElement => {
+            const card = timerElement.closest('.solicitacao-card');
+            if (!card) return;
+            
+            const cardId = card.dataset.id;
+            if (!cardId) return;
+            
+            const solicitacao = window.cachedSolicitacoes.find(sol => sol.id === cardId);
+            if (!solicitacao) return;
+            
+            // Recalcular e atualizar o tempo
+            const novoTempo = calcularTempoAtendimento(solicitacao);
+            timerElement.textContent = novoTempo;
+            
+            // Atualizar cor se necessário
+            const icon = timerElement.parentElement.querySelector('i');
+            const cor = solicitacao.status === 'finalizada' ? '#10b981' : '#f59e0b';
+            
+            if (icon) {
+                icon.style.color = cor;
+            }
+            timerElement.style.color = cor;
+        });
+        
+        console.log('[CRONOMETROS] ✅ Atualização concluída');
+    } catch (error) {
+        console.error('[CRONOMETROS] Erro:', error);
+        // Garantir cache mesmo em caso de erro
+        if (typeof window.cachedSolicitacoes === 'undefined') {
+            window.cachedSolicitacoes = [];
+        }
+    }
 }
 
 function pararAtualizacaoTempos() {
@@ -10647,11 +10895,41 @@ setTimeout(function() {
 
 // Ler e preview do arquivo Excel
 function lerArquivoExcel(arquivo) {
+    // Verificações de segurança
+    console.log('[IMPORTACAO] Iniciando leitura do arquivo:', arquivo?.name);
+    
+    if (!arquivo) {
+        console.error('[IMPORTACAO] Nenhum arquivo fornecido');
+        alert('Por favor, selecione um arquivo Excel.');
+        return;
+    }
+    
+    if (!arquivo.name.match(/\.(xlsx|xls)$/i)) {
+        console.error('[IMPORTACAO] Tipo de arquivo inválido:', arquivo.name);
+        alert('Por favor, selecione apenas arquivos Excel (.xlsx ou .xls).');
+        return;
+    }
+    
+    // Verificar se XLSX está disponível
+    if (typeof XLSX === 'undefined') {
+        console.error('[IMPORTACAO] Biblioteca XLSX não encontrada');
+        alert('Erro: Biblioteca Excel não carregada. Recarregue a página.');
+        return;
+    }
+    
+    console.log('[IMPORTACAO] Biblioteca XLSX disponível. Iniciando leitura...');
+    
     const reader = new FileReader();
     reader.onload = function(e) {
         try {
+            console.log('[IMPORTACAO] Arquivo lido com sucesso. Processando dados...');
             const data = new Uint8Array(e.target.result);
             const workbook = XLSX.read(data, { type: 'array' });
+            
+            console.log('[IMPORTACAO] Workbook criado:', {
+                sheetNames: workbook.SheetNames,
+                totalSheets: workbook.SheetNames.length
+            });
             const firstSheet = workbook.Sheets[workbook.SheetNames[0]];
             const jsonData = XLSX.utils.sheet_to_json(firstSheet, { header: 1 });
             
@@ -10672,28 +10950,52 @@ function lerArquivoExcel(arquivo) {
             // Preparar dados para preview
             const dados = jsonData.slice(1).filter(row => row.length >= 4 && row[0] && row[1] && row[2] && row[3]);
             
+            console.log('[IMPORTACAO] Dados processados:', {
+                totalLinhas: jsonData.length,
+                linhasDados: dados.length,
+                primeiraLinha: dados[0] || 'Nenhuma'
+            });
+            
             if (dados.length === 0) {
+                console.error('[IMPORTACAO] Nenhum dado válido encontrado');
                 showToast('Erro', 'Nenhum dado válido encontrado no arquivo', 'error');
                 return;
             }
             
             if (dados.length > 50) {
+                console.warn('[IMPORTACAO] Muitos registros:', dados.length);
                 showToast('Erro', 'Máximo de 50 registros por importação. Arquivo tem ' + dados.length + ' registros', 'error');
                 return;
             }
             
             // Armazenar dados globalmente para processamento
             window.dadosImportacao = dados;
+            console.log('[IMPORTACAO] Dados armazenados em window.dadosImportacao:', dados.length, 'registros');
             
             // Mostrar preview
+            console.log('[IMPORTACAO] Chamando mostrarPreviewDados...');
             mostrarPreviewDados(dados, cabecalho);
+            console.log('[IMPORTACAO] Preview exibido com sucesso');
             
         } catch (error) {
-            console.error('Erro ao ler arquivo:', error);
+            console.error('[IMPORTACAO] Erro ao ler arquivo:', {
+                error: error,
+                message: error.message,
+                stack: error.stack,
+                arquivo: arquivo?.name
+            });
             showToast('Erro', 'Erro ao ler arquivo Excel: ' + error.message, 'error');
         }
     };
+    
+    reader.onerror = function(error) {
+        console.error('[IMPORTACAO] Erro do FileReader:', error);
+        showToast('Erro', 'Erro ao ler o arquivo selecionado', 'error');
+    };
+    
+    console.log('[IMPORTACAO] Iniciando readAsArrayBuffer...');
     reader.readAsArrayBuffer(arquivo);
+    console.log('[IMPORTACAO] FileReader configurado e iniciado');
 }
 
 // Mostrar preview dos dados
@@ -10895,3 +11197,92 @@ window.testarImportacao = function() {
     console.log('Função abrirImportacaoLote:', typeof window.abrirImportacaoLote);
     console.log('XLSX library:', typeof XLSX);
 };
+
+// === CONFIGURAÇÃO IMPORTAÇÃO EXCEL AUTOMÁTICA ===
+function configurarImportacaoExcelAutomatica() {
+    console.log('[EXCEL-AUTO] 🎯 Configurando importação automática...');
+    
+    // Garantir que XLSX está carregado
+    if (typeof XLSX === 'undefined') {
+        const script = document.createElement('script');
+        script.src = 'https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js';
+        script.onload = () => {
+            console.log('[EXCEL-AUTO] ✅ XLSX carregado');
+            configurarHandlersExcel();
+        };
+        document.head.appendChild(script);
+    } else {
+        configurarHandlersExcel();
+    }
+    
+    function configurarHandlersExcel() {
+        // Configurar input de arquivo-lote especificamente
+        const inputLote = document.getElementById('arquivo-lote');
+        if (inputLote) {
+            inputLote.addEventListener('change', function(e) {
+                const arquivo = e.target.files[0];
+                if (arquivo && arquivo.name.includes('.xls')) {
+                    processarExcelLote(arquivo);
+                }
+            });
+            console.log('[EXCEL-AUTO] ✅ Input arquivo-lote configurado');
+        }
+        
+        // Encontrar e configurar botões de importação
+        const botoes = document.querySelectorAll('button[onclick*="importar"], [data-action="import"], .btn-importar-lote');
+        botoes.forEach(btn => {
+            btn.addEventListener('click', function(e) {
+                e.preventDefault();
+                const input = document.getElementById('arquivo-lote');
+                if (input && input.files[0]) {
+                    processarExcelLote(input.files[0]);
+                } else if (input) {
+                    input.click();
+                }
+            });
+        });
+        
+        console.log('[EXCEL-AUTO] 🎯 Sistema Excel ATIVO!');
+    }
+    
+    function processarExcelLote(arquivo) {
+        console.log('[EXCEL-LOTE] Processando:', arquivo.name);
+        
+        const reader = new FileReader();
+        reader.onload = function(e) {
+            try {
+                const dados = new Uint8Array(e.target.result);
+                const workbook = XLSX.read(dados, { type: 'array' });
+                const worksheet = workbook.Sheets[workbook.SheetNames[0]];
+                const jsonData = XLSX.utils.sheet_to_json(worksheet);
+                
+                console.log('[EXCEL-LOTE] ✅ Dados:', jsonData.length, 'registros');
+                
+                if (jsonData.length === 0) {
+                    alert('❌ Nenhum dado encontrado no arquivo Excel');
+                    return;
+                }
+                
+                // Mostrar resultado
+                alert(`✅ Excel processado!\\n\\n${jsonData.length} registros encontrados\\nPrimeiro registro: ${JSON.stringify(jsonData[0], null, 2).substring(0, 200)}...`);
+                
+                // Fechar modal se aberto
+                const modal = document.getElementById('modal-importacao-lote');
+                if (modal && !modal.classList.contains('hidden')) {
+                    modal.classList.add('hidden');
+                }
+                
+            } catch (error) {
+                console.error('[EXCEL-LOTE] Erro:', error);
+                alert('❌ Erro ao processar Excel: ' + error.message);
+            }
+        };
+        
+        reader.readAsArrayBuffer(arquivo);
+    }
+}
+
+// Iniciar configuração Excel automaticamente
+setTimeout(() => {
+    configurarImportacaoExcelAutomatica();
+}, 3000);
