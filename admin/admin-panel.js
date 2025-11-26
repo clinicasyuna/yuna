@@ -2767,7 +2767,7 @@ window.alterarMinhaSenha = async function() {
         }
 
         // Reautenticar o usuário com a senha atual
-        const credential = window.auth.EmailAuthProvider.credential(user.email, senhaAtual);
+        const credential = firebase.auth.EmailAuthProvider.credential(user.email, senhaAtual);
         await user.reauthenticateWithCredential(credential);
         
         // Alterar para a nova senha
@@ -4514,10 +4514,54 @@ window.debugModals = function() {
             showCreateUserModal: typeof window.showCreateUserModal,
             showManageUsersModal: typeof window.showManageUsersModal
         }
+        };
     };
-};
 
-// Função de teste para os botões
+// Definir função calcularTempoAtendimento no escopo global
+if (typeof window.calcularTempoAtendimento === 'undefined') {
+    window.calcularTempoAtendimento = function(solicitacao) {
+        try {
+            let dataInicio = null;
+            
+            // Tentar obter data de início do cronômetro
+            if (solicitacao.cronometro && solicitacao.cronometro.inicio) {
+                if (typeof solicitacao.cronometro.inicio.toDate === 'function') {
+                    dataInicio = solicitacao.cronometro.inicio.toDate();
+                } else {
+                    dataInicio = new Date(solicitacao.cronometro.inicio);
+                }
+            }
+            // Fallback para data de abertura
+            else if (solicitacao.dataAbertura) {
+                if (typeof solicitacao.dataAbertura.toDate === 'function') {
+                    dataInicio = solicitacao.dataAbertura.toDate();
+                } else {
+                    dataInicio = new Date(solicitacao.dataAbertura);
+                }
+            }
+            
+            if (!dataInicio) {
+                return 'N/A';
+            }
+            
+            const agora = new Date();
+            const diferenca = agora - dataInicio;
+            
+            // Converter para horas e minutos
+            const horas = Math.floor(diferenca / (1000 * 60 * 60));
+            const minutos = Math.floor((diferenca % (1000 * 60 * 60)) / (1000 * 60));
+            
+            if (horas > 0) {
+                return `${horas}h ${minutos}min`;
+            } else {
+                return `${minutos}min`;
+            }
+        } catch (error) {
+            console.warn('[AVISO] Erro ao calcular tempo:', error);
+            return 'Tempo inválido';
+        }
+    };
+}// Função de teste para os botões
 window.testarBotoes = function() {
     console.log('=== TESTE DOS BOTÕES ===');
     
@@ -6397,7 +6441,7 @@ function renderizarCardsEquipe(equipes) {
     }
     
     // Função para calcular tempo decorrido de atendimento
-    function calcularTempoAtendimento(solicitacao) {
+    window.calcularTempoAtendimento = function calcularTempoAtendimento(solicitacao) {
         try {
             let dataInicio = null;
             
