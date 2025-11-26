@@ -3409,6 +3409,68 @@
             }, 3000);
         }
 
+        // 🔧 FUNÇÃO DE DEBUG PARA INVESTIGAR HISTÓRICO
+        window.debugHistoricoSolicitacoes = async function() {
+            console.log('🔍 ===== DEBUG HISTÓRICO SOLICITAÇÕES =====');
+            
+            const user = firebase.auth().currentUser;
+            if (!user) {
+                console.log('❌ Usuário não autenticado');
+                return;
+            }
+            
+            console.log('👤 Usuário:', user.email);
+            console.log('🆔 UID:', user.uid);
+            
+            // Buscar dados do usuário no Firestore
+            try {
+                const userDoc = await window.db.collection('usuarios_acompanhantes').doc(user.uid).get();
+                if (userDoc.exists) {
+                    const userData = userDoc.data();
+                    console.log('🏠 Quarto atual:', userData.quarto);
+                    console.log('📝 Nome:', userData.nome);
+                    console.log('📧 Email:', userData.email);
+                }
+            } catch (error) {
+                console.log('⚠️ Erro ao buscar dados do usuário:', error);
+            }
+            
+            // Buscar TODAS as solicitações por usuarioId
+            try {
+                console.log('🔍 Buscando por usuarioId...');
+                const snapshot1 = await window.db.collection('solicitacoes')
+                    .where('usuarioId', '==', user.uid)
+                    .get();
+                console.log('📊 Solicitações por usuarioId:', snapshot1.size);
+                
+                snapshot1.forEach(doc => {
+                    const data = doc.data();
+                    console.log(`  📄 ID: ${doc.id} | Quarto: ${data.quarto} | Status: ${data.status} | Data: ${data.dataAberturaLocal}`);
+                });
+            } catch (error) {
+                console.log('❌ Erro ao buscar por usuarioId:', error);
+            }
+            
+            // Buscar TODAS as solicitações por userId (campo antigo)
+            try {
+                console.log('🔍 Buscando por userId (campo antigo)...');
+                const snapshot2 = await window.db.collection('solicitacoes')
+                    .where('userId', '==', user.uid)
+                    .get();
+                console.log('📊 Solicitações por userId:', snapshot2.size);
+                
+                snapshot2.forEach(doc => {
+                    const data = doc.data();
+                    console.log(`  📄 ID: ${doc.id} | Quarto: ${data.quarto} | Status: ${data.status} | Data: ${data.dataAberturaLocal}`);
+                });
+            } catch (error) {
+                console.log('❌ Erro ao buscar por userId:', error);
+            }
+            
+            console.log('✅ ===== FIM DEBUG HISTÓRICO =====');
+            console.log('💡 Para usar: Abra o console e execute debugHistoricoSolicitacoes()');
+        };
+
         // Função para mostrar histórico de solicitações
         async function showHistorico() {
             try {
@@ -3422,15 +3484,40 @@
 
                 // Buscar todas as solicitações do usuário (sem orderBy para evitar erro de índice)
                 console.log('[DEBUG-HISTORICO] Buscando solicitações para usuarioId:', user.uid);
+                console.log('[DEBUG-HISTORICO] 🔍 GARANTINDO busca por UID, não por quarto');
                 
-                const snapshot = await window.db.collection('solicitacoes')
-                    .where('usuarioId', '==', user.uid)  // CORRETO: usar usuarioId
-                    .limit(50) // Últimas 50 solicitações
-                    .get();
+                // MÚLTIPLAS QUERIES para garantir que não perdemos nenhuma solicitação
+                const queries = [
+                    // Query principal por usuarioId (campo novo)
+                    window.db.collection('solicitacoes')
+                        .where('usuarioId', '==', user.uid)
+                        .limit(50),
+                    
+                    // Query backup por userId (campo antigo, para retrocompatibilidade)
+                    window.db.collection('solicitacoes')
+                        .where('userId', '==', user.uid)
+                        .limit(50)
+                ];
+                
+                console.log('[DEBUG-HISTORICO] Executando múltiplas queries para garantir dados completos...');
+                
+                const resultados = await Promise.all(queries.map(q => q.get()));
+                
+                // Combinar resultados removendo duplicatas por ID
+                const solicitacoesMap = new Map();
+                resultados.forEach((snapshot, index) => {
+                    console.log(`[DEBUG-HISTORICO] Query ${index + 1} encontrou: ${snapshot.size} solicitações`);
+                    snapshot.forEach(doc => {
+                        const data = doc.data();
+                        solicitacoesMap.set(doc.id, { id: doc.id, ...data });
+                    });
+                });
+                
+                const solicitacoes = Array.from(solicitacoesMap.values());
+                
+                console.log('[DEBUG-HISTORICO] Total único de solicitações encontradas:', solicitacoes.length);
 
-                console.log('[DEBUG-HISTORICO] Solicitações encontradas:', snapshot.size);
-
-                if (snapshot.empty) {
+                if (solicitacoes.length === 0) {
                     showToast('Info', 'Você ainda não possui solicitações.', 'info');
                     return;
                 }
@@ -3457,15 +3544,7 @@
                 const listaElement = document.getElementById('historico-lista');
                 let historicoItens = '';
 
-                // Converter snapshot em array e ordenar por data (mais recentes primeiro)
-                const solicitacoes = [];
-                snapshot.forEach(doc => {
-                    const data = doc.data();
-                    data.id = doc.id;
-                    solicitacoes.push(data);
-                });
-                
-                // Ordenar por data de criação (mais recentes primeiro)
+                // Ordenar solicitações por data de criação (mais recentes primeiro)
                 solicitacoes.sort((a, b) => {
                     const dataA = a.criadoEm && a.criadoEm.toDate ? a.criadoEm.toDate() : new Date(a.criadoEm);
                     const dataB = b.criadoEm && b.criadoEm.toDate ? b.criadoEm.toDate() : new Date(b.criadoEm);
