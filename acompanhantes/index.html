@@ -590,6 +590,8 @@
         .summary-clickable:active {
             transform: translateY(-1px) scale(1.01);
         }
+
+        .summary-clickable:hover {
             transform: translateY(-4px) scale(1.02);
             box-shadow: 0 8px 24px rgba(0,0,0,0.15);
             border-color: #3b82f6;
@@ -598,6 +600,8 @@
         .summary-clickable:active {
             transform: translateY(-1px) scale(1.01);
         }
+
+        .summary-card {
             overflow: hidden;
         }
 
@@ -782,6 +786,7 @@
             background: rgba(255, 255, 255, 0.8);
             color: #374151;
             border: 2px solid rgba(0, 0, 0, 0.08);
+            -webkit-backdrop-filter: blur(8px);
             backdrop-filter: blur(8px);
         }
 
@@ -872,6 +877,7 @@
             border-radius: 12px;
             border: none;
             background: rgba(248, 250, 252, 0.8);
+            -webkit-backdrop-filter: blur(4px);
             backdrop-filter: blur(4px);
             display: flex;
             align-items: center;
@@ -1607,19 +1613,19 @@
                 <div class="rating-section">
                     <label class="rating-label">Como você avalia o atendimento?</label>
                     <div class="stars-container">
-                        <button type="button" class="star-btn" data-rating="1" onclick="selecionarNota(1)">
+                        <button type="button" class="star-btn" data-rating="1" onclick="selecionarNota(1)" title="1 estrela - Muito insatisfeito">
                             <i class="fas fa-star"></i>
                         </button>
-                        <button type="button" class="star-btn" data-rating="2" onclick="selecionarNota(2)">
+                        <button type="button" class="star-btn" data-rating="2" onclick="selecionarNota(2)" title="2 estrelas - Insatisfeito">
                             <i class="fas fa-star"></i>
                         </button>
-                        <button type="button" class="star-btn" data-rating="3" onclick="selecionarNota(3)">
+                        <button type="button" class="star-btn" data-rating="3" onclick="selecionarNota(3)" title="3 estrelas - Neutro">
                             <i class="fas fa-star"></i>
                         </button>
-                        <button type="button" class="star-btn" data-rating="4" onclick="selecionarNota(4)">
+                        <button type="button" class="star-btn" data-rating="4" onclick="selecionarNota(4)" title="4 estrelas - Satisfeito">
                             <i class="fas fa-star"></i>
                         </button>
-                        <button type="button" class="star-btn" data-rating="5" onclick="selecionarNota(5)">
+                        <button type="button" class="star-btn" data-rating="5" onclick="selecionarNota(5)" title="5 estrelas - Muito satisfeito">
                             <i class="fas fa-star"></i>
                         </button>
                     </div>
@@ -1647,21 +1653,21 @@
                         <div class="aspect-item">
                             <span class="aspect-label">Qualidade</span>
                             <div class="mini-stars" data-aspect="qualidade">
-                                <button type="button" class="mini-star" data-value="1"><i class="fas fa-star"></i></button>
-                                <button type="button" class="mini-star" data-value="2"><i class="fas fa-star"></i></button>
-                                <button type="button" class="mini-star" data-value="3"><i class="fas fa-star"></i></button>
-                                <button type="button" class="mini-star" data-value="4"><i class="fas fa-star"></i></button>
-                                <button type="button" class="mini-star" data-value="5"><i class="fas fa-star"></i></button>
+                                <button type="button" class="mini-star" data-value="1" title="1 estrela - Qualidade"><i class="fas fa-star"></i></button>
+                                <button type="button" class="mini-star" data-value="2" title="2 estrelas - Qualidade"><i class="fas fa-star"></i></button>
+                                <button type="button" class="mini-star" data-value="3" title="3 estrelas - Qualidade"><i class="fas fa-star"></i></button>
+                                <button type="button" class="mini-star" data-value="4" title="4 estrelas - Qualidade"><i class="fas fa-star"></i></button>
+                                <button type="button" class="mini-star" data-value="5" title="5 estrelas - Qualidade"><i class="fas fa-star"></i></button>
                             </div>
                         </div>
                         <div class="aspect-item">
                             <span class="aspect-label">Atendimento</span>
                             <div class="mini-stars" data-aspect="atendimento">
-                                <button type="button" class="mini-star" data-value="1"><i class="fas fa-star"></i></button>
-                                <button type="button" class="mini-star" data-value="2"><i class="fas fa-star"></i></button>
-                                <button type="button" class="mini-star" data-value="3"><i class="fas fa-star"></i></button>
-                                <button type="button" class="mini-star" data-value="4"><i class="fas fa-star"></i></button>
-                                <button type="button" class="mini-star" data-value="5"><i class="fas fa-star"></i></button>
+                                <button type="button" class="mini-star" data-value="1" title="1 estrela - Atendimento"><i class="fas fa-star"></i></button>
+                                <button type="button" class="mini-star" data-value="2" title="2 estrelas - Atendimento"><i class="fas fa-star"></i></button>
+                                <button type="button" class="mini-star" data-value="3" title="3 estrelas - Atendimento"><i class="fas fa-star"></i></button>
+                                <button type="button" class="mini-star" data-value="4" title="4 estrelas - Atendimento"><i class="fas fa-star"></i></button>
+                                <button type="button" class="mini-star" data-value="5" title="5 estrelas - Atendimento"><i class="fas fa-star"></i></button>
                             </div>
                         </div>
                     </div>
