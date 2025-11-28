@@ -1,0 +1,939 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+    <meta http-equiv="Pragma" content="no-cache">
+    <meta http-equiv="Expires" content="0">
+    <meta name="cache-version" content="20251113-153000">
+    <title>YUNA - Painel Administrativo</title>
+    
+    <!-- FORCE HIDE CSS PARA BOTÕES DEBUG -->
+    <style>
+        /* Esconder botões com onclick específicos */
+        button[onclick*="showUsersDireto"],
+        button[onclick*="debugFuncs"], 
+        button[onclick*="mostrarRelatoriosDirectly"] {
+            display: none !important;
+            visibility: hidden !important;
+            opacity: 0 !important;
+            pointer-events: none !important;
+        }
+        
+        /* Forçar visibilidade do botão limpeza para super admin */
+        #limpeza-btn.force-visible {
+            display: inline-flex !important;
+            visibility: visible !important;
+            opacity: 1 !important;
+        }
+        
+        /* FORÇAR VISIBILIDADE DO BOTÃO MINHA SENHA */
+        #alterar-senha-btn {
+            display: inline-flex !important;
+            visibility: visible !important;
+            opacity: 1 !important;
+            background: #10b981 !important;
+            color: white !important;
+            border: none !important;
+            padding: 0.5rem 1rem !important;
+            border-radius: 0.375rem !important;
+            cursor: pointer !important;
+            align-items: center !important;
+            gap: 0.5rem !important;
+            font-weight: 500 !important;
+            position: relative !important;
+            z-index: 999 !important;
+            order: 5 !important;
+        }
+        
+        /* CORREÇÃO Z-INDEX DOS MODAIS - Modal de edição deve estar acima do gerenciamento */
+        #edit-user-modal {
+            z-index: 999999999 !important;
+            position: fixed !important;
+        }
+        
+        #manage-users-modal {
+            z-index: 999999 !important;
+            position: fixed !important;
+        }
+        
+        #modal-novo-usuario {
+            z-index: 1000015 !important;
+            position: fixed !important;
+        }
+        
+        /* Garantir que qualquer modal de edição tenha z-index alto */
+        .modal-edicao-usuario,
+        [id*="edit"][id*="modal"],
+        [class*="modal-edicao"] {
+            z-index: 999999999 !important;
+        }
+        
+        /* FORÇA EXTREMA - Modal de edição sempre no topo */
+        #edit-user-modal,
+        #edit-user-modal.modal,
+        .modal#edit-user-modal {
+            z-index: 999999999 !important;
+            position: fixed !important;
+            display: flex !important;
+        }
+        
+        /* FORÇA EXTREMA - Modal de gerenciar sempre atrás do editar */
+        #manage-users-modal,
+        #manage-users-modal.modal,
+        .modal#manage-users-modal {
+            z-index: 999999 !important;
+            position: fixed !important;
+        }
+        
+        /* Garantir que fundo dos modais de edição seja visível */
+        #edit-user-modal .modal-content,
+        #edit-user-modal .edit-modal-content {
+            background: white !important;
+            z-index: 9999999999 !important;
+            position: relative !important;
+        }
+        
+        /* Modal de edição sempre na frente */
+        #edit-user-modal,
+        .modal-edicao-usuario {
+            z-index: 9999999999 !important;
+            position: fixed !important;
+            backdrop-filter: blur(5px) !important;
+        }
+        
+        /* Garantir que todos os elementos dentro dos modals de edição sejam clicáveis */
+        #edit-user-modal *,
+        .modal-edicao-usuario * {
+            pointer-events: auto !important;
+        }
+        
+        /* Estilos para modal arrastável */
+        .drag-title-bar {
+            transition: background-color 0.3s ease, box-shadow 0.2s ease;
+            user-select: none;
+            border-radius: 8px 8px 0 0 !important;
+        }
+        
+        .drag-title-bar:hover {
+            background: linear-gradient(135deg, #7c8fff 0%, #8a5fb8 100%) !important;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.2) !important;
+        }
+        
+        .drag-title-bar:active {
+            cursor: grabbing !important;
+        }
+        
+        /* Modal arrastável com destaque */
+        .modal-content.draggable {
+            border: 2px solid #667eea !important;
+            border-radius: 8px !important;
+            box-shadow: 0 25px 50px rgba(0,0,0,0.8) !important;
+            transition: box-shadow 0.3s ease;
+        }
+        
+        .modal-content.draggable:hover {
+            box-shadow: 0 30px 60px rgba(0,0,0,0.9) !important;
+        }
+        
+        /* Garantir que o botão sempre esteja visível mesmo com outras classes */
+        #alterar-senha-btn.btn-hide,
+        #alterar-senha-btn.hidden,
+        #alterar-senha-btn.d-none {
+            display: inline-flex !important;
+            visibility: visible !important;
+            opacity: 1 !important;
+        }
+    </style>
+    
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="admin-panel-styles.css">
+    <link rel="stylesheet" href="solicitacoes-cards.css">
+    <link rel="stylesheet" href="cache-cleanup.css?v=20251110-002">
+</head>
+<body>
+    <!-- Modal de Finalização de Solicitação -->
+    <div id="finalizar-solicitacao-modal" class="modal hidden">
+        <div class="modal-content">
+            <h2 class="finalizar-solicitacao">Finalizar Solicitação</h2>
+            <form id="finalizar-solicitacao-form" onsubmit="event.preventDefault(); confirmarFinalizarSolicitacao();">
+                <input type="hidden" id="finalizar-id">
+                <div class="div-modal">
+                    <label for="finalizar-solucao">Solução Adotada:</label>
+                    <textarea id="finalizar-solucao" required placeholder="Descreva a solução adotada" title="Solução adotada"></textarea>
+                </div>
+                <div class="div-modal">
+                    <label for="finalizar-anexos">Anexos (opcional):</label>
+                    <input type="file" id="finalizar-anexos" multiple title="Anexos da solicitação">
+                </div>
+                <div class="div-btns-modal">
+                    <button type="button" onclick="fecharFinalizarSolicitacaoModal()" class="btn-cancelar" title="Cancelar">Cancelar</button>
+                    <button type="submit" class="btn-finalizar" title="Finalizar solicitação">Finalizar</button>
+                </div>
+            </form>
+        </div>
+    </div>
+    <!-- Seção de Autenticação -->
+    <div id="auth-section" class="auth-section">
+        <form class="auth-form" onsubmit="handleLogin(event)">
+            <div class="logo-header">
+                <img src="https://yuna.com.br/wp-content/uploads/2022/08/Yuna-logo-assinatura.png" alt="YUNA Logo">
+                <h1>🏥 Painel Administrativo</h1>
+                <p>Acesso para equipes e administradores</p>
+            </div>
+            <div class="form-group">
+                <label class="form-label">Tipo de Acesso</label>
+                <select id="tipo-acesso" class="form-input" onchange="alterarTipoAcesso()" required title="Selecione o tipo de acesso">
+                    <option value="">Selecione o tipo de acesso</option>
+                    <option value="equipe">👥 Acesso de Equipe</option>
+                    <option value="admin">🔐 Administrador Geral</option>
+                </select>
+            </div>
+            <div id="departamento-section" class="form-group hidden">
+                <label class="form-label">Departamento</label>
+                <select id="departamento" class="form-input" title="Selecione seu departamento">
+                    <option value="">Selecione seu departamento</option>
+                    <option value="manutencao">🔧 Manutenção</option>
+                    <option value="nutricao">🍽️ Nutrição</option>
+                    <option value="higienizacao">🧽 Higienização</option>
+                    <option value="hotelaria">🏨 Hotelaria</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label class="form-label">E-mail</label>
+                <input type="email" id="login-email" class="form-input" placeholder="seu@email.com" required autocomplete="username">
+            </div>
+            <div class="form-group">
+                <label class="form-label">Senha</label>
+                <input type="password" id="login-password" class="form-input" placeholder="Sua senha" required autocomplete="current-password">
+            </div>
+            <button type="submit" id="login-btn" class="btn-primary">
+                <i class="fas fa-sign-in-alt"></i> Entrar no Painel
+            </button>
+            
+            <!-- Seção de Desenvolvimento (visível apenas no console) -->
+            <div id="dev-help" class="dev-help" style="margin-top: 2rem; padding: 1rem; background: #f8f9fa; border-radius: 8px; border-left: 4px solid #fbbf24; display: none;">
+                <h4 style="margin: 0 0 0.5rem 0; color: #92400e;">🔧 Modo Desenvolvimento</h4>
+                <p style="margin: 0; font-size: 0.9rem; color: #78716c;">
+                    Se houver problemas de login, abra o console (F12) e execute:<br>
+                    <code style="background: #e5e7eb; padding: 2px 4px; border-radius: 4px;">loginRapido()</code> ou 
+                    <code style="background: #e5e7eb; padding: 2px 4px; border-radius: 4px;">corrigirTudo()</code>
+                </p>
+            </div>
+        </form>
+    </div>
+
+    <!-- Seção Principal do Painel -->
+    <div id="admin-panel" class="hidden">
+        <!-- Header -->
+        <header class="header">
+            <div class="logo">
+                <img src="https://yuna.com.br/wp-content/uploads/2022/08/Yuna-logo-assinatura.png" alt="YUNA Logo">
+                <h1 id="panel-title">🏥 Painel Administrativo</h1>
+            </div>
+            <div class="user-info">
+                <span id="user-role-badge" class="priority-badge priority-media">Administrador</span>
+                <button id="btn-novo-usuario" class="btn-primary btn-hide">
+                    <i class="fas fa-user-plus"></i> Criar Usuário
+                </button>
+                <button id="manage-users-btn" class="btn-primary btn-hide">
+                    <i class="fas fa-users-cog"></i> Gerenciar Usuários
+                </button>
+                
+                <span id="admin-permission-msg" class="msg-permissao-hide">Acesso restrito: sem permissão para criar/gerenciar usuários.</span>
+                <button id="relatorios-btn" class="btn-primary">
+                    <i class="fas fa-chart-bar"></i> Relatórios
+                </button>
+                
+                <button id="metricas-btn" class="btn-primary" onclick="abrirDashboardMetricas()" title="Dashboard de TMA, SLA e TME">
+                    <i class="fas fa-chart-line"></i> Métricas
+                </button>
+                <button id="satisfacao-btn" class="btn-primary" onclick="abrirDashboardSatisfacao()" title="Pesquisas de Satisfação">
+                    <i class="fas fa-star"></i> Pesquisa de Satisfação
+                </button>
+                <button id="acompanhantes-btn" class="btn-primary" onclick="abrirAcompanhantesSection()">
+                    <i class="fas fa-user-friends" style="color: #000000;"></i> Acompanhantes
+                </button>
+                <button id="limpeza-btn" class="btn-primary btn-hide" onclick="limparDadosTeste()" title="Limpar dados de teste e pesquisas de satisfação">
+                    <i class="fas fa-broom"></i> Limpar Dados
+                </button>
+                <button id="alterar-senha-btn" class="btn-primary" onclick="abrirMinhaSenha()" title="Alterar minha senha" 
+                        style="background: #10b981; display: inline-flex !important; visibility: visible !important;">
+                    <i class="fas fa-key"></i> Minha Senha
+                </button>
+                
+
+
+
+                <!-- Script para forçar visibilidade do botão imediatamente -->
+                <script>
+                (function() {
+                    console.log('[🔑 SCRIPT INLINE] Forçando botão Minha Senha...');
+                    
+                    function forcarBotaoMinhaSenha() {
+                        const btn = document.getElementById('alterar-senha-btn');
+                        if (btn) {
+                            btn.style.cssText = `
+                                background: #10b981 !important;
+                                display: inline-flex !important;
+                                visibility: visible !important;
+                                opacity: 1 !important;
+                                color: white !important;
+                                border: none !important;
+                                padding: 0.5rem 1rem !important;
+                                border-radius: 0.375rem !important;
+                                cursor: pointer !important;
+                                align-items: center !important;
+                                gap: 0.5rem !important;
+                                font-weight: 500 !important;
+                                position: relative !important;
+                                z-index: 999 !important;
+                                order: 5 !important;
+                            `;
+                            btn.classList.remove('btn-hide', 'hidden', 'd-none');
+                            console.log('[🔑 SCRIPT INLINE] Botão forçado com sucesso!');
+                            return true;
+                        }
+                        return false;
+                    }
+                    
+                    // Forçar imediatamente
+                    forcarBotaoMinhaSenha();
+                    
+                    // Forçar quando DOM carregar
+                    document.addEventListener('DOMContentLoaded', forcarBotaoMinhaSenha);
+                    
+                    // Forçar periodicamente
+                    setInterval(forcarBotaoMinhaSenha, 2000);
+                    
+                    // Expor função globalmente
+                    window.forcarBotaoMinhaSenhaInline = forcarBotaoMinhaSenha;
+                })();
+                </script>
+                <button id="logout-btn" class="logout-btn" onclick="window.auth.signOut()">
+                    <i class="fas fa-sign-out-alt"></i> Sair
+                </button>
+            </div>
+        </header>
+        <!-- MÉTRICAS ALINHADAS -->
+        <div class="stats-grid">
+            <div class="stat-card">
+                <div class="stat-icon">
+                    <i class="fas fa-clock"></i>
+                </div>
+                <div class="stat-info">
+                    <h3 id="total-solicitacoes">0</h3>
+                    <p>Total de Solicitações</p>
+                </div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-icon">
+                    <i class="fas fa-clock"></i>
+                </div>
+                <div class="stat-info">
+                    <h3 id="pendentes">0</h3>
+                    <p>Pendentes</p>
+                </div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-icon">
+                    <i class="fas fa-check-circle"></i>
+                </div>
+                <div class="stat-info">
+                    <h3 id="finalizadas">0</h3>
+                    <p>Finalizadas Hoje</p>
+                </div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-icon">
+                    <i class="fas fa-users"></i>
+                </div>
+                <div class="stat-info">
+                    <h3 id="quartos-ativos">0</h3>
+                    <p>Quartos Ativos</p>
+                </div>
+            </div>
+        </div>
+    <!-- Seção de Cadastro e Gestão de Acompanhantes -->
+    <div id="acompanhantes-section" class="hidden">
+        <div class="section-content">
+            <div class="section-header">
+                <h2>👥 Cadastro de Acompanhantes</h2>
+                <div style="display: flex; gap: 10px;">
+                    <button onclick="abrirImportacaoLote()" class="btn-primary" title="Importar múltiplos acompanhantes via Excel" style="background: #10b981;">
+                        <i class="fas fa-file-excel"></i> Importar Excel
+                    </button>
+                    <button onclick="baixarModeloExcel()" class="btn-primary" title="Baixar modelo de planilha Excel" style="background: #3b82f6;">
+                        <i class="fas fa-download"></i> Baixar Modelo
+                    </button>
+                    <button onclick="voltarPainelPrincipal()" class="btn-voltar" title="Voltar ao painel principal">
+                        <i class="fas fa-arrow-left"></i> Voltar ao Painel
+                    </button>
+                </div>
+            </div>
+            <div>
+                <form id="form-cadastro-acompanhante" onsubmit="event.preventDefault(); cadastrarAcompanhante();" class="form-cadastro-acompanhante">
+                    <div>
+                        <label class="form-label">Nome do Acompanhante</label>
+                        <input type="text" id="acomp-nome" class="form-input" required placeholder="Nome do acompanhante" title="Nome do acompanhante">
+                    </div>
+                    <div>
+                        <label class="form-label">E-mail</label>
+                        <input type="email" id="acomp-email" class="form-input" required placeholder="E-mail do acompanhante" title="E-mail do acompanhante">
+                    </div>
+                    <div>
+                        <label class="form-label">Quarto/Paciente</label>
+                        <input type="text" id="acomp-quarto" class="form-input" required autocomplete="username" placeholder="Quarto/Paciente" title="Quarto ou paciente">
+                    </div>
+                    <div>
+                        <label class="form-label">Senha</label>
+                        <input type="password" id="acomp-senha" class="form-input" required minlength="6" placeholder="Mínimo 6 caracteres" autocomplete="current-password" title="Senha do acompanhante">
+                    </div>
+                    <div>
+                        <button type="submit" class="btn btn-cadastrar-acompanhante" title="Cadastrar acompanhante"><i class="fas fa-user-plus"></i> Cadastrar Acompanhante</button>
+                    </div>
+                </form>
+            </div>
+            <div>
+                <h3>Acompanhantes Cadastrados</h3>
+                <div id="lista-acompanhantes" class="lista-acompanhantes">
+                    <p>Nenhum acompanhante cadastrado ainda.</p>
+                </div>
+            </div>
+        </div>
+        </div>
+    </div>
+    <!-- Removido bloco duplicado de métricas -->
+
+    <!-- Painéis das Equipes -->
+    <div class="teams-grid hidden">
+                <!-- Manutenção -->
+                <div class="team-panel" data-department="manutencao">
+                    <div class="team-header manutencao">
+                        <h3><i class="fas fa-tools"></i> Manutenção</h3>
+                        <span class="badge" id="count-manutencao">0</span>
+                    </div>
+                    <div class="team-content" id="content-manutencao">
+                        <div class="empty-state">
+                            <i class="fas fa-tools"></i>
+                            <p>Nenhuma solicitação de manutenção</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Nutrição -->
+                <div class="team-panel" data-department="nutricao">
+                    <div class="team-header nutricao">
+                        <h3><i class="fas fa-utensils"></i> Nutrição</h3>
+                        <span class="badge" id="count-nutricao">0</span>
+                    </div>
+                    <div class="team-content" id="content-nutricao">
+                        <div class="empty-state">
+                            <i class="fas fa-utensils"></i>
+                            <p>Nenhuma solicitação de nutrição</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Higienização -->
+                <div class="team-panel" data-department="higienizacao">
+                    <div class="team-header higienizacao">
+                        <h3><i class="fas fa-broom"></i> Higienização</h3>
+                        <span class="badge" id="count-higienizacao">0</span>
+                    </div>
+                    <div class="team-content" id="content-higienizacao">
+                        <div class="empty-state">
+                            <i class="fas fa-broom"></i>
+                            <p>Nenhuma solicitação de higienização</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Hotelaria -->
+                <div class="team-panel" data-department="hotelaria">
+                    <div class="team-header hotelaria">
+                        <h3><i class="fas fa-bed"></i> Hotelaria</h3>
+                        <span class="badge" id="count-hotelaria">0</span>
+                    </div>
+                    <div class="team-content" id="content-hotelaria">
+                        <div class="empty-state">
+                            <i class="fas fa-bed"></i>
+                            <p>Nenhuma solicitação de hotelaria</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+    <!-- Seção de Relatórios (apenas Super Admin) -->
+    <div id="relatorios-section" class="hidden">
+                <div class="section-content">
+                    <div class="section-header">
+                        <h2>📊 Centro de Relatórios Avançados</h2>
+                        <button onclick="voltarPainelPrincipal()" class="btn-voltar" title="Voltar ao painel principal">
+                            <i class="fas fa-arrow-left"></i> Voltar ao Painel
+                        </button>
+                    </div>
+                    
+                    <!-- Filtros de Relatório -->
+                    <div class="filtros">
+                        <h3>🔍 Filtros de Relatório</h3>
+                        <div class="filtros-grid">
+                            <div>
+                                <label>Período</label>
+                                <select id="filtro-periodo" title="Selecione o período do relatório">
+                                    <option value="7">Últimos 7 dias</option>
+                                    <option value="30" selected>Últimos 30 dias</option>
+                                    <option value="90">Últimos 90 dias</option>
+                                    <option value="365">Último ano</option>
+                                    <option value="custom">Período personalizado</option>
+                                </select>
+                            </div>
+                            <div>
+                                <label>Equipe</label>
+                                <select id="filtro-equipe" title="Selecione a equipe">
+                                    <option value="todas">Todas as equipes</option>
+                                    <option value="manutencao">🔧 Manutenção</option>
+                                    <option value="nutricao">🍽️ Nutrição</option>
+                                    <option value="higienizacao">🧽 Higienização</option>
+                                    <option value="hotelaria">🏨 Hotelaria</option>
+                                </select>
+                            </div>
+                            <div>
+                                <label>Status</label>
+                                <select id="filtro-status" title="Selecione o status">
+                                    <option value="todos">Todos os status</option>
+                                    <option value="pendente">⏳ Pendente</option>
+                                    <option value="em-andamento">🔄 Em Andamento</option>
+                                    <option value="finalizada">✅ Finalizada</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div id="custom-date-range">
+                            <div>
+                                <label>Data Inicial</label>
+                                <input type="date" id="data-inicial" title="Data inicial do relatório" placeholder="Data inicial">
+                            </div>
+                            <div>
+                                <label>Data Final</label>
+                                <input type="date" id="data-final" title="Data final do relatório" placeholder="Data final">
+                            </div>
+                        </div>
+                        <div class="filtros-btns">
+                            <button onclick="gerarRelatorioAdmin()" class="btn-relatorio" title="Gerar Relatório">
+                                <i class="fas fa-chart-bar"></i> Gerar Relatório
+                            </button>
+                            <button onclick="exportarDados()" class="btn-exportar-excel" title="Exportar Dados (Excel)">
+                                <i class="fas fa-download"></i> Exportar Dados (Excel)
+                            </button>
+                        </div>
+                    </div>
+                    
+                    <!-- Métricas Gerais -->
+                    <div id="metricas-gerais" class="metricas-gerais">
+                        <div class="metrica-card metrica-azul">
+                            <div class="metrica-valor" id="total-geral">0</div>
+                            <div class="metrica-label">Total de Solicitações</div>
+                        </div>
+                        <div class="metrica-card metrica-verde">
+                            <div class="metrica-valor" id="tma-geral">--</div>
+                            <div class="metrica-label">TMA Geral</div>
+                        </div>
+                        <div class="metrica-card metrica-roxa">
+                            <div class="metrica-valor" id="tme-geral">--</div>
+                            <div class="metrica-label">TME Geral</div>
+                        </div>
+                        <div class="metrica-card metrica-amarela">
+                            <div class="metrica-valor" id="sla-geral">--</div>
+                            <div class="metrica-label">SLA Geral</div>
+                        </div>
+                        <div class="metrica-card metrica-vermelha">
+                            <div class="metrica-valor" id="satisfacao-geral">--</div>
+                            <div class="metrica-label">Satisfação Média</div>
+                        </div>
+                    </div>
+                    
+                    <!-- Tabela de Relatório -->
+                    <div id="tabela-relatorio" class="tabela-relatorio">
+                        <div class="tabela-relatorio-empty">
+                            <i class="fas fa-chart-bar icon-large icon-opacity"></i>
+                            <p>Clique em "Gerar Relatório" para visualizar os dados</p>
+                        </div>
+                    </div>
+    <!-- Modal de Criação de Usuário -->
+    <!-- Novo Modal de Criação de Usuário -->
+    <div id="modal-novo-usuario" class="modal hidden">
+<!-- Modal de Criação de Usuário sempre presente para admins -->
+    <div class="modal-content modal-novo-usuario-content">
+            <h2 class="modal-novo-usuario-title">Criar Novo Usuário</h2>
+            <form id="form-novo-usuario">
+                <div class="form-group">
+                    <label for="usuario-tipo">Tipo de Usuário</label>
+                    <select id="usuario-tipo" class="form-input" required title="Selecione o tipo de usuário" onchange="alterarTipoUsuario()">
+                        <option value="">Selecione o tipo</option>
+                        <option value="equipe">👥 Usuário de Equipe</option>
+                        <option value="admin">🔐 Administrador</option>
+                    </select>
+                </div>
+                <div class="form-group" id="campo-equipe" style="display: none;">
+                    <label for="usuario-equipe">Equipe</label>
+                    <select id="usuario-equipe" class="form-input" title="Selecione a equipe">
+                        <option value="">Selecione a equipe</option>
+                        <option value="manutencao">🔧 Manutenção</option>
+                        <option value="nutricao">🍽️ Nutrição</option>
+                        <option value="higienizacao">🧽 Higienização</option>
+                        <option value="hotelaria">🏨 Hotelaria</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="usuario-nome">Nome/Login</label>
+                    <input type="text" id="usuario-nome" class="form-input" required placeholder="Nome completo do usuário" title="Nome completo do usuário">
+                </div>
+                <div class="form-group">
+                    <label for="usuario-email">E-mail</label>
+                    <input type="email" id="usuario-email" class="form-input" required placeholder="email@yuna.com.br" title="E-mail do usuário">
+                </div>
+                <div class="form-group">
+                    <label for="usuario-senha">Senha</label>
+                    <input type="password" id="usuario-senha" class="form-input" required placeholder="Senha de acesso" title="Senha do usuário">
+                </div>
+                <div class="modal-novo-usuario-btns">
+                    <button type="button" id="btn-cancelar-novo-usuario" class="btn btn-cancelar-novo-usuario">Cancelar</button>
+                    <button type="submit" class="btn btn-criar-novo-usuario">Criar Usuário</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Modal de Gerenciamento de Usuários -->
+    <div id="manage-users-modal" class="modal hidden">
+<!-- Modal de Gerenciamento de Usuários sempre presente para admins -->
+    <div class="modal-content modal-gerenciar-usuarios-content">
+            <div class="modal-gerenciar-usuarios-header">
+                <div class="modal-gerenciar-usuarios-header-flex">
+                    <div>
+                        <h3 style="margin: 0; font-size: 1.5rem; font-weight: 700;">
+                            <i class="fas fa-users-cog"></i> Gerenciar Usuários
+                        </h3>
+                        <p style="margin: 0.5rem 0 0 0; opacity: 0.9; font-size: 0.9rem;">
+                            Visualize, edite e remova usuários do sistema
+                        </p>
+                    </div>
+                    <button onclick="closeManageUsersModal()" class="btn-close-modal" title="Fechar Modal">
+                        <i class="fas fa-times"></i>
+                    </button>
+                </div>
+            </div>
+            <div class="modal-gerenciar-usuarios-list">
+                <div id="users-list" style="display: grid; gap: 1rem;">
+                    <div style="text-align: center; padding: 2rem; color: #6b7280;">
+                        <i class="fas fa-spinner fa-spin" style="font-size: 2rem; margin-bottom: 1rem;"></i>
+                        <p>Carregando usuários...</p>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-gerenciar-usuarios-footer">
+                <div class="modal-gerenciar-usuarios-footer-flex">
+                    <div style="color: #6b7280; font-size: 0.9rem;">
+                        <i class="fas fa-info-circle"></i> Total de usuários: <span id="total-users-count">0</span>
+                    </div>
+                    <button onclick="closeManageUsersModal()" 
+                            class="btn-concluir-modal" title="Concluir">
+                        <i class="fas fa-check"></i> Concluído
+                    </button>
+                </div>
+            </div>
+        </div>
+        <!-- Modal de Edição de Usuário -->
+        <div id="edit-user-modal" class="modal hidden modal-edicao-usuario">
+            <div class="modal-content" style="max-width: 650px; width: 90%; background: white; border: none; box-shadow: 0 20px 60px rgba(0, 0, 0, 0.25); border-radius: 20px;">
+                <div style="background: linear-gradient(135deg, #6366f1 0%, #3b82f6 100%); margin: 0; padding: 2rem; border-radius: 20px 20px 0 0; color: white; position: relative; text-align: center;">
+                    <div style="position: absolute; top: 1rem; right: 1rem;">
+                        <button onclick="closeEditUserModal()" class="btn-close-modal" title="Fechar Modal">
+                            <i class="fas fa-times"></i>
+                        </button>
+                    </div>
+                    <h2 style="margin: 0; font-size: 1.8rem; font-weight: 700; display: flex; align-items: center; justify-content: center; gap: 0.75rem;">
+                        <i class="fas fa-user-edit" style="font-size: 1.5rem;"></i> Editar Usuário
+                    </h2>
+                </div>
+                <div style="padding: 2.5rem;">
+                    <form id="edit-user-form" onsubmit="updateUser(event)" style="padding: 0;">
+                        <input type="hidden" id="edit-user-id">
+                        <input type="hidden" id="edit-user-type">
+                        <div class="form-group" style="margin-bottom: 2rem;">
+                            <label class="form-label" style="color: #374151; font-weight: 600; margin-bottom: 0.75rem; display: flex; align-items: center; gap: 0.5rem;">
+                                <i class="fas fa-user" style="color: #6366f1;"></i>Nome Completo
+                            </label>
+                            <input type="text" id="edit-user-name" class="form-input" required placeholder="Nome completo" title="Nome completo do usuário">
+                        </div>
+                        <div class="form-group" style="margin-bottom: 2rem;">
+                            <label class="form-label" style="color: #374151; font-weight: 600; margin-bottom: 0.75rem; display: flex; align-items: center; gap: 0.5rem;">
+                                <i class="fas fa-envelope" style="color: #f59e0b;"></i>E-mail
+                            </label>
+                            <input type="email" id="edit-user-email" class="form-input" required placeholder="E-mail" title="E-mail do usuário">
+                        </div>
+                        <div class="form-group" style="margin-bottom: 2rem;" id="edit-user-dept-group">
+                            <label class="form-label" style="color: #374151; font-weight: 600; margin-bottom: 0.75rem; display: flex; align-items: center; gap: 0.5rem;">
+                                <i class="fas fa-building" style="color: #10b981;"></i>Departamento
+                            </label>
+                            <select id="edit-user-dept" class="form-input" title="Selecione o departamento">
+                                <option value="">Selecione o departamento</option>
+                                <option value="manutencao">🔧 Manutenção</option>
+                                <option value="nutricao">🍽️ Nutrição</option>
+                                <option value="higienizacao">🧽 Higienização</option>
+                                <option value="hotelaria">🏨 Hotelaria</option>
+                            </select>
+                        </div>
+                        <div style="background: #f8fafc; margin: 2rem -2.5rem -2.5rem -2.5rem; padding: 2rem 2.5rem; border-radius: 0 0 20px 20px; border-top: 2px solid #e5e7eb;">
+                            <div style="display: flex; gap: 1rem; justify-content: flex-end;">
+                                <button type="button" onclick="closeEditUserModal()" class="btn-cancelar-edicao" title="Cancelar edição">
+                                    <i class="fas fa-times"></i> Cancelar
+                                </button>
+                                <button type="submit" id="edit-user-submit" class="btn-salvar-edicao" title="Salvar alterações">
+                                    <i class="fas fa-save"></i> Salvar Alterações
+                                </button>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal de Importação em Lote -->
+    <div id="modal-importacao-lote" class="modal hidden">
+        <div class="modal-content" style="max-width: 600px;">
+            <div class="modal-header">
+                <h3><i class="fas fa-file-excel" style="color: #10b981;"></i> Importação em Lote - Acompanhantes</h3>
+                <button onclick="fecharImportacaoLote()" class="modal-close">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div style="margin-bottom: 20px; padding: 15px; background: #f0f9ff; border: 1px solid #0ea5e9; border-radius: 8px;">
+                    <h4 style="margin: 0 0 10px 0; color: #0369a1;"><i class="fas fa-info-circle"></i> Instruções</h4>
+                    <ul style="margin: 0; padding-left: 20px; color: #0f172a;">
+                        <li>Baixe o modelo Excel clicando em "Baixar Modelo"</li>
+                        <li>Preencha os dados: <strong>Nome, Email, Quarto, Senha</strong></li>
+                        <li>Salve o arquivo e faça o upload abaixo</li>
+                        <li>Máximo de 50 acompanhantes por vez</li>
+                    </ul>
+                </div>
+                
+                <div style="margin-bottom: 20px;">
+                    <label class="form-label">Selecionar arquivo Excel (.xlsx)</label>
+                    <input type="file" id="arquivo-excel" accept=".xlsx,.xls" class="form-input" style="padding: 10px;">
+                </div>
+                
+                <div id="preview-dados" style="display: none; margin-top: 20px;">
+                    <h4>📋 Preview dos Dados</h4>
+                    <div id="tabela-preview" style="max-height: 300px; overflow-y: auto; border: 1px solid #e5e7eb; border-radius: 8px;"></div>
+                    <p id="contador-registros" style="margin: 10px 0; font-weight: 600;"></p>
+                </div>
+                
+                <div id="log-importacao" style="display: none; margin-top: 20px;">
+                    <h4>📊 Log da Importação</h4>
+                    <div id="resultado-importacao" style="max-height: 200px; overflow-y: auto; padding: 10px; background: #f8fafc; border-radius: 8px; font-family: monospace; font-size: 12px;"></div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button onclick="fecharImportacaoLote()" class="btn-secondary">Cancelar</button>
+                <button onclick="baixarModeloExcel()" class="btn-primary" style="background: #3b82f6;">
+                    <i class="fas fa-download"></i> Baixar Modelo
+                </button>
+                <button onclick="processarArquivoExcel()" id="btn-processar" class="btn-primary" disabled>
+                    <i class="fas fa-upload"></i> Importar Dados
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal genérico para mensagens, se necessário -->
+    <div id="generic-modal" class="modal hidden modal-generico">
+        <div class="modal-content modal-generico-content"></div>
+    </div>
+
+    <!-- Scripts no final do body para garantir carregamento correto -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
+    <script src="firebase-config-secure.js"></script>
+    <script src="../security-audit.js"></script>
+    <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js"></script>
+    <script>
+        (function(){
+            // Só inicializar se houver USER_ID configurado
+            const emailjsUserId = 'SEU_USER_ID_EMAILJS';
+            if (emailjsUserId && emailjsUserId !== 'SEU_USER_ID_EMAILJS') {
+                emailjs.init(emailjsUserId);
+                console.log('✅ EmailJS inicializado');
+            } else {
+                console.log('ℹ️ EmailJS não configurado - notificações desabilitadas');
+                // Criar mock para evitar erros
+                window.emailjs = {
+                    send: () => Promise.resolve({ status: 200, text: 'Mock enviado' })
+                };
+            }
+        })();
+    </script>
+    <script src="admin-permissions.js"></script>
+    <!-- Debug mini removido - arquivo não existe -->
+    <!-- Sistema de debug para controle de equipes -->
+    <!-- <script src="debug-sistema-equipes.js"></script> -->
+    <!-- Validação de usuários de equipe -->
+    <!-- <script src="validacao-usuarios-equipe.js"></script> -->
+    <!-- Testes completos do sistema -->
+    <!-- <script src="testes-sistema-completo.js"></script> -->
+    <!-- Correção de usuários em coleções erradas -->
+    <!-- <script src="correcao-usuarios.js"></script> -->
+    <!-- Correção rápida e simples -->
+    <!-- <script src="correcao-rapida.js"></script> -->
+    <!-- Correção de campo equipe undefined -->
+    <!-- <script src="correcao-campo-equipe.js"></script> -->
+    <!-- <script src="executar-correcao.js"></script> -->
+    <!-- <script src="diagnostico-urgente.js"></script> -->
+    <!-- Correção imediata para execução (carrega após correção) -->
+    <!-- <script src="correcao-imediata.js"></script> -->
+    <!-- Modal de Edição de Acompanhante -->
+    <div id="modal-editar-acompanhante" class="modal hidden">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2><i class="fas fa-user-edit"></i> Editar Acompanhante</h2>
+                <span class="close" onclick="fecharModalEditarAcompanhante()">&times;</span>
+            </div>
+            <div class="modal-body">
+                <form id="form-editar-acompanhante" onsubmit="salvarEdicaoAcompanhante(event)">
+                    <input type="hidden" id="edit-acomp-id" value="">
+                    <div>
+                        <label class="form-label">Nome do Acompanhante</label>
+                        <input type="text" id="edit-acomp-nome" class="form-input" required placeholder="Nome do acompanhante" title="Nome do acompanhante">
+                    </div>
+                    <div>
+                        <label class="form-label">E-mail</label>
+                        <input type="email" id="edit-acomp-email" class="form-input" required placeholder="E-mail do acompanhante" title="E-mail do acompanhante">
+                    </div>
+                    <div>
+                        <label class="form-label">Quarto/Paciente</label>
+                        <input type="text" id="edit-acomp-quarto" class="form-input" required autocomplete="username" placeholder="Quarto/Paciente" title="Quarto ou paciente">
+                    </div>
+                    <div>
+                        <label class="form-label">Nova Senha (deixe em branco para manter atual)</label>
+                        <input type="password" id="edit-acomp-senha" class="form-input" minlength="6" placeholder="Nova senha (opcional)" autocomplete="new-password" title="Nova senha (opcional)">
+                    </div>
+                    <div class="modal-actions">
+                        <button type="button" class="btn btn-secondary" onclick="fecharModalEditarAcompanhante()">
+                            <i class="fas fa-times"></i> Cancelar
+                        </button>
+                        <button type="submit" class="btn btn-primary">
+                            <i class="fas fa-save"></i> Salvar Alterações
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- SCRIPT DE LIMPEZA DE EMERGÊNCIA - DEVE EXECUTAR PRIMEIRO -->
+    <script src="emergency-cleanup.js?v=20251110-003"></script>
+    
+    <script src="admin-panel.js?v=20251113-153000"></script>
+    <!-- TESTE MODAL ARRASTÁVEL -->
+    <script src="teste-modal-arrastavel.js?v=20251128-001"></script>
+    <!-- TESTE EDIÇÃO COMPLETA -->
+    <script src="teste-edicao-completa.js?v=20251128-001"></script>
+    <!-- Verificar usuários existentes no Firestore -->
+    <script src="verificar-usuarios-existentes.js?v=20251110-003"></script>
+    <!-- Diagnóstico de status independente -->
+    <script src="diagnostico-status.js?v=20251110-003"></script>
+    <!-- TESTE FINAL Z-INDEX -->
+    <script src="teste-final-zindex.js?v=20251128-003"></script>
+    
+    <!-- SCRIPT INLINE PARA FUNÇÕES FALTANTES -->
+    <script>
+        // Função closeEditUserModal que está sendo chamada mas não existe
+        window.closeEditUserModal = function() {
+            console.log('[CLOSE-MODAL] Fechando modal de edição...');
+            if (typeof window.fecharModalEditarUsuario === 'function') {
+                window.fecharModalEditarUsuario();
+            } else {
+                const modal = document.getElementById('edit-user-modal');
+                if (modal) {
+                    modal.remove();
+                }
+            }
+        };
+        
+        // Alias para compatibilidade
+        window.fecharModal = window.closeEditUserModal;
+        
+        console.log('✅ Funções de fechamento de modal definidas');
+    </script>
+    
+    <!-- SCRIPT INLINE FORÇA BRUTA Z-INDEX -->
+    <script>
+    (function() {
+        console.log('🚨 [INLINE-FORCE] Iniciando correção z-index inline...');
+        
+        function forcarZIndexBruto() {
+            const editModal = document.getElementById('edit-user-modal');
+            const manageModal = document.getElementById('manage-users-modal');
+            
+            if (editModal) {
+                editModal.style.cssText = editModal.style.cssText + '; z-index: 999999999 !important; position: fixed !important;';
+                console.log('🚨 [INLINE-FORCE] Edit modal z-index forçado para 999999999');
+            }
+            
+            if (manageModal) {
+                manageModal.style.cssText = manageModal.style.cssText + '; z-index: 999999 !important; position: fixed !important;';
+                console.log('🚨 [INLINE-FORCE] Manage modal z-index forçado para 999999');
+            }
+        }
+        
+        // Executar imediatamente
+        forcarZIndexBruto();
+        
+        // Executar a cada 100ms por 10 segundos
+        let contador = 0;
+        const intervalo = setInterval(() => {
+            forcarZIndexBruto();
+            contador++;
+            if (contador >= 100) { // 10 segundos
+                clearInterval(intervalo);
+                console.log('🚨 [INLINE-FORCE] Correção periódica finalizada');
+            }
+        }, 100);
+        
+        // Interceptar editarUsuario quando estiver disponível
+        function interceptarEditarUsuario() {
+            if (window.editarUsuario && typeof window.editarUsuario === 'function') {
+                const originalEditUser = window.editarUsuario;
+                window.editarUsuario = function() {
+                    console.log('🚨 [INLINE-FORCE] INTERCEPTANDO editarUsuario');
+                    const resultado = originalEditUser.apply(this, arguments);
+                    
+                    // Força múltipla
+                    forcarZIndexBruto();
+                    setTimeout(forcarZIndexBruto, 10);
+                    setTimeout(forcarZIndexBruto, 50);
+                    setTimeout(forcarZIndexBruto, 100);
+                    setTimeout(forcarZIndexBruto, 200);
+                    
+                    return resultado;
+                };
+                console.log('✅ [INLINE-FORCE] editarUsuario interceptado com sucesso');
+            } else {
+                setTimeout(interceptarEditarUsuario, 100);
+            }
+        }
+        
+        // Tentar interceptar após carregamento
+        setTimeout(interceptarEditarUsuario, 500);
+        
+        // Expor função global
+        window.forcarZIndexEmergencia = forcarZIndexBruto;
+        
+    })();
+    </script>
+</body>
+</html>
