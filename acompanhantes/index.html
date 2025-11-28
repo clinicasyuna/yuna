@@ -509,15 +509,15 @@
         }
 
         .metric-primary::before {
-            background: linear-gradient(135deg, #4285f4 0%, #2563eb 100%);
+            background: linear-gradient(135deg, rgb(148, 165, 184) 0%, rgb(163, 178, 194) 100%);
         }
 
         .metric-success::before {
-            background: linear-gradient(135deg, #34d399 0%, #059669 100%);
+            background: linear-gradient(135deg, rgb(198, 207, 217) 0%, rgb(206, 214, 223) 100%);
         }
 
         .metric-purple::before {
-            background: linear-gradient(135deg, #fb7185 0%, #e11d48 100%);
+            background: linear-gradient(135deg, rgb(253, 199, 134) 0%, rgb(253, 207, 133) 100%);
         }
 
         .metric-icon {
@@ -1499,25 +1499,25 @@
                 <h3 class="section-title">🎯 Fazer Solicitação</h3>
                 
                 <div class="services-grid">
-                    <div class="service-card" onclick="abrirSolicitacao('manutencao')" style="background: linear-gradient(135deg, #4285f4 0%, #2563eb 100%);">
+                    <div class="service-card" onclick="abrirSolicitacao('manutencao')" style="background: linear-gradient(135deg, rgb(148, 165, 184) 0%, rgb(163, 178, 194) 100%);">
                         <div class="icon">🔧</div>
                         <h3>Manutenção</h3>
                         <p>Problemas elétricos, hidráulicos, ar condicionado</p>
                     </div>
 
-                    <div class="service-card" onclick="abrirSolicitacao('nutricao')" style="background: linear-gradient(135deg, #34d399 0%, #059669 100%);">
+                    <div class="service-card" onclick="abrirSolicitacao('nutricao')" style="background: linear-gradient(135deg, rgb(198, 207, 217) 0%, rgb(206, 214, 223) 100%);">
                         <div class="icon">🍽️</div>
                         <h3>Nutrição</h3>
                         <p>Refeições, lanches, dietas especiais</p>
                     </div>
 
-                    <div class="service-card" onclick="abrirSolicitacao('higienizacao')" style="background: linear-gradient(135deg, #fb7185 0%, #e11d48 100%);">
+                    <div class="service-card" onclick="abrirSolicitacao('higienizacao')" style="background: linear-gradient(135deg, rgb(253, 199, 134) 0%, rgb(253, 207, 133) 100%);">
                         <div class="icon">🧽</div>
                         <h3>Higienização</h3>
                         <p>Limpeza do quarto, desinfecção, organização</p>
                     </div>
 
-                    <div class="service-card" onclick="abrirSolicitacao('hotelaria')" style="background: linear-gradient(135deg, #fbbf24 0%, #f59e0b 100%);">
+                    <div class="service-card" onclick="abrirSolicitacao('hotelaria')" style="background: linear-gradient(135deg, rgb(253, 207, 133) 0%, rgb(253, 199, 134) 100%);">
                         <div class="icon">🏨</div>
                         <h3>Hotelaria</h3>
                         <p>Roupas de cama, toalhas, amenidades</p>
@@ -3610,7 +3610,7 @@
                 });
 
                 listaElement.innerHTML = historicoItens;
-                showToast('Sucesso!', `${snapshot.size} solicitações carregadas.`, 'success');
+                showToast('Sucesso!', `${solicitacoes.length} solicitações carregadas.`, 'success');
 
             } catch (error) {
                 console.error('Erro ao carregar histórico:', error);
