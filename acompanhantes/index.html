@@ -939,7 +939,31 @@
 
         @media (max-width: 639px) {
             .user-details {
-                display: none;
+                /* Não ocultar mais os detalhes do usuário */
+                flex: 1;
+                min-width: 0;
+            }
+
+            .user-details h2 {
+                font-size: 1rem;
+                margin: 0;
+                white-space: nowrap;
+                overflow: hidden;
+                text-overflow: ellipsis;
+            }
+
+            .user-details p {
+                font-size: 0.8rem;
+                margin: 0;
+                white-space: nowrap;
+                overflow: hidden;
+                text-overflow: ellipsis;
+            }
+
+            .user-info {
+                flex: 1;
+                min-width: 0;
+                gap: 0.5rem;
             }
 
             .user-avatar {
@@ -950,6 +974,17 @@
 
             .main-header {
                 padding: 1rem;
+                gap: 0.5rem;
+            }
+
+            .header-actions {
+                gap: 0.25rem;
+            }
+
+            .action-btn {
+                width: 36px;
+                height: 36px;
+                font-size: 0.9rem;
             }
 
             .quick-action-btn span {
