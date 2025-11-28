@@ -57,7 +57,7 @@
   background: rgba(0,0,0,0.5);
   justify-content: center;
   align-items: center;
-  z-index: 2000;
+  z-index: 1000000 !important;
   display: flex;
 }
 /* Botão Salvar Edição */
@@ -1566,6 +1566,12 @@ h2.finalizar-solicitacao {
 
 #manage-users-modal {
   z-index: 999999 !important;
+  pointer-events: auto !important;
+  position: fixed !important;
+}
+
+#edit-user-modal {
+  z-index: 1000000 !important;
   pointer-events: auto !important;
   position: fixed !important;
 }
