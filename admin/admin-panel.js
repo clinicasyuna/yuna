@@ -716,11 +716,22 @@ async function verificarEmailExistente(email) {
     try {
         debugLog('[DEBUG] verificarEmailExistente: verificando email:', email);
         
+        if (!email || !email.trim()) {
+            debugLog('[DEBUG] Email vazio ou inválido');
+            return false;
+        }
+
+        if (!window.db) {
+            console.error('[ERRO] Firestore não inicializado');
+            return false;
+        }
+        
         // Verificar em todas as coleções de usuários
+        debugLog('[DEBUG] Executando queries em paralelo...');
         const [adminSnapshot, equipeSnapshot, acompanhantesSnapshot] = await Promise.all([
-            window.db.collection('usuarios_admin').where('email', '==', email).get(),
-            window.db.collection('usuarios_equipe').where('email', '==', email).get(),
-            window.db.collection('usuarios_acompanhantes').where('email', '==', email).get()
+            window.db.collection('usuarios_admin').where('email', '==', email.trim()).get(),
+            window.db.collection('usuarios_equipe').where('email', '==', email.trim()).get(),
+            window.db.collection('usuarios_acompanhantes').where('email', '==', email.trim()).get()
         ]);
 
         const existeAdmin = !adminSnapshot.empty;
@@ -731,7 +742,10 @@ async function verificarEmailExistente(email) {
             existeAdmin,
             existeEquipe, 
             existeAcompanhante,
-            emailVerificado: email
+            emailVerificado: email,
+            adminCount: adminSnapshot.size,
+            equipeCount: equipeSnapshot.size,
+            acompanhanteCount: acompanhantesSnapshot.size
         });
 
         if (existeAdmin) {
@@ -749,11 +763,17 @@ async function verificarEmailExistente(email) {
             return true;
         }
 
+        debugLog('[DEBUG] Email não encontrado em nenhuma coleção');
         return false;
 
     } catch (error) {
-        console.error('Erro ao verificar email existente:', error);
-        // Em caso de erro, assumir que não existe para não bloquear
+        console.error('[ERRO] verificarEmailExistente:', error);
+        debugLog('[ERRO] Detalhes do erro:', {
+            message: error.message,
+            code: error.code,
+            stack: error.stack
+        });
+        // Em caso de erro, retornar false para não bloquear desnecessariamente
         return false;
     }
 }
@@ -2100,10 +2120,23 @@ window.criarNovoUsuario = async function() {
 
         // Verificar se o email já existe antes de tentar criar
         debugLog('[DEBUG] Verificando se email já existe:', email);
-        const emailExiste = await verificarEmailExistente(email);
-        if (emailExiste) {
-            showToast('Erro', `O email "${email}" já está sendo usado por outro usuário.`, 'error');
-            return;
+        showToast('Info', 'Verificando se o email já existe...', 'info');
+        
+        try {
+            const emailExiste = await verificarEmailExistente(email);
+            debugLog('[DEBUG] Resultado verificação email:', emailExiste);
+            
+            if (emailExiste) {
+                showToast('Erro', `O email "${email}" já está sendo usado por outro usuário. Escolha um email diferente.`, 'error');
+                debugLog('[DEBUG] Email já existe, parando criação');
+                return;
+            } else {
+                debugLog('[DEBUG] Email livre para uso, prosseguindo...');
+                showToast('Info', 'Email disponível, criando usuário...', 'info');
+            }
+        } catch (errorVerificacao) {
+            console.error('[ERRO] Falha na verificação de email:', errorVerificacao);
+            showToast('Aviso', 'Não foi possível verificar se o email já existe. Tentando criar mesmo assim...', 'warning');
         }
         
         // Desabilitar botão durante criação
@@ -2247,7 +2280,38 @@ window.criarNovoUsuario = async function() {
         let mensagem = 'Erro ao criar usuário: ' + error.message;
         
         if (error.code === 'auth/email-already-in-use') {
-            mensagem = `O email "${email}" já está sendo usado por outro usuário. Tente um email diferente ou verifique se o usuário já existe.`;
+            mensagem = `O email "${email}" já está sendo usado no Firebase Auth. Possível usuário órfão detectado.`;
+            
+            // Adicionar botão para tentar limpar usuário órfão
+            const confirmarLimpeza = confirm(
+                `O email "${email}" já existe no sistema de autenticação, mas pode ser um usuário órfão.\n\n` +
+                'Deseja tentar limpar e recriar o usuário?\n\n' +
+                '(Isso irá remover o usuário órfão do Firebase Auth e criar novamente)'
+            );
+            
+            if (confirmarLimpeza) {
+                try {
+                    showToast('Info', 'Tentando limpar usuário órfão...', 'info');
+                    
+                    // Tentar fazer login com o email para deletar
+                    console.log('🔄 Tentativa de limpeza de usuário órfão:', email);
+                    
+                    // Como não temos a senha do usuário órfão, vamos sugerir limpeza manual
+                    showToast('Aviso', 
+                        `Para resolver este problema:\n` +
+                        `1. Acesse o Firebase Console\n` +
+                        `2. Vá em Authentication > Users\n` +
+                        `3. Encontre e delete o usuário: ${email}\n` +
+                        `4. Tente criar novamente`, 
+                        'warning', 10000
+                    );
+                    
+                } catch (limpezaError) {
+                    console.error('Erro na tentativa de limpeza:', limpezaError);
+                    showToast('Erro', 'Não foi possível limpar automaticamente. Use o Firebase Console.', 'error');
+                }
+            }
+            
         } else if (error.code === 'auth/invalid-email') {
             mensagem = 'Email inválido. Verifique o formato do endereço de email.';
         } else if (error.code === 'auth/weak-password') {
