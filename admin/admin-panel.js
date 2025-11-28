@@ -711,6 +711,53 @@ window.forcarAtualizacaoUsuario = async function() {
     }
 };
 
+// Função para verificar se email já existe em qualquer coleção
+async function verificarEmailExistente(email) {
+    try {
+        debugLog('[DEBUG] verificarEmailExistente: verificando email:', email);
+        
+        // Verificar em todas as coleções de usuários
+        const [adminSnapshot, equipeSnapshot, acompanhantesSnapshot] = await Promise.all([
+            window.db.collection('usuarios_admin').where('email', '==', email).get(),
+            window.db.collection('usuarios_equipe').where('email', '==', email).get(),
+            window.db.collection('usuarios_acompanhantes').where('email', '==', email).get()
+        ]);
+
+        const existeAdmin = !adminSnapshot.empty;
+        const existeEquipe = !equipeSnapshot.empty;
+        const existeAcompanhante = !acompanhantesSnapshot.empty;
+
+        debugLog('[DEBUG] verificarEmailExistente: resultados:', {
+            existeAdmin,
+            existeEquipe, 
+            existeAcompanhante,
+            emailVerificado: email
+        });
+
+        if (existeAdmin) {
+            console.log('📧 Email encontrado em usuarios_admin:', adminSnapshot.docs[0].data());
+            return true;
+        }
+        
+        if (existeEquipe) {
+            console.log('📧 Email encontrado em usuarios_equipe:', equipeSnapshot.docs[0].data());
+            return true;
+        }
+        
+        if (existeAcompanhante) {
+            console.log('📧 Email encontrado em usuarios_acompanhantes:', acompanhantesSnapshot.docs[0].data());
+            return true;
+        }
+
+        return false;
+
+    } catch (error) {
+        console.error('Erro ao verificar email existente:', error);
+        // Em caso de erro, assumir que não existe para não bloquear
+        return false;
+    }
+}
+
 // Função para verificar e limpar usuários órfãos do Firebase Auth
 window.verificarUsuariosOrfaos = async function() {
     console.log('🧹 Verificando usuários órfãos no Firebase Auth...');
@@ -2050,6 +2097,14 @@ window.criarNovoUsuario = async function() {
             showToast('Erro', 'A senha deve ter pelo menos 6 caracteres.', 'error');
             return;
         }
+
+        // Verificar se o email já existe antes de tentar criar
+        debugLog('[DEBUG] Verificando se email já existe:', email);
+        const emailExiste = await verificarEmailExistente(email);
+        if (emailExiste) {
+            showToast('Erro', `O email "${email}" já está sendo usado por outro usuário.`, 'error');
+            return;
+        }
         
         // Desabilitar botão durante criação
         const btnSubmit = document.querySelector('#form-novo-usuario button[type="submit"]');
@@ -2192,11 +2247,11 @@ window.criarNovoUsuario = async function() {
         let mensagem = 'Erro ao criar usuário: ' + error.message;
         
         if (error.code === 'auth/email-already-in-use') {
-            mensagem = 'Este email já está sendo usado por outro usuário.';
+            mensagem = `O email "${email}" já está sendo usado por outro usuário. Tente um email diferente ou verifique se o usuário já existe.`;
         } else if (error.code === 'auth/invalid-email') {
-            mensagem = 'Email inválido.';
+            mensagem = 'Email inválido. Verifique o formato do endereço de email.';
         } else if (error.code === 'auth/weak-password') {
-            mensagem = 'Senha muito fraca (mínimo 6 caracteres).';
+            mensagem = 'Senha muito fraca. Use pelo menos 6 caracteres.';
         }
         
         showToast('Erro', mensagem, 'error');
