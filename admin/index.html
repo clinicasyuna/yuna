@@ -854,12 +854,8 @@
 
     <!-- SCRIPT DE LIMPEZA DE EMERGÊNCIA - DEVE EXECUTAR PRIMEIRO -->
     <script src="emergency-cleanup.js?v=20251110-003"></script>
-    <!-- EMERGÊNCIA Z-INDEX - FORÇA BRUTA IMEDIATA -->
-    <script src="emergencia-zindex.js?v=20251128-002"></script>
     
     <script src="admin-panel.js?v=20251113-153000"></script>
-    <!-- PATCH DIRETO NA FUNÇÃO EDITAR USUÁRIO -->
-    <script src="patch-editar-usuario.js?v=20251128-002"></script>
     <!-- TESTE MODAL ARRASTÁVEL -->
     <script src="teste-modal-arrastavel.js?v=20251128-001"></script>
     <!-- TESTE EDIÇÃO COMPLETA -->
@@ -868,14 +864,29 @@
     <script src="verificar-usuarios-existentes.js?v=20251110-003"></script>
     <!-- Diagnóstico de status independente -->
     <script src="diagnostico-status.js?v=20251110-003"></script>
-    <!-- AUTO-CORRETOR Z-INDEX - EXECUTAR ANTES DOS TESTES -->
-    <script src="auto-zindex-corretor.js?v=20251128-001"></script>
-    <!-- TESTE AUTOMÁTICO DE MODAIS Z-INDEX -->
-    <script src="teste-modais-forcado.js?v=20251128-001"></script>
-    <!-- FUNÇÕES DE TESTE VIA UI (SEM CONSOLE) -->
-    <script src="teste-ui-modais.js?v=20251128-001"></script>
     <!-- TESTE FINAL Z-INDEX -->
     <script src="teste-final-zindex.js?v=20251128-003"></script>
+    
+    <!-- SCRIPT INLINE PARA FUNÇÕES FALTANTES -->
+    <script>
+        // Função closeEditUserModal que está sendo chamada mas não existe
+        window.closeEditUserModal = function() {
+            console.log('[CLOSE-MODAL] Fechando modal de edição...');
+            if (typeof window.fecharModalEditarUsuario === 'function') {
+                window.fecharModalEditarUsuario();
+            } else {
+                const modal = document.getElementById('edit-user-modal');
+                if (modal) {
+                    modal.remove();
+                }
+            }
+        };
+        
+        // Alias para compatibilidade
+        window.fecharModal = window.closeEditUserModal;
+        
+        console.log('✅ Funções de fechamento de modal definidas');
+    </script>
     
     <!-- SCRIPT INLINE FORÇA BRUTA Z-INDEX -->
     <script>
