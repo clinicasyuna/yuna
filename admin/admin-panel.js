@@ -2251,27 +2251,74 @@ window.criarNovoUsuario = async function() {
         
         console.log('💾 Salvando dados do admin atual:', adminAtual.dadosAdmin.email);
         
-        // SOLUÇÃO MELHORADA: Usar uma instância secundária do Firebase
-        // Para evitar deslogar o administrador atual
+        // SOLUÇÃO MELHORADA: Criar usuário sem perder sessão do admin
         let novoUsuario;
         
         try {
-            // Primeira tentativa: usar Firebase secundário (se disponível)
-            if (window.firebase && window.firebase.apps && window.firebase.apps.length > 1) {
-                console.log('🔄 Usando instância secundária do Firebase...');
-                const secondaryApp = window.firebase.apps[1];
-                const secondaryAuth = secondaryApp.auth();
-                const userCredential = await secondaryAuth.createUserWithEmailAndPassword(email, senha);
-                novoUsuario = userCredential.user;
-                await secondaryAuth.signOut(); // Logout da instância secundária
+            console.log('🔄 Criando usuário mantendo sessão admin...');
+            
+            // Método 1: Tentar usar Cloud Functions (se disponível)
+            if (window.firebase.functions) {
+                console.log('🌐 Tentando usar Cloud Functions...');
+                try {
+                    const createUser = window.firebase.functions().httpsCallable('createUser');
+                    const result = await createUser({ email, password: senha, tipo, nome, equipe });
+                    novoUsuario = { uid: result.data.uid };
+                    console.log('✅ Usuário criado via Cloud Functions:', novoUsuario.uid);
+                } catch (functionsError) {
+                    console.log('⚠️ Cloud Functions não disponível, usando método direto');
+                    throw functionsError;
+                }
             } else {
-                // Fallback: método original com restauração de sessão
-                console.log('🔄 Usando método com restauração de sessão...');
-                const userCredential = await window.auth.createUserWithEmailAndPassword(email, senha);
-                novoUsuario = userCredential.user;
+                throw new Error('Cloud Functions não configurado');
             }
-        } catch (authError) {
-            throw authError; // Propagar erro para o catch principal
+        } catch (error) {
+            // Fallback: método direto com gestão de sessão
+            console.log('🔄 Usando método direto com proteção de sessão...');
+            
+            try {
+                // Tentar obter configuração do Firebase
+                const config = window.firebaseConfig || {
+                    apiKey: "AIzaSyAIp-rFuZZsBCNVJ3pSge4TE-XUuwYygrI",
+                    authDomain: "yuna-usuarios.firebaseapp.com",
+                    projectId: "yuna-usuarios",
+                    storageBucket: "yuna-usuarios.firebasestorage.app",
+                    messagingSenderId: "794262176773",
+                    appId: "1:794262176773:web:c4e3837b9784c2cd0cc2ba",
+                    measurementId: "G-BHCR6T39CT"
+                };
+                
+                // Criar uma nova instância do Firebase para evitar conflito
+                const tempApp = window.firebase.initializeApp(config, 'temp-user-creation-' + Date.now());
+                const tempAuth = tempApp.auth();
+                
+                try {
+                    const userCredential = await tempAuth.createUserWithEmailAndPassword(email, senha);
+                    novoUsuario = userCredential.user;
+                    console.log('👤 Usuário criado via instância temporária:', novoUsuario.uid);
+                    
+                    // Limpar instância temporária
+                    await tempAuth.signOut();
+                    await tempApp.delete();
+                    
+                } catch (tempError) {
+                    console.log('⚠️ Método temporário falhou:', tempError.message);
+                    
+                    if (tempApp) {
+                        try { await tempApp.delete(); } catch(e) {}
+                    }
+                    
+                    // Último recurso: método original
+                    console.log('🔄 Usando método original como último recurso...');
+                    const userCredential = await window.auth.createUserWithEmailAndPassword(email, senha);
+                    novoUsuario = userCredential.user;
+                    console.log('👤 Usuário criado via método original:', novoUsuario.uid);
+                }
+                
+            } catch (fallbackError) {
+                console.error('❌ Todos os métodos falharam:', fallbackError);
+                throw fallbackError;
+            }
         }
         
         debugLog('[DEBUG] Usuário criado no Auth:', novoUsuario.uid);
@@ -2325,32 +2372,58 @@ window.criarNovoUsuario = async function() {
         
         debugLog('[DEBUG] Usuário salvo com sucesso');
         
-        // VERIFICAR SE PRECISA RESTAURAR SESSÃO DO ADMINISTRADOR
+        // VERIFICAR E RESTAURAR SESSÃO DO ADMINISTRADOR
         const usuarioAtualLogado = window.auth.currentUser;
         
         if (!usuarioAtualLogado || usuarioAtualLogado.email !== adminAtual.dadosAdmin.email) {
-            console.log('🔄 Administrador foi deslogado, restaurando sessão...');
+            console.log('🔄 Sessão do administrador foi perdida, iniciando restauração...');
             
-            // Fazer logout do usuário recém-criado
-            if (usuarioAtualLogado && usuarioAtualLogado.email === email) {
+            // Se há algum usuário logado (que seria o recém-criado), fazer logout
+            if (usuarioAtualLogado) {
+                console.log('📤 Fazendo logout do usuário atual:', usuarioAtualLogado.email);
                 await window.auth.signOut();
-                console.log('📤 Logout do usuário recém-criado realizado');
             }
             
-            // Restaurar dados do administrador
-            window.usuarioAdmin = adminAtual.dadosAdmin;
-            window.userRole = adminAtual.userRole;
-            window.userEmail = adminAtual.userEmail;
-            localStorage.setItem('usuarioAdmin', JSON.stringify(adminAtual.dadosAdmin));
-            
-            console.log('✅ Dados do administrador restaurados:', adminAtual.dadosAdmin.email);
-            
-            // Mostrar aviso para relogar
-            setTimeout(() => {
-                showToast('Aviso', 'Usuário criado! Por segurança, você pode fazer login novamente.', 'info');
-            }, 1000);
+            // Tentar restaurar sessão do administrador
+            try {
+                console.log('🔐 Solicitando reautenticação do administrador...');
+                const senhaAdmin = prompt(
+                    `Para completar a operação, digite a senha do administrador ${adminAtual.dadosAdmin.email}:`
+                );
+                
+                if (!senhaAdmin) {
+                    throw new Error('Reautenticação cancelada pelo usuário');
+                }
+                
+                await window.auth.signInWithEmailAndPassword(adminAtual.dadosAdmin.email, senhaAdmin);
+                
+                // Restaurar dados do contexto
+                window.usuarioAdmin = adminAtual.dadosAdmin;
+                window.userRole = adminAtual.userRole;
+                window.userEmail = adminAtual.userEmail;
+                localStorage.setItem('usuarioAdmin', JSON.stringify(adminAtual.dadosAdmin));
+                
+                console.log('✅ Administrador reautenticado com sucesso:', adminAtual.dadosAdmin.email);
+                
+            } catch (reAuthError) {
+                console.error('❌ Erro na reautenticação:', reAuthError);
+                
+                // Mesmo com erro, tentar restaurar dados locais
+                window.usuarioAdmin = adminAtual.dadosAdmin;
+                window.userRole = adminAtual.userRole;
+                window.userEmail = adminAtual.userEmail;
+                localStorage.setItem('usuarioAdmin', JSON.stringify(adminAtual.dadosAdmin));
+                
+                // Mostrar aviso para o usuário
+                setTimeout(() => {
+                    showToast('Aviso', 
+                        'Usuário criado! Por favor, faça login novamente para continuar usando o sistema.', 
+                        'warning'
+                    );
+                }, 1000);
+            }
         } else {
-            console.log('✅ Administrador manteve a sessão ativa');
+            console.log('✅ Sessão do administrador mantida ativa');
         }
         
         showToast('Sucesso', `${tipo === 'admin' ? 'Administrador' : 'Usuário de equipe'} criado com sucesso!`, 'success');
