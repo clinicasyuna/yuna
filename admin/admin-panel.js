@@ -2420,12 +2420,12 @@ window.mostrarRelatorios = function() {
 };
 
 window.abrirAcompanhantesSection = function() {
-    // Verificar se é super_admin
+    // Verificar se é admin ou super_admin
     const usuarioAdmin = window.usuarioAdmin || JSON.parse(localStorage.getItem('usuarioAdmin') || '{}');
     const userRole = window.userRole || usuarioAdmin.role;
     
-    if (!userRole || userRole !== 'super_admin') {
-        showToast('Erro', 'Acesso negado. Apenas super administradores podem gerenciar acompanhantes.', 'error');
+    if (!userRole || (userRole !== 'super_admin' && userRole !== 'admin')) {
+        showToast('Erro', 'Acesso negado. Apenas administradores podem gerenciar acompanhantes.', 'error');
         console.warn('[AVISO] abrirAcompanhantesSection: acesso negado, role:', userRole);
         return;
     }
@@ -5256,7 +5256,7 @@ window.criarUsuarioTeste = async function() {
                     gerenciarDepartamentos: false,     // Apenas super_admin
                     verRelatorios: true,               // Admin pode acessar
                     gerenciarSolicitacoes: true,       // Admin pode gerenciar solicitações
-                    gerenciarAcompanhantes: false,     // Apenas super_admin
+                    gerenciarAcompanhantes: true,      // Admin pode gerenciar acompanhantes
                     verMetricas: true,                 // Admin pode ver métricas
                     verPesquisaSatisfacao: true        // Admin pode ver pesquisa satisfação
                 }
@@ -5315,7 +5315,7 @@ window.atualizarPermissoesAdmin = async function() {
                     'permissoes.gerenciarDepartamentos': false,
                     'permissoes.verRelatorios': true,
                     'permissoes.gerenciarSolicitacoes': true,
-                    'permissoes.gerenciarAcompanhantes': false,
+                    'permissoes.gerenciarAcompanhantes': true,
                     'permissoes.verMetricas': true,
                     'permissoes.verPesquisaSatisfacao': true,
                     'atualizadoEm': new Date().toISOString()
