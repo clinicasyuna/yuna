@@ -671,6 +671,297 @@ window.emergencyReset = function() {
     }
 };
 
+// Função para forçar atualização após conversão de usuário
+window.forcarAtualizacaoUsuario = async function() {
+    console.log('🔄 Forçando atualização de dados do usuário...');
+    
+    try {
+        // Limpar cache local
+        localStorage.removeItem('usuarioAdmin');
+        window.usuarioAdmin = null;
+        window.userRole = null;
+        
+        // Se há usuário logado, revalidar
+        if (window.auth && window.auth.currentUser) {
+            const user = window.auth.currentUser;
+            console.log('🔍 Revalidando usuário:', user.email);
+            
+            const dadosAtualizados = await window.verificarUsuarioAdminJS(user);
+            
+            if (dadosAtualizados) {
+                console.log('✅ Dados atualizados:', dadosAtualizados);
+                window.usuarioAdmin = dadosAtualizados;
+                localStorage.setItem('usuarioAdmin', JSON.stringify(dadosAtualizados));
+                
+                // Recarregar página para aplicar mudanças na interface
+                console.log('🔄 Recarregando interface...');
+                window.location.reload();
+            } else {
+                console.log('❌ Usuário não autorizado - fazendo logout');
+                await window.auth.signOut();
+            }
+        } else {
+            console.log('❌ Nenhum usuário logado');
+            window.location.reload();
+        }
+    } catch (error) {
+        console.error('Erro na atualização:', error);
+        console.log('🔄 Recarregando página por segurança...');
+        window.location.reload();
+    }
+};
+
+// Função para verificar e limpar usuários órfãos do Firebase Auth
+window.verificarUsuariosOrfaos = async function() {
+    console.log('🧹 Verificando usuários órfãos no Firebase Auth...');
+    
+    try {
+        if (!window.auth || !window.db) {
+            throw new Error('Firebase não inicializado');
+        }
+        
+        // Verificar permissões
+        const usuarioAdmin = window.usuarioAdmin || JSON.parse(localStorage.getItem('usuarioAdmin') || '{}');
+        if (!usuarioAdmin || usuarioAdmin.role !== 'super_admin') {
+            console.log('❌ Acesso negado. Apenas super_admin pode verificar usuários órfãos.');
+            return;
+        }
+        
+        console.log('🔍 Buscando usuários no Firestore...');
+        
+        // Buscar todos os usuários das coleções
+        const [adminSnapshot, equipeSnapshot, acompanhantesSnapshot] = await Promise.all([
+            window.db.collection('usuarios_admin').get(),
+            window.db.collection('usuarios_equipe').get(),
+            window.db.collection('usuarios_acompanhantes').get()
+        ]);
+        
+        // Extrair UIDs dos usuários existentes no Firestore
+        const uidsFirestore = new Set();
+        
+        adminSnapshot.forEach(doc => uidsFirestore.add(doc.id));
+        equipeSnapshot.forEach(doc => uidsFirestore.add(doc.id));
+        acompanhantesSnapshot.forEach(doc => uidsFirestore.add(doc.id));
+        
+        console.log('📊 UIDs encontrados no Firestore:', uidsFirestore.size);
+        
+        // NOTA: Não é possível listar todos os usuários do Auth no frontend
+        // Esta função apenas mostra como identificar o problema
+        console.log('⚠️ IMPORTANTE: Para limpar usuários órfãos do Firebase Auth, use o Firebase Console ou Firebase Admin SDK no backend.');
+        console.log('🔗 Link: https://console.firebase.google.com/project/studio-5526632052-23813/authentication/users');
+        
+        // Se você tem o email específico que está dando erro, pode tentar criar novamente
+        const emailProblematico = prompt('Digite o email que está dando erro para tentar recriar:');
+        if (emailProblematico) {
+            await window.tentarRecuperarUsuario(emailProblematico);
+        }
+        
+    } catch (error) {
+        console.error('❌ Erro ao verificar usuários órfãos:', error);
+        console.log('💡 Para resolver manualmente:');
+        console.log('1. Vá para o Firebase Console');
+        console.log('2. Authentication > Users');
+        console.log('3. Exclua o usuário com o email que está dando erro');
+        console.log('4. Tente criar novamente');
+    }
+};
+
+// Função para tentar recuperar ou limpar usuário específico
+window.tentarRecuperarUsuario = async function(email) {
+    console.log('🔄 Tentando recuperar usuário:', email);
+    
+    try {
+        // Verificar se existe no Firestore
+        const adminQuery = await window.db.collection('usuarios_admin').where('email', '==', email).get();
+        const equipeQuery = await window.db.collection('usuarios_equipe').where('email', '==', email).get();
+        const acompanhanteQuery = await window.db.collection('usuarios_acompanhantes').where('email', '==', email).get();
+        
+        if (adminQuery.empty && equipeQuery.empty && acompanhanteQuery.empty) {
+            console.log('❌ Usuário não existe no Firestore, mas existe no Auth (usuário órfão)');
+            console.log('💡 Solução: Exclua este usuário no Firebase Console > Authentication');
+            
+            // Opção de resetar senha se o usuário quiser manter
+            const manter = confirm('Deseja recriar este usuário no Firestore? (Cancelar = excluir do Auth)');
+            if (manter) {
+                const nome = prompt('Digite o nome do usuário:');
+                const tipo = prompt('Digite o tipo (admin/equipe):');
+                const equipeNome = tipo === 'equipe' ? prompt('Digite a equipe:') : null;
+                
+                if (nome && tipo) {
+                    await window.recriarUsuarioFirestore(email, nome, tipo, equipeNome);
+                }
+            }
+        } else {
+            console.log('✅ Usuário existe no Firestore');
+            if (!adminQuery.empty) {
+                console.log('📍 Encontrado em usuarios_admin:', adminQuery.docs[0].data());
+            }
+            if (!equipeQuery.empty) {
+                console.log('📍 Encontrado em usuarios_equipe:', equipeQuery.docs[0].data());
+            }
+            if (!acompanhanteQuery.empty) {
+                console.log('📍 Encontrado em usuarios_acompanhantes:', acompanhanteQuery.docs[0].data());
+            }
+        }
+        
+    } catch (error) {
+        console.error('❌ Erro ao verificar usuário:', error);
+    }
+};
+
+// Função para recriar usuário no Firestore
+window.recriarUsuarioFirestore = async function(email, nome, tipo, equipeNome = null) {
+    console.log('🔄 Recriando usuário no Firestore:', { email, nome, tipo, equipeNome });
+    
+    try {
+        // Tentar fazer login com o usuário para obter UID
+        const senha = prompt('Digite uma senha temporária (6+ caracteres):');
+        if (!senha || senha.length < 6) {
+            console.log('❌ Senha inválida');
+            return;
+        }
+        
+        // Fazer login temporário para obter UID
+        const userCredential = await window.auth.signInWithEmailAndPassword(email, senha);
+        const uid = userCredential.user.uid;
+        
+        console.log('✅ UID obtido:', uid);
+        
+        // Criar documento no Firestore
+        let colecao, dados;
+        
+        if (tipo === 'admin') {
+            colecao = 'usuarios_admin';
+            dados = {
+                nome: nome,
+                email: email,
+                role: 'admin',
+                ativo: true,
+                criadoEm: firebase.firestore.FieldValue.serverTimestamp(),
+                criadoPor: window.auth.currentUser.email
+            };
+        } else if (tipo === 'equipe') {
+            colecao = 'usuarios_equipe';
+            dados = {
+                nome: nome,
+                email: email,
+                equipe: equipeNome,
+                ativo: true,
+                criadoEm: firebase.firestore.FieldValue.serverTimestamp(),
+                criadoPor: window.auth.currentUser.email
+            };
+        }
+        
+        await window.db.collection(colecao).doc(uid).set(dados);
+        
+        console.log('✅ Usuário recriado no Firestore!');
+        showToast('Sucesso', 'Usuário recuperado com sucesso!', 'success');
+        
+        // Fazer logout do usuário temporário
+        await window.auth.signOut();
+        
+    } catch (error) {
+        console.error('❌ Erro ao recriar usuário:', error);
+        if (error.code === 'auth/wrong-password') {
+            console.log('❌ Senha incorreta. Use o Firebase Console para redefinir a senha ou excluir o usuário.');
+        }
+        showToast('Erro', 'Falha ao recuperar usuário: ' + error.message, 'error');
+    }
+};
+
+// Função para inicializar instância secundária do Firebase (se possível)
+window.inicializarFirebaseSecundario = function() {
+    try {
+        if (!window.firebase || !window.firebaseConfig) {
+            console.log('❌ Firebase ou configuração não disponível para instância secundária');
+            return false;
+        }
+        
+        // Verificar se já existe uma instância secundária
+        if (window.firebase.apps.length > 1) {
+            console.log('✅ Instância secundária já existe');
+            return true;
+        }
+        
+        // Tentar criar instância secundária
+        const secondaryApp = window.firebase.initializeApp(window.firebaseConfig, 'secondary');
+        console.log('✅ Instância secundária do Firebase criada');
+        return true;
+        
+    } catch (error) {
+        console.log('❌ Não foi possível criar instância secundária:', error);
+        return false;
+    }
+};
+
+// Função para criar usuário sem afetar sessão atual (versão melhorada)
+window.criarUsuarioSeguro = async function(email, senha, dadosFirestore, colecao) {
+    console.log('🔐 Iniciando criação segura de usuário...');
+    
+    try {
+        // Salvar contexto do admin atual
+        const adminContext = {
+            currentUser: window.auth.currentUser,
+            usuarioAdmin: window.usuarioAdmin,
+            userRole: window.userRole,
+            userEmail: window.userEmail
+        };
+        
+        let novoUsuario;
+        let precisaRestaurar = false;
+        
+        // Tentar usar instância secundária primeiro
+        if (window.inicializarFirebaseSecundario()) {
+            try {
+                console.log('🔄 Usando instância secundária...');
+                const secondaryApp = window.firebase.apps[1];
+                const secondaryAuth = secondaryApp.auth();
+                
+                const userCredential = await secondaryAuth.createUserWithEmailAndPassword(email, senha);
+                novoUsuario = userCredential.user;
+                
+                // Fazer logout da instância secundária
+                await secondaryAuth.signOut();
+                console.log('✅ Usuário criado na instância secundária - admin mantém sessão');
+                
+            } catch (secondaryError) {
+                console.log('❌ Erro na instância secundária, usando método principal:', secondaryError);
+                throw secondaryError;
+            }
+        } else {
+            // Fallback: método tradicional com proteção
+            console.log('🔄 Usando instância principal com proteção...');
+            const userCredential = await window.auth.createUserWithEmailAndPassword(email, senha);
+            novoUsuario = userCredential.user;
+            precisaRestaurar = true;
+        }
+        
+        // Salvar no Firestore
+        await window.db.collection(colecao).doc(novoUsuario.uid).set(dadosFirestore);
+        console.log('✅ Dados salvos no Firestore');
+        
+        // Restaurar sessão se necessário
+        if (precisaRestaurar) {
+            console.log('🔄 Restaurando sessão do administrador...');
+            await window.auth.signOut(); // Logout do usuário criado
+            
+            // Restaurar dados locais
+            window.usuarioAdmin = adminContext.usuarioAdmin;
+            window.userRole = adminContext.userRole;
+            window.userEmail = adminContext.userEmail;
+            localStorage.setItem('usuarioAdmin', JSON.stringify(adminContext.usuarioAdmin));
+            
+            console.log('⚠️ Sessão restaurada localmente - admin pode precisar fazer login novamente');
+        }
+        
+        return novoUsuario;
+        
+    } catch (error) {
+        console.error('❌ Erro na criação segura:', error);
+        throw error;
+    }
+};
+
 // Referência antecipada para função de limpeza (definida no final do arquivo)
 window.limparDadosTeste = function() {
     // Função será redefinida completamente no final do arquivo
@@ -1087,11 +1378,30 @@ window.addEventListener('DOMContentLoaded', async function() {
                     debugLog('[DEBUG] Usuário autenticado:', user.email);
                     debugLog('[DEBUG] UID do usuário:', user.uid);
                     
-                    // Verifica admin via Firestore
+                    // VERIFICAÇÃO DE CONSISTÊNCIA DE CACHE
+                    const cacheUsuario = localStorage.getItem('usuarioAdmin');
+                    let dadosCacheados = null;
+                    try {
+                        dadosCacheados = cacheUsuario ? JSON.parse(cacheUsuario) : null;
+                    } catch (e) {
+                        debugLog('[DEBUG] Cache corrompido, limpando...');
+                        localStorage.removeItem('usuarioAdmin');
+                    }
+                    
+                    // Verifica admin via Firestore (sempre força nova consulta para detectar mudanças)
                     debugLog('[DEBUG] Verificando permissões do usuário...');
                     const dadosAdmin = await window.verificarUsuarioAdminJS(user);
                     
                     if (dadosAdmin) {
+                        // DETECTAR MUDANÇA DE ROLE
+                        if (dadosCacheados && dadosCacheados.role !== dadosAdmin.role) {
+                            debugLog('[DEBUG] 🔄 CONVERSÃO DE USUÁRIO DETECTADA!');
+                            debugLog('[DEBUG] Role anterior:', dadosCacheados.role);
+                            debugLog('[DEBUG] Nova role:', dadosAdmin.role);
+                            console.log('🔄 Conversão de usuário detectada - limpando cache antigo...');
+                            localStorage.clear();
+                        }
+                        
                         debugLog('[DEBUG] Dados do admin carregados:', dadosAdmin);
                         window.usuarioAdmin = dadosAdmin;
                         localStorage.setItem('usuarioAdmin', JSON.stringify(dadosAdmin));
@@ -1750,11 +2060,41 @@ window.criarNovoUsuario = async function() {
         
         debugLog('[DEBUG] Criando usuário no Firebase Auth...');
         
-        // Criar usuário no Firebase Auth
-        const userCredential = await window.auth.createUserWithEmailAndPassword(email, senha);
-        const user = userCredential.user;
+        // SALVAR DADOS DO ADMINISTRADOR ATUAL ANTES DA CRIAÇÃO
+        const adminAtual = {
+            user: window.auth.currentUser,
+            dadosAdmin: { ...usuarioAdmin },
+            userRole: window.userRole,
+            userEmail: window.userEmail
+        };
         
-        debugLog('[DEBUG] Usuário criado no Auth:', user.uid);
+        console.log('💾 Salvando dados do admin atual:', adminAtual.dadosAdmin.email);
+        
+        // SOLUÇÃO MELHORADA: Usar uma instância secundária do Firebase
+        // Para evitar deslogar o administrador atual
+        let novoUsuario;
+        
+        try {
+            // Primeira tentativa: usar Firebase secundário (se disponível)
+            if (window.firebase && window.firebase.apps && window.firebase.apps.length > 1) {
+                console.log('🔄 Usando instância secundária do Firebase...');
+                const secondaryApp = window.firebase.apps[1];
+                const secondaryAuth = secondaryApp.auth();
+                const userCredential = await secondaryAuth.createUserWithEmailAndPassword(email, senha);
+                novoUsuario = userCredential.user;
+                await secondaryAuth.signOut(); // Logout da instância secundária
+            } else {
+                // Fallback: método original com restauração de sessão
+                console.log('🔄 Usando método com restauração de sessão...');
+                const userCredential = await window.auth.createUserWithEmailAndPassword(email, senha);
+                novoUsuario = userCredential.user;
+            }
+        } catch (authError) {
+            throw authError; // Propagar erro para o catch principal
+        }
+        
+        debugLog('[DEBUG] Usuário criado no Auth:', novoUsuario.uid);
+        console.log('👤 Usuário criado:', email, 'UID:', novoUsuario.uid);
         
         // Preparar dados do usuário baseado no tipo
         let dadosUsuario;
@@ -1800,9 +2140,37 @@ window.criarNovoUsuario = async function() {
         debugLog('[DEBUG] Salvando no Firestore - Coleção:', colecao);
         
         // Salvar no Firestore
-        await window.db.collection(colecao).doc(user.uid).set(dadosUsuario);
+        await window.db.collection(colecao).doc(novoUsuario.uid).set(dadosUsuario);
         
         debugLog('[DEBUG] Usuário salvo com sucesso');
+        
+        // VERIFICAR SE PRECISA RESTAURAR SESSÃO DO ADMINISTRADOR
+        const usuarioAtualLogado = window.auth.currentUser;
+        
+        if (!usuarioAtualLogado || usuarioAtualLogado.email !== adminAtual.dadosAdmin.email) {
+            console.log('🔄 Administrador foi deslogado, restaurando sessão...');
+            
+            // Fazer logout do usuário recém-criado
+            if (usuarioAtualLogado && usuarioAtualLogado.email === email) {
+                await window.auth.signOut();
+                console.log('📤 Logout do usuário recém-criado realizado');
+            }
+            
+            // Restaurar dados do administrador
+            window.usuarioAdmin = adminAtual.dadosAdmin;
+            window.userRole = adminAtual.userRole;
+            window.userEmail = adminAtual.userEmail;
+            localStorage.setItem('usuarioAdmin', JSON.stringify(adminAtual.dadosAdmin));
+            
+            console.log('✅ Dados do administrador restaurados:', adminAtual.dadosAdmin.email);
+            
+            // Mostrar aviso para relogar
+            setTimeout(() => {
+                showToast('Aviso', 'Usuário criado! Por segurança, você pode fazer login novamente.', 'info');
+            }, 1000);
+        } else {
+            console.log('✅ Administrador manteve a sessão ativa');
+        }
         
         showToast('Sucesso', `${tipo === 'admin' ? 'Administrador' : 'Usuário de equipe'} criado com sucesso!`, 'success');
         
@@ -1902,6 +2270,12 @@ window.showManageUsersModal = async function() {
             console.error('[ERRO] showManageUsersModal: erro ao carregar usuários:', error);
             showToast('Erro', 'Erro ao carregar usuários.', 'error');
         }
+        
+        // TORNAR O MODAL ARRASTÁVEL
+        setTimeout(() => {
+            console.log('[DRAG] 🎯 Iniciando configuração de modal arrastável...');
+            window.tornarModalArrastavel('manage-users-modal');
+        }, 300);
         
         debugLog('[DEBUG] showManageUsersModal: modal exibido com sucesso');
     } else {
@@ -2379,15 +2753,19 @@ window.editarUsuario = async function(userId) {
         // Criar modal de edição
         const editModal = document.createElement('div');
         editModal.id = 'edit-user-modal';
+        editModal.className = 'modal modal-edicao-usuario';
         editModal.style.cssText = `
-            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-            background: rgba(0,0,0,0.5); z-index: 100000; display: flex;
+            position: fixed !important; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0,0,0,0.8) !important; z-index: 9999999999 !important; display: flex !important;
             align-items: center; justify-content: center;
+            backdrop-filter: blur(5px);
         `;
         
         editModal.innerHTML = `
-            <div style="background: white; border-radius: 12px; padding: 24px; max-width: 500px; width: 90%; max-height: 80vh; overflow-y: auto;">
-                <h3 style="margin: 0 0 20px 0; color: #374151;">Editar Usuário</h3>
+            <div class="edit-modal-content" style="background: white; border-radius: 12px; padding: 24px; max-width: 500px; width: 90%; max-height: 80vh; overflow-y: auto; z-index: 9999999999 !important; position: relative !important; box-shadow: 0 25px 50px rgba(0,0,0,0.8);">
+                <h3 style="margin: 0 0 20px 0; color: #374151; display: flex; align-items: center; gap: 8px;">
+                    📝 Editar Usuário
+                </h3>
                 
                 <div style="margin-bottom: 16px;">
                     <label style="display: block; margin-bottom: 4px; color: #374151; font-weight: 500;">Nome:</label>
@@ -2401,8 +2779,17 @@ window.editarUsuario = async function(userId) {
                            style="width: 100%; padding: 8px 12px; border: 1px solid #d1d5db; border-radius: 6px;">
                 </div>
                 
-                ${userCollection === 'usuarios_equipe' ? `
+                <!-- DEPARTAMENTO COM OPÇÃO DE ADMINISTRADOR -->
                 <div style="margin-bottom: 16px;">
+                    <label style="display: block; margin-bottom: 4px; color: #374151; font-weight: 500;">Tipo de Acesso:</label>
+                    <select id="edit-tipo-acesso" onchange="alterarTipoAcessoModal()" style="width: 100%; padding: 8px 12px; border: 1px solid #d1d5db; border-radius: 6px;">
+                        <option value="equipe" ${userCollection === 'usuarios_equipe' ? 'selected' : ''}>Equipe de Departamento</option>
+                        <option value="admin" ${userCollection === 'usuarios_admin' ? 'selected' : ''}>Administrador</option>
+                    </select>
+                </div>
+                
+                <!-- DEPARTAMENTO PARA EQUIPE -->
+                <div id="campo-departamento" style="margin-bottom: 16px; ${userCollection === 'usuarios_admin' ? 'display: none;' : ''}">
                     <label style="display: block; margin-bottom: 4px; color: #374151; font-weight: 500;">Departamento:</label>
                     <select id="edit-departamento" style="width: 100%; padding: 8px 12px; border: 1px solid #d1d5db; border-radius: 6px;">
                         <option value="manutencao" ${userData.departamento === 'manutencao' ? 'selected' : ''}>Manutenção</option>
@@ -2411,18 +2798,15 @@ window.editarUsuario = async function(userId) {
                         <option value="hotelaria" ${userData.departamento === 'hotelaria' ? 'selected' : ''}>Hotelaria</option>
                     </select>
                 </div>
-                ` : ''}
                 
-                ${userCollection === 'usuarios_admin' ? `
-                <div style="margin-bottom: 16px;">
-                    <label style="display: block; margin-bottom: 4px; color: #374151; font-weight: 500;">Tipo de Acesso:</label>
+                <!-- ROLE PARA ADMIN -->
+                <div id="campo-role" style="margin-bottom: 16px; ${userCollection === 'usuarios_equipe' ? 'display: none;' : ''}">
+                    <label style="display: block; margin-bottom: 4px; color: #374151; font-weight: 500;">Nível de Administração:</label>
                     <select id="edit-role" style="width: 100%; padding: 8px 12px; border: 1px solid #d1d5db; border-radius: 6px;">
                         <option value="super_admin" ${userData.role === 'super_admin' ? 'selected' : ''}>Super Administrador</option>
                         <option value="admin" ${userData.role === 'admin' ? 'selected' : ''}>Administrador</option>
-                        <option value="equipe" ${userData.role === 'equipe' ? 'selected' : ''}>Equipe</option>
                     </select>
                 </div>
-                ` : ''}
                 
                 <div style="display: flex; gap: 12px; justify-content: flex-end; margin-top: 24px;">
                     <button onclick="abrirModalAlterarSenha('${userId}', '${userCollection}')" 
@@ -2435,13 +2819,69 @@ window.editarUsuario = async function(userId) {
                     </button>
                     <button onclick="salvarUsuarioEditado('${userId}', '${userCollection}')" 
                             style="padding: 8px 16px; border: none; background: #3b82f6; color: white; border-radius: 6px; cursor: pointer;">
-                        Salvar
+                        💾 Salvar
                     </button>
                 </div>
             </div>
         `;
         
         document.body.appendChild(editModal);
+        
+        // GARANTIA MÁXIMA DE Z-INDEX
+        function garantirZIndexMaximo() {
+            const editModalElement = document.getElementById('edit-user-modal');
+            const editModalContent = editModalElement?.querySelector('.edit-modal-content');
+            
+            if (editModalElement) {
+                editModalElement.style.cssText = `
+                    position: fixed !important;
+                    top: 0 !important;
+                    left: 0 !important;
+                    width: 100% !important;
+                    height: 100% !important;
+                    background: rgba(0,0,0,0.8) !important;
+                    z-index: 9999999999 !important;
+                    display: flex !important;
+                    align-items: center !important;
+                    justify-content: center !important;
+                    backdrop-filter: blur(5px) !important;
+                `;
+                
+                if (editModalContent) {
+                    editModalContent.style.cssText += `; z-index: 9999999999 !important; position: relative !important;`;
+                }
+                
+                // Esconder modal de gerenciar para evitar conflito
+                const manageModal = document.getElementById('manage-users-modal');
+                if (manageModal) {
+                    manageModal.style.zIndex = '999999';
+                }
+                
+                console.log('💫 Z-index forçado para 9999999999 - MODAL DE EDIÇÃO');
+            }
+        }
+        
+        // Executar imediatamente e várias vezes para garantir
+        garantirZIndexMaximo();
+        setTimeout(garantirZIndexMaximo, 10);
+        setTimeout(garantirZIndexMaximo, 50);
+        setTimeout(garantirZIndexMaximo, 100);
+        setTimeout(garantirZIndexMaximo, 200);
+        
+        // Definir a função alterarTipoAcesso no escopo global temporariamente
+        window.alterarTipoAcessoModal = function() {
+            const tipoAcesso = document.getElementById('edit-tipo-acesso').value;
+            const campoDepartamento = document.getElementById('campo-departamento');
+            const campoRole = document.getElementById('campo-role');
+            
+            if (tipoAcesso === 'equipe') {
+                campoDepartamento.style.display = 'block';
+                campoRole.style.display = 'none';
+            } else if (tipoAcesso === 'admin') {
+                campoDepartamento.style.display = 'none';
+                campoRole.style.display = 'block';
+            }
+        };
         
     } catch (error) {
         console.error('[ERRO] Falha ao editar usuário:', error);
@@ -2458,32 +2898,82 @@ window.fecharModalEditarUsuario = function() {
 };
 
 // Função para salvar usuário editado
-window.salvarUsuarioEditado = async function(userId, collection) {
+window.salvarUsuarioEditado = async function(userId, originalCollection) {
     try {
         const nome = document.getElementById('edit-nome').value.trim();
         const email = document.getElementById('edit-email').value.trim();
+        const tipoAcesso = document.getElementById('edit-tipo-acesso').value;
         
         if (!nome || !email) {
             showToast('Erro', 'Nome e email são obrigatórios', 'error');
             return;
         }
         
-        const updateData = { nome, email };
+        // Determinar nova coleção baseada no tipo de acesso
+        const novaCollection = tipoAcesso === 'admin' ? 'usuarios_admin' : 'usuarios_equipe';
         
-        // Adicionar campos específicos da coleção
-        if (collection === 'usuarios_equipe') {
+        // Preparar dados para salvar
+        const updateData = { 
+            nome, 
+            email,
+            updatedAt: new Date()
+        };
+        
+        // Adicionar campos específicos baseados no novo tipo
+        if (tipoAcesso === 'equipe') {
             const departamento = document.getElementById('edit-departamento').value;
             updateData.departamento = departamento;
             updateData.equipe = departamento; // Para compatibilidade
-        } else if (collection === 'usuarios_admin') {
-            const role = document.getElementById('edit-role').value;
+            // Remover role se estava como admin
+            updateData.role = null;
+        } else if (tipoAcesso === 'admin') {
+            const role = document.getElementById('edit-role').value || 'admin';
             updateData.role = role;
+            // Remover departamento se estava como equipe
+            updateData.departamento = null;
+            updateData.equipe = null;
         }
         
-        // Atualizar no Firestore
-        await window.db.collection(collection).doc(userId).update(updateData);
+        console.log('[SAVE-USER] Salvando usuário:', {
+            userId,
+            originalCollection,
+            novaCollection,
+            updateData
+        });
         
-        showToast('Sucesso', 'Usuário atualizado com sucesso', 'success');
+        // Se a coleção mudou, fazer migração
+        if (originalCollection !== novaCollection) {
+            console.log('[MIGRATE-USER] Migrando usuário de', originalCollection, 'para', novaCollection);
+            
+            // 1. Buscar dados originais
+            const originalDoc = await window.db.collection(originalCollection).doc(userId).get();
+            if (!originalDoc.exists) {
+                throw new Error('Usuário original não encontrado');
+            }
+            
+            const originalData = originalDoc.data();
+            
+            // 2. Preparar dados completos para a nova coleção
+            const migrationData = {
+                ...originalData,
+                ...updateData,
+                migratedFrom: originalCollection,
+                migratedAt: new Date()
+            };
+            
+            // 3. Salvar na nova coleção
+            await window.db.collection(novaCollection).doc(userId).set(migrationData);
+            
+            // 4. Remover da coleção original
+            await window.db.collection(originalCollection).doc(userId).delete();
+            
+            showToast('Sucesso', `Usuário migrado de ${originalCollection === 'usuarios_equipe' ? 'Equipe' : 'Admin'} para ${novaCollection === 'usuarios_equipe' ? 'Equipe' : 'Admin'}`, 'success');
+            
+        } else {
+            // Apenas atualizar na mesma coleção
+            await window.db.collection(originalCollection).doc(userId).update(updateData);
+            showToast('Sucesso', 'Usuário atualizado com sucesso', 'success');
+        }
         
         // Fechar modal e recarregar lista
         fecharModalEditarUsuario();
@@ -2493,14 +2983,16 @@ window.salvarUsuarioEditado = async function(userId, collection) {
         if (window.registrarLogAuditoria) {
             window.registrarLogAuditoria('USER_EDIT', {
                 userId,
-                collection,
+                originalCollection,
+                novaCollection,
+                migrated: originalCollection !== novaCollection,
                 updateData: Object.keys(updateData)
             });
         }
         
     } catch (error) {
         console.error('[ERRO] Falha ao salvar usuário:', error);
-        showToast('Erro', 'Não foi possível salvar as alterações', 'error');
+        showToast('Erro', 'Não foi possível salvar as alterações: ' + error.message, 'error');
     }
 };
 
@@ -11325,6 +11817,154 @@ function configurarImportacaoExcelAutomatica() {
         reader.readAsArrayBuffer(arquivo);
     }
 }
+
+// ===== FUNÇÃO PARA TORNAR MODAL ARRASTÁVEL =====
+window.tornarModalArrastavel = function(modalId) {
+    console.log('[DRAG] 🎯 Tornando modal arrastável:', modalId);
+    
+    const modal = document.getElementById(modalId);
+    if (!modal) {
+        console.log('[DRAG] ❌ Modal não encontrado:', modalId);
+        return;
+    }
+    
+    // Encontrar o modal-content dentro do modal
+    let modalContent = modal.querySelector('.modal-content');
+    if (!modalContent) {
+        modalContent = modal.querySelector('.bg-white, .modal-dialog, [class*="modal-content"]');
+    }
+    
+    if (!modalContent) {
+        console.log('[DRAG] ❌ Modal content não encontrado');
+        return;
+    }
+    
+    console.log('[DRAG] 🎯 Modal content encontrado:', modalContent);
+    
+    // Criar barra de título para arrastar se não existir
+    let titleBar = modalContent.querySelector('.drag-title-bar');
+    if (!titleBar) {
+        titleBar = document.createElement('div');
+        titleBar.className = 'drag-title-bar';
+        titleBar.innerHTML = `
+            <span style="flex: 1; font-weight: bold; color: #fff;">📋 Gerenciar Usuários - Arraste para mover</span>
+            <button onclick="fecharModal('${modalId}')" style="background: #ff4444; border: none; color: white; padding: 5px 10px; border-radius: 3px; cursor: pointer;">✕</button>
+        `;
+        titleBar.style.cssText = `
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            padding: 12px 16px;
+            cursor: move;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            border-radius: 8px 8px 0 0;
+            user-select: none;
+            margin: -20px -20px 20px -20px;
+            font-size: 14px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        `;
+        
+        // Inserir no início do modal content
+        modalContent.insertBefore(titleBar, modalContent.firstChild);
+        console.log('[DRAG] ✅ Barra de título criada');
+    }
+    
+    // Configurar modal como posicionado e com z-index alto
+    modalContent.style.position = 'fixed';
+    modalContent.style.zIndex = '999999999';
+    modalContent.style.top = '50px';
+    modalContent.style.left = '50%';
+    modalContent.style.transform = 'translateX(-50%)';
+    modalContent.style.maxHeight = '85vh';
+    modalContent.style.overflow = 'auto';
+    modalContent.style.boxShadow = '0 20px 50px rgba(0,0,0,0.7)';
+    modalContent.style.border = '2px solid #667eea';
+    modalContent.style.borderRadius = '8px';
+    
+    // Variáveis para o drag
+    let isDragging = false;
+    let currentX;
+    let currentY;
+    let initialX;
+    let initialY;
+    let xOffset = 0;
+    let yOffset = 0;
+    
+    // Remover listeners antigos se existirem
+    if (titleBar._dragListenersAdded) {
+        console.log('[DRAG] ⚠️ Listeners já adicionados, pulando...');
+        return;
+    }
+    
+    // Eventos de mouse
+    titleBar.addEventListener('mousedown', dragStart);
+    document.addEventListener('mouseup', dragEnd);
+    document.addEventListener('mousemove', drag);
+    
+    // Marcar que listeners foram adicionados
+    titleBar._dragListenersAdded = true;
+    
+    function dragStart(e) {
+        if (e.target.tagName === 'BUTTON') return; // Não arrastar se clicar no botão fechar
+        
+        const rect = modalContent.getBoundingClientRect();
+        initialX = e.clientX - rect.left;
+        initialY = e.clientY - rect.top;
+        
+        if (e.target === titleBar || titleBar.contains(e.target)) {
+            isDragging = true;
+            titleBar.style.cursor = 'grabbing';
+            modalContent.style.transition = 'none'; // Remove transições durante o drag
+            console.log('[DRAG] 🎯 Iniciando arrasto...');
+        }
+    }
+    
+    function dragEnd(e) {
+        if (isDragging) {
+            console.log('[DRAG] 🎯 Finalizando arrasto');
+        }
+        isDragging = false;
+        titleBar.style.cursor = 'move';
+        modalContent.style.transition = ''; // Restaura transições
+    }
+    
+    function drag(e) {
+        if (isDragging) {
+            e.preventDefault();
+            
+            currentX = e.clientX - initialX;
+            currentY = e.clientY - initialY;
+            
+            // Limitar movimento dentro da tela
+            const rect = modalContent.getBoundingClientRect();
+            const maxX = window.innerWidth - rect.width;
+            const maxY = window.innerHeight - rect.height;
+            
+            currentX = Math.max(0, Math.min(maxX, currentX));
+            currentY = Math.max(0, Math.min(maxY, currentY));
+            
+            modalContent.style.left = currentX + 'px';
+            modalContent.style.top = currentY + 'px';
+            modalContent.style.transform = 'none'; // Remove transform para permitir posicionamento absoluto
+        }
+    }
+    
+    console.log('[DRAG] ✅ Modal agora é arrastável! Clique e arraste pela barra azul no topo.');
+};
+
+// Função de teste para modal arrastável
+window.testeDragModal = function() {
+    console.log('[TEST-DRAG] 🧪 Testando modal arrastável...');
+    
+    // Primeiro, abrir o modal de gerenciar usuários
+    if (typeof window.showManageUsersModal === 'function') {
+        window.showManageUsersModal();
+        console.log('[TEST-DRAG] ✅ Modal de gerenciar usuários aberto para teste');
+    } else {
+        console.log('[TEST-DRAG] ❌ Função showManageUsersModal não encontrada');
+        alert('❌ Função showManageUsersModal não encontrada');
+    }
+};
 
 // Iniciar configuração Excel automaticamente
 setTimeout(() => {

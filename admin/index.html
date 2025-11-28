@@ -47,6 +47,96 @@
             order: 5 !important;
         }
         
+        /* CORREÇÃO Z-INDEX DOS MODAIS - Modal de edição deve estar acima do gerenciamento */
+        #edit-user-modal {
+            z-index: 999999999 !important;
+            position: fixed !important;
+        }
+        
+        #manage-users-modal {
+            z-index: 999999 !important;
+            position: fixed !important;
+        }
+        
+        #modal-novo-usuario {
+            z-index: 1000015 !important;
+            position: fixed !important;
+        }
+        
+        /* Garantir que qualquer modal de edição tenha z-index alto */
+        .modal-edicao-usuario,
+        [id*="edit"][id*="modal"],
+        [class*="modal-edicao"] {
+            z-index: 999999999 !important;
+        }
+        
+        /* FORÇA EXTREMA - Modal de edição sempre no topo */
+        #edit-user-modal,
+        #edit-user-modal.modal,
+        .modal#edit-user-modal {
+            z-index: 999999999 !important;
+            position: fixed !important;
+            display: flex !important;
+        }
+        
+        /* FORÇA EXTREMA - Modal de gerenciar sempre atrás do editar */
+        #manage-users-modal,
+        #manage-users-modal.modal,
+        .modal#manage-users-modal {
+            z-index: 999999 !important;
+            position: fixed !important;
+        }
+        
+        /* Garantir que fundo dos modais de edição seja visível */
+        #edit-user-modal .modal-content,
+        #edit-user-modal .edit-modal-content {
+            background: white !important;
+            z-index: 9999999999 !important;
+            position: relative !important;
+        }
+        
+        /* Modal de edição sempre na frente */
+        #edit-user-modal,
+        .modal-edicao-usuario {
+            z-index: 9999999999 !important;
+            position: fixed !important;
+            backdrop-filter: blur(5px) !important;
+        }
+        
+        /* Garantir que todos os elementos dentro dos modals de edição sejam clicáveis */
+        #edit-user-modal *,
+        .modal-edicao-usuario * {
+            pointer-events: auto !important;
+        }
+        
+        /* Estilos para modal arrastável */
+        .drag-title-bar {
+            transition: background-color 0.3s ease, box-shadow 0.2s ease;
+            user-select: none;
+            border-radius: 8px 8px 0 0 !important;
+        }
+        
+        .drag-title-bar:hover {
+            background: linear-gradient(135deg, #7c8fff 0%, #8a5fb8 100%) !important;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.2) !important;
+        }
+        
+        .drag-title-bar:active {
+            cursor: grabbing !important;
+        }
+        
+        /* Modal arrastável com destaque */
+        .modal-content.draggable {
+            border: 2px solid #667eea !important;
+            border-radius: 8px !important;
+            box-shadow: 0 25px 50px rgba(0,0,0,0.8) !important;
+            transition: box-shadow 0.3s ease;
+        }
+        
+        .modal-content.draggable:hover {
+            box-shadow: 0 30px 60px rgba(0,0,0,0.9) !important;
+        }
+        
         /* Garantir que o botão sempre esteja visível mesmo com outras classes */
         #alterar-senha-btn.btn-hide,
         #alterar-senha-btn.hidden,
@@ -171,6 +261,27 @@
                 <button id="alterar-senha-btn" class="btn-primary" onclick="abrirMinhaSenha()" title="Alterar minha senha" 
                         style="background: #10b981; display: inline-flex !important; visibility: visible !important;">
                     <i class="fas fa-key"></i> Minha Senha
+                </button>
+                
+                <!-- BOTÃO DE TESTE DE MODAIS Z-INDEX -->
+                <button id="teste-modais-btn" class="btn-primary" onclick="testeZIndexFinal()" 
+                        title="Testar correção de z-index dos modais" 
+                        style="background: #f59e0b; display: inline-flex !important; visibility: visible !important;">
+                    <i class="fas fa-bug"></i> Teste Z-Index
+                </button>
+                
+                <!-- BOTÃO DE TESTE MODAL ARRASTÁVEL -->
+                <button id="teste-drag-btn" class="btn-primary" onclick="testeModalArrastavel()" 
+                        title="Testar modal arrastável completo" 
+                        style="background: #10b981; display: inline-flex !important; visibility: visible !important;">
+                    <i class="fas fa-arrows-alt"></i> Modal Arrastável
+                </button>
+                
+                <!-- BOTÃO DE TESTE EDIÇÃO COMPLETA -->
+                <button id="teste-edicao-btn" class="btn-primary" onclick="testeEdicaoCompleta()" 
+                        title="Testar edição completa com migração" 
+                        style="background: #8b5cf6; display: inline-flex !important; visibility: visible !important;">
+                    <i class="fas fa-user-edit"></i> Teste Edição
                 </button>
                 
                 <!-- Script para forçar visibilidade do botão imediatamente -->
@@ -743,11 +854,93 @@
 
     <!-- SCRIPT DE LIMPEZA DE EMERGÊNCIA - DEVE EXECUTAR PRIMEIRO -->
     <script src="emergency-cleanup.js?v=20251110-003"></script>
+    <!-- EMERGÊNCIA Z-INDEX - FORÇA BRUTA IMEDIATA -->
+    <script src="emergencia-zindex.js?v=20251128-002"></script>
     
     <script src="admin-panel.js?v=20251113-153000"></script>
+    <!-- PATCH DIRETO NA FUNÇÃO EDITAR USUÁRIO -->
+    <script src="patch-editar-usuario.js?v=20251128-002"></script>
+    <!-- TESTE MODAL ARRASTÁVEL -->
+    <script src="teste-modal-arrastavel.js?v=20251128-001"></script>
+    <!-- TESTE EDIÇÃO COMPLETA -->
+    <script src="teste-edicao-completa.js?v=20251128-001"></script>
     <!-- Verificar usuários existentes no Firestore -->
     <script src="verificar-usuarios-existentes.js?v=20251110-003"></script>
     <!-- Diagnóstico de status independente -->
     <script src="diagnostico-status.js?v=20251110-003"></script>
+    <!-- AUTO-CORRETOR Z-INDEX - EXECUTAR ANTES DOS TESTES -->
+    <script src="auto-zindex-corretor.js?v=20251128-001"></script>
+    <!-- TESTE AUTOMÁTICO DE MODAIS Z-INDEX -->
+    <script src="teste-modais-forcado.js?v=20251128-001"></script>
+    <!-- FUNÇÕES DE TESTE VIA UI (SEM CONSOLE) -->
+    <script src="teste-ui-modais.js?v=20251128-001"></script>
+    <!-- TESTE FINAL Z-INDEX -->
+    <script src="teste-final-zindex.js?v=20251128-003"></script>
+    
+    <!-- SCRIPT INLINE FORÇA BRUTA Z-INDEX -->
+    <script>
+    (function() {
+        console.log('🚨 [INLINE-FORCE] Iniciando correção z-index inline...');
+        
+        function forcarZIndexBruto() {
+            const editModal = document.getElementById('edit-user-modal');
+            const manageModal = document.getElementById('manage-users-modal');
+            
+            if (editModal) {
+                editModal.style.cssText = editModal.style.cssText + '; z-index: 999999999 !important; position: fixed !important;';
+                console.log('🚨 [INLINE-FORCE] Edit modal z-index forçado para 999999999');
+            }
+            
+            if (manageModal) {
+                manageModal.style.cssText = manageModal.style.cssText + '; z-index: 999999 !important; position: fixed !important;';
+                console.log('🚨 [INLINE-FORCE] Manage modal z-index forçado para 999999');
+            }
+        }
+        
+        // Executar imediatamente
+        forcarZIndexBruto();
+        
+        // Executar a cada 100ms por 10 segundos
+        let contador = 0;
+        const intervalo = setInterval(() => {
+            forcarZIndexBruto();
+            contador++;
+            if (contador >= 100) { // 10 segundos
+                clearInterval(intervalo);
+                console.log('🚨 [INLINE-FORCE] Correção periódica finalizada');
+            }
+        }, 100);
+        
+        // Interceptar editarUsuario quando estiver disponível
+        function interceptarEditarUsuario() {
+            if (window.editarUsuario && typeof window.editarUsuario === 'function') {
+                const originalEditUser = window.editarUsuario;
+                window.editarUsuario = function() {
+                    console.log('🚨 [INLINE-FORCE] INTERCEPTANDO editarUsuario');
+                    const resultado = originalEditUser.apply(this, arguments);
+                    
+                    // Força múltipla
+                    forcarZIndexBruto();
+                    setTimeout(forcarZIndexBruto, 10);
+                    setTimeout(forcarZIndexBruto, 50);
+                    setTimeout(forcarZIndexBruto, 100);
+                    setTimeout(forcarZIndexBruto, 200);
+                    
+                    return resultado;
+                };
+                console.log('✅ [INLINE-FORCE] editarUsuario interceptado com sucesso');
+            } else {
+                setTimeout(interceptarEditarUsuario, 100);
+            }
+        }
+        
+        // Tentar interceptar após carregamento
+        setTimeout(interceptarEditarUsuario, 500);
+        
+        // Expor função global
+        window.forcarZIndexEmergencia = forcarZIndexBruto;
+        
+    })();
+    </script>
 </body>
 </html>
