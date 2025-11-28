@@ -778,6 +778,74 @@ async function verificarEmailExistente(email) {
     }
 }
 
+// Função para diagnosticar problemas de autenticação e permissões
+async function diagnosticarPermissoes() {
+    console.log('🔍 ===== DIAGNÓSTICO DE PERMISSÕES =====');
+    
+    try {
+        // 1. Verificar estado da autenticação
+        const currentUser = window.auth?.currentUser;
+        console.log('👤 Usuário atual:', {
+            uid: currentUser?.uid,
+            email: currentUser?.email,
+            isAnonymous: currentUser?.isAnonymous,
+            emailVerified: currentUser?.emailVerified,
+            refreshToken: currentUser?.refreshToken ? 'Presente' : 'Ausente'
+        });
+        
+        if (!currentUser) {
+            console.error('❌ PROBLEMA: Nenhum usuário autenticado');
+            return;
+        }
+        
+        // 2. Verificar estado do Firebase
+        console.log('🔥 Estado do Firebase:', {
+            auth: !!window.auth,
+            db: !!window.db,
+            authReady: window.auth?.currentUser !== undefined,
+            dbReady: window.db?.app !== undefined
+        });
+        
+        // 3. Teste de leitura simples
+        try {
+            console.log('📖 Testando leitura básica...');
+            const testDoc = await window.db.collection('usuarios_admin').limit(1).get();
+            console.log('✅ Leitura funcionando:', testDoc.size, 'documentos encontrados');
+        } catch (readError) {
+            console.error('❌ ERRO na leitura:', readError);
+            
+            if (readError.code === 'permission-denied') {
+                console.log('🔒 Problema de permissões detectado');
+                console.log('💡 Possíveis soluções:');
+                console.log('1. Verificar regras do Firestore');
+                console.log('2. Verificar se o usuário tem o token correto');
+                console.log('3. Tentar reautenticar');
+            }
+        }
+        
+        // 4. Verificar token de autenticação
+        try {
+            const token = await currentUser.getIdToken();
+            console.log('🔑 Token obtido com sucesso:', token.substring(0, 50) + '...');
+        } catch (tokenError) {
+            console.error('❌ ERRO ao obter token:', tokenError);
+        }
+        
+        // 5. Verificar claims customizadas
+        try {
+            const tokenResult = await currentUser.getIdTokenResult();
+            console.log('🏷️ Claims do token:', tokenResult.claims);
+        } catch (claimsError) {
+            console.error('❌ ERRO ao obter claims:', claimsError);
+        }
+        
+    } catch (error) {
+        console.error('❌ ERRO no diagnóstico:', error);
+    }
+    
+    console.log('🔍 ===== FIM DO DIAGNÓSTICO =====');
+}
+
 // Função para verificar e limpar usuários órfãos do Firebase Auth
 window.verificarUsuariosOrfaos = async function() {
     console.log('🧹 Verificando usuários órfãos no Firebase Auth...');
@@ -2122,6 +2190,9 @@ window.criarNovoUsuario = async function() {
         debugLog('[DEBUG] Verificando se email já existe:', email);
         showToast('Info', 'Verificando se o email já existe...', 'info');
         
+        // DIAGNÓSTICO: Verificar estado da autenticação e permissões
+        await diagnosticarPermissoes();
+        
         try {
             const emailExiste = await verificarEmailExistente(email);
             debugLog('[DEBUG] Resultado verificação email:', emailExiste);
@@ -2136,6 +2207,28 @@ window.criarNovoUsuario = async function() {
             }
         } catch (errorVerificacao) {
             console.error('[ERRO] Falha na verificação de email:', errorVerificacao);
+            
+            // Se for erro de permissões, tentar reautenticar
+            if (errorVerificacao.code === 'permission-denied') {
+                const tentarReauth = confirm(
+                    'Erro de permissões detectado. Deseja tentar reautenticar?\n\n' +
+                    'Isso pode resolver problemas de token expirado.'
+                );
+                
+                if (tentarReauth) {
+                    try {
+                        showToast('Info', 'Tentando reautenticar...', 'info');
+                        await window.auth.currentUser.getIdToken(true); // Forçar refresh do token
+                        showToast('Sucesso', 'Token atualizado. Tente novamente.', 'success');
+                        return;
+                    } catch (reAuthError) {
+                        console.error('Erro na reautenticação:', reAuthError);
+                        showToast('Erro', 'Falha na reautenticação. Faça login novamente.', 'error');
+                        return;
+                    }
+                }
+            }
+            
             showToast('Aviso', 'Não foi possível verificar se o email já existe. Tentando criar mesmo assim...', 'warning');
         }
         
