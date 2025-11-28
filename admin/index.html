@@ -834,20 +834,13 @@
         </div>
     </div>
 
-    <!-- SCRIPT DE LIMPEZA DE EMERGÊNCIA - DEVE EXECUTAR PRIMEIRO -->
-    <script src="emergency-cleanup.js?v=20251110-003"></script>
-    
+    <!-- Scripts essenciais -->
+    <!-- Script principal -->
     <script src="admin-panel.js?v=20251113-153000"></script>
-    <!-- TESTE MODAL ARRASTÁVEL -->
-    <script src="teste-modal-arrastavel.js?v=20251128-001"></script>
-    <!-- TESTE EDIÇÃO COMPLETA -->
-    <script src="teste-edicao-completa.js?v=20251128-001"></script>
-    <!-- Verificar usuários existentes no Firestore -->
-    <script src="verificar-usuarios-existentes.js?v=20251110-003"></script>
-    <!-- Diagnóstico de status independente -->
-    <script src="diagnostico-status.js?v=20251110-003"></script>
-    <!-- TESTE FINAL Z-INDEX -->
-    <script src="teste-final-zindex.js?v=20251128-003"></script>
+    
+    <!-- Botão Minha Senha (versão silenciosa) -->
+    <script src="botao-senha-silencioso.js?v=20251128-001"></script>
+
     
     <!-- SCRIPT INLINE PARA FUNÇÕES FALTANTES -->
     <script>
@@ -870,70 +863,11 @@
         console.log('✅ Funções de fechamento de modal definidas');
     </script>
     
-    <!-- SCRIPT INLINE FORÇA BRUTA Z-INDEX -->
-    <script>
-    (function() {
-        console.log('🚨 [INLINE-FORCE] Iniciando correção z-index inline...');
-        
-        function forcarZIndexBruto() {
-            const editModal = document.getElementById('edit-user-modal');
-            const manageModal = document.getElementById('manage-users-modal');
-            
-            if (editModal) {
-                editModal.style.cssText = editModal.style.cssText + '; z-index: 999999999 !important; position: fixed !important;';
-                console.log('🚨 [INLINE-FORCE] Edit modal z-index forçado para 999999999');
-            }
-            
-            if (manageModal) {
-                manageModal.style.cssText = manageModal.style.cssText + '; z-index: 999999 !important; position: fixed !important;';
-                console.log('🚨 [INLINE-FORCE] Manage modal z-index forçado para 999999');
-            }
-        }
-        
-        // Executar imediatamente
-        forcarZIndexBruto();
-        
-        // Executar a cada 100ms por 10 segundos
-        let contador = 0;
-        const intervalo = setInterval(() => {
-            forcarZIndexBruto();
-            contador++;
-            if (contador >= 100) { // 10 segundos
-                clearInterval(intervalo);
-                console.log('🚨 [INLINE-FORCE] Correção periódica finalizada');
-            }
-        }, 100);
-        
-        // Interceptar editarUsuario quando estiver disponível
-        function interceptarEditarUsuario() {
-            if (window.editarUsuario && typeof window.editarUsuario === 'function') {
-                const originalEditUser = window.editarUsuario;
-                window.editarUsuario = function() {
-                    console.log('🚨 [INLINE-FORCE] INTERCEPTANDO editarUsuario');
-                    const resultado = originalEditUser.apply(this, arguments);
-                    
-                    // Força múltipla
-                    forcarZIndexBruto();
-                    setTimeout(forcarZIndexBruto, 10);
-                    setTimeout(forcarZIndexBruto, 50);
-                    setTimeout(forcarZIndexBruto, 100);
-                    setTimeout(forcarZIndexBruto, 200);
-                    
-                    return resultado;
-                };
-                console.log('✅ [INLINE-FORCE] editarUsuario interceptado com sucesso');
-            } else {
-                setTimeout(interceptarEditarUsuario, 100);
-            }
-        }
-        
-        // Tentar interceptar após carregamento
-        setTimeout(interceptarEditarUsuario, 500);
-        
-        // Expor função global
-        window.forcarZIndexEmergencia = forcarZIndexBruto;
-        
-    })();
-    </script>
+    <!-- Z-INDEX BÁSICO PARA MODAIS -->
+    <style>
+        #edit-user-modal { z-index: 1000010 !important; }
+        #manage-users-modal { z-index: 1000005 !important; }
+        #modal-novo-usuario { z-index: 1000015 !important; }
+    </style>
 </body>
 </html>
