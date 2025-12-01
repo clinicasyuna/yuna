@@ -5115,16 +5115,25 @@ function atualizarVisibilidadeBotoes() {
         }
     }
 
-    // Botão Acompanhantes - APENAS super_admin
+    // Botão Acompanhantes - super_admin OU equipe com permissão criarAcompanhantes
     if (btnAcompanhantes) {
-        if (isSuperAdmin) {
+        const podeGerenciarAcompanhantes = temPermissaoJS(usuarioAdmin, 'criarAcompanhantes');
+        console.log('[🏠 ACOMPANHANTES DEBUG] Testando acesso ao botão Acompanhantes:', {
+            usuarioAdmin: usuarioAdmin,
+            isSuperAdmin: isSuperAdmin,
+            podeGerenciarAcompanhantes: podeGerenciarAcompanhantes,
+            permissoes: usuarioAdmin?.permissoes,
+            equipe: usuarioAdmin?.equipe
+        });
+        
+        if (isSuperAdmin || podeGerenciarAcompanhantes) {
             btnAcompanhantes.classList.remove('btn-hide');
             btnAcompanhantes.style.display = 'inline-flex';
-            debugLog('[DEBUG] Botão Acompanhantes exibido para', isSuperAdmin ? 'super_admin' : 'admin');
+            debugLog('[DEBUG] Botão Acompanhantes exibido para:', isSuperAdmin ? 'super_admin' : 'equipe com permissão criarAcompanhantes');
         } else {
             btnAcompanhantes.classList.add('btn-hide');
             btnAcompanhantes.style.display = 'none';
-            debugLog('[DEBUG] Botão Acompanhantes ocultado para usuário não admin');
+            debugLog('[DEBUG] Botão Acompanhantes ocultado para usuário sem permissões');
         }
     }
 
