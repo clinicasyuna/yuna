@@ -5080,8 +5080,18 @@ function atualizarVisibilidadeBotoes() {
         }
     }
     
+    console.log('[🔧 DEBUG-BÁSICO] Iniciando verificação dos botões principais...');
+    console.log('[🔧 DEBUG-BÁSICO] Elementos encontrados:', {
+        btnNovoUsuario: !!btnNovoUsuario,
+        btnAcompanhantes: !!btnAcompanhantes,
+        btnGerenciarUsuarios: !!btnGerenciarUsuarios,
+        usuarioAdminExiste: !!usuarioAdmin
+    });
+    
     // Botão Criar Usuário - super_admin OU equipe com permissão gerenciarAcompanhantes
+    console.log('[🔧 DEBUG-BÁSICO] Testando botão Criar Usuário...');
     if (btnNovoUsuario) {
+        console.log('[🔧 DEBUG-BÁSICO] Botão Criar Usuário encontrado! Verificando permissões...');
         const podeCrearAcompanhantes = temPermissaoJS(usuarioAdmin, 'gerenciarAcompanhantes');
         console.log('[🎯 PERMISSAO DEBUG] Testando permissão gerenciarAcompanhantes:', {
             usuarioAdmin: usuarioAdmin,
@@ -5100,6 +5110,8 @@ function atualizarVisibilidadeBotoes() {
             btnNovoUsuario.style.display = 'none';
             debugLog('[DEBUG] Botão Criar Usuário ocultado para usuário sem permissões');
         }
+    } else {
+        console.log('[❌ DEBUG-BÁSICO] Botão Criar Usuário NÃO ENCONTRADO!');
     }
     
     // Botão Gerenciar Usuários - APENAS super_admin
@@ -5116,7 +5128,9 @@ function atualizarVisibilidadeBotoes() {
     }
 
     // Botão Acompanhantes - super_admin OU equipe com permissão gerenciarAcompanhantes
+    console.log('[🔧 DEBUG-BÁSICO] Testando botão Acompanhantes...');
     if (btnAcompanhantes) {
+        console.log('[🔧 DEBUG-BÁSICO] Botão Acompanhantes encontrado! Verificando permissões...');
         const podeGerenciarAcompanhantes = temPermissaoJS(usuarioAdmin, 'gerenciarAcompanhantes');
         console.log('[🏠 ACOMPANHANTES DEBUG] Testando acesso ao botão Acompanhantes:', {
             usuarioAdmin: usuarioAdmin,
@@ -5136,6 +5150,8 @@ function atualizarVisibilidadeBotoes() {
             btnAcompanhantes.style.display = 'none';
             debugLog('[DEBUG] Botão Acompanhantes ocultado para usuário sem permissões');
         }
+    } else {
+        console.log('[❌ DEBUG-BÁSICO] Botão Acompanhantes NÃO ENCONTRADO!');
     }
 
     // Botão Relatórios - super_admin e admin
