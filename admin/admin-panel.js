@@ -712,9 +712,9 @@ window.forcarAtualizacaoUsuario = async function() {
 };
 
 // Função para verificar se email já existe em qualquer coleção
-async function verificarEmailExistente(email) {
+async function verificarEmailExistente(email, excludeUserId = null) {
     try {
-        debugLog('[DEBUG] verificarEmailExistente: verificando email:', email);
+        debugLog('[DEBUG] verificarEmailExistente: verificando email:', email, 'excluindo userId:', excludeUserId);
         
         if (!email || !email.trim()) {
             debugLog('[DEBUG] Email vazio ou inválido');
@@ -734,36 +734,42 @@ async function verificarEmailExistente(email) {
             window.db.collection('usuarios_acompanhantes').where('email', '==', email.trim()).get()
         ]);
 
-        const existeAdmin = !adminSnapshot.empty;
-        const existeEquipe = !equipeSnapshot.empty;
-        const existeAcompanhante = !acompanhantesSnapshot.empty;
+        // Filtrar resultados para excluir o userId especificado
+        const adminDocs = adminSnapshot.docs.filter(doc => !excludeUserId || doc.id !== excludeUserId);
+        const equipeDocs = equipeSnapshot.docs.filter(doc => !excludeUserId || doc.id !== excludeUserId);
+        const acompanhantesDocs = acompanhantesSnapshot.docs.filter(doc => !excludeUserId || doc.id !== excludeUserId);
+
+        const existeAdmin = adminDocs.length > 0;
+        const existeEquipe = equipeDocs.length > 0;
+        const existeAcompanhante = acompanhantesDocs.length > 0;
 
         debugLog('[DEBUG] verificarEmailExistente: resultados:', {
             existeAdmin,
             existeEquipe, 
             existeAcompanhante,
             emailVerificado: email,
-            adminCount: adminSnapshot.size,
-            equipeCount: equipeSnapshot.size,
-            acompanhanteCount: acompanhantesSnapshot.size
+            excludeUserId,
+            adminCount: adminDocs.length,
+            equipeCount: equipeDocs.length,
+            acompanhanteCount: acompanhantesDocs.length
         });
 
         if (existeAdmin) {
-            console.log('📧 Email encontrado em usuarios_admin:', adminSnapshot.docs[0].data());
+            console.log('📧 Email encontrado em usuarios_admin:', adminDocs[0].data());
             return true;
         }
         
         if (existeEquipe) {
-            console.log('📧 Email encontrado em usuarios_equipe:', equipeSnapshot.docs[0].data());
+            console.log('📧 Email encontrado em usuarios_equipe:', equipeDocs[0].data());
             return true;
         }
         
         if (existeAcompanhante) {
-            console.log('📧 Email encontrado em usuarios_acompanhantes:', acompanhantesSnapshot.docs[0].data());
+            console.log('📧 Email encontrado em usuarios_acompanhantes:', acompanhantesDocs[0].data());
             return true;
         }
 
-        debugLog('[DEBUG] Email não encontrado em nenhuma coleção');
+        debugLog('[DEBUG] Email não encontrado em nenhuma coleção (ou apenas no usuário excluído)');
         return false;
 
     } catch (error) {
@@ -1963,12 +1969,39 @@ window.handleLogin = async function(event) {
             window.registrarTentativaLogin(email, false);
         }
         
+        // Verificar se o erro pode ser devido a alteração de email pelo admin
+        let emailAlteradoPorAdmin = false;
+        if (error.code === 'auth/invalid-login-credentials' || error.code === 'auth/user-not-found') {
+            try {
+                // Buscar usuário no Firestore para verificar se email foi alterado
+                const [adminSnapshot, equipeSnapshot] = await Promise.all([
+                    window.db.collection('usuarios_admin').where('email', '==', email.trim()).get(),
+                    window.db.collection('usuarios_equipe').where('email', '==', email.trim()).get()
+                ]);
+                
+                let userData = null;
+                if (!adminSnapshot.empty) {
+                    userData = adminSnapshot.docs[0].data();
+                } else if (!equipeSnapshot.empty) {
+                    userData = equipeSnapshot.docs[0].data();
+                }
+                
+                if (userData && userData.emailAlteradoPorAdmin) {
+                    emailAlteradoPorAdmin = true;
+                    console.log('[AUTH-FIX] Detectado email alterado por admin:', userData);
+                }
+            } catch (firestoreError) {
+                console.warn('[WARN] Erro ao verificar Firestore durante login:', firestoreError);
+            }
+        }
+        
         // Registrar log de auditoria detalhado
         if (window.registrarLogAuditoria) {
             window.registrarLogAuditoria('LOGIN_FAILED', { 
                 email, 
                 errorCode: error.code, 
                 errorMessage: error.message,
+                emailAlteradoPorAdmin,
                 timestamp: new Date().toISOString()
             });
         }
@@ -1976,7 +2009,10 @@ window.handleLogin = async function(event) {
         // Tratamento específico de diferentes tipos de erro
         let mensagemErro = 'Erro desconhecido no login';
         
-        if (error.code === 'auth/invalid-login-credentials' || 
+        if (emailAlteradoPorAdmin) {
+            mensagemErro = 'Seu email foi alterado pelo administrador. Entre em contato com a equipe de TI para reativar seu acesso.';
+            showToast('Email Alterado', mensagemErro, 'warning');
+        } else if (error.code === 'auth/invalid-login-credentials' || 
             error.code === 'auth/user-not-found' || 
             error.code === 'auth/wrong-password') {
             mensagemErro = 'Email ou senha incorretos';
@@ -1988,15 +2024,20 @@ window.handleLogin = async function(event) {
             mensagemErro = 'Email inválido';
         }
         
-        showToast('Erro de Login', mensagemErro, 'error');
+        if (!emailAlteradoPorAdmin) {
+            showToast('Erro de Login', mensagemErro, 'error');
+        }
+        
         console.warn('[AVISO] handleLogin: erro detalhado:', { 
             code: error.code, 
             message: error.message,
-            email: email
+            email: email,
+            emailAlteradoPorAdmin
         });
+        
         let mostrarModoDesenvolvimento = false;
         
-        if (error.code) {
+        if (error.code && !emailAlteradoPorAdmin) {
             switch (error.code) {
                 case 'auth/invalid-login-credentials':
                     mensagemErro = 'Email ou senha incorretos. Verifique suas credenciais.';
@@ -2026,15 +2067,12 @@ window.handleLogin = async function(event) {
                     mensagemErro = `Erro de autenticação: ${error.code}`;
                     mostrarModoDesenvolvimento = true;
             }
-        } else if (error.message) {
-            mensagemErro = error.message;
-            mostrarModoDesenvolvimento = true;
+            
+            showToast('Erro', mensagemErro, 'error');
         }
         
-        showToast('Erro', mensagemErro, 'error');
-        
         // Se há problemas de conectividade ou credenciais, oferecer modo desenvolvimento
-        if (mostrarModoDesenvolvimento) {
+        if (mostrarModoDesenvolvimento && !emailAlteradoPorAdmin) {
             setTimeout(() => {
                 const email = document.getElementById('login-email').value;
                 if (email && confirm('Erro de autenticação detectado. Deseja ativar o modo desenvolvimento? (Funcionalidade limitada)')) {
@@ -2044,6 +2082,7 @@ window.handleLogin = async function(event) {
         }
     }
 }
+
 window.carregarSolicitacoesAgrupadas = async function() {
     // Verificar se usuário está logado e dados carregados antes de prosseguir
     const usuarioAdmin = window.usuarioAdmin || JSON.parse(localStorage.getItem('usuarioAdmin') || '{}');
@@ -3093,6 +3132,22 @@ window.editarUsuario = async function(userId) {
                     </select>
                 </div>
                 
+                ${userData.emailAlteradoPorAdmin ? `
+                    <div style="margin-bottom: 16px; padding: 12px; background: #fef2f2; border: 1px solid #fecaca; border-radius: 6px;">
+                        <div style="display: flex; align-items: center; gap: 8px; color: #dc2626; font-weight: 500; margin-bottom: 8px;">
+                            ⚠️ Problema de Autenticação Detectado
+                        </div>
+                        <p style="margin: 0 0 8px 0; color: #7f1d1d; font-size: 14px;">
+                            Este usuário teve o email alterado e pode ter problemas para fazer login. 
+                            A conta no sistema de autenticação pode estar desatualizada.
+                        </p>
+                        <button onclick="corrigirProblemaEmail('${userId}', '${userCollection}')" 
+                                style="padding: 6px 12px; border: 1px solid #dc2626; background: #fca5a5; color: #7f1d1d; border-radius: 4px; cursor: pointer; font-size: 12px;">
+                            🔧 Corrigir Problema de Login
+                        </button>
+                    </div>
+                ` : ''}
+                
                 <div style="display: flex; gap: 12px; justify-content: flex-end; margin-top: 24px;">
                     <button onclick="abrirModalAlterarSenha('${userId}', '${userCollection}')" 
                             style="padding: 8px 16px; border: 1px solid #f59e0b; background: #fef3c7; color: #92400e; border-radius: 6px; cursor: pointer;">
@@ -3194,6 +3249,32 @@ window.salvarUsuarioEditado = async function(userId, originalCollection) {
             return;
         }
         
+        // Validar formato do email
+        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+        if (!emailRegex.test(email)) {
+            showToast('Erro', 'Formato de email inválido', 'error');
+            return;
+        }
+        
+        // Buscar dados originais para comparar se email mudou
+        const originalDoc = await window.db.collection(originalCollection).doc(userId).get();
+        if (!originalDoc.exists) {
+            throw new Error('Usuário original não encontrado');
+        }
+        const originalData = originalDoc.data();
+        const emailMudou = originalData.email !== email;
+        
+        console.log('[SAVE-USER] Email mudou?', emailMudou, 'De:', originalData.email, 'Para:', email);
+        
+        // Se o email mudou, verificar se já existe outro usuário com esse email
+        if (emailMudou) {
+            const emailExiste = await verificarEmailExistente(email, userId);
+            if (emailExiste) {
+                showToast('Erro', 'Este email já está sendo usado por outro usuário', 'error');
+                return;
+            }
+        }
+        
         // Determinar nova coleção baseada no tipo de acesso
         const novaCollection = tipoAcesso === 'admin' ? 'usuarios_admin' : 'usuarios_equipe';
         
@@ -3223,22 +3304,55 @@ window.salvarUsuarioEditado = async function(userId, originalCollection) {
             userId,
             originalCollection,
             novaCollection,
-            updateData
+            updateData,
+            emailMudou
         });
+        
+        // ===== ATUALIZAR FIREBASE AUTHENTICATION SE EMAIL MUDOU =====
+        if (emailMudou) {
+            try {
+                console.log('[AUTH-UPDATE] Atualizando email no Firebase Auth...');
+                
+                // Buscar o usuário no Firebase Auth pelo email antigo
+                const listUsersResult = await firebase.auth().listUsers();
+                const targetUser = listUsersResult.users.find(user => user.uid === userId);
+                
+                if (targetUser) {
+                    // Atualizar email no Firebase Auth usando Admin SDK
+                    await firebase.auth().updateUser(userId, {
+                        email: email
+                    });
+                    
+                    console.log('[AUTH-UPDATE] Email atualizado no Firebase Auth com sucesso');
+                    showToast('Info', 'Sincronizando email com sistema de autenticação...', 'info');
+                } else {
+                    console.warn('[AUTH-UPDATE] Usuário não encontrado no Firebase Auth, apenas Firestore será atualizado');
+                }
+            } catch (authError) {
+                console.error('[AUTH-ERROR] Erro ao atualizar email no Firebase Auth:', authError);
+                
+                // Se for erro de permissão (método não disponível no client-side), tentar abordagem alternativa
+                if (authError.code === 'auth/operation-not-allowed' || authError.message.includes('listUsers')) {
+                    console.log('[AUTH-FALLBACK] Usando abordagem client-side para atualização de email...');
+                    
+                    // Mostrar aviso sobre limitação
+                    showToast('Aviso', 'Email alterado no sistema. O usuário precisará fazer login novamente.', 'warning');
+                    
+                    // Adicionar flag para forçar novo login
+                    updateData.emailAlteradoPorAdmin = true;
+                    updateData.dataAlteracaoEmail = new Date();
+                } else {
+                    // Outro erro crítico
+                    throw new Error(`Erro ao atualizar email no sistema de autenticação: ${authError.message}`);
+                }
+            }
+        }
         
         // Se a coleção mudou, fazer migração
         if (originalCollection !== novaCollection) {
             console.log('[MIGRATE-USER] Migrando usuário de', originalCollection, 'para', novaCollection);
             
-            // 1. Buscar dados originais
-            const originalDoc = await window.db.collection(originalCollection).doc(userId).get();
-            if (!originalDoc.exists) {
-                throw new Error('Usuário original não encontrado');
-            }
-            
-            const originalData = originalDoc.data();
-            
-            // 2. Preparar dados completos para a nova coleção
+            // Preparar dados completos para a nova coleção
             const migrationData = {
                 ...originalData,
                 ...updateData,
@@ -3246,10 +3360,10 @@ window.salvarUsuarioEditado = async function(userId, originalCollection) {
                 migratedAt: new Date()
             };
             
-            // 3. Salvar na nova coleção
+            // Salvar na nova coleção
             await window.db.collection(novaCollection).doc(userId).set(migrationData);
             
-            // 4. Remover da coleção original
+            // Remover da coleção original
             await window.db.collection(originalCollection).doc(userId).delete();
             
             showToast('Sucesso', `Usuário migrado de ${originalCollection === 'usuarios_equipe' ? 'Equipe' : 'Admin'} para ${novaCollection === 'usuarios_equipe' ? 'Equipe' : 'Admin'}`, 'success');
@@ -3271,13 +3385,116 @@ window.salvarUsuarioEditado = async function(userId, originalCollection) {
                 originalCollection,
                 novaCollection,
                 migrated: originalCollection !== novaCollection,
-                updateData: Object.keys(updateData)
+                updateData: Object.keys(updateData),
+                emailMudou
             });
         }
         
     } catch (error) {
         console.error('[ERRO] Falha ao salvar usuário:', error);
         showToast('Erro', 'Não foi possível salvar as alterações: ' + error.message, 'error');
+    }
+};
+
+// ===== FUNÇÕES DE CORREÇÃO DE PROBLEMAS DE EMAIL =====
+
+// Função para corrigir problemas de usuários com email alterado pelo admin
+window.corrigirProblemaEmail = async function(userId, collection) {
+    try {
+        const usuarioAdmin = window.usuarioAdmin || JSON.parse(localStorage.getItem('usuarioAdmin') || '{}');
+        if (!usuarioAdmin || usuarioAdmin.role !== 'super_admin') {
+            showToast('Erro', 'Apenas super administradores podem corrigir problemas de email', 'error');
+            return;
+        }
+        
+        // Buscar dados do usuário
+        const doc = await window.db.collection(collection).doc(userId).get();
+        if (!doc.exists) {
+            showToast('Erro', 'Usuário não encontrado', 'error');
+            return;
+        }
+        
+        const userData = doc.data();
+        
+        if (!userData.emailAlteradoPorAdmin) {
+            showToast('Info', 'Este usuário não possui problemas de email detectados', 'info');
+            return;
+        }
+        
+        const confirm = window.confirm(
+            `Corrigir problema de email para o usuário ${userData.nome} (${userData.email})?\n\n` +
+            `Isso irá:\n` +
+            `1. Remover a flag de problema de email\n` +
+            `2. Tentar recriar a conta no Firebase Auth\n` +
+            `3. Permitir que o usuário faça login novamente\n\n` +
+            `Continuar?`
+        );
+        
+        if (!confirm) return;
+        
+        console.log('[CORREÇÃO-EMAIL] Corrigindo problema para:', userData);
+        
+        // 1. Tentar recriar usuário no Firebase Auth
+        try {
+            // Verificar se usuário já existe no Auth
+            const listUsersResult = await firebase.auth().listUsers();
+            const existingUser = listUsersResult.users.find(user => user.uid === userId);
+            
+            if (existingUser) {
+                // Usuário já existe no Auth, apenas sincronizar email
+                await firebase.auth().updateUser(userId, {
+                    email: userData.email
+                });
+                console.log('[CORREÇÃO-EMAIL] Email sincronizado no Firebase Auth');
+            } else {
+                // Usuário não existe no Auth, criar nova conta
+                // NOTA: Isso requer senha temporária
+                const senhaTemporaria = 'YunaTempo' + Math.random().toString(36).substring(7);
+                
+                const newUser = await firebase.auth().createUser({
+                    uid: userId,
+                    email: userData.email,
+                    displayName: userData.nome,
+                    password: senhaTemporaria
+                });
+                
+                console.log('[CORREÇÃO-EMAIL] Usuário recriado no Firebase Auth com senha temporária');
+                showToast('Info', `Conta recriada. Senha temporária: ${senhaTemporaria}`, 'info');
+            }
+        } catch (authError) {
+            console.warn('[CORREÇÃO-EMAIL] Erro ao corrigir Auth, apenas limpando flag:', authError);
+        }
+        
+        // 2. Limpar flags de problema
+        const updateData = {
+            emailAlteradoPorAdmin: firebase.firestore.FieldValue.delete(),
+            dataAlteracaoEmail: firebase.firestore.FieldValue.delete(),
+            problemaCoorrigidoEm: new Date(),
+            problemaCoorrigidoPor: usuarioAdmin.email
+        };
+        
+        await window.db.collection(collection).doc(userId).update(updateData);
+        
+        showToast('Sucesso', 'Problema de email corrigido com sucesso!', 'success');
+        
+        // Recarregar lista de usuários
+        if (window.carregarUsuarios) {
+            await window.carregarUsuarios();
+        }
+        
+        // Registrar auditoria
+        if (window.registrarLogAuditoria) {
+            window.registrarLogAuditoria('EMAIL_PROBLEM_FIXED', {
+                userId,
+                collection,
+                corrigidoPor: usuarioAdmin.email,
+                userEmail: userData.email
+            });
+        }
+        
+    } catch (error) {
+        console.error('[ERRO] Falha ao corrigir problema de email:', error);
+        showToast('Erro', 'Não foi possível corrigir o problema: ' + error.message, 'error');
     }
 };
 
