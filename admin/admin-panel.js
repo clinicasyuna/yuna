@@ -5005,12 +5005,17 @@ function atualizarVisibilidadeBotoes() {
     // PRIMEIRO: Limpar botões indesejados SEMPRE
     forceRemoveDebugButtons();
     
+    // FORCE RESET da variável reconfigurando para evitar travamento
+    console.log('🚀🚀🚀 [DEBUG-FORÇADO] Status reconfigurando ANTES:', reconfigurando);
+    
     if (reconfigurando) {
-        debugLog('[DEBUG] atualizarVisibilidadeBotoes: já está reconfigurando, ignorando...');
-        return;
+        console.log('🚀🚀🚀 [DEBUG-FORÇADO] RESETANDO reconfigurando - estava travada!');
+        reconfigurando = false; // FORÇAR RESET
     }
     
     reconfigurando = true;
+    console.log('🚀🚀🚀 [DEBUG-FORÇADO] reconfigurando definida como TRUE');
+    
     const usuarioAdmin = window.usuarioAdmin || JSON.parse(localStorage.getItem('usuarioAdmin') || '{}');
     const btnNovoUsuario = document.getElementById('btn-novo-usuario');
     const btnGerenciarUsuarios = document.getElementById('manage-users-btn');
