@@ -85,6 +85,27 @@ let tentativasLogin = 0;
 const maxTentativas = 5;
 const tempoBloquio = 15 * 60 * 1000; // 15 minutos
 
+// Função para resetar tentativas de login (uso de emergência)
+function resetarTentativasLogin(email) {
+    const chave = `login_tentativas_${email}`;
+    localStorage.removeItem(chave);
+    console.log(`🔓 Tentativas de login resetadas para: ${email}`);
+    registrarLogAuditoria('LOGIN_ATTEMPTS_RESET', { email, resetBy: 'admin' });
+}
+
+// Função para limpar TODAS as tentativas de login (Super Admin)
+function limparTodasTentativasLogin() {
+    const keys = Object.keys(localStorage);
+    const loginKeys = keys.filter(key => key.startsWith('login_tentativas_'));
+    
+    loginKeys.forEach(key => {
+        localStorage.removeItem(key);
+    });
+    
+    console.log(`🔓 Todas as tentativas de login foram resetadas (${loginKeys.length} usuários)`);
+    registrarLogAuditoria('ALL_LOGIN_ATTEMPTS_RESET', { count: loginKeys.length });
+}
+
 function verificarTentativasLogin(email) {
     const chave = `login_tentativas_${email}`;
     const dados = JSON.parse(localStorage.getItem(chave) || '{"count": 0, "lastAttempt": 0}');
@@ -99,6 +120,12 @@ function verificarTentativasLogin(email) {
     // Verificar se está bloqueado
     if (dados.count >= maxTentativas) {
         const tempoRestante = Math.ceil((tempoBloquio - (agora - dados.lastAttempt)) / 1000 / 60);
+        
+        // Mostrar dica para resetar tentativas em desenvolvimento
+        if (window.location.hostname === 'localhost' || window.location.hostname.includes('127.0.0.1') || window.location.hostname.includes('github.io')) {
+            console.warn(`🔒 BLOQUEADO: ${email} - Para resetar execute: resetarTentativasLogin('${email}')`);
+        }
+        
         throw new Error(`Muitas tentativas de login. Tente novamente em ${tempoRestante} minutos.`);
     }
     
@@ -193,6 +220,8 @@ if (typeof window !== 'undefined') {
     window.verificarTentativasLogin = verificarTentativasLogin;
     window.registrarTentativaLogin = registrarTentativaLogin;
     window.verificarIntegridadeSessao = verificarIntegridadeSessao;
+    window.resetarTentativasLogin = resetarTentativasLogin;
+    window.limparTodasTentativasLogin = limparTodasTentativasLogin;
     
     // Inicializar segurança
     limparConsoleProducao();
