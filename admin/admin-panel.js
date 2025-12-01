@@ -5118,19 +5118,20 @@ function atualizarVisibilidadeBotoes() {
     console.log('[🔧 DEBUG-BÁSICO] Testando botão Criar Usuário...');
     if (btnNovoUsuario) {
         console.log('[🔧 DEBUG-BÁSICO] Botão Criar Usuário encontrado! Verificando permissões...');
-        const podeCrearAcompanhantes = temPermissaoJS ? temPermissaoJS(usuarioAdmin, 'gerenciarAcompanhantes') : false;
+        
+        // CORREÇÃO: Verificação direta por email ao invés de temPermissaoJS
+        const isHigienizacaoRecepcao = usuarioAdmin?.email === 'recepcao.jardins@yuna.com.br';
         console.log('[🎯 PERMISSAO DEBUG] Testando permissão gerenciarAcompanhantes:', {
             usuarioAdmin: usuarioAdmin,
-            temPermissaoJS: typeof temPermissaoJS,
-            podeCrearAcompanhantes: podeCrearAcompanhantes,
-            permissoes: usuarioAdmin?.permissoes,
+            isHigienizacaoRecepcao: isHigienizacaoRecepcao,
+            email: usuarioAdmin?.email,
             equipe: usuarioAdmin?.equipe
         });
         
-        if (isSuperAdmin || podeCrearAcompanhantes) {
+        if (isSuperAdmin || isHigienizacaoRecepcao) {
             btnNovoUsuario.classList.remove('btn-hide');
             btnNovoUsuario.style.display = 'inline-flex';
-            debugLog('[DEBUG] Botão Criar Usuário exibido para:', isSuperAdmin ? 'super_admin' : 'equipe com permissão gerenciarAcompanhantes');
+            debugLog('[DEBUG] Botão Criar Usuário exibido para:', isSuperAdmin ? 'super_admin' : 'recepcao.jardins@yuna.com.br');
         } else {
             btnNovoUsuario.classList.add('btn-hide');
             btnNovoUsuario.style.display = 'none';
