@@ -5112,6 +5112,8 @@ function atualizarVisibilidadeBotoes() {
         usuarioAdminExiste: !!usuarioAdmin
     });
     
+    console.log('🎯🎯🎯 [CHECKPOINT 1] CHEGOU até os botões principais!');
+    
     // Botão Criar Usuário - super_admin OU equipe com permissão gerenciarAcompanhantes
     console.log('[🔧 DEBUG-BÁSICO] Testando botão Criar Usuário...');
     if (btnNovoUsuario) {
@@ -5139,7 +5141,10 @@ function atualizarVisibilidadeBotoes() {
         console.log('[❌ DEBUG-BÁSICO] Botão Criar Usuário NÃO ENCONTRADO!');
     }
     
+    console.log('🎯🎯🎯 [CHECKPOINT 2] TERMINOU configuração botão Criar Usuário!');
+    
     // Botão Gerenciar Usuários - APENAS super_admin
+    console.log('🎯🎯🎯 [CHECKPOINT 3] Iniciando botão Gerenciar Usuários!');
     if (btnGerenciarUsuarios) {
         if (isSuperAdmin) {
             btnGerenciarUsuarios.classList.remove('btn-hide');
@@ -5152,6 +5157,8 @@ function atualizarVisibilidadeBotoes() {
         }
     }
 
+    console.log('🎯🎯🎯 [CHECKPOINT 4] TERMINOU configuração botão Gerenciar Usuários!');
+
     // DEBUG CRÍTICO: Verificando se chegamos até aqui
     console.log('[🚀🚀🚀 DEBUG-FORÇADO] CHEGOU na seção dos botões Acompanhantes!');
     console.log('[🚀🚀🚀 DEBUG-FORÇADO] Estado atual:', {
@@ -5159,6 +5166,8 @@ function atualizarVisibilidadeBotoes() {
         btnAcompanhantes: !!btnAcompanhantes,
         email: usuarioAdmin?.email
     });
+
+    console.log('🎯🎯🎯 [CHECKPOINT 5] INICIANDO configuração botão Acompanhantes!');
 
     // Botão Acompanhantes - super_admin OU admin OU recepcao.jardins@yuna.com.br (higienização)
     console.log('[🔧 DEBUG-BÁSICO] Testando botão Acompanhantes...');
@@ -5193,6 +5202,8 @@ function atualizarVisibilidadeBotoes() {
     } else {
         console.log('[❌ DEBUG-BÁSICO] Botão Acompanhantes NÃO ENCONTRADO!');
     }
+
+    console.log('🎯🎯🎯 [CHECKPOINT 6] TERMINOU configuração botão Acompanhantes!');
 
     // Botão Relatórios - super_admin e admin
     if (btnRelatorios) {
