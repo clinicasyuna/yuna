@@ -5091,11 +5091,9 @@ function atualizarVisibilidadeBotoes() {
         console.log('🚀🚀🚀 [DEBUG-FORÇADO] Usuario:', usuarioAdmin);
         console.log('🚀🚀🚀 [DEBUG-FORÇADO] temPermissaoJS existe?', typeof window.temPermissaoJS);
         
-        // Testar função diretamente
-        if (window.temPermissaoJS) {
-            const teste = window.temPermissaoJS(usuarioAdmin, 'gerenciarAcompanhantes');
-            console.log('🚀🚀🚀 [DEBUG-FORÇADO] Teste gerenciarAcompanhantes:', teste);
-        }
+        // CORREÇÃO: Verificação direta ao invés de temPermissaoJS que causa erro
+        const isHigienizacaoRecepcao = usuarioAdmin?.email === 'recepcao.jardins@yuna.com.br';
+        console.log('🚀🚀🚀 [DEBUG-FORÇADO] Verificação específica higienização:', isHigienizacaoRecepcao);
         
         console.log('🚀🚀🚀 [DEBUG-FORÇADO] Elementos DOM:', {
             btnNovoUsuario: !!btnNovoUsuario,
