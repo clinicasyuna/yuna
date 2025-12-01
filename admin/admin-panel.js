@@ -5080,16 +5080,25 @@ function atualizarVisibilidadeBotoes() {
         }
     }
     
-    // Botão Criar Usuário - APENAS super_admin
+    // Botão Criar Usuário - super_admin OU equipe com permissão criarAcompanhantes
     if (btnNovoUsuario) {
-        if (isSuperAdmin) {
+        const podeCrearAcompanhantes = temPermissaoJS(usuarioAdmin, 'criarAcompanhantes');
+        console.log('[🎯 PERMISSAO DEBUG] Testando permissão criarAcompanhantes:', {
+            usuarioAdmin: usuarioAdmin,
+            temPermissaoJS: typeof temPermissaoJS,
+            podeCrearAcompanhantes: podeCrearAcompanhantes,
+            permissoes: usuarioAdmin?.permissoes,
+            equipe: usuarioAdmin?.equipe
+        });
+        
+        if (isSuperAdmin || podeCrearAcompanhantes) {
             btnNovoUsuario.classList.remove('btn-hide');
             btnNovoUsuario.style.display = 'inline-flex';
-            debugLog('[DEBUG] Botão Criar Usuário exibido para super_admin');
+            debugLog('[DEBUG] Botão Criar Usuário exibido para:', isSuperAdmin ? 'super_admin' : 'equipe com permissão criarAcompanhantes');
         } else {
             btnNovoUsuario.classList.add('btn-hide');
             btnNovoUsuario.style.display = 'none';
-            debugLog('[DEBUG] Botão Criar Usuário ocultado para usuário não super_admin');
+            debugLog('[DEBUG] Botão Criar Usuário ocultado para usuário sem permissões');
         }
     }
     
