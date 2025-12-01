@@ -5080,10 +5080,10 @@ function atualizarVisibilidadeBotoes() {
         }
     }
     
-    // Botão Criar Usuário - super_admin OU equipe com permissão criarAcompanhantes
+    // Botão Criar Usuário - super_admin OU equipe com permissão gerenciarAcompanhantes
     if (btnNovoUsuario) {
-        const podeCrearAcompanhantes = temPermissaoJS(usuarioAdmin, 'criarAcompanhantes');
-        console.log('[🎯 PERMISSAO DEBUG] Testando permissão criarAcompanhantes:', {
+        const podeCrearAcompanhantes = temPermissaoJS(usuarioAdmin, 'gerenciarAcompanhantes');
+        console.log('[🎯 PERMISSAO DEBUG] Testando permissão gerenciarAcompanhantes:', {
             usuarioAdmin: usuarioAdmin,
             temPermissaoJS: typeof temPermissaoJS,
             podeCrearAcompanhantes: podeCrearAcompanhantes,
@@ -5094,7 +5094,7 @@ function atualizarVisibilidadeBotoes() {
         if (isSuperAdmin || podeCrearAcompanhantes) {
             btnNovoUsuario.classList.remove('btn-hide');
             btnNovoUsuario.style.display = 'inline-flex';
-            debugLog('[DEBUG] Botão Criar Usuário exibido para:', isSuperAdmin ? 'super_admin' : 'equipe com permissão criarAcompanhantes');
+            debugLog('[DEBUG] Botão Criar Usuário exibido para:', isSuperAdmin ? 'super_admin' : 'equipe com permissão gerenciarAcompanhantes');
         } else {
             btnNovoUsuario.classList.add('btn-hide');
             btnNovoUsuario.style.display = 'none';
@@ -5115,21 +5115,22 @@ function atualizarVisibilidadeBotoes() {
         }
     }
 
-    // Botão Acompanhantes - super_admin OU equipe com permissão criarAcompanhantes
+    // Botão Acompanhantes - super_admin OU equipe com permissão gerenciarAcompanhantes
     if (btnAcompanhantes) {
-        const podeGerenciarAcompanhantes = temPermissaoJS(usuarioAdmin, 'criarAcompanhantes');
+        const podeGerenciarAcompanhantes = temPermissaoJS(usuarioAdmin, 'gerenciarAcompanhantes');
         console.log('[🏠 ACOMPANHANTES DEBUG] Testando acesso ao botão Acompanhantes:', {
             usuarioAdmin: usuarioAdmin,
             isSuperAdmin: isSuperAdmin,
             podeGerenciarAcompanhantes: podeGerenciarAcompanhantes,
             permissoes: usuarioAdmin?.permissoes,
-            equipe: usuarioAdmin?.equipe
+            equipe: usuarioAdmin?.equipe,
+            temPermissaoJSFunction: typeof temPermissaoJS
         });
         
         if (isSuperAdmin || podeGerenciarAcompanhantes) {
             btnAcompanhantes.classList.remove('btn-hide');
             btnAcompanhantes.style.display = 'inline-flex';
-            debugLog('[DEBUG] Botão Acompanhantes exibido para:', isSuperAdmin ? 'super_admin' : 'equipe com permissão criarAcompanhantes');
+            debugLog('[DEBUG] Botão Acompanhantes exibido para:', isSuperAdmin ? 'super_admin' : 'equipe com permissão gerenciarAcompanhantes');
         } else {
             btnAcompanhantes.classList.add('btn-hide');
             btnAcompanhantes.style.display = 'none';

@@ -90,6 +90,11 @@ function temPermissaoJS(usuarioAdmin, permissao) {
   if (permissao === 'create_users' && usuarioAdmin.permissoes['criarUsuarios'] === true) return true;
   if (permissao === 'create_acompanhantes' && usuarioAdmin.permissoes['criarAcompanhantes'] === true) return true;
   if (permissao === 'manage_users' && usuarioAdmin.permissoes['gerenciarDepartamentos'] === true) return true;
+  
+  // Suporte para gerenciarAcompanhantes (também permite criar acompanhantes)
+  if (permissao === 'criarAcompanhantes' && usuarioAdmin.permissoes['gerenciarAcompanhantes'] === true) return true;
+  if (permissao === 'gerenciarAcompanhantes' && usuarioAdmin.permissoes['gerenciarAcompanhantes'] === true) return true;
+  
   return usuarioAdmin.permissoes[permissao] === true;
 }
 
