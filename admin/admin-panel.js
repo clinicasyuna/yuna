@@ -5002,22 +5002,26 @@ function iniciarObserverBotaoMinhaSenha() {
 function atualizarVisibilidadeBotoes() {
     console.log('🔥🔥🔥 EXECUTANDO atualizarVisibilidadeBotoes - TESTE LIMPEZA 🔥🔥🔥');
     
-    // PRIMEIRO: Limpar botões indesejados SEMPRE
-    forceRemoveDebugButtons();
-    
     // FORCE RESET GLOBAL da variável reconfigurando 
-    console.log('🚀🚀🚀 [DEBUG-FORÇADO] FORÇANDO RESET GLOBAL - reconfigurando era:', window.reconfigurando || reconfigurando);
+    console.log('🚀🚀🚀 [DEBUG-FORÇADO] FORÇANDO RESET GLOBAL - reconfigurando era:', window.reconfigurando || 'undefined');
     window.reconfigurando = false;
     reconfigurando = false;
     
     console.log('🚀🚀🚀 [DEBUG-FORÇADO] CONTINUANDO execução da função...');
     
-    const usuarioAdmin = window.usuarioAdmin || JSON.parse(localStorage.getItem('usuarioAdmin') || '{}');
-    const btnNovoUsuario = document.getElementById('btn-novo-usuario');
-    const btnGerenciarUsuarios = document.getElementById('manage-users-btn');
-    const btnAcompanhantes = document.getElementById('acompanhantes-btn');
-    const btnRelatorios = document.getElementById('relatorios-btn');
-    const btnLimpeza = document.getElementById('limpeza-btn');
+    try {
+        // PRIMEIRO: Limpar botões indesejados SEMPRE
+        forceRemoveDebugButtons();
+        
+        const usuarioAdmin = window.usuarioAdmin || JSON.parse(localStorage.getItem('usuarioAdmin') || '{}');
+        
+        console.log('🚀🚀🚀 [DEBUG-FORÇADO] UsuarioAdmin carregado:', usuarioAdmin?.email);
+        
+        const btnNovoUsuario = document.getElementById('btn-novo-usuario');
+        const btnGerenciarUsuarios = document.getElementById('manage-users-btn');
+        const btnAcompanhantes = document.getElementById('acompanhantes-btn');
+        const btnRelatorios = document.getElementById('relatorios-btn');
+        const btnLimpeza = document.getElementById('limpeza-btn');
     const btnSatisfacao = document.getElementById('satisfacao-btn');
     const btnMinhaSenha = document.getElementById('alterar-senha-btn');
     const msgPermissao = document.getElementById('admin-permission-msg');
@@ -5148,6 +5152,14 @@ function atualizarVisibilidadeBotoes() {
             debugLog('[DEBUG] Botão Gerenciar Usuários ocultado para usuário não super_admin');
         }
     }
+
+    // DEBUG CRÍTICO: Verificando se chegamos até aqui
+    console.log('[🚀🚀🚀 DEBUG-FORÇADO] CHEGOU na seção dos botões Acompanhantes!');
+    console.log('[🚀🚀🚀 DEBUG-FORÇADO] Estado atual:', {
+        usuarioAdmin: usuarioAdmin,
+        btnAcompanhantes: !!btnAcompanhantes,
+        email: usuarioAdmin?.email
+    });
 
     // Botão Acompanhantes - super_admin OU admin OU recepcao.jardins@yuna.com.br (higienização)
     console.log('[🔧 DEBUG-BÁSICO] Testando botão Acompanhantes...');
@@ -5299,6 +5311,12 @@ function atualizarVisibilidadeBotoes() {
     setTimeout(() => {
         reconfigurando = false;
     }, 50);
+    
+    } catch (error) {
+        console.error('[🚀🚀🚀 ERROR DEBUG-FORÇADO] Erro na função atualizarVisibilidadeBotoes:', error);
+        // Reset da flag em caso de erro
+        reconfigurando = false;
+    }
 }
 
 // Função para configurar eventos dos botões
