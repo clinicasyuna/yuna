@@ -5080,6 +5080,27 @@ function atualizarVisibilidadeBotoes() {
         }
     }
     
+    // TESTE DIRETO DE FUNCIONALIDADE
+    try {
+        console.log('🚀🚀🚀 [DEBUG-FORÇADO] INICIANDO VERIFICAÇÃO FORÇADA 🚀🚀🚀');
+        console.log('🚀🚀🚀 [DEBUG-FORÇADO] Usuario:', usuarioAdmin);
+        console.log('🚀🚀🚀 [DEBUG-FORÇADO] temPermissaoJS existe?', typeof window.temPermissaoJS);
+        
+        // Testar função diretamente
+        if (window.temPermissaoJS) {
+            const teste = window.temPermissaoJS(usuarioAdmin, 'gerenciarAcompanhantes');
+            console.log('🚀🚀🚀 [DEBUG-FORÇADO] Teste gerenciarAcompanhantes:', teste);
+        }
+        
+        console.log('🚀🚀🚀 [DEBUG-FORÇADO] Elementos DOM:', {
+            btnNovoUsuario: !!btnNovoUsuario,
+            btnAcompanhantes: !!btnAcompanhantes
+        });
+        
+    } catch (error) {
+        console.error('🚀🚀🚀 [DEBUG-FORÇADO] ERRO:', error);
+    }
+    
     console.log('[🔧 DEBUG-BÁSICO] Iniciando verificação dos botões principais...');
     console.log('[🔧 DEBUG-BÁSICO] Elementos encontrados:', {
         btnNovoUsuario: !!btnNovoUsuario,
@@ -5092,7 +5113,7 @@ function atualizarVisibilidadeBotoes() {
     console.log('[🔧 DEBUG-BÁSICO] Testando botão Criar Usuário...');
     if (btnNovoUsuario) {
         console.log('[🔧 DEBUG-BÁSICO] Botão Criar Usuário encontrado! Verificando permissões...');
-        const podeCrearAcompanhantes = temPermissaoJS(usuarioAdmin, 'gerenciarAcompanhantes');
+        const podeCrearAcompanhantes = temPermissaoJS ? temPermissaoJS(usuarioAdmin, 'gerenciarAcompanhantes') : false;
         console.log('[🎯 PERMISSAO DEBUG] Testando permissão gerenciarAcompanhantes:', {
             usuarioAdmin: usuarioAdmin,
             temPermissaoJS: typeof temPermissaoJS,
