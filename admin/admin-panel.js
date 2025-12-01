@@ -533,7 +533,9 @@ window.alterarTipoUsuario = function() {
     
     const tipoSelect = document.getElementById('usuario-tipo');
     const campoEquipe = document.getElementById('campo-equipe');
+    const campoQuarto = document.getElementById('campo-quarto');
     const usuarioEquipeSelect = document.getElementById('usuario-equipe');
+    const usuarioQuartoInput = document.getElementById('usuario-quarto');
     
     if (!tipoSelect || !campoEquipe) {
         console.error('[ERRO] alterarTipoUsuario: elementos não encontrados');
@@ -546,18 +548,45 @@ window.alterarTipoUsuario = function() {
     if (tipo === 'equipe') {
         // Mostrar campo de equipe e torná-lo obrigatório
         campoEquipe.style.display = 'block';
+        if (campoQuarto) campoQuarto.style.display = 'none';
+        
         if (usuarioEquipeSelect) {
             usuarioEquipeSelect.required = true;
         }
+        if (usuarioQuartoInput) {
+            usuarioQuartoInput.required = false;
+            usuarioQuartoInput.value = '';
+        }
         debugLog('[DEBUG] alterarTipoUsuario: mostrando campo equipe');
-    } else {
-        // Ocultar campo de equipe e remover obrigatoriedade
+        
+    } else if (tipo === 'acompanhante') {
+        // Mostrar campo de quarto e torná-lo obrigatório
+        if (campoQuarto) campoQuarto.style.display = 'block';
         campoEquipe.style.display = 'none';
+        
+        if (usuarioQuartoInput) {
+            usuarioQuartoInput.required = true;
+        }
         if (usuarioEquipeSelect) {
             usuarioEquipeSelect.required = false;
-            usuarioEquipeSelect.value = ''; // Limpar seleção
+            usuarioEquipeSelect.value = '';
         }
-        debugLog('[DEBUG] alterarTipoUsuario: ocultando campo equipe');
+        debugLog('[DEBUG] alterarTipoUsuario: mostrando campo quarto para acompanhante');
+        
+    } else {
+        // Ocultar ambos os campos
+        campoEquipe.style.display = 'none';
+        if (campoQuarto) campoQuarto.style.display = 'none';
+        
+        if (usuarioEquipeSelect) {
+            usuarioEquipeSelect.required = false;
+            usuarioEquipeSelect.value = '';
+        }
+        if (usuarioQuartoInput) {
+            usuarioQuartoInput.required = false;
+            usuarioQuartoInput.value = '';
+        }
+        debugLog('[DEBUG] alterarTipoUsuario: ocultando campos equipe e quarto');
     }
 };
 
@@ -2108,10 +2137,16 @@ window.showCreateUserModal = function() {
     debugLog('[DEBUG] showCreateUserModal: usuarioAdmin:', usuarioAdmin);
     debugLog('[DEBUG] showCreateUserModal: userRole:', userRole);
     
-    // Permite APENAS para super_admin
-    if (!userRole || userRole !== 'super_admin') {
-        showToast('Erro', 'Acesso negado. Apenas super administradores podem criar usuários.', 'error');
-        console.warn('[AVISO] showCreateUserModal: acesso negado, role:', userRole);
+    // Verificar permissões: super_admin pode tudo, outros precisam de permissões específicas
+    const podecriarUsuarios = temPermissaoJS(usuarioAdmin, 'create_users');
+    const podeCriarAcompanhantes = temPermissaoJS(usuarioAdmin, 'create_acompanhantes');
+    
+    if (!userRole || (userRole !== 'super_admin' && !podecriarUsuarios && !podeCriarAcompanhantes)) {
+        showToast('Erro', 'Acesso negado. Sem permissão para criar usuários.', 'error');
+        console.warn('[AVISO] showCreateUserModal: acesso negado, role:', userRole, 'permissões:', {
+            podecriarUsuarios,
+            podeCriarAcompanhantes
+        });
         return;
     }
     
@@ -2165,6 +2200,29 @@ window.showCreateUserModal = function() {
             };
         }
         
+        // Personalizar opções baseadas nas permissões
+        const tipoSelect = document.getElementById('usuario-tipo');
+        if (tipoSelect) {
+            // Limpar opções atuais
+            tipoSelect.innerHTML = '<option value="">Selecione o tipo</option>';
+            
+            // Adicionar opções baseadas nas permissões
+            if (userRole === 'super_admin' || podecriarUsuarios) {
+                tipoSelect.innerHTML += '<option value="equipe">👥 Usuário de Equipe</option>';
+                tipoSelect.innerHTML += '<option value="admin">🔐 Administrador</option>';
+            }
+            
+            if (userRole === 'super_admin' || podeCriarAcompanhantes) {
+                tipoSelect.innerHTML += '<option value="acompanhante">👨‍👩‍👧‍👦 Acompanhante</option>';
+            }
+            
+            debugLog('[DEBUG] Opções personalizadas baseadas em permissões:', {
+                super_admin: userRole === 'super_admin',
+                podecriarUsuarios,
+                podeCriarAcompanhantes
+            });
+        }
+        
         // Focar no primeiro campo após um delay
         setTimeout(() => {
             const tipoField = document.getElementById('usuario-tipo');
@@ -2186,23 +2244,31 @@ window.criarNovoUsuario = async function() {
     debugLog('[DEBUG] criarNovoUsuario: iniciando...');
     
     try {
-        // Verificar permissões
+        // Verificar permissões específicas baseadas no tipo
         const usuarioAdmin = window.usuarioAdmin || JSON.parse(localStorage.getItem('usuarioAdmin') || '{}');
         const userRole = window.userRole || usuarioAdmin.role;
+        const podecriarUsuarios = temPermissaoJS(usuarioAdmin, 'create_users');
+        const podeCriarAcompanhantes = temPermissaoJS(usuarioAdmin, 'create_acompanhantes');
         
-        if (!userRole || userRole !== 'super_admin') {
-            showToast('Erro', 'Acesso negado. Apenas super administradores podem criar usuários.', 'error');
+        // Verificar se tem permissão para o tipo específico
+        if (tipo === 'acompanhante' && !podeCriarAcompanhantes && userRole !== 'super_admin') {
+            showToast('Erro', 'Acesso negado. Sem permissão para criar acompanhantes.', 'error');
+            return;
+        }
+        
+        if ((tipo === 'equipe' || tipo === 'admin') && !podecriarUsuarios && userRole !== 'super_admin') {
+            showToast('Erro', 'Acesso negado. Sem permissão para criar usuários de equipe/admin.', 'error');
             return;
         }
         
         // Obter dados do formulário
-        const tipo = document.getElementById('usuario-tipo').value;
         const nome = document.getElementById('usuario-nome').value.trim();
         const email = document.getElementById('usuario-email').value.trim();
         const senha = document.getElementById('usuario-senha').value;
         const equipe = document.getElementById('usuario-equipe').value;
+        const quarto = document.getElementById('usuario-quarto')?.value.trim();
         
-        debugLog('[DEBUG] Dados do formulário:', { tipo, nome, email, senha: senha.length, equipe });
+        debugLog('[DEBUG] Dados do formulário:', { tipo, nome, email, senha: senha.length, equipe, quarto });
         
         // Validações
         if (!tipo) {
@@ -2217,6 +2283,11 @@ window.criarNovoUsuario = async function() {
         
         if (tipo === 'equipe' && !equipe) {
             showToast('Erro', 'Selecione a equipe para usuários de equipe.', 'error');
+            return;
+        }
+        
+        if (tipo === 'acompanhante' && !quarto) {
+            showToast('Erro', 'Informe o número do quarto para acompanhantes.', 'error');
             return;
         }
         
@@ -2400,6 +2471,21 @@ window.criarNovoUsuario = async function() {
                 permissoes: {
                     verSolicitacoesDepartamento: true,
                     gerenciarSolicitacoesDepartamento: true
+                }
+            };
+        } else if (tipo === 'acompanhante') {
+            colecao = 'usuarios_acompanhantes';
+            dadosUsuario = {
+                nome: nome,
+                email: email,
+                quarto: quarto,
+                ativo: true,
+                criadoEm: firebase.firestore.FieldValue.serverTimestamp(),
+                criadoPor: usuarioAdmin.email,
+                role: 'acompanhante',
+                permissoes: {
+                    criarSolicitacoes: true,
+                    verSolicitacoesProprioQuarto: true
                 }
             };
         }

@@ -49,6 +49,8 @@ async function verificarUsuarioAdminJS(user) {
           atualizarSolicitacoes: true,
           // Equipes NÃO podem criar usuários, gerenciar usuários, ver relatórios
           criarUsuarios: false,
+          // EXCEÇÃO: Equipe de higienização pode criar acompanhantes
+          criarAcompanhantes: dadosEquipe.departamento === 'higienizacao' || dadosEquipe.equipe === 'higienizacao',
           gerenciarDepartamentos: false,
           verRelatorios: false,
           gerenciarSolicitacoes: true
@@ -86,6 +88,7 @@ function temPermissaoJS(usuarioAdmin, permissao) {
   if (usuarioAdmin.role === 'super_admin') return true;
   // Aceita tanto 'criarUsuarios' quanto 'create_users' para compatibilidade
   if (permissao === 'create_users' && usuarioAdmin.permissoes['criarUsuarios'] === true) return true;
+  if (permissao === 'create_acompanhantes' && usuarioAdmin.permissoes['criarAcompanhantes'] === true) return true;
   if (permissao === 'manage_users' && usuarioAdmin.permissoes['gerenciarDepartamentos'] === true) return true;
   return usuarioAdmin.permissoes[permissao] === true;
 }
