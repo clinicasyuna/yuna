@@ -9,6 +9,49 @@
     <meta name="cache-version" content="20251113-153000">
     <title>YUNA - Painel Administrativo</title>
     
+    <!-- FUNÇÃO CRÍTICA DEFINIDA ANTECIPADAMENTE -->
+    <script>
+        // Função alterarTipoAcesso definida cedo para estar disponível no onchange
+        window.alterarTipoAcesso = function() {
+            console.log('[DEBUG] alterarTipoAcesso: função chamada');
+            
+            const tipoSelect = document.getElementById('tipo-acesso');
+            const departamentoSection = document.getElementById('departamento-section');
+            const departamentoSelect = document.getElementById('departamento');
+            
+            console.log('[DEBUG] alterarTipoAcesso: elementos encontrados:', {
+                tipoSelect: !!tipoSelect,
+                departamentoSection: !!departamentoSection,
+                departamentoSelect: !!departamentoSelect
+            });
+            
+            if (!tipoSelect || !departamentoSection) {
+                console.error('[ERRO] alterarTipoAcesso: elementos não encontrados');
+                return;
+            }
+            
+            const tipo = tipoSelect.value;
+            console.log('[DEBUG] alterarTipoAcesso: tipo selecionado =', tipo);
+            
+            if (tipo === 'equipe') {
+                // Mostrar seção de departamento para equipe
+                departamentoSection.classList.remove('hidden');
+                departamentoSection.style.display = 'block';
+                console.log('[DEBUG] alterarTipoAcesso: mostrando departamento-section');
+            } else {
+                // Ocultar seção de departamento para admin
+                departamentoSection.classList.add('hidden');
+                departamentoSection.style.display = 'none';
+                if (departamentoSelect) {
+                    departamentoSelect.value = '';
+                }
+                console.log('[DEBUG] alterarTipoAcesso: ocultando departamento-section');
+            }
+        };
+        
+        console.log('✅ Função alterarTipoAcesso definida antecipadamente');
+    </script>
+    
     <!-- FORCE HIDE CSS PARA BOTÕES DEBUG -->
     <style>
         /* Esconder botões com onclick específicos */
