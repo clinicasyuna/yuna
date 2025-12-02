@@ -15,7 +15,12 @@ async function verificarUsuarioAdminJS(user) {
       console.log('✅ Usuário admin encontrado:', dadosAdmin);
       
       if (!dadosAdmin.ativo) {
-        showToast('Erro', 'Usuário administrativo inativo', 'error');
+        // Verificar se showToast existe antes de usar
+        if (typeof window.showToast === 'function') {
+          window.showToast('Erro', 'Usuário administrativo inativo', 'error');
+        } else {
+          console.error('[ERRO] Usuário administrativo inativo:', dadosAdmin.email);
+        }
         return null;
       }
       return {
@@ -34,7 +39,12 @@ async function verificarUsuarioAdminJS(user) {
       console.log('👥 Usuário de equipe encontrado:', dadosEquipe);
       
       if (!dadosEquipe.ativo) {
-        showToast('Erro', 'Usuário de equipe inativo', 'error');
+        // Verificar se showToast existe antes de usar
+        if (typeof window.showToast === 'function') {
+          window.showToast('Erro', 'Usuário de equipe inativo', 'error');
+        } else {
+          console.error('[ERRO] Usuário de equipe inativo:', dadosEquipe.email);
+        }
         return null;
       }
       
@@ -64,7 +74,11 @@ async function verificarUsuarioAdminJS(user) {
     // MODO DESENVOLVIMENTO COMPLETAMENTE REMOVIDO
     // Este usuário deve estar configurado corretamente nas coleções
     
-    showToast('Erro', 'Usuário não autorizado a acessar o painel administrativo', 'error');
+    if (typeof window.showToast === 'function') {
+      window.showToast('Erro', 'Usuário não autorizado a acessar o painel administrativo', 'error');
+    } else {
+      console.error('[ERRO] Usuário não autorizado:', user?.email);
+    }
     return null;
     
   } catch (error) {
@@ -73,11 +87,19 @@ async function verificarUsuarioAdminJS(user) {
     // Se está offline, ainda assim não criar super admin automático
     if (error.code === 'unavailable' || error.message.includes('offline')) {
       console.log('🔄 Modo offline detectado, mas usuário deve estar previamente autorizado');
-      showToast('Erro', 'Modo offline detectado. Apenas usuários previamente autorizados podem acessar.', 'error');
+      if (typeof window.showToast === 'function') {
+        window.showToast('Erro', 'Modo offline detectado. Apenas usuários previamente autorizados podem acessar.', 'error');
+      } else {
+        console.error('[ERRO] Modo offline - usuário não autorizado');
+      }
       return null;
     }
     
-    showToast('Erro', 'Falha ao verificar permissões: ' + (error.message || error), 'error');
+    if (typeof window.showToast === 'function') {
+      window.showToast('Erro', 'Falha ao verificar permissões: ' + (error.message || error), 'error');
+    } else {
+      console.error('[ERRO] Falha ao verificar permissões:', error);
+    }
     return null;
   }
 }

@@ -839,6 +839,11 @@
             }
         })();
     </script>
+    
+    <!-- Script principal DEVE vir ANTES das permissões -->
+    <script src="admin-panel.js?v=20251113-153000"></script>
+    
+    <!-- Script de permissões após principal -->
     <script src="admin-permissions.js"></script>
     <!-- Debug mini removido - arquivo não existe -->
     <!-- Sistema de debug para controle de equipes -->
@@ -897,8 +902,7 @@
     </div>
 
     <!-- Scripts essenciais -->
-    <!-- Script principal -->
-    <script src="admin-panel.js?v=20251113-153000"></script>
+    <!-- NOTA: Scripts já foram movidos para cima para ordem correta -->
     
     <!-- Botão Minha Senha (versão silenciosa) -->
     <script src="botao-senha-silencioso.js?v=20251128-001"></script>
