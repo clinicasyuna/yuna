@@ -2850,16 +2850,34 @@ window.mostrarRelatorios = function() {
 };
 
 window.abrirAcompanhantesSection = function() {
-    // Verificar se é admin ou super_admin
+    // Verificar se é admin, super_admin OU equipe de higienização específica
     const usuarioAdmin = window.usuarioAdmin || JSON.parse(localStorage.getItem('usuarioAdmin') || '{}');
     const userRole = window.userRole || usuarioAdmin.role;
     
-    if (!userRole || (userRole !== 'super_admin' && userRole !== 'admin')) {
-        showToast('Erro', 'Acesso negado. Apenas administradores podem gerenciar acompanhantes.', 'error');
-        console.warn('[AVISO] abrirAcompanhantesSection: acesso negado, role:', userRole);
+    console.log('🏠🏠🏠 [ACOMPANHANTES ACCESS DEBUG] Verificando acesso...');
+    console.log('🏠🏠🏠 [ACOMPANHANTES ACCESS DEBUG] usuarioAdmin:', usuarioAdmin);
+    console.log('🏠🏠🏠 [ACOMPANHANTES ACCESS DEBUG] userRole:', userRole);
+    console.log('🏠🏠🏠 [ACOMPANHANTES ACCESS DEBUG] email:', usuarioAdmin?.email);
+    
+    // Verificar permissão: super_admin, admin OU recepcao.jardins@yuna.com.br
+    const isSuperAdmin = userRole === 'super_admin';
+    const isAdmin = userRole === 'admin';
+    const isHigienizacaoRecepcao = usuarioAdmin?.email === 'recepcao.jardins@yuna.com.br';
+    
+    console.log('🏠🏠🏠 [ACOMPANHANTES ACCESS DEBUG] Verificações:', {
+        isSuperAdmin,
+        isAdmin,
+        isHigienizacaoRecepcao,
+        temPermissao: isSuperAdmin || isAdmin || isHigienizacaoRecepcao
+    });
+    
+    if (!userRole || (!isSuperAdmin && !isAdmin && !isHigienizacaoRecepcao)) {
+        showToast('Erro', 'Acesso negado. Apenas administradores e equipe de higienização podem gerenciar acompanhantes.', 'error');
+        console.warn('[AVISO] abrirAcompanhantesSection: acesso negado, role:', userRole, 'email:', usuarioAdmin?.email);
         return;
     }
     
+    console.log('🏠🏠🏠 [ACOMPANHANTES ACCESS DEBUG] ACESSO LIBERADO! Abrindo seção...');
     mostrarSecaoPainel('acompanhantes');
     if (typeof carregarAcompanhantes === 'function') carregarAcompanhantes();
 };
