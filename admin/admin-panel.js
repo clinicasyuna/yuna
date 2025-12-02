@@ -10516,11 +10516,32 @@ async function configurarListenerAcompanhantes() {
 
     try {
         const userData = await window.verificarUsuarioAdminJS(user);
-        if (!userData || (userData.role !== 'super_admin' && userData.role !== 'admin')) {
+        
+        console.log('🏠📝 [ACOMPANHANTES LISTENER DEBUG] Verificando permissões...');
+        console.log('🏠📝 [ACOMPANHANTES LISTENER DEBUG] userData:', userData);
+        
+        // Verificar se é super_admin, admin OU equipe de higienização
+        const isSuperAdmin = userData?.role === 'super_admin';
+        const isAdmin = userData?.role === 'admin';
+        const isHigienizacaoRecepcao = userData?.email === 'recepcao.jardins@yuna.com.br';
+        
+        console.log('🏠📝 [ACOMPANHANTES LISTENER DEBUG] Permissões:', {
+            isSuperAdmin,
+            isAdmin,
+            isHigienizacaoRecepcao,
+            email: userData?.email,
+            role: userData?.role
+        });
+        
+        if (!userData || (!isSuperAdmin && !isAdmin && !isHigienizacaoRecepcao)) {
+            console.log('🏠📝 [ACOMPANHANTES LISTENER DEBUG] ACESSO NEGADO - sem permissão');
             debugLog('[DEBUG] configurarListenerAcompanhantes: usuário sem permissão para acompanhantes');
             return;
         }
+        
+        console.log('🏠📝 [ACOMPANHANTES LISTENER DEBUG] ACESSO LIBERADO - configurando listener');
     } catch (error) {
+        console.log('🏠📝 [ACOMPANHANTES LISTENER DEBUG] ERRO:', error);
         debugLog('[DEBUG] configurarListenerAcompanhantes: erro ao verificar permissões:', error);
         return;
     }
