@@ -3,18 +3,31 @@
 
 // Função para verificar se usuário é administrador (Firestore)
 async function verificarUsuarioAdminJS(user) {
-  if (!user) return null;
+  console.log('🎯🎯🎯 [VERIFICAR USUARIO DEBUG] Função chamada!');
+  console.log('🎯🎯🎯 [VERIFICAR USUARIO DEBUG] user:', user?.email);
+  console.log('🎯🎯🎯 [VERIFICAR USUARIO DEBUG] user.uid:', user?.uid);
+  console.log('🎯🎯🎯 [VERIFICAR USUARIO DEBUG] window.db existe?', !!window.db);
+  
+  if (!user) {
+    console.log('🎯🎯🎯 [VERIFICAR USUARIO DEBUG] User é null - retornando null');
+    return null;
+  }
+  
   try {
     console.log('🔍 Verificando usuário admin:', user.email);
     
+    console.log('🎯🎯🎯 [VERIFICAR USUARIO DEBUG] Consultando usuarios_admin...');
     // Verificar se existe na coleção usuarios_admin
     const adminDoc = await window.db.collection('usuarios_admin').doc(user.uid).get();
+    console.log('🎯🎯🎯 [VERIFICAR USUARIO DEBUG] adminDoc.exists:', adminDoc.exists);
     
     if (adminDoc.exists) {
       const dadosAdmin = adminDoc.data();
+      console.log('🎯🎯🎯 [VERIFICAR USUARIO DEBUG] Dados admin encontrados:', dadosAdmin);
       console.log('✅ Usuário admin encontrado:', dadosAdmin);
       
       if (!dadosAdmin.ativo) {
+        console.log('🎯🎯🎯 [VERIFICAR USUARIO DEBUG] Usuario admin INATIVO');
         // Verificar se showToast existe antes de usar
         if (typeof window.showToast === 'function') {
           window.showToast('Erro', 'Usuário administrativo inativo', 'error');
@@ -23,6 +36,8 @@ async function verificarUsuarioAdminJS(user) {
         }
         return null;
       }
+      
+      console.log('🎯🎯🎯 [VERIFICAR USUARIO DEBUG] Usuario admin ATIVO - retornando dados');
       return {
         ...dadosAdmin,
         uid: user.uid,
@@ -31,14 +46,18 @@ async function verificarUsuarioAdminJS(user) {
       };
     }
     
+    console.log('🎯🎯🎯 [VERIFICAR USUARIO DEBUG] Não encontrado em usuarios_admin, tentando usuarios_equipe...');
     // Verificar se é usuário de equipe
     const equipeDoc = await window.db.collection('usuarios_equipe').doc(user.uid).get();
+    console.log('🎯🎯🎯 [VERIFICAR USUARIO DEBUG] equipeDoc.exists:', equipeDoc.exists);
     
     if (equipeDoc.exists) {
       const dadosEquipe = equipeDoc.data();
+      console.log('🎯🎯🎯 [VERIFICAR USUARIO DEBUG] Dados equipe encontrados:', dadosEquipe);
       console.log('👥 Usuário de equipe encontrado:', dadosEquipe);
       
       if (!dadosEquipe.ativo) {
+        console.log('🎯🎯🎯 [VERIFICAR USUARIO DEBUG] Usuario equipe INATIVO');
         // Verificar se showToast existe antes de usar
         if (typeof window.showToast === 'function') {
           window.showToast('Erro', 'Usuário de equipe inativo', 'error');
@@ -48,6 +67,7 @@ async function verificarUsuarioAdminJS(user) {
         return null;
       }
       
+      console.log('🎯🎯🎯 [VERIFICAR USUARIO DEBUG] Usuario equipe ATIVO - retornando dados');
       return {
         ...dadosEquipe,
         uid: user.uid,
@@ -69,6 +89,7 @@ async function verificarUsuarioAdminJS(user) {
     }
     
     // Se não encontrou nem em admin nem em equipe
+    console.log('🎯🎯🎯 [VERIFICAR USUARIO DEBUG] NÃO ENCONTRADO em nenhuma coleção!');
     console.log('❌ Usuário não encontrado em nenhuma coleção autorizada');
     
     // MODO DESENVOLVIMENTO COMPLETAMENTE REMOVIDO
@@ -82,6 +103,7 @@ async function verificarUsuarioAdminJS(user) {
     return null;
     
   } catch (error) {
+    console.log('🎯🎯🎯 [VERIFICAR USUARIO DEBUG] ERRO na função:', error);
     console.error('Erro ao verificar usuário admin:', error);
     
     // Se está offline, ainda assim não criar super admin automático
