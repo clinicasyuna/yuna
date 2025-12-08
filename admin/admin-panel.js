@@ -12449,17 +12449,22 @@ window.abrirImportacaoLote = function() {
             // Remover classe hidden
             modal.classList.remove('hidden');
             
-            // Forçar estilos para garantir visibilidade
-            modal.style.display = 'flex';
-            modal.style.position = 'fixed';
-            modal.style.top = '0';
-            modal.style.left = '0';
-            modal.style.width = '100vw';
-            modal.style.height = '100vh';
-            modal.style.zIndex = '99999';
-            modal.style.backgroundColor = 'rgba(0, 0, 0, 0.5)';
-            modal.style.alignItems = 'center';
-            modal.style.justifyContent = 'center';
+            // Forçar estilos para garantir visibilidade - COM !important inline
+            modal.style.cssText = `
+                display: flex !important;
+                position: fixed !important;
+                top: 0 !important;
+                left: 0 !important;
+                right: 0 !important;
+                bottom: 0 !important;
+                width: 100vw !important;
+                height: 100vh !important;
+                z-index: 999999 !important;
+                background-color: rgba(0, 0, 0, 0.6) !important;
+                align-items: center !important;
+                justify-content: center !important;
+                overflow-y: auto !important;
+            `;
             
             console.log('[IMPORTACAO] ✅ Modal aberto e estilos forçados');
             console.log('[IMPORTACAO] Classes do modal:', modal.className);
