@@ -12446,11 +12446,11 @@ window.abrirImportacaoLote = function() {
         console.log('[IMPORTACAO] Modal encontrado:', !!modal);
         
         if (modal) {
-            // Remover classe hidden
+            // Remover classe hidden PRIMEIRO
             modal.classList.remove('hidden');
             
-            // Forçar estilos para garantir visibilidade - COM !important inline
-            modal.style.cssText = `
+            // Aplicar estilos diretamente com setAttribute para maior prioridade
+            modal.setAttribute('style', `
                 display: flex !important;
                 position: fixed !important;
                 top: 0 !important;
@@ -12459,20 +12459,26 @@ window.abrirImportacaoLote = function() {
                 bottom: 0 !important;
                 width: 100vw !important;
                 height: 100vh !important;
+                min-width: 100vw !important;
+                min-height: 100vh !important;
                 z-index: 999999 !important;
                 background-color: rgba(0, 0, 0, 0.6) !important;
                 align-items: center !important;
                 justify-content: center !important;
                 overflow-y: auto !important;
-            `;
+                visibility: visible !important;
+                opacity: 1 !important;
+                pointer-events: auto !important;
+            `.trim());
             
             // Forçar estilos no modal-content também
             const modalContent = modal.querySelector('.modal-content');
             if (modalContent) {
-                modalContent.style.cssText = `
+                modalContent.setAttribute('style', `
                     position: relative !important;
                     max-width: 600px !important;
                     width: 95% !important;
+                    min-width: 300px !important;
                     background: white !important;
                     border-radius: 16px !important;
                     padding: 2rem !important;
@@ -12481,14 +12487,25 @@ window.abrirImportacaoLote = function() {
                     display: block !important;
                     visibility: visible !important;
                     opacity: 1 !important;
-                `;
+                    pointer-events: auto !important;
+                `.trim());
                 console.log('[IMPORTACAO] ✅ Modal-content estilizado');
+            }
+            
+            // Garantir que o modal está no body (não dentro de outro elemento)
+            if (modal.parentElement !== document.body) {
+                console.warn('[IMPORTACAO] ⚠️ Modal não está no body! Movendo...');
+                document.body.appendChild(modal);
             }
             
             console.log('[IMPORTACAO] ✅ Modal aberto e estilos forçados');
             console.log('[IMPORTACAO] Classes do modal:', modal.className);
             console.log('[IMPORTACAO] Estilo computed:', window.getComputedStyle(modal).display);
             console.log('[IMPORTACAO] Modal visível na viewport:', modal.getBoundingClientRect());
+            console.log('[IMPORTACAO] Width/Height:', {
+                width: modal.getBoundingClientRect().width,
+                height: modal.getBoundingClientRect().height
+            });
             
             // Reset dos campos
             const arquivoInput = document.getElementById('arquivo-excel');
@@ -12510,6 +12527,28 @@ window.abrirImportacaoLote = function() {
             
             // Configurar listener do arquivo
             configurarListenerArquivo();
+            
+            // Verificar após um frame se o modal está realmente visível
+            setTimeout(() => {
+                const rect = modal.getBoundingClientRect();
+                console.log('[IMPORTACAO] 🔍 Verificação pós-abertura:', {
+                    width: rect.width,
+                    height: rect.height,
+                    display: window.getComputedStyle(modal).display,
+                    visibility: window.getComputedStyle(modal).visibility,
+                    zIndex: window.getComputedStyle(modal).zIndex
+                });
+                
+                if (rect.width === 0 || rect.height === 0) {
+                    console.error('[IMPORTACAO] ❌ MODAL COM TAMANHO ZERO! Tentando corrigir...');
+                    // Forçar novamente
+                    modal.style.width = '100vw';
+                    modal.style.height = '100vh';
+                    modal.style.display = 'flex';
+                }
+            }, 100);
+            
+            console.log('[IMPORTACAO] 🎉 Modal configurado completamente!');
             
             console.log('[IMPORTACAO] 🎉 Modal configurado completamente!');
         } else {
