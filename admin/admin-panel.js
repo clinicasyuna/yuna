@@ -9665,10 +9665,10 @@ window.visualizarEvidencia = function(url, nome, tipo) {
 
 function getCorEquipe(equipe) {
     const cores = {
-        'manutencao': '#3b82f6',
-        'nutricao': '#10b981', 
-        'higienizacao': '#8b5cf6',
-        'hotelaria': '#f59e0b'
+        'manutencao': '#f6b86b',
+        'nutricao': '#f9a07d',
+        'higienizacao': '#f4768c',
+        'hotelaria': '#f05c8d'
     };
     return cores[equipe] || '#6b7280';
 }
@@ -10064,12 +10064,12 @@ function gerarListaDetalhada(solicitacoes, stats) {
 // Funções auxiliares para formatação
 function getCorEquipe(equipe) {
     const cores = {
-        'manutencao': '#ef4444',
-        'nutrição': '#22c55e',
-        'nutricao': '#22c55e',
-        'higienização': '#3b82f6',
-        'higienizacao': '#3b82f6',
-        'hotelaria': '#a855f7',
+        'manutencao': '#f6b86b',
+        'nutrição': '#f9a07d',
+        'nutricao': '#f9a07d',
+        'higienização': '#f4768c',
+        'higienizacao': '#f4768c',
+        'hotelaria': '#f05c8d',
         'default': '#6b7280'
     };
     return cores[equipe?.toLowerCase()] || cores.default;

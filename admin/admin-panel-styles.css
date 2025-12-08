@@ -502,6 +502,52 @@
   text-shadow: none;
 }
 
+/* Paleta baseada no logo (peach > coral > pink) */
+.team-panel[data-department="manutencao"] { border-top: 4px solid #f6b86b; }
+.team-panel[data-department="nutricao"]   { border-top: 4px solid #f9a07d; }
+.team-panel[data-department="higienizacao"] { border-top: 4px solid #f4768c; }
+.team-panel[data-department="hotelaria"]  { border-top: 4px solid #f05c8d; }
+
+.team-header.manutencao {
+  background: linear-gradient(135deg, #fff7ed 0%, #f6b86b1a 100%);
+  border-bottom-color: #f6b86b33;
+}
+.team-header.manutencao h3 i { color: #f6b86b; filter: drop-shadow(0 2px 4px rgba(246, 184, 107, 0.35)); }
+.team-header.manutencao .badge {
+  background: linear-gradient(135deg, #f6b86b 0%, #f4a652 100%);
+  box-shadow: 0 2px 8px rgba(246, 184, 107, 0.4);
+}
+
+.team-header.nutricao {
+  background: linear-gradient(135deg, #fff5f1 0%, #f9a07d1a 100%);
+  border-bottom-color: #f9a07d33;
+}
+.team-header.nutricao h3 i { color: #f9a07d; filter: drop-shadow(0 2px 4px rgba(249, 160, 125, 0.35)); }
+.team-header.nutricao .badge {
+  background: linear-gradient(135deg, #f9a07d 0%, #f68968 100%);
+  box-shadow: 0 2px 8px rgba(249, 160, 125, 0.4);
+}
+
+.team-header.higienizacao {
+  background: linear-gradient(135deg, #fff1f4 0%, #f4768c1a 100%);
+  border-bottom-color: #f4768c33;
+}
+.team-header.higienizacao h3 i { color: #f4768c; filter: drop-shadow(0 2px 4px rgba(244, 118, 140, 0.35)); }
+.team-header.higienizacao .badge {
+  background: linear-gradient(135deg, #f4768c 0%, #f15f7b 100%);
+  box-shadow: 0 2px 8px rgba(244, 118, 140, 0.4);
+}
+
+.team-header.hotelaria {
+  background: linear-gradient(135deg, #fff0f5 0%, #f05c8d1a 100%);
+  border-bottom-color: #f05c8d33;
+}
+.team-header.hotelaria h3 i { color: #f05c8d; filter: drop-shadow(0 2px 4px rgba(240, 92, 141, 0.35)); }
+.team-header.hotelaria .badge {
+  background: linear-gradient(135deg, #f05c8d 0%, #e7477f 100%);
+  box-shadow: 0 2px 8px rgba(240, 92, 141, 0.4);
+}
+
 /* Filtros da equipe */
 .team-filters {
   padding: 14px 20px;
@@ -585,8 +631,6 @@
 
 .team-content::-webkit-scrollbar-thumb:hover {
   background: #2563eb;
-}
-  background: #00ffb0;
 }
 /* Responsividade corrigida para teams-grid */
 @media (max-width: 1200px) {
@@ -1725,7 +1769,7 @@ h2.finalizar-solicitacao {
   background: rgba(245, 158, 11, 0.1);
   padding: 4px 8px;
   border-radius: 6px;
-  min-width: fit-content;
+  min-width: max-content;
 }
 
 .card-timer i {
@@ -1763,5 +1807,5 @@ h2.finalizar-solicitacao {
   gap: 4px;
   font-size: 0.75rem;
   color: #64748b;
-  min-width: fit-content;
+  min-width: max-content;
 }
