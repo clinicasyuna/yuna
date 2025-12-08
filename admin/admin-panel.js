@@ -12099,9 +12099,14 @@ function abrirImportacaoLote() {
 
 // Fechar modal de importação
 function fecharImportacaoLote() {
+    console.log('[IMPORTACAO] 🚪 Fechando modal...');
     const modal = document.getElementById('modal-importacao-lote');
     if (modal) {
         modal.classList.add('hidden');
+        modal.style.display = 'none';
+        console.log('[IMPORTACAO] ✅ Modal fechado');
+    } else {
+        console.error('[IMPORTACAO] ❌ Modal não encontrado para fechar');
     }
 }
 
@@ -12435,26 +12440,59 @@ async function processarArquivoExcel() {
 
 // Expor funções globalmente com fallbacks
 window.abrirImportacaoLote = function() {
-    console.log('[IMPORTACAO] Função global chamada via window');
+    console.log('[IMPORTACAO] 🎯 Função global chamada via window');
     try {
         const modal = document.getElementById('modal-importacao-lote');
+        console.log('[IMPORTACAO] Modal encontrado:', !!modal);
+        
         if (modal) {
+            // Remover classe hidden
             modal.classList.remove('hidden');
+            
+            // Forçar estilos para garantir visibilidade
+            modal.style.display = 'flex';
+            modal.style.position = 'fixed';
+            modal.style.top = '0';
+            modal.style.left = '0';
+            modal.style.width = '100vw';
+            modal.style.height = '100vh';
+            modal.style.zIndex = '99999';
+            modal.style.backgroundColor = 'rgba(0, 0, 0, 0.5)';
+            modal.style.alignItems = 'center';
+            modal.style.justifyContent = 'center';
+            
+            console.log('[IMPORTACAO] ✅ Modal aberto e estilos forçados');
+            console.log('[IMPORTACAO] Classes do modal:', modal.className);
+            console.log('[IMPORTACAO] Estilo computed:', window.getComputedStyle(modal).display);
+            
             // Reset dos campos
             const arquivoInput = document.getElementById('arquivo-excel');
             const previewDiv = document.getElementById('preview-dados');
             const logDiv = document.getElementById('log-importacao');
             const btnProcessar = document.getElementById('btn-processar');
             
+            console.log('[IMPORTACAO] Elementos encontrados:', {
+                arquivoInput: !!arquivoInput,
+                previewDiv: !!previewDiv,
+                logDiv: !!logDiv,
+                btnProcessar: !!btnProcessar
+            });
+            
             if (arquivoInput) arquivoInput.value = '';
             if (previewDiv) previewDiv.style.display = 'none';
             if (logDiv) logDiv.style.display = 'none';
             if (btnProcessar) btnProcessar.disabled = true;
             
+            // Configurar listener do arquivo
             configurarListenerArquivo();
+            
+            console.log('[IMPORTACAO] 🎉 Modal configurado completamente!');
+        } else {
+            console.error('[IMPORTACAO] ❌ Modal não encontrado no DOM!');
+            showToast('Erro', 'Modal de importação não encontrado', 'error');
         }
     } catch (error) {
-        console.error('[IMPORTACAO] Erro na função:', error);
+        console.error('[IMPORTACAO] ❌ Erro na função:', error);
         alert('Erro ao abrir modal de importação: ' + error.message);
     }
 };
