@@ -12466,9 +12466,29 @@ window.abrirImportacaoLote = function() {
                 overflow-y: auto !important;
             `;
             
+            // Forçar estilos no modal-content também
+            const modalContent = modal.querySelector('.modal-content');
+            if (modalContent) {
+                modalContent.style.cssText = `
+                    position: relative !important;
+                    max-width: 600px !important;
+                    width: 95% !important;
+                    background: white !important;
+                    border-radius: 16px !important;
+                    padding: 2rem !important;
+                    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3) !important;
+                    z-index: 1000000 !important;
+                    display: block !important;
+                    visibility: visible !important;
+                    opacity: 1 !important;
+                `;
+                console.log('[IMPORTACAO] ✅ Modal-content estilizado');
+            }
+            
             console.log('[IMPORTACAO] ✅ Modal aberto e estilos forçados');
             console.log('[IMPORTACAO] Classes do modal:', modal.className);
             console.log('[IMPORTACAO] Estilo computed:', window.getComputedStyle(modal).display);
+            console.log('[IMPORTACAO] Modal visível na viewport:', modal.getBoundingClientRect());
             
             // Reset dos campos
             const arquivoInput = document.getElementById('arquivo-excel');
@@ -12508,11 +12528,26 @@ window.processarArquivoExcel = processarArquivoExcel;
 // Função auxiliar para debug
 window.testarImportacao = function() {
     console.log('[DEBUG] Testando elementos de importação...');
-    console.log('Modal:', !!document.getElementById('modal-importacao-lote'));
+    const modal = document.getElementById('modal-importacao-lote');
+    const modalContent = modal?.querySelector('.modal-content');
+    
+    console.log('Modal:', !!modal);
+    console.log('Modal display:', modal?.style.display);
+    console.log('Modal classes:', modal?.className);
+    console.log('Modal z-index:', modal?.style.zIndex);
+    console.log('Modal position:', modal?.getBoundingClientRect());
+    console.log('Modal content:', !!modalContent);
+    console.log('Modal content display:', modalContent?.style.display);
     console.log('Arquivo input:', !!document.getElementById('arquivo-excel'));
     console.log('Preview div:', !!document.getElementById('preview-dados'));
     console.log('Função abrirImportacaoLote:', typeof window.abrirImportacaoLote);
     console.log('XLSX library:', typeof XLSX);
+    
+    // Tentar forçar visibilidade
+    if (modal && modal.classList.contains('hidden')) {
+        console.warn('⚠️ Modal ainda tem classe hidden! Removendo...');
+        modal.classList.remove('hidden');
+    }
 };
 
 // === CONFIGURAÇÃO IMPORTAÇÃO EXCEL AUTOMÁTICA ===
