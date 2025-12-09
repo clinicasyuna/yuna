@@ -26,6 +26,39 @@
   animation: pulse 2s infinite;
 }
 
+/* Animações de badge avançadas */
+@keyframes shimmer {
+  0% {
+    background-position: -1000px 0;
+  }
+  100% {
+    background-position: 1000px 0;
+  }
+}
+
+@keyframes float-badge {
+  0%, 100% {
+    transform: translateY(0px);
+  }
+  50% {
+    transform: translateY(-3px);
+  }
+}
+
+.badge.shimmer {
+  background-size: 1000px 100%;
+  animation: shimmer 3s infinite;
+}
+
+.badge.float {
+  animation: float-badge 2s ease-in-out infinite;
+}
+
+.badge.glow {
+  text-shadow: 0 0 10px rgba(255, 255, 255, 0.8);
+  animation: pulse 1.5s ease-in-out infinite;
+}
+
 /* Modal Genérico */
 .modal-generico {
   position: fixed;
@@ -637,6 +670,61 @@
   box-shadow: 0 4px 12px rgba(59, 130, 246, 0.4);
 }
 
+/* Search e Filter melhorados */
+.search-container {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  padding: 1rem;
+  background: rgba(248, 250, 252, 0.8);
+  border-radius: 12px;
+  margin-bottom: 1.5rem;
+}
+
+.search-input {
+  flex: 1;
+  padding: 12px 16px;
+  border: 2px solid #e5e7eb;
+  border-radius: 10px;
+  font-size: 15px;
+  transition: all 0.3s ease;
+  background: rgba(255, 255, 255, 0.95);
+}
+
+.search-input::placeholder {
+  color: #9ca3af;
+}
+
+.search-input:focus {
+  outline: none;
+  border-color: #3b82f6;
+  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+  background: white;
+}
+
+.search-btn {
+  padding: 12px 24px;
+  background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
+  color: white;
+  border: none;
+  border-radius: 10px;
+  cursor: pointer;
+  font-weight: 600;
+  transition: all 0.3s ease;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.search-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(59, 130, 246, 0.35);
+}
+
+.search-btn:active {
+  transform: translateY(0);
+}
+
 /* Conteúdo da equipe - área dos cards */
 .team-content {
   flex: 1;
@@ -749,6 +837,71 @@
   margin-bottom: 2px;
   display: inline-block;
 }
+
+/* Status badges com ícones */
+.status-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 8px 14px;
+  border-radius: 12px;
+  font-weight: 600;
+  font-size: 0.9rem;
+  transition: all 0.3s ease;
+}
+
+.status-badge::before {
+  content: '';
+  display: inline-block;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  animation: pulse-dot 2s infinite;
+}
+
+@keyframes pulse-dot {
+  0%, 100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 0.7;
+    transform: scale(1.2);
+  }
+}
+
+.status-pendente {
+  background: linear-gradient(135deg, #fbbf24 0%, #f59e0b 100%);
+  color: white;
+  box-shadow: 0 4px 12px rgba(245, 158, 11, 0.3);
+}
+
+.status-pendente::before {
+  background: rgba(255, 255, 255, 0.4);
+}
+
+.status-em-andamento {
+  background: linear-gradient(135deg, #60a5fa 0%, #3b82f6 100%);
+  color: white;
+  box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3);
+}
+
+.status-em-andamento::before {
+  background: rgba(255, 255, 255, 0.4);
+  animation: pulse-dot 1.5s infinite;
+}
+
+.status-finalizada {
+  background: linear-gradient(135deg, #34d399 0%, #10b981 100%);
+  color: white;
+  box-shadow: 0 4px 12px rgba(16, 185, 129, 0.3);
+}
+
+.status-finalizada::before {
+  background: rgba(255, 255, 255, 0.4);
+  animation: none;
+}
+
 body {
   background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%);
   color: #232526;
@@ -1042,6 +1195,58 @@ h1, h2, h3, h4, h5, h6, .header, .logo-header, #panel-title, .stat-info p, .stat
   font-weight: 400;
   margin-bottom: 8px;
   opacity: 0.98;
+}
+
+/* Timestamps melhorados */
+.timestamp {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 6px 12px;
+  background: rgba(255, 255, 255, 0.08);
+  border-radius: 8px;
+  font-size: 0.9rem;
+  color: #64748b;
+  border-left: 3px solid #3b82f6;
+  transition: all 0.3s ease;
+}
+
+.timestamp:hover {
+  background: rgba(255, 255, 255, 0.12);
+  border-left-color: #60a5fa;
+}
+
+.timestamp::before {
+  content: '🕐';
+  font-size: 1.1rem;
+}
+
+.timestamp.criada {
+  border-left-color: #f6b86b;
+  color: #b45309;
+}
+
+.timestamp.criada::before {
+  content: '📝';
+}
+
+.timestamp.atualizada {
+  border-left-color: #3b82f6;
+  color: #1e40af;
+}
+
+.timestamp.atualizada::before {
+  content: '⏱️';
+}
+
+.timestamp.finalizada {
+  border-left-color: #10b981;
+  color: #065f46;
+  opacity: 0.85;
+}
+
+.timestamp.finalizada::before {
+  content: '✅';
 }
 .empty-state {
   text-align: center;
