@@ -8,6 +8,24 @@
   font-weight: 600;
   margin-left: 1rem;
 }
+
+/* Animação pulse para badges */
+@keyframes pulse {
+  0% {
+    box-shadow: 0 0 0 0 rgba(59, 130, 246, 0.7);
+  }
+  70% {
+    box-shadow: 0 0 0 6px rgba(59, 130, 246, 0);
+  }
+  100% {
+    box-shadow: 0 0 0 0 rgba(59, 130, 246, 0);
+  }
+}
+
+.badge.pulse {
+  animation: pulse 2s infinite;
+}
+
 /* Modal Genérico */
 .modal-generico {
   position: fixed;
@@ -509,43 +527,59 @@
 .team-panel[data-department="hotelaria"]  { border-top: 4px solid #f05c8d; }
 
 .team-header.manutencao {
-  background: linear-gradient(135deg, #fff7ed 0%, #f6b86b1a 100%);
-  border-bottom-color: #f6b86b33;
+  background: linear-gradient(135deg, #f6b86b 0%, #f9a07d 50%, #f4768c 100%);
+  border-bottom-color: #f6b86b;
 }
-.team-header.manutencao h3 i { color: #f6b86b; filter: drop-shadow(0 2px 4px rgba(246, 184, 107, 0.35)); }
+.team-header.manutencao h3 { color: #fff !important; text-shadow: 0 2px 4px rgba(0,0,0,0.15); }
+.team-header.manutencao h3 i { color: #fff; filter: drop-shadow(0 2px 4px rgba(0,0,0,0.2)); }
 .team-header.manutencao .badge {
-  background: linear-gradient(135deg, #f6b86b 0%, #f4a652 100%);
-  box-shadow: 0 2px 8px rgba(246, 184, 107, 0.4);
+  background: rgba(255,255,255,0.25);
+  color: #fff;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+  -webkit-backdrop-filter: blur(10px);
+  backdrop-filter: blur(10px);
 }
 
 .team-header.nutricao {
-  background: linear-gradient(135deg, #fff5f1 0%, #f9a07d1a 100%);
-  border-bottom-color: #f9a07d33;
+  background: linear-gradient(135deg, #f9a07d 0%, #f4768c 50%, #f05c8d 100%);
+  border-bottom-color: #f9a07d;
 }
-.team-header.nutricao h3 i { color: #f9a07d; filter: drop-shadow(0 2px 4px rgba(249, 160, 125, 0.35)); }
+.team-header.nutricao h3 { color: #fff !important; text-shadow: 0 2px 4px rgba(0,0,0,0.15); }
+.team-header.nutricao h3 i { color: #fff; filter: drop-shadow(0 2px 4px rgba(0,0,0,0.2)); }
 .team-header.nutricao .badge {
-  background: linear-gradient(135deg, #f9a07d 0%, #f68968 100%);
-  box-shadow: 0 2px 8px rgba(249, 160, 125, 0.4);
+  background: rgba(255,255,255,0.25);
+  color: #fff;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+  -webkit-backdrop-filter: blur(10px);
+  backdrop-filter: blur(10px);
 }
 
 .team-header.higienizacao {
-  background: linear-gradient(135deg, #fff1f4 0%, #f4768c1a 100%);
-  border-bottom-color: #f4768c33;
+  background: linear-gradient(135deg, #f4768c 0%, #f05c8d 50%, #e7477f 100%);
+  border-bottom-color: #f4768c;
 }
-.team-header.higienizacao h3 i { color: #f4768c; filter: drop-shadow(0 2px 4px rgba(244, 118, 140, 0.35)); }
+.team-header.higienizacao h3 { color: #fff !important; text-shadow: 0 2px 4px rgba(0,0,0,0.15); }
+.team-header.higienizacao h3 i { color: #fff; filter: drop-shadow(0 2px 4px rgba(0,0,0,0.2)); }
 .team-header.higienizacao .badge {
-  background: linear-gradient(135deg, #f4768c 0%, #f15f7b 100%);
-  box-shadow: 0 2px 8px rgba(244, 118, 140, 0.4);
+  background: rgba(255,255,255,0.25);
+  color: #fff;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+  -webkit-backdrop-filter: blur(10px);
+  backdrop-filter: blur(10px);
 }
 
 .team-header.hotelaria {
-  background: linear-gradient(135deg, #fff0f5 0%, #f05c8d1a 100%);
-  border-bottom-color: #f05c8d33;
+  background: linear-gradient(135deg, #f05c8d 0%, #e7477f 50%, #d93e6f 100%);
+  border-bottom-color: #f05c8d;
 }
-.team-header.hotelaria h3 i { color: #f05c8d; filter: drop-shadow(0 2px 4px rgba(240, 92, 141, 0.35)); }
+.team-header.hotelaria h3 { color: #fff !important; text-shadow: 0 2px 4px rgba(0,0,0,0.15); }
+.team-header.hotelaria h3 i { color: #fff; filter: drop-shadow(0 2px 4px rgba(0,0,0,0.2)); }
 .team-header.hotelaria .badge {
-  background: linear-gradient(135deg, #f05c8d 0%, #e7477f 100%);
-  box-shadow: 0 2px 8px rgba(240, 92, 141, 0.4);
+  background: rgba(255,255,255,0.25);
+  color: #fff;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+  -webkit-backdrop-filter: blur(10px);
+  backdrop-filter: blur(10px);
 }
 
 /* Filtros da equipe */
@@ -678,13 +712,21 @@
 .solicitacao-card {
   background: #fff;
   border-radius: 12px;
-  box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+  box-shadow: 0 4px 12px rgba(0,0,0,0.12), 0 2px 4px rgba(0,0,0,0.08);
   padding: 1.2rem 1rem;
   display: flex;
   flex-direction: column;
   gap: 0.5rem;
   border-left: 6px solid #2563eb;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  cursor: pointer;
 }
+
+.solicitacao-card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 8px 24px rgba(0,0,0,0.18), 0 4px 8px rgba(0,0,0,0.12);
+}
+
 .card-header {
   display: flex;
   align-items: center;
@@ -708,8 +750,10 @@
   display: inline-block;
 }
 body {
-  background: linear-gradient(120deg, #e3eafc 0%, #f6f6f6 100%);
+  background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%);
   color: #232526;
+  min-height: 100vh;
+}
 
 
 /* Cabeçalho, título e textos principais em preto */
@@ -718,7 +762,6 @@ h1, h2, h3, h4, h5, h6, .header, .logo-header, #panel-title, .stat-info p, .stat
 }
 .stat-icon i, .metrica-icon i {
   color: #232526 !important;
-}
 }
 
 /* Cards de solicitação individuais dentro dos team-panels */
