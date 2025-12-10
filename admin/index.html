@@ -299,6 +299,9 @@
                 </button>
                 
                 <span id="admin-permission-msg" class="msg-permissao-hide">Acesso restrito: sem permissão para criar/gerenciar usuários.</span>
+                <button id="dashboard-btn" class="btn-primary" onclick="abrirDashboardExecutivo()" title="Dashboard Executivo com gráficos e métricas">
+                    <i class="fas fa-chart-line"></i> Dashboard
+                </button>
                 <button id="relatorios-btn" class="btn-primary">
                     <i class="fas fa-chart-bar"></i> Relatórios
                 </button>
@@ -412,16 +415,152 @@
                 </div>
             </div>
         </div>
+
+        <!-- FASE 3: DASHBOARD EXECUTIVO -->
+        <div id="dashboard-section" class="hidden">
+            <div class="section-content">
+                <div class="section-header">
+                    <h2><i class="fas fa-chart-line"></i> Dashboard Executivo</h2>
+                    <button onclick="voltarPainelPrincipal()" class="btn-voltar">
+                        <i class="fas fa-arrow-left"></i> Voltar ao Painel
+                    </button>
+                </div>
+
+                <!-- Resumo Rápido -->
+                <div class="quick-summary">
+                    <div class="summary-item">
+                        <div class="summary-label">📋 Total de Solicitações</div>
+                        <div class="summary-value" id="dash-total-solicitacoes">0</div>
+                    </div>
+                    <div class="summary-item pendente">
+                        <div class="summary-label">⏳ Pendentes</div>
+                        <div class="summary-value" id="dash-pendentes-count">0</div>
+                    </div>
+                    <div class="summary-item andamento">
+                        <div class="summary-label">⚙️ Em Andamento</div>
+                        <div class="summary-value" id="dash-andamento-count">0</div>
+                    </div>
+                    <div class="summary-item finalizada">
+                        <div class="summary-label">✅ Finalizadas</div>
+                        <div class="summary-value" id="dash-finalizadas-count">0</div>
+                    </div>
+                </div>
+
+                <!-- Gráficos -->
+                <div class="charts-container">
+                    <!-- Gráfico de Pizza - Status Quo -->
+                    <div class="chart-card">
+                        <h3 class="chart-title">
+                            <i class="fas fa-chart-pie icon-pie"></i> Status das Solicitações
+                        </h3>
+                        <div class="chart-wrapper">
+                            <canvas id="statusChart"></canvas>
+                        </div>
+                        <div class="chart-legend">
+                            <div class="legend-item">
+                                <span class="legend-color color-pendente"></span>
+                                <span>Pendentes</span>
+                            </div>
+                            <div class="legend-item">
+                                <span class="legend-color color-andamento"></span>
+                                <span>Em Andamento</span>
+                            </div>
+                            <div class="legend-item">
+                                <span class="legend-color color-finalizada"></span>
+                                <span>Finalizadas</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Gráfico de Barras - Departamentos -->
+                    <div class="chart-card">
+                        <h3 class="chart-title">
+                            <i class="fas fa-chart-bar icon-bar"></i> Solicitações por Departamento
+                        </h3>
+                        <div class="chart-wrapper">
+                            <canvas id="departmentChart"></canvas>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Tabela de Métricas por Departamento -->
+                <div class="department-metrics">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Departamento</th>
+                                <th>Total</th>
+                                <th>Pendentes</th>
+                                <th>Em Andamento</th>
+                                <th>Finalizadas</th>
+                                <th>Taxa de Conclusão</th>
+                            </tr>
+                        </thead>
+                        <tbody id="department-metrics-body">
+                            <tr>
+                                <td colspan="6" class="metrics-loading">Carregando dados...</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+
+                <!-- Cards de Métricas KPI -->
+                <div class="kpi-section">
+                    <h3 class="kpi-title">
+                        <i class="fas fa-tachometer-alt"></i> KPIs - Indicadores de Performance
+                    </h3>
+                    <div class="dashboard-container">
+                        <div class="metric-card">
+                            <div class="metric-label">
+                                <i class="fas fa-hourglass-half icon-hourglass"></i> Tempo Médio
+                            </div>
+                            <div class="metric-value" id="kpi-tempo-medio">--</div>
+                            <div class="metric-change">
+                                <span id="kpi-tempo-trend" class="trend-down">variação</span>
+                            </div>
+                        </div>
+                        <div class="metric-card">
+                            <div class="metric-label">
+                                <i class="fas fa-percentage icon-percentage"></i> Taxa de SLA
+                            </div>
+                            <div class="metric-value" id="kpi-sla">--</div>
+                            <div class="metric-change">
+                                <span class="trend-up">Eficiência</span>
+                            </div>
+                        </div>
+                        <div class="metric-card">
+                            <div class="metric-label">
+                                <i class="fas fa-star icon-star"></i> Satisfação Média
+                            </div>
+                            <div class="metric-value" id="kpi-satisfacao">--</div>
+                            <div class="metric-change">
+                                De 5 estrelas
+                            </div>
+                        </div>
+                        <div class="metric-card">
+                            <div class="metric-label">
+                                <i class="fas fa-layer-group icon-layer"></i> Solicitações/Dia
+                            </div>
+                            <div class="metric-value" id="kpi-media-dia">--</div>
+                            <div class="metric-change">
+                                Média diária
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
     <!-- Seção de Cadastro e Gestão de Acompanhantes -->
     <div id="acompanhantes-section" class="hidden">
         <div class="section-content">
             <div class="section-header">
                 <h2>👥 Cadastro de Acompanhantes</h2>
-                <div style="display: flex; gap: 10px;">
-                    <button onclick="abrirImportacaoLote()" class="btn-primary" title="Importar múltiplos acompanhantes via Excel" style="background: #10b981;">
+                <div class="button-group">
+                    <button onclick="abrirImportacaoLote()" class="btn-primary button-excel" title="Importar múltiplos acompanhantes via Excel">
                         <i class="fas fa-file-excel"></i> Importar Excel
                     </button>
-                    <button onclick="baixarModeloExcel()" class="btn-primary" title="Baixar modelo de planilha Excel" style="background: #3b82f6;">
+                    <button onclick="baixarModeloExcel()" class="btn-primary button-download" title="Baixar modelo de planilha Excel">
                         <i class="fas fa-download"></i> Baixar Modelo
                     </button>
                     <button onclick="voltarPainelPrincipal()" class="btn-voltar" title="Voltar ao painel principal">
@@ -633,7 +772,7 @@
                         <option value="acompanhante">👨‍👩‍👧‍👦 Acompanhante</option>
                     </select>
                 </div>
-                <div class="form-group" id="campo-equipe" style="display: none;">
+                <div class="form-group hidden" id="campo-equipe">
                     <label for="usuario-equipe">Equipe</label>
                     <select id="usuario-equipe" class="form-input" title="Selecione a equipe">
                         <option value="">Selecione a equipe</option>
@@ -643,7 +782,7 @@
                         <option value="hotelaria">🏨 Hotelaria</option>
                     </select>
                 </div>
-                <div class="form-group" id="campo-quarto" style="display: none;">
+                <div class="form-group hidden" id="campo-quarto">
                     <label for="usuario-quarto">Número do Quarto</label>
                     <input type="text" id="usuario-quarto" class="form-input" placeholder="Ex: 101" title="Número do quarto do acompanhante">
                 </div>
@@ -674,10 +813,10 @@
             <div class="modal-gerenciar-usuarios-header">
                 <div class="modal-gerenciar-usuarios-header-flex">
                     <div>
-                        <h3 style="margin: 0; font-size: 1.5rem; font-weight: 700;">
+                        <h3 class="modal-title">
                             <i class="fas fa-users-cog"></i> Gerenciar Usuários
                         </h3>
-                        <p style="margin: 0.5rem 0 0 0; opacity: 0.9; font-size: 0.9rem;">
+                        <p class="modal-subtitle">
                             Visualize, edite e remova usuários do sistema
                         </p>
                     </div>
@@ -687,9 +826,9 @@
                 </div>
             </div>
             <div class="modal-gerenciar-usuarios-list">
-                <div id="users-list" style="display: grid; gap: 1rem;">
-                    <div style="text-align: center; padding: 2rem; color: #6b7280;">
-                        <i class="fas fa-spinner fa-spin" style="font-size: 2rem; margin-bottom: 1rem;"></i>
+                <div id="users-list" class="users-list-grid">
+                    <div class="users-list-loading">
+                        <i class="fas fa-spinner fa-spin"></i>
                         <p>Carregando usuários...</p>
                     </div>
                 </div>

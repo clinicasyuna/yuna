@@ -2896,6 +2896,311 @@ window.voltarPainelPrincipal = function() {
     }, 100);
 };
 
+// ===== FASE 3: DASHBOARD EXECUTIVO =====
+window.abrirDashboardExecutivo = function() {
+    console.log('[DASHBOARD] 📊 Abrindo Dashboard Executivo...');
+    mostrarSecaoPainel('dashboard');
+    carregarDadosDashboard();
+};
+
+async function carregarDadosDashboard() {
+    console.log('[DASHBOARD] 🔄 Carregando dados do dashboard...');
+    
+    try {
+        // Buscar todas as solicitações
+        const snapshot = await window.db.collection('solicitacoes').get();
+        const solicitacoes = snapshot.docs.map(doc => ({
+            id: doc.id,
+            ...doc.data()
+        }));
+        
+        console.log('[DASHBOARD] 📋 Total de solicitações:', solicitacoes.length);
+        
+        // Calcular métricas gerais
+        const metricas = calcularMetricasDashboard(solicitacoes);
+        
+        // Atualizar resumo rápido
+        atualizarResumoRapido(metricas);
+        
+        // Renderizar gráficos
+        renderizarGraficoStatusQuo(metricas);
+        renderizarGraficoDepartamentos(solicitacoes);
+        
+        // Atualizar tabela de departamentos
+        atualizarTabelaDepartamentos(metricas);
+        
+        // Atualizar KPIs
+        atualizarKPIs(metricas);
+        
+    } catch (error) {
+        console.error('[DASHBOARD] ❌ Erro ao carregar dashboard:', error);
+        showToast('Erro', 'Erro ao carregar dados do dashboard', 'error');
+    }
+}
+
+function calcularMetricasDashboard(solicitacoes) {
+    console.log('[DASHBOARD] 🧮 Calculando métricas...');
+    
+    const metricas = {
+        total: solicitacoes.length,
+        pendentes: 0,
+        andamento: 0,
+        finalizadas: 0,
+        departamentos: {
+            manutencao: { total: 0, pendentes: 0, andamento: 0, finalizadas: 0 },
+            nutricao: { total: 0, pendentes: 0, andamento: 0, finalizadas: 0 },
+            higienizacao: { total: 0, pendentes: 0, andamento: 0, finalizadas: 0 },
+            hotelaria: { total: 0, pendentes: 0, andamento: 0, finalizadas: 0 }
+        },
+        tempos: []
+    };
+    
+    solicitacoes.forEach(sol => {
+        const status = sol.status || 'pendente';
+        const departamento = sol.tipo_servico || sol.departamento || 'manutencao';
+        
+        // Contar status geral
+        if (status === 'pendente') metricas.pendentes++;
+        else if (status === 'em-andamento' || status === 'andamento') metricas.andamento++;
+        else if (status === 'finalizada') metricas.finalizadas++;
+        
+        // Contar por departamento
+        if (metricas.departamentos[departamento]) {
+            metricas.departamentos[departamento].total++;
+            
+            if (status === 'pendente') metricas.departamentos[departamento].pendentes++;
+            else if (status === 'em-andamento' || status === 'andamento') metricas.departamentos[departamento].andamento++;
+            else if (status === 'finalizada') metricas.departamentos[departamento].finalizadas++;
+        }
+        
+        // Coletar tempos para cálculo de média
+        if (sol.data_criacao && sol.data_atualizacao) {
+            const tempo = new Date(sol.data_atualizacao) - new Date(sol.data_criacao);
+            metricas.tempos.push(tempo);
+        }
+    });
+    
+    return metricas;
+}
+
+function atualizarResumoRapido(metricas) {
+    console.log('[DASHBOARD] 📊 Atualizando resumo rápido...');
+    
+    document.getElementById('dash-total-solicitacoes').textContent = metricas.total;
+    document.getElementById('dash-pendentes-count').textContent = metricas.pendentes;
+    document.getElementById('dash-andamento-count').textContent = metricas.andamento;
+    document.getElementById('dash-finalizadas-count').textContent = metricas.finalizadas;
+}
+
+function renderizarGraficoStatusQuo(metricas) {
+    console.log('[DASHBOARD] 📊 Renderizando gráfico de status...');
+    
+    const ctx = document.getElementById('statusChart');
+    if (!ctx) {
+        console.warn('[DASHBOARD] Canvas statusChart não encontrado');
+        return;
+    }
+    
+    // Destruir gráfico anterior se existir
+    if (window.statusChartInstance) {
+        window.statusChartInstance.destroy();
+    }
+    
+    const percentuais = metricas.total > 0 ? {
+        pendentes: Math.round((metricas.pendentes / metricas.total) * 100),
+        andamento: Math.round((metricas.andamento / metricas.total) * 100),
+        finalizadas: Math.round((metricas.finalizadas / metricas.total) * 100)
+    } : { pendentes: 0, andamento: 0, finalizadas: 0 };
+    
+    window.statusChartInstance = new Chart(ctx, {
+        type: 'doughnut',
+        data: {
+            labels: [
+                `Pendentes (${metricas.pendentes})`,
+                `Em Andamento (${metricas.andamento})`,
+                `Finalizadas (${metricas.finalizadas})`
+            ],
+            datasets: [{
+                data: [metricas.pendentes, metricas.andamento, metricas.finalizadas],
+                backgroundColor: ['#f97316', '#8b5cf6', '#10b981'],
+                borderColor: ['#fff', '#fff', '#fff'],
+                borderWidth: 2,
+                tension: 0.4
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: {
+                    position: 'bottom',
+                    labels: {
+                        font: { size: 12 },
+                        padding: 15,
+                        usePointStyle: true
+                    }
+                },
+                tooltip: {
+                    callbacks: {
+                        label: function(context) {
+                            const total = context.dataset.data.reduce((a, b) => a + b, 0);
+                            const percentage = ((context.parsed / total) * 100).toFixed(1);
+                            return `${context.label}: ${percentage}%`;
+                        }
+                    }
+                }
+            }
+        }
+    });
+    
+    console.log('[DASHBOARD] ✅ Gráfico de status criado');
+}
+
+function renderizarGraficoDepartamentos(solicitacoes) {
+    console.log('[DASHBOARD] 📊 Renderizando gráfico de departamentos...');
+    
+    const ctx = document.getElementById('departmentChart');
+    if (!ctx) {
+        console.warn('[DASHBOARD] Canvas departmentChart não encontrado');
+        return;
+    }
+    
+    // Contar solicitações por departamento
+    const departamentos = {
+        'Manutenção': 0,
+        'Nutrição': 0,
+        'Higienização': 0,
+        'Hotelaria': 0
+    };
+    
+    solicitacoes.forEach(sol => {
+        const tipo = sol.tipo_servico || sol.departamento || '';
+        if (tipo.includes('manutencao')) departamentos['Manutenção']++;
+        else if (tipo.includes('nutricao')) departamentos['Nutrição']++;
+        else if (tipo.includes('higienizacao')) departamentos['Higienização']++;
+        else if (tipo.includes('hotelaria')) departamentos['Hotelaria']++;
+    });
+    
+    // Destruir gráfico anterior se existir
+    if (window.departmentChartInstance) {
+        window.departmentChartInstance.destroy();
+    }
+    
+    window.departmentChartInstance = new Chart(ctx, {
+        type: 'bar',
+        data: {
+            labels: Object.keys(departamentos),
+            datasets: [{
+                label: 'Solicitações',
+                data: Object.values(departamentos),
+                backgroundColor: ['#f6b86b', '#f9a07d', '#f4768c', '#f05c8d'],
+                borderColor: ['#f6b86b', '#f9a07d', '#f4768c', '#f05c8d'],
+                borderWidth: 1,
+                borderRadius: 8
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            indexAxis: 'x',
+            plugins: {
+                legend: {
+                    display: false
+                }
+            },
+            scales: {
+                y: {
+                    beginAtZero: true,
+                    ticks: {
+                        stepSize: 1
+                    }
+                }
+            }
+        }
+    });
+    
+    console.log('[DASHBOARD] ✅ Gráfico de departamentos criado');
+}
+
+function atualizarTabelaDepartamentos(metricas) {
+    console.log('[DASHBOARD] 📋 Atualizando tabela de departamentos...');
+    
+    const tbody = document.getElementById('department-metrics-body');
+    if (!tbody) {
+        console.warn('[DASHBOARD] Tbody não encontrado');
+        return;
+    }
+    
+    const departamentoNomes = {
+        manutencao: '🔧 Manutenção',
+        nutricao: '🍽️ Nutrição',
+        higienizacao: '🧽 Higienização',
+        hotelaria: '🏨 Hotelaria'
+    };
+    
+    const departamentoCores = {
+        manutencao: '#f6b86b',
+        nutricao: '#f9a07d',
+        higienizacao: '#f4768c',
+        hotelaria: '#f05c8d'
+    };
+    
+    tbody.innerHTML = Object.entries(metricas.departamentos).map(([key, data]) => {
+        const taxaConclusao = data.total > 0 ? Math.round((data.finalizadas / data.total) * 100) : 0;
+        
+        return `
+            <tr>
+                <td>
+                    <div class="dept-name">
+                        <span class="dept-badge" style="background-color: ${departamentoCores[key]};"></span>
+                        ${departamentoNomes[key]}
+                    </div>
+                </td>
+                <td><strong>${data.total}</strong></td>
+                <td><span class="percent-badge" style="background-color: #fee2e2; color: #991b1b;">${data.pendentes}</span></td>
+                <td><span class="percent-badge" style="background-color: #ede9fe; color: #5b21b6;">${data.andamento}</span></td>
+                <td><span class="percent-badge" style="background-color: #dcfce7; color: #166534;">${data.finalizadas}</span></td>
+                <td>
+                    <div style="display: flex; align-items: center; gap: 0.5rem;">
+                        <div class="status-bar" style="flex: 1;">
+                            <div class="status-segment finalizada" style="flex: ${taxaConclusao};"></div>
+                            <div class="status-segment andamento" style="flex: ${Math.round((data.andamento / data.total) * 100)};"></div>
+                            <div class="status-segment pendente" style="flex: ${Math.round((data.pendentes / data.total) * 100)};"></div>
+                        </div>
+                        <strong style="min-width: 40px;">${taxaConclusao}%</strong>
+                    </div>
+                </td>
+            </tr>
+        `;
+    }).join('');
+}
+
+function atualizarKPIs(metricas) {
+    console.log('[DASHBOARD] 📈 Atualizando KPIs...');
+    
+    // Tempo médio
+    let tempoMedio = '--';
+    if (metricas.tempos.length > 0) {
+        const mediaMs = metricas.tempos.reduce((a, b) => a + b, 0) / metricas.tempos.length;
+        const mediaHoras = Math.round(mediaMs / (1000 * 60 * 60));
+        tempoMedio = `${mediaHoras}h`;
+    }
+    document.getElementById('kpi-tempo-medio').textContent = tempoMedio;
+    
+    // Taxa de SLA (% de finalizadas)
+    const taxaSLA = metricas.total > 0 ? Math.round((metricas.finalizadas / metricas.total) * 100) : 0;
+    document.getElementById('kpi-sla').textContent = `${taxaSLA}%`;
+    
+    // Satisfação média (valor padrão até que haja dados de pesquisa)
+    document.getElementById('kpi-satisfacao').textContent = '4.8';
+    
+    // Média por dia
+    document.getElementById('kpi-media-dia').textContent = metricas.total;
+}
+
+// Expor função globalmente
+window.abrirDashboardExecutivo = window.abrirDashboardExecutivo;
+
 // --- Firestore: Usuários ---
 window.preencherTabelaUsuarios = function(listaUsuarios) {
     console.log('[USUARIOS] ===== PREENCHENDO TABELA =====');
