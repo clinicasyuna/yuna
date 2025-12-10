@@ -1319,6 +1319,7 @@ async function mostrarSecaoPainel(secao) {
             'admin-panel',
             'acompanhantes-section',
             'relatorios-section',
+            'dashboard-section',
             'metricas-gerais',
             'create-user-modal',
             'manage-users-modal',
@@ -1345,6 +1346,10 @@ async function mostrarSecaoPainel(secao) {
                 debugLog('[DEBUG] mostrarSecaoPainel: carregando solicitações...');
                 carregarSolicitacoes();
             }
+        } else if (secao === 'dashboard') {
+            document.getElementById('admin-panel')?.classList.remove('hidden');
+            document.getElementById('dashboard-section')?.classList.remove('hidden');
+            debugLog('[DEBUG] mostrarSecaoPainel: exibindo dashboard-section');
         } else if (secao === 'acompanhantes') {
             document.getElementById('admin-panel')?.classList.remove('hidden');
             document.getElementById('acompanhantes-section')?.classList.remove('hidden');
