@@ -7,7 +7,7 @@
 - [x] 📱 PWA configurada (manifest, service worker, ícones)
 - [x] 🔐 Sistema de permissões RBAC implementado
 - [x] 📊 Métricas e dashboard funcionais
-- [x] 🌐 Repositório GitHub criado: `yuna-healthcare-system`
+- [x] 🌐 Repositório GitHub criado: `https://github.com/clinicasyuna/yuna`
 - [x] 📦 Código enviado para GitHub
 - [x] ⚙️ Configuração Vercel otimizada
 - [x] 📄 Homepage e README profissionais
