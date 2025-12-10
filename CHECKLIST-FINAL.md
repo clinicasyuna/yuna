@@ -26,12 +26,12 @@
 
 ## 🎯 **AÇÕES NECESSÁRIAS AGORA**
 
-### 1. **DEPLOY VERCEL (5 minutos)**
+### 1. **DEPLOY GITHUB PAGES (JÁ CONFIGURADO)**
 ```
-1. Acesse: vercel.com/new/git
-2. Login com GitHub
-3. Selecione: yuna-healthcare-system
-4. Deploy!
+1. Repositório: https://github.com/clinicasyuna/yuna
+2. Branch: main
+3. Deploy automático via GitHub Pages
+4. URL: https://clinicasyuna.github.io/yuna/
 ```
 
 ### 2. **CONFIGURAR FIREBASE (3 minutos)**

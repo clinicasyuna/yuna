@@ -84,8 +84,8 @@ extendSession()
 ## 🌍 **URLS PARA TESTE**
 
 ### **Produção:**
-- **Admin:** https://yuna-healthcare-system.vercel.app/admin/
-- **Acompanhantes:** https://yuna-healthcare-system.vercel.app/acompanhantes/
+- **Admin:** [https://clinicasyuna.github.io/yuna/admin/](https://clinicasyuna.github.io/yuna/admin/)
+- **Acompanhantes:** [https://clinicasyuna.github.io/yuna/acompanhantes/](https://clinicasyuna.github.io/yuna/acompanhantes/)
 
 ### **Usuários para Teste:**
 - **Super Admin:** `samuel.lacerda@yuna.com.br`

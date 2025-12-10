@@ -13,7 +13,7 @@
   "license": "MIT",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/usuario/yuna-app.git"
+    "url": "git+https://github.com/clinicasyuna/yuna.git"
   },
   "dependencies": {},
   "devDependencies": {}

@@ -1,6 +1,6 @@
 # 🏥 YUNA Healthcare System
 
-[![Deploy](https://img.shields.io/badge/Deploy-Ready-success?logo=github)](https://github.com/Samukajr/clinicasyuna)
+[![Deploy](https://img.shields.io/badge/Deploy-Ready-success?logo=github)](https://github.com/clinicasyuna/yuna)
 [![PWA](https://img.shields.io/badge/PWA-Ready-purple?logo=pwa)](#)
 
 Sistema completo de gerenciamento de solicitações para clínicas YUNA com PWA otimizado.
@@ -8,9 +8,9 @@ Sistema completo de gerenciamento de solicitações para clínicas YUNA com PWA 
 ## 🌐 **ACESSO ONLINE - DOMÍNIO PROFISSIONAL**
 
 **✨ URL CORPORATIVA PROFISSIONAL:**
-- **🏠 Sistema Principal:** https://yuna.github.io/yuna/
-- **👥 Portal Acompanhantes:** https://yuna.github.io/yuna/acompanhantes/
-- **👨‍💼 Painel Admin:** https://yuna.github.io/yuna/admin/
+- **🏠 Sistema Principal:** [https://clinicasyuna.github.io/yuna/](https://clinicasyuna.github.io/yuna/)
+- **👥 Portal Acompanhantes:** [https://clinicasyuna.github.io/yuna/acompanhantes/](https://clinicasyuna.github.io/yuna/acompanhantes/)
+- **👨‍💼 Painel Admin:** [https://clinicasyuna.github.io/yuna/admin/](https://clinicasyuna.github.io/yuna/admin/)
 
 ## 🚀 **DEPLOY AUTOMÁTICO - SIGA ESTES PASSOS**
 
@@ -114,8 +114,8 @@ O sistema é um **Progressive Web App** que pode ser instalado:
 ## 🎯 **Contatos de Suporte**
 
 - **Desenvolvedor:** Samuel Lacerda
-- **GitHub:** [@Samukajr](https://github.com/Samukajr)
-- **Repositório:** [yuna](https://github.com/Samukajr/yuna)
+- **GitHub Organization:** [clinicasyuna](https://github.com/clinicasyuna)
+- **Repositório:** [yuna](https://github.com/clinicasyuna/yuna)
 
 ---
 

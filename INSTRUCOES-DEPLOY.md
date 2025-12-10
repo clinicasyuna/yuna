@@ -1,36 +1,36 @@
 # 🎯 INSTRUÇÕES COMPLETAS DE DEPLOY - SISTEMA YUNA
 
 ## ✅ **STATUS ATUAL**
-- [x] Código no GitHub: https://github.com/Samukajr/yuna-healthcare-system
+- [x] Código no GitHub: [https://github.com/clinicasyuna/yuna](https://github.com/clinicasyuna/yuna)
 - [x] Repositório configurado e atualizado
 - [x] PWA otimizada com manifesto e service worker
-- [x] Configuração Vercel pronta
+- [x] GitHub Pages configurado e pronto
 
 ## 🚀 **PRÓXIMOS PASSOS (VOCÊ PRECISA FAZER)**
 
-### 1. **Deploy no Vercel**
-1. Acesse: https://vercel.com/new/git
-2. Faça login com GitHub
-3. Clique em "Import" no repositório `yuna-healthcare-system`
-4. **NÃO ALTERE NADA** - configuração já está pronta
-5. Clique "Deploy"
+### 1. **Deploy já está ATIVO**
 
-**⏱️ Tempo:** 2-3 minutos para completar
+1. Repositório: [https://github.com/clinicasyuna/yuna](https://github.com/clinicasyuna/yuna)
+2. GitHub Pages está configurado
+3. Qualquer push para `main` dispara deploy automático
+4. **⏱️ Tempo:** 2-3 minutos para propagação
 
 ### 2. **URL Final**
-Após deploy, sua URL será algo como:
-`https://yuna-healthcare-system-samukajr.vercel.app`
+
+Acesse a URL de produção:
+`https://clinicasyuna.github.io/yuna/`
 
 ### 3. **Testar Acesso**
-- **Portal Acompanhantes:** `[SUA-URL]/acompanhantes`
-- **Painel Admin:** `[SUA-URL]/admin`
+
+- **Portal Acompanhantes:** `https://clinicasyuna.github.io/yuna/acompanhantes/`
+- **Painel Admin:** `https://clinicasyuna.github.io/yuna/admin/`
 
 ### 4. **Configurar Firebase (IMPORTANTE)**
 1. Acesse [Firebase Console](https://console.firebase.google.com)
 2. Selecione seu projeto YUNA
 3. Vá em **Authentication** → **Settings** → **Authorized domains**
-4. Adicione a URL do Vercel (sem https://)
-5. Exemplo: `yuna-healthcare-system-samukajr.vercel.app`
+4. Adicione o domínio GitHub Pages (sem https://)
+5. Exemplo: `clinicasyuna.github.io`
 
 ## 📱 **TESTANDO A PWA**
 
