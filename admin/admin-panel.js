@@ -5387,10 +5387,7 @@ function atualizarVisibilidadeBotoes() {
         const btnGerenciarUsuarios = document.getElementById('manage-users-btn');
         const btnAcompanhantes = document.getElementById('acompanhantes-btn');
         const btnRelatorios = document.getElementById('relatorios-btn');
-        const btnLimpeza = document.getElementById('limpeza-btn');
-    const btnSatisfacao = document.getElementById('satisfacao-btn');
-    const btnMinhaSenha = document.getElementById('alterar-senha-btn');
-    const msgPermissao = document.getElementById('admin-permission-msg');
+    const btnDashboard = document.getElementById('dashboard-btn');
     const userRoleBadge = document.getElementById('user-role-badge');
     const panelTitle = document.getElementById('panel-title');
     
@@ -5399,6 +5396,7 @@ function atualizarVisibilidadeBotoes() {
         btnGerenciarUsuarios: !!btnGerenciarUsuarios,
         btnAcompanhantes: !!btnAcompanhantes,
         btnRelatorios: !!btnRelatorios,
+        btnDashboard: !!btnDashboard,
         btnLimpeza: !!btnLimpeza,
         btnSatisfacao: !!btnSatisfacao
     });
@@ -5570,6 +5568,20 @@ function atualizarVisibilidadeBotoes() {
 
     console.log('🎯🎯🎯 [CHECKPOINT 6] TERMINOU configuração botão Acompanhantes!');
 
+    // Botão Dashboard - APENAS admin e super_admin (NOT equipes)
+    console.log('[📊 DASHBOARD-CHECK] Verificando acesso ao Dashboard...');
+    if (btnDashboard) {
+        if (isSuperAdmin || isAdmin) {
+            btnDashboard.classList.remove('btn-hide');
+            btnDashboard.style.display = 'inline-flex';
+            debugLog('[DEBUG] Botão Dashboard exibido para', isSuperAdmin ? 'super_admin' : 'admin');
+        } else {
+            btnDashboard.classList.add('btn-hide');
+            btnDashboard.style.display = 'none';
+            debugLog('[DEBUG] Botão Dashboard ocultado - restrito a admins (equipes não têm acesso)');
+        }
+    }
+
     // Botão Relatórios - super_admin e admin
     if (btnRelatorios) {
         if (isSuperAdmin || isAdmin) {
@@ -5678,6 +5690,7 @@ function atualizarVisibilidadeBotoes() {
         btnGerenciarUsuarios: btnGerenciarUsuarios ? !btnGerenciarUsuarios.classList.contains('btn-hide') : 'não encontrado',
         btnAcompanhantes: btnAcompanhantes ? !btnAcompanhantes.classList.contains('btn-hide') : 'não encontrado',
         btnRelatorios: btnRelatorios ? !btnRelatorios.classList.contains('btn-hide') : 'não encontrado',
+        btnDashboard: btnDashboard ? !btnDashboard.classList.contains('btn-hide') : 'não encontrado',
         btnMinhaSenha: btnMinhaSenha ? !btnMinhaSenha.classList.contains('btn-hide') : 'não encontrado',
         btnLimpeza: btnLimpeza ? !btnLimpeza.classList.contains('btn-hide') : 'não encontrado'
     });
