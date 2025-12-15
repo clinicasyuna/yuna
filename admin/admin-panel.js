@@ -2927,15 +2927,13 @@ async function carregarDadosDashboard() {
         // Atualizar resumo rápido
         atualizarResumoRapido(metricas);
         
-        // Renderizar gráficos
-        renderizarGraficoStatusQuo(metricas);
-        renderizarGraficoDepartamentos(solicitacoes);
-        
-        // Atualizar tabela de departamentos
-        atualizarTabelaDepartamentos(metricas);
-        
-        // Atualizar KPIs
-        atualizarKPIs(metricas);
+        // Renderizar gráficos com pequeno delay para garantir DOM visível
+        setTimeout(() => {
+            renderizarGraficoStatusQuo(metricas);
+            renderizarGraficoDepartamentos(solicitacoes);
+            atualizarTabelaDepartamentos(metricas);
+            atualizarKPIs(metricas);
+        }, 50);
         
     } catch (error) {
         console.error('[DASHBOARD] ❌ Erro ao carregar dashboard:', error);
@@ -3000,6 +2998,13 @@ function atualizarResumoRapido(metricas) {
 function renderizarGraficoStatusQuo(metricas) {
     console.log('[DASHBOARD] 📊 Renderizando gráfico de status...');
     
+    // Verificar se Chart está disponível
+    if (typeof Chart === 'undefined') {
+        console.error('[DASHBOARD] ❌ Chart.js não está carregado! Aguardando...');
+        setTimeout(() => renderizarGraficoStatusQuo(metricas), 500);
+        return;
+    }
+    
     const ctx = document.getElementById('statusChart');
     if (!ctx) {
         console.warn('[DASHBOARD] Canvas statusChart não encontrado');
@@ -3017,17 +3022,18 @@ function renderizarGraficoStatusQuo(metricas) {
         finalizadas: Math.round((metricas.finalizadas / metricas.total) * 100)
     } : { pendentes: 0, andamento: 0, finalizadas: 0 };
     
-    window.statusChartInstance = new Chart(ctx, {
-        type: 'doughnut',
-        data: {
-            labels: [
-                `Pendentes (${metricas.pendentes})`,
-                `Em Andamento (${metricas.andamento})`,
-                `Finalizadas (${metricas.finalizadas})`
-            ],
-            datasets: [{
-                data: [metricas.pendentes, metricas.andamento, metricas.finalizadas],
-                backgroundColor: ['#f97316', '#8b5cf6', '#10b981'],
+    try {
+        window.statusChartInstance = new Chart(ctx, {
+            type: 'doughnut',
+            data: {
+                labels: [
+                    `Pendentes (${metricas.pendentes})`,
+                    `Em Andamento (${metricas.andamento})`,
+                    `Finalizadas (${metricas.finalizadas})`
+                ],
+                datasets: [{
+                    data: [metricas.pendentes, metricas.andamento, metricas.finalizadas],
+                    backgroundColor: ['#f97316', '#8b5cf6', '#10b981'],
                 borderColor: ['#fff', '#fff', '#fff'],
                 borderWidth: 2,
                 tension: 0.4
@@ -3056,13 +3062,22 @@ function renderizarGraficoStatusQuo(metricas) {
                 }
             }
         }
-    });
-    
-    console.log('[DASHBOARD] ✅ Gráfico de status criado');
+        });
+        console.log('[DASHBOARD] ✅ Gráfico de status criado');
+    } catch (error) {
+        console.error('[DASHBOARD] ❌ Erro ao renderizar gráfico de status:', error);
+    }
 }
 
 function renderizarGraficoDepartamentos(solicitacoes) {
     console.log('[DASHBOARD] 📊 Renderizando gráfico de departamentos...');
+    
+    // Verificar se Chart está disponível
+    if (typeof Chart === 'undefined') {
+        console.error('[DASHBOARD] ❌ Chart.js não está carregado! Aguardando...');
+        setTimeout(() => renderizarGraficoDepartamentos(solicitacoes), 500);
+        return;
+    }
     
     const ctx = document.getElementById('departmentChart');
     if (!ctx) {
@@ -3091,40 +3106,43 @@ function renderizarGraficoDepartamentos(solicitacoes) {
         window.departmentChartInstance.destroy();
     }
     
-    window.departmentChartInstance = new Chart(ctx, {
-        type: 'bar',
-        data: {
-            labels: Object.keys(departamentos),
-            datasets: [{
-                label: 'Solicitações',
-                data: Object.values(departamentos),
-                backgroundColor: ['#f6b86b', '#f9a07d', '#f4768c', '#f05c8d'],
-                borderColor: ['#f6b86b', '#f9a07d', '#f4768c', '#f05c8d'],
-                borderWidth: 1,
-                borderRadius: 8
-            }]
-        },
-        options: {
-            responsive: true,
-            maintainAspectRatio: false,
-            indexAxis: 'x',
-            plugins: {
-                legend: {
-                    display: false
-                }
+    try {
+        window.departmentChartInstance = new Chart(ctx, {
+            type: 'bar',
+            data: {
+                labels: Object.keys(departamentos),
+                datasets: [{
+                    label: 'Solicitações',
+                    data: Object.values(departamentos),
+                    backgroundColor: ['#f6b86b', '#f9a07d', '#f4768c', '#f05c8d'],
+                    borderColor: ['#f6b86b', '#f9a07d', '#f4768c', '#f05c8d'],
+                    borderWidth: 1,
+                    borderRadius: 8
+                }]
             },
-            scales: {
-                y: {
-                    beginAtZero: true,
-                    ticks: {
-                        stepSize: 1
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                indexAxis: 'x',
+                plugins: {
+                    legend: {
+                        display: false
+                    }
+                },
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        ticks: {
+                            stepSize: 1
+                        }
                     }
                 }
             }
-        }
-    });
-    
-    console.log('[DASHBOARD] ✅ Gráfico de departamentos criado');
+        });
+        console.log('[DASHBOARD] ✅ Gráfico de departamentos criado');
+    } catch (error) {
+        console.error('[DASHBOARD] ❌ Erro ao renderizar gráfico de departamentos:', error);
+    }
 }
 
 function atualizarTabelaDepartamentos(metricas) {
