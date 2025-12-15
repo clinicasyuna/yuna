@@ -2,72 +2,138 @@ rules_version = '2';
 
 service cloud.firestore {
   match /databases/{database}/documents {
-    
-    // === REGRAS GERAIS ===
-    // Permitir acesso para usuários autenticados (temporariamente mais permissivo)
-    match /{document=**} {
-      allow read, write: if request.auth != null;
+
+    // ===== Funções utilitárias =====
+    function isSignedIn() {
+      return request.auth != null;
     }
-    
-    // === USUÁRIOS ADMINISTRADORES ===
+
+    function adminDoc() {
+      return get(/databases/$(database)/documents/usuarios_admin/$(request.auth.uid));
+    }
+
+    function equipeDoc() {
+      return get(/databases/$(database)/documents/usuarios_equipe/$(request.auth.uid));
+    }
+
+    function acompanhanteDoc() {
+      return get(/databases/$(database)/documents/usuarios_acompanhantes/$(request.auth.uid));
+    }
+
+    function isActive(doc) {
+      return doc.exists && doc.data.ativo == true;
+    }
+
+    function isSuperAdmin() {
+      return isSignedIn() && isActive(adminDoc()) && adminDoc().data.role == 'super_admin';
+    }
+
+    function isAdmin() {
+      return isSignedIn() && isActive(adminDoc()) &&
+             (adminDoc().data.role == 'admin' || adminDoc().data.role == 'super_admin');
+    }
+
+    function isEquipe() {
+      return isSignedIn() && isActive(equipeDoc());
+    }
+
+    function userEquipe() {
+      return isEquipe() ? (equipeDoc().data.equipe != null ? equipeDoc().data.equipe : equipeDoc().data.departamento) : null;
+    }
+
+    function isAcompanhante() {
+      return isSignedIn() && isActive(acompanhanteDoc());
+    }
+
+    function isOwner(uidField) {
+      return isSignedIn() && uidField == request.auth.uid;
+    }
+
+    // ===== Usuários administradores =====
     match /usuarios_admin/{userId} {
-      // Leitura: usuário autenticado pode ler
-      allow read: if request.auth != null;
-      
-      // Criação/Edição: qualquer usuário autenticado (será refinado depois)
-      allow create, update: if request.auth != null;
-      
-      // Exclusão: qualquer usuário autenticado (será refinado depois)
-      allow delete: if request.auth != null;
+      allow read: if isAdmin();
+      allow create, update, delete: if isSuperAdmin();
     }
-    
-    // === USUÁRIOS DA EQUIPE ===
+
+    // ===== Usuários de equipe =====
     match /usuarios_equipe/{userId} {
-      // Permitir acesso completo para usuários autenticados
-      allow read, write: if request.auth != null;
+      allow read: if isAdmin() || (isSignedIn() && request.auth.uid == userId);
+      allow create, update: if isSuperAdmin() || isAdmin();
+      allow delete: if isSuperAdmin();
     }
-    
-    // === USUÁRIOS ACOMPANHANTES ===
+
+    // ===== Usuários acompanhantes =====
     match /usuarios_acompanhantes/{userId} {
-      // Permitir acesso completo para usuários autenticados
-      allow read, write: if request.auth != null;
+      allow read: if isAdmin() || (isSignedIn() && request.auth.uid == userId);
+      allow create: if isSignedIn() && request.auth.uid == userId; // auto-cadastro
+      allow update: if isAdmin() || (isSignedIn() && request.auth.uid == userId);
+      allow delete: if isSuperAdmin();
     }
-    
-    // === SOLICITAÇÕES ===
+
+    // ===== Solicitações =====
     match /solicitacoes/{solicitacaoId} {
-      // REGRA TEMPORÁRIA: Permitir acesso completo para usuários autenticados
-      // TODO: Implementar filtragem por departamento no frontend
-      allow read, write: if request.auth != null;
-    }
-    
-    // === AVALIAÇÕES DE SATISFAÇÃO ===
-    match /avaliacoes_satisfacao/{avaliacaoId} {
-      // Permitir acesso completo para usuários autenticados
-      allow read, write: if request.auth != null;
-    }
-    
-    // === QUARTOS OCUPADOS ===
-    match /quartos_ocupados/{quartoId} {
-      // Permitir acesso completo para usuários autenticados
-      allow read, write: if request.auth != null;
-    }
-    
-    // === LOGS DE AUDITORIA ===
-    match /logs_auditoria/{logId} {
-      // Permitir leitura para usuários autenticados
-      allow read: if request.auth != null;
-      
-      // Permitir criação apenas se o usuário está incluindo seu próprio UID
-      allow create: if request.auth != null 
-        && request.auth.uid != null
-        && (
-          !('usuarioId' in resource.data) || 
-          resource.data.usuarioId == request.auth.uid ||
-          resource.data.usuarioId == 'anonimo'
+      function solicitacaoEquipe() {
+        return resource.exists ? resource.data.equipe : request.resource.data.equipe;
+      }
+
+      function solicitacaoUsuario() {
+        return resource.exists ? resource.data.usuarioId : request.resource.data.usuarioId;
+      }
+
+      allow read: if isAdmin()
+        || (isEquipe() && solicitacaoEquipe() == userEquipe())
+        || (isAcompanhante() && solicitacaoUsuario() == request.auth.uid);
+
+      allow create: if isAdmin()
+        || (isEquipe() && request.resource.data.equipe == userEquipe())
+        || (isAcompanhante() && request.resource.data.usuarioId == request.auth.uid);
+
+      allow update: if isAdmin()
+        || (isEquipe() && solicitacaoEquipe() == userEquipe())
+        || (
+          isAcompanhante()
+          && solicitacaoUsuario() == request.auth.uid
+          && request.resource.data.usuarioId == request.auth.uid
+          && request.resource.data.equipe == resource.data.equipe
+          && request.resource.data.status == resource.data.status
         );
-      
-      // Exclusão/Edição: proibida (logs são imutáveis)
-      allow update, delete: if false;
+
+      allow delete: if isSuperAdmin();
+    }
+
+    // ===== Avaliações de satisfação =====
+    match /avaliacoes_satisfacao/{avaliacaoId} {
+      allow read: if isAdmin() || (isAcompanhante() && resource.data.usuarioId == request.auth.uid);
+      allow create: if isAdmin() || (isAcompanhante() && request.resource.data.usuarioId == request.auth.uid);
+      allow update: if isAdmin() || (isAcompanhante() && resource.data.usuarioId == request.auth.uid);
+      allow delete: if isSuperAdmin();
+    }
+
+    // ===== Quartos ocupados =====
+    match /quartos_ocupados/{quartoId} {
+      allow read: if isAdmin() || isEquipe() || (isAcompanhante() && resource.data.acompanhanteId == request.auth.uid);
+
+      allow create: if isAdmin()
+        || isEquipe()
+        || (isAcompanhante() && request.resource.data.acompanhanteId == request.auth.uid);
+
+      allow update: if isAdmin()
+        || isEquipe()
+        || (isAcompanhante() && resource.data.acompanhanteId == request.auth.uid && request.resource.data.acompanhanteId == request.auth.uid);
+
+      allow delete: if isSuperAdmin();
+    }
+
+    // ===== Logs de auditoria =====
+    match /logs_auditoria/{logId} {
+      allow read: if isAdmin();
+      allow create: if isSignedIn() &&
+        (
+          !('usuarioId' in request.resource.data) ||
+          request.resource.data.usuarioId == request.auth.uid ||
+          request.resource.data.usuarioId == 'anonimo'
+        );
+      allow update, delete: if false; // imutável
     }
   }
 }
