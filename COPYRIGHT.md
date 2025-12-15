@@ -4,16 +4,17 @@
 
 **Nome do Software:** Sistema YUNA - Gerenciamento de Solicitações para Clínicas
 **Versão:** 2.0.0
-**Data de Criação:** 14 de novembro de 2025
-**Autor/Proprietário:** [SEU NOME COMPLETO AQUI]
-**Empresa:** [SUA EMPRESA/NOME AQUI]
+**Data de Criação:** 14 de novembro de 2024
+**Última Atualização:** 15 de dezembro de 2025
+**Autor/Proprietário:** Samuel dos Reis Lacerda Junior
+**Empresa:** 55.004.442 SAMUEL DOS REIS LACERDA JUNIOR (MEI)
 
 ---
 
 ## 🏛️ **Declaração de Direitos Autorais**
 
 ```
-Copyright © 2025 [SEU NOME]. Todos os direitos reservados.
+Copyright © 2024-2025 Samuel dos Reis Lacerda Junior. Todos os direitos reservados.
 
 Este software e sua documentação são propriedade intelectual protegida por 
 direitos autorais. Nenhuma parte deste software pode ser reproduzida, 
@@ -63,10 +64,11 @@ Qualquer uso não autorizado é estritamente proibido e sujeito a
 penalidades legais.
 
 Para obter licenças de uso, entre em contato:
-- Email: [seu-email@dominio.com]
-- Website: [www.yuna.com.br]
+- Email: samukajr82@gmail.com
+- Telefone: +55 11 94586-4671
+- GitHub: https://github.com/clinicasyuna/yuna
 
 ---
 
-**Data de Criação deste Documento:** 14 de novembro de 2025
-**Última Atualização:** 14 de novembro de 2025
+**Data de Criação deste Documento:** 14 de novembro de 2024
+**Última Atualização:** 15 de dezembro de 2025

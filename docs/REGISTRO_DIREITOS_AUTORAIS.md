@@ -98,22 +98,67 @@ Funcionalidades Principais:
 
 Tecnologias: JavaScript, HTML5, CSS3, Firebase, Chart.js, PWA
 
-Data de Criação: 14 de novembro de 2025
+Data de Criação: 14 de novembro de 2024
+Última Atualização: 15 de dezembro de 2025
 Versão: 2.0.0
-Autor: [SEU NOME COMPLETO]
+Autor: Samuel dos Reis Lacerda Junior
+CPF: [Inserir CPF para registro]
+Email: samukajr82@gmail.com
+Telefone: +55 11 94586-4671
 ```
 
 ---
 
 ## ✅ **CHECKLIST DE AÇÃO**
 
+### Ações Imediatas (Hoje):
 - [ ] Criar conta no RDA (Biblioteca Nacional)
+- [ ] Reunir documentos pessoais (CPF, RG, comprovante endereço)
 - [ ] Compilar todo código fonte
 - [ ] Criar documentação completa
+
+### Próxima Semana:
 - [ ] Preencher formulário de registro
 - [ ] Gerar GRU de pagamento
 - [ ] Pagar taxa (R$ 20-40)
 - [ ] Protocolar registro
+
+### Após 30 dias:
 - [ ] Aguardar certificado (30 dias)
+- [ ] Receber número de registro
+- [ ] Atualizar contratos com número de protocolo
+- [ ] Divulgar marca registrada
+
+---
+
+## 🚀 **STATUS ATUAL DO SISTEMA**
+
+✅ **Desenvolvido e funcional em produção**
+- URL Admin: https://clinicasyuna.github.io/yuna/admin/
+- URL Acompanhantes: https://clinicasyuna.github.io/yuna/acompanhantes/
+
+✅ **Segurança implementada**
+- Regras Firestore RBAC aplicadas (15/12/2025)
+- Isolamento admin/equipe/acompanhantes
+- Deploy em GitHub Pages ativo
+
+⏳ **Pendente**
+- [ ] Deploy das regras Firestore no console Firebase
+- [ ] Registro na Biblioteca Nacional
+- [ ] Registro de marca INPI (YUNA)
 
 **PRAZO:** Faça HOJE! Proteção retroativa à data de criação.
+
+---
+
+## 📞 **CONTATOS ÚTEIS**
+
+**Biblioteca Nacional - RDA:**
+- Site: https://www.bn.gov.br/
+- Sistema: https://rda.bn.gov.br
+- Email: rda@bn.gov.br
+- Telefone: (21) 2220-3096
+
+**INPI - Registro de Marca:**
+- Site: https://www.gov.br/inpi/
+- Telefone: 0800 570 0100
