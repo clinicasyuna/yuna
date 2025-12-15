@@ -1945,6 +1945,30 @@ window.handleLogin = async function(event) {
             return;
         }
         
+        // ========== FASE 4: VALIDAÇÃO DE ENTRADA ==========
+        window.debugConfig?.log('AUTH', 'Validando entrada de login', { email: email.substring(0, 5) + '...' });
+        
+        const validation = window.validationHelper?.validateLoginForm(email, senha);
+        if (validation && !validation.valid) {
+            const errorMsg = validation.errors.email || validation.errors.password;
+            showToast('Validação', errorMsg, 'error');
+            if (window.registrarLogAuditoria) {
+                window.registrarLogAuditoria('LOGIN_VALIDATION_FAILED', { email, reason: errorMsg });
+            }
+            return;
+        }
+        
+        // ========== FASE 4: RATE LIMITING ==========
+        const blocked = window.loginRateLimiter?.isBlocked(email);
+        if (blocked?.blocked) {
+            window.debugConfig?.warn('AUTH', `Login bloqueado por rate limit para ${email.substring(0, 5)}...`, { waitSeconds: blocked.waitSeconds });
+            showToast('Bloqueado', `Muitas tentativas. Tente novamente em ${blocked.waitSeconds} segundos.`, 'error');
+            if (window.registrarLogAuditoria) {
+                window.registrarLogAuditoria('LOGIN_RATE_LIMITED', { email, waitSeconds: blocked.waitSeconds });
+            }
+            return;
+        }
+        
         // Verificar tentativas de login
         if (window.verificarTentativasLogin) {
             window.verificarTentativasLogin(email);
@@ -1976,7 +2000,13 @@ window.handleLogin = async function(event) {
         console.log('🚀🚀🚀 [LOGIN DEBUG] userCredential.user:', userCredential.user?.email);
         
         showToast('Sucesso', 'Login realizado!', 'success');
-        debugLog('[DEBUG] handleLogin: login realizado com sucesso!');        // Registrar login bem-sucedido
+        debugLog('[DEBUG] handleLogin: login realizado com sucesso!');
+        
+        // ========== FASE 4: LIMPAR RATE LIMITING ==========
+        window.loginRateLimiter?.clearAttempts(email);
+        window.debugConfig?.success('AUTH', 'Login bem-sucedido, tentativas limpas');
+        
+        // Registrar login bem-sucedido
         if (window.registrarTentativaLogin) {
             window.registrarTentativaLogin(email, true);
         }
@@ -2017,6 +2047,20 @@ window.handleLogin = async function(event) {
         
     } catch (error) {
         console.error('[ERRO] handleLogin: falha no login:', error);
+        
+        // ========== FASE 4: REGISTRAR TENTATIVA FALHADA E RATE LIMIT ==========
+        const result = window.loginRateLimiter?.recordAttempt(email);
+        window.debugConfig?.error('AUTH', 'Tentativa de login falhada', { email: email.substring(0, 5) + '...', attemptsLeft: result?.attemptsLeft });
+        
+        // Se bloqueado por rate limiting após X tentativas
+        if (result?.blocked) {
+            const toastMsg = `Muitas tentativas. Tente novamente em ${result.waitSeconds} segundos.`;
+            showToast('Conta Bloqueada', toastMsg, 'error');
+            if (window.registrarLogAuditoria) {
+                window.registrarLogAuditoria('LOGIN_BLOCKED_RATE_LIMIT', { email, waitSeconds: result.waitSeconds });
+            }
+            return;
+        }
         
         // Registrar tentativa de login falhada
         if (window.registrarTentativaLogin) {
