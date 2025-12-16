@@ -2955,6 +2955,39 @@ window.abrirDashboardExecutivo = function() {
 async function carregarDadosDashboard() {
     console.log('[DASHBOARD] 🔄 Carregando dados do dashboard...');
     
+    // ========== FASE 4: CACHE DE DASHBOARD (5 MIN TTL) ==========
+    const CACHE_KEY = 'yuna_dashboard_cache';
+    const CACHE_TTL = 5 * 60 * 1000; // 5 minutos
+    const now = Date.now();
+    
+    // Verificar se há cache válido
+    const cached = localStorage.getItem(CACHE_KEY);
+    if (cached) {
+        const cacheData = JSON.parse(cached);
+        const cacheAge = now - cacheData.timestamp;
+        
+        if (cacheAge < CACHE_TTL) {
+            window.debugConfig?.log('DASHBOARD', `Usando cache (${Math.round(cacheAge / 1000)}s de idade)`);
+            console.log('[DASHBOARD] 💾 Usando cache - idade:', Math.round(cacheAge / 1000), 'segundos');
+            
+            // Renderizar dados do cache
+            const metricas = cacheData.metricas;
+            atualizarResumoRapido(metricas);
+            
+            setTimeout(() => {
+                renderizarGraficoStatusQuo(metricas);
+                renderizarGraficoDepartamentos(cacheData.solicitacoes);
+                atualizarTabelaDepartamentos(metricas);
+                atualizarKPIs(metricas);
+            }, 50);
+            
+            return; // Retornar sem refetch
+        } else {
+            window.debugConfig?.log('DASHBOARD', `Cache expirado (${Math.round(cacheAge / 1000)}s)`);
+            console.log('[DASHBOARD] ⏰ Cache expirado, recarregando...');
+        }
+    }
+    
     try {
         // Buscar todas as solicitações
         const snapshot = await window.db.collection('solicitacoes').get();
@@ -2967,6 +3000,16 @@ async function carregarDadosDashboard() {
         
         // Calcular métricas gerais
         const metricas = calcularMetricasDashboard(solicitacoes);
+        
+        // ========== FASE 4: ARMAZENAR NO CACHE ==========
+        const cacheData = {
+            timestamp: now,
+            solicitacoes: solicitacoes,
+            metricas: metricas
+        };
+        localStorage.setItem(CACHE_KEY, JSON.stringify(cacheData));
+        window.debugConfig?.success('DASHBOARD', 'Cache atualizado');
+        console.log('[DASHBOARD] 💾 Cache atualizado');
         
         // Atualizar resumo rápido
         atualizarResumoRapido(metricas);
@@ -2981,6 +3024,7 @@ async function carregarDadosDashboard() {
         
     } catch (error) {
         console.error('[DASHBOARD] ❌ Erro ao carregar dashboard:', error);
+        window.debugConfig?.error('DASHBOARD', 'Erro ao carregar dados', error);
         showToast('Erro', 'Erro ao carregar dados do dashboard', 'error');
     }
 }
@@ -3305,8 +3349,18 @@ window.preencherTabelaUsuarios = function(listaUsuarios) {
         return;
     }
     
-    console.log('[USUARIOS] Criando HTML para', listaUsuarios.length, 'usuários');
-    const htmlContent = listaUsuarios.map(user => `
+    // ========== FASE 4: PAGINAÇÃO DE USUÁRIOS ==========
+    const ITEMS_PER_PAGE = 10;
+    const currentPage = window._usuariosPaginaAtual || 1;
+    const totalPages = Math.ceil(listaUsuarios.length / ITEMS_PER_PAGE);
+    const startIndex = (currentPage - 1) * ITEMS_PER_PAGE;
+    const endIndex = Math.min(startIndex + ITEMS_PER_PAGE, listaUsuarios.length);
+    const usuariosPagina = listaUsuarios.slice(startIndex, endIndex);
+    
+    window.debugConfig?.log('USUARIOS', `Renderizando página ${currentPage}/${totalPages} com ${usuariosPagina.length} itens`);
+    
+    console.log('[USUARIOS] Criando HTML para', usuariosPagina.length, 'usuários da página', currentPage);
+    const htmlContent = usuariosPagina.map(user => `
         <div class='user-row' style='display:flex; align-items:center; gap:1.5rem; background:#fff; border-radius:12px; box-shadow:0 2px 8px rgba(0,0,0,0.04); padding:1rem 2rem;'>
             <span style='font-weight:600; color:#374151;'>${user.nome || 'Nome não informado'}</span>
             <span style='color:#2563eb;'>${user.departamento || user.equipe || '-'}</span>
@@ -3317,16 +3371,48 @@ window.preencherTabelaUsuarios = function(listaUsuarios) {
         </div>
     `).join('');
     
+    // Adicionar controles de paginação se houver mais de uma página
+    let paginationHTML = '';
+    if (totalPages > 1) {
+        paginationHTML = `
+            <div style='margin-top:2rem; display:flex; justify-content:center; align-items:center; gap:1rem;'>
+                <button onclick="window.mudarPaginaUsuarios(${Math.max(1, currentPage - 1)})" 
+                        style='background:#6366f1; color:#fff; border:none; border-radius:8px; padding:8px 16px; cursor:pointer; ${currentPage === 1 ? 'opacity:0.5; cursor:not-allowed;' : ''}' 
+                        ${currentPage === 1 ? 'disabled' : ''}>← Anterior</button>
+                
+                <span style='color:#374151; font-weight:600;'>Página ${currentPage} de ${totalPages} (${listaUsuarios.length} usuários)</span>
+                
+                <button onclick="window.mudarPaginaUsuarios(${Math.min(totalPages, currentPage + 1)})" 
+                        style='background:#6366f1; color:#fff; border:none; border-radius:8px; padding:8px 16px; cursor:pointer; ${currentPage === totalPages ? 'opacity:0.5; cursor:not-allowed;' : ''}' 
+                        ${currentPage === totalPages ? 'disabled' : ''}>Próximo →</button>
+            </div>
+        `;
+    }
+    
     console.log('[USUARIOS] HTML criado, inserindo no DOM...');
-    usersList.innerHTML = htmlContent;
+    usersList.innerHTML = htmlContent + paginationHTML;
     
     if (totalCount) {
         totalCount.textContent = listaUsuarios.length;
         console.log('[USUARIOS] Total atualizado para:', listaUsuarios.length);
     }
     
+    // Armazenar lista completa para navegação de páginas
+    window._usuariosListaCompleta = listaUsuarios;
+    
     console.log('[USUARIOS] ===== TABELA PREENCHIDA COM SUCESSO =====');
 };
+
+// ========== FASE 4: FUNÇÃO DE NAVEGAÇÃO DE PÁGINAS ==========
+window.mudarPaginaUsuarios = function(pagina) {
+    window._usuariosPaginaAtual = pagina;
+    window.debugConfig?.log('USUARIOS', `Navegando para página ${pagina}`);
+    
+    if (window._usuariosListaCompleta) {
+        window.preencherTabelaUsuarios(window._usuariosListaCompleta);
+    }
+};
+
 window.carregarUsuarios = async function() {
     console.log('[USUARIOS] ===== INICIANDO CARREGAMENTO =====');
     console.log('[USUARIOS] Timestamp:', new Date().toLocaleString());

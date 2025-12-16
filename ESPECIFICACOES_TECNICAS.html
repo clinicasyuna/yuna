@@ -1,0 +1,451 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="" xml:lang="">
+<head>
+  <meta charset="utf-8" />
+  <meta name="generator" content="pandoc" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes" />
+  <meta name="author" content="Samuel dos Reis Lacerda Junior" />
+  <title>Especificações Técnicas - Sistema YUNA</title>
+  <style>
+    /* Default styles provided by pandoc.
+    ** See https://pandoc.org/MANUAL.html#variables-for-html for config info.
+    */
+    code{white-space: pre-wrap;}
+    span.smallcaps{font-variant: small-caps;}
+    div.columns{display: flex; gap: min(4vw, 1.5em);}
+    div.column{flex: auto; overflow-x: auto;}
+    div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+    /* The extra [class] is a hack that increases specificity enough to
+       override a similar rule in reveal.js */
+    ul.task-list[class]{list-style: none;}
+    ul.task-list li input[type="checkbox"] {
+      font-size: inherit;
+      width: 0.8em;
+      margin: 0 0.8em 0.2em -1.6em;
+      vertical-align: middle;
+    }
+    .display.math{display: block; text-align: center; margin: 0.5rem auto;}
+    /* CSS for syntax highlighting */
+    html { -webkit-text-size-adjust: 100%; }
+    pre > code.sourceCode { white-space: pre; position: relative; }
+    pre > code.sourceCode > span { display: inline-block; line-height: 1.25; }
+    pre > code.sourceCode > span:empty { height: 1.2em; }
+    .sourceCode { overflow: visible; }
+    code.sourceCode > span { color: inherit; text-decoration: inherit; }
+    div.sourceCode { margin: 1em 0; }
+    pre.sourceCode { margin: 0; }
+    @media screen {
+    div.sourceCode { overflow: auto; }
+    }
+    @media print {
+    pre > code.sourceCode { white-space: pre-wrap; }
+    pre > code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
+    }
+    pre.numberSource code
+      { counter-reset: source-line 0; }
+    pre.numberSource code > span
+      { position: relative; left: -4em; counter-increment: source-line; }
+    pre.numberSource code > span > a:first-child::before
+      { content: counter(source-line);
+        position: relative; left: -1em; text-align: right; vertical-align: baseline;
+        border: none; display: inline-block;
+        -webkit-touch-callout: none; -webkit-user-select: none;
+        -khtml-user-select: none; -moz-user-select: none;
+        -ms-user-select: none; user-select: none;
+        padding: 0 4px; width: 4em;
+        color: #aaaaaa;
+      }
+    pre.numberSource { margin-left: 3em; border-left: 1px solid #aaaaaa;  padding-left: 4px; }
+    div.sourceCode
+      {   }
+    @media screen {
+    pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
+    }
+    code span.al { color: #ff0000; font-weight: bold; } /* Alert */
+    code span.an { color: #60a0b0; font-weight: bold; font-style: italic; } /* Annotation */
+    code span.at { color: #7d9029; } /* Attribute */
+    code span.bn { color: #40a070; } /* BaseN */
+    code span.bu { color: #008000; } /* BuiltIn */
+    code span.cf { color: #007020; font-weight: bold; } /* ControlFlow */
+    code span.ch { color: #4070a0; } /* Char */
+    code span.cn { color: #880000; } /* Constant */
+    code span.co { color: #60a0b0; font-style: italic; } /* Comment */
+    code span.cv { color: #60a0b0; font-weight: bold; font-style: italic; } /* CommentVar */
+    code span.do { color: #ba2121; font-style: italic; } /* Documentation */
+    code span.dt { color: #902000; } /* DataType */
+    code span.dv { color: #40a070; } /* DecVal */
+    code span.er { color: #ff0000; font-weight: bold; } /* Error */
+    code span.ex { } /* Extension */
+    code span.fl { color: #40a070; } /* Float */
+    code span.fu { color: #06287e; } /* Function */
+    code span.im { color: #008000; font-weight: bold; } /* Import */
+    code span.in { color: #60a0b0; font-weight: bold; font-style: italic; } /* Information */
+    code span.kw { color: #007020; font-weight: bold; } /* Keyword */
+    code span.op { color: #666666; } /* Operator */
+    code span.ot { color: #007020; } /* Other */
+    code span.pp { color: #bc7a00; } /* Preprocessor */
+    code span.sc { color: #4070a0; } /* SpecialChar */
+    code span.ss { color: #bb6688; } /* SpecialString */
+    code span.st { color: #4070a0; } /* String */
+    code span.va { color: #19177c; } /* Variable */
+    code span.vs { color: #4070a0; } /* VerbatimString */
+    code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warning */
+  </style>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/github-markdown-css@5/github-markdown.min.css" />
+</head>
+<body>
+<header id="title-block-header">
+<h1 class="title">Especificações Técnicas - Sistema YUNA</h1>
+<p class="author">Samuel dos Reis Lacerda Junior</p>
+</header>
+<h1 id="especificações-técnicas---sistema-yuna">ESPECIFICAÇÕES TÉCNICAS
+- SISTEMA YUNA</h1>
+<h2 id="arquitetura-de-software">🔧 ARQUITETURA DE SOFTWARE</h2>
+<h3 id="padrão-arquitetural">Padrão Arquitetural</h3>
+<p><strong>Multi-SPA (Multiple Single Page Applications)</strong> - Cada
+diretório funciona como uma SPA independente - Compartilhamento de
+recursos via arquivos na raiz - Deploy otimizado com cache granular -
+Manutenção modular facilitada</p>
+<h3 id="stack-tecnológico-detalhado">Stack Tecnológico Detalhado</h3>
+<h4 id="frontend">Frontend:</h4>
+<div class="sourceCode" id="cb1"><pre
+class="sourceCode javascript"><code class="sourceCode javascript"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="co">// Tecnologias Core</span></span>
+<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a>HTML5<span class="op">:</span> Estrutura semântica</span>
+<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a>CSS3<span class="op">:</span> Estilização responsiva <span class="op">+</span> Grid<span class="op">/</span>Flexbox</span>
+<span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a>JavaScript ES6<span class="op">+:</span> Lógica de negócio vanilla</span>
+<span id="cb1-5"><a href="#cb1-5" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-6"><a href="#cb1-6" aria-hidden="true" tabindex="-1"></a><span class="co">// Bibliotecas Externas</span></span>
+<span id="cb1-7"><a href="#cb1-7" aria-hidden="true" tabindex="-1"></a>Firebase SDK <span class="fl">9.23.0</span><span class="op">:</span> Backend<span class="op">-</span><span class="im">as</span><span class="op">-</span>a<span class="op">-</span>Service</span>
+<span id="cb1-8"><a href="#cb1-8" aria-hidden="true" tabindex="-1"></a>Font Awesome <span class="fl">6.4.0</span><span class="op">:</span> Iconografia</span>
+<span id="cb1-9"><a href="#cb1-9" aria-hidden="true" tabindex="-1"></a>XLSX<span class="op">.</span><span class="at">js</span><span class="op">:</span> Exportação de dados</span>
+<span id="cb1-10"><a href="#cb1-10" aria-hidden="true" tabindex="-1"></a>EmailJS<span class="op">:</span> Sistema de notificações</span></code></pre></div>
+<h4 id="backend-serverless">Backend (Serverless):</h4>
+<div class="sourceCode" id="cb2"><pre
+class="sourceCode javascript"><code class="sourceCode javascript"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="co">// Firebase Services</span></span>
+<span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a>Authentication<span class="op">:</span> Gerenciamento de usuários</span>
+<span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a>Firestore<span class="op">:</span> Banco NoSQL em tempo real</span>
+<span id="cb2-4"><a href="#cb2-4" aria-hidden="true" tabindex="-1"></a>Hosting<span class="op">:</span> Deploy e CDN <span class="bu">global</span></span>
+<span id="cb2-5"><a href="#cb2-5" aria-hidden="true" tabindex="-1"></a>Functions<span class="op">:</span> Processamento <span class="fu">serverless</span> (futuro)</span>
+<span id="cb2-6"><a href="#cb2-6" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-7"><a href="#cb2-7" aria-hidden="true" tabindex="-1"></a><span class="co">// Configuração de Segurança</span></span>
+<span id="cb2-8"><a href="#cb2-8" aria-hidden="true" tabindex="-1"></a>Rules<span class="op">:</span> Validação server<span class="op">-</span>side</span>
+<span id="cb2-9"><a href="#cb2-9" aria-hidden="true" tabindex="-1"></a>Indexes<span class="op">:</span> Otimização de queries</span></code></pre></div>
+<h3 id="estrutura-de-dados-firestore">Estrutura de Dados
+(Firestore)</h3>
+<h4 id="coleções-principais">Coleções Principais:</h4>
+<div class="sourceCode" id="cb3"><pre
+class="sourceCode javascript"><code class="sourceCode javascript"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a><span class="co">// usuarios_admin</span></span>
+<span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a>{</span>
+<span id="cb3-3"><a href="#cb3-3" aria-hidden="true" tabindex="-1"></a>  <span class="dt">uid</span><span class="op">:</span> string<span class="op">,</span></span>
+<span id="cb3-4"><a href="#cb3-4" aria-hidden="true" tabindex="-1"></a>  <span class="dt">email</span><span class="op">:</span> string<span class="op">,</span></span>
+<span id="cb3-5"><a href="#cb3-5" aria-hidden="true" tabindex="-1"></a>  <span class="dt">nome</span><span class="op">:</span> string<span class="op">,</span></span>
+<span id="cb3-6"><a href="#cb3-6" aria-hidden="true" tabindex="-1"></a>  <span class="dt">role</span><span class="op">:</span> <span class="st">&#39;super_admin&#39;</span> <span class="op">|</span> <span class="st">&#39;admin&#39;</span><span class="op">,</span></span>
+<span id="cb3-7"><a href="#cb3-7" aria-hidden="true" tabindex="-1"></a>  <span class="dt">ativo</span><span class="op">:</span> boolean<span class="op">,</span></span>
+<span id="cb3-8"><a href="#cb3-8" aria-hidden="true" tabindex="-1"></a>  <span class="dt">criadoEm</span><span class="op">:</span> timestamp<span class="op">,</span></span>
+<span id="cb3-9"><a href="#cb3-9" aria-hidden="true" tabindex="-1"></a>  <span class="dt">criadoPor</span><span class="op">:</span> string<span class="op">,</span></span>
+<span id="cb3-10"><a href="#cb3-10" aria-hidden="true" tabindex="-1"></a>  <span class="dt">permissoes</span><span class="op">:</span> {</span>
+<span id="cb3-11"><a href="#cb3-11" aria-hidden="true" tabindex="-1"></a>    <span class="dt">criarUsuarios</span><span class="op">:</span> boolean<span class="op">,</span></span>
+<span id="cb3-12"><a href="#cb3-12" aria-hidden="true" tabindex="-1"></a>    <span class="dt">verRelatorios</span><span class="op">:</span> boolean<span class="op">,</span></span>
+<span id="cb3-13"><a href="#cb3-13" aria-hidden="true" tabindex="-1"></a>    <span class="dt">verPesquisaSatisfacao</span><span class="op">:</span> boolean</span>
+<span id="cb3-14"><a href="#cb3-14" aria-hidden="true" tabindex="-1"></a>  }</span>
+<span id="cb3-15"><a href="#cb3-15" aria-hidden="true" tabindex="-1"></a>}</span>
+<span id="cb3-16"><a href="#cb3-16" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-17"><a href="#cb3-17" aria-hidden="true" tabindex="-1"></a><span class="co">// usuarios_equipe  </span></span>
+<span id="cb3-18"><a href="#cb3-18" aria-hidden="true" tabindex="-1"></a>{</span>
+<span id="cb3-19"><a href="#cb3-19" aria-hidden="true" tabindex="-1"></a>  <span class="dt">uid</span><span class="op">:</span> string<span class="op">,</span></span>
+<span id="cb3-20"><a href="#cb3-20" aria-hidden="true" tabindex="-1"></a>  <span class="dt">email</span><span class="op">:</span> string<span class="op">,</span></span>
+<span id="cb3-21"><a href="#cb3-21" aria-hidden="true" tabindex="-1"></a>  <span class="dt">nome</span><span class="op">:</span> string<span class="op">,</span></span>
+<span id="cb3-22"><a href="#cb3-22" aria-hidden="true" tabindex="-1"></a>  <span class="dt">equipe</span><span class="op">:</span> <span class="st">&#39;manutencao&#39;</span> <span class="op">|</span> <span class="st">&#39;nutricao&#39;</span> <span class="op">|</span> <span class="st">&#39;higienizacao&#39;</span> <span class="op">|</span> <span class="st">&#39;hotelaria&#39;</span><span class="op">,</span></span>
+<span id="cb3-23"><a href="#cb3-23" aria-hidden="true" tabindex="-1"></a>  <span class="dt">role</span><span class="op">:</span> <span class="st">&#39;equipe&#39;</span><span class="op">,</span></span>
+<span id="cb3-24"><a href="#cb3-24" aria-hidden="true" tabindex="-1"></a>  <span class="dt">ativo</span><span class="op">:</span> boolean<span class="op">,</span></span>
+<span id="cb3-25"><a href="#cb3-25" aria-hidden="true" tabindex="-1"></a>  <span class="dt">criadoEm</span><span class="op">:</span> timestamp</span>
+<span id="cb3-26"><a href="#cb3-26" aria-hidden="true" tabindex="-1"></a>}</span>
+<span id="cb3-27"><a href="#cb3-27" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-28"><a href="#cb3-28" aria-hidden="true" tabindex="-1"></a><span class="co">// usuarios_acompanhantes</span></span>
+<span id="cb3-29"><a href="#cb3-29" aria-hidden="true" tabindex="-1"></a>{</span>
+<span id="cb3-30"><a href="#cb3-30" aria-hidden="true" tabindex="-1"></a>  <span class="dt">uid</span><span class="op">:</span> string<span class="op">,</span></span>
+<span id="cb3-31"><a href="#cb3-31" aria-hidden="true" tabindex="-1"></a>  <span class="dt">email</span><span class="op">:</span> string<span class="op">,</span></span>
+<span id="cb3-32"><a href="#cb3-32" aria-hidden="true" tabindex="-1"></a>  <span class="dt">nome</span><span class="op">:</span> string<span class="op">,</span></span>
+<span id="cb3-33"><a href="#cb3-33" aria-hidden="true" tabindex="-1"></a>  <span class="dt">quarto</span><span class="op">:</span> string<span class="op">,</span></span>
+<span id="cb3-34"><a href="#cb3-34" aria-hidden="true" tabindex="-1"></a>  <span class="dt">telefone</span><span class="op">:</span> string<span class="op">,</span></span>
+<span id="cb3-35"><a href="#cb3-35" aria-hidden="true" tabindex="-1"></a>  <span class="dt">role</span><span class="op">:</span> <span class="st">&#39;acompanhante&#39;</span><span class="op">,</span></span>
+<span id="cb3-36"><a href="#cb3-36" aria-hidden="true" tabindex="-1"></a>  <span class="dt">ativo</span><span class="op">:</span> boolean<span class="op">,</span></span>
+<span id="cb3-37"><a href="#cb3-37" aria-hidden="true" tabindex="-1"></a>  <span class="dt">criadoEm</span><span class="op">:</span> timestamp</span>
+<span id="cb3-38"><a href="#cb3-38" aria-hidden="true" tabindex="-1"></a>}</span>
+<span id="cb3-39"><a href="#cb3-39" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-40"><a href="#cb3-40" aria-hidden="true" tabindex="-1"></a><span class="co">// solicitacoes</span></span>
+<span id="cb3-41"><a href="#cb3-41" aria-hidden="true" tabindex="-1"></a>{</span>
+<span id="cb3-42"><a href="#cb3-42" aria-hidden="true" tabindex="-1"></a>  <span class="dt">id</span><span class="op">:</span> string<span class="op">,</span></span>
+<span id="cb3-43"><a href="#cb3-43" aria-hidden="true" tabindex="-1"></a>  <span class="dt">tipo</span><span class="op">:</span> string<span class="op">,</span></span>
+<span id="cb3-44"><a href="#cb3-44" aria-hidden="true" tabindex="-1"></a>  <span class="dt">equipe</span><span class="op">:</span> string<span class="op">,</span></span>
+<span id="cb3-45"><a href="#cb3-45" aria-hidden="true" tabindex="-1"></a>  <span class="dt">status</span><span class="op">:</span> <span class="st">&#39;pendente&#39;</span> <span class="op">|</span> <span class="st">&#39;em-andamento&#39;</span> <span class="op">|</span> <span class="st">&#39;finalizada&#39;</span><span class="op">,</span></span>
+<span id="cb3-46"><a href="#cb3-46" aria-hidden="true" tabindex="-1"></a>  <span class="dt">prioridade</span><span class="op">:</span> <span class="st">&#39;normal&#39;</span> <span class="op">|</span> <span class="st">&#39;alta&#39;</span> <span class="op">|</span> <span class="st">&#39;urgente&#39;</span><span class="op">,</span></span>
+<span id="cb3-47"><a href="#cb3-47" aria-hidden="true" tabindex="-1"></a>  <span class="dt">quarto</span><span class="op">:</span> string<span class="op">,</span></span>
+<span id="cb3-48"><a href="#cb3-48" aria-hidden="true" tabindex="-1"></a>  <span class="dt">descricao</span><span class="op">:</span> string<span class="op">,</span></span>
+<span id="cb3-49"><a href="#cb3-49" aria-hidden="true" tabindex="-1"></a>  <span class="dt">usuarioNome</span><span class="op">:</span> string<span class="op">,</span></span>
+<span id="cb3-50"><a href="#cb3-50" aria-hidden="true" tabindex="-1"></a>  <span class="dt">usuarioUid</span><span class="op">:</span> string<span class="op">,</span></span>
+<span id="cb3-51"><a href="#cb3-51" aria-hidden="true" tabindex="-1"></a>  <span class="dt">dataAbertura</span><span class="op">:</span> timestamp<span class="op">,</span></span>
+<span id="cb3-52"><a href="#cb3-52" aria-hidden="true" tabindex="-1"></a>  dataFinalizacao<span class="op">?:</span> timestamp<span class="op">,</span></span>
+<span id="cb3-53"><a href="#cb3-53" aria-hidden="true" tabindex="-1"></a>  responsavel<span class="op">?:</span> string<span class="op">,</span></span>
+<span id="cb3-54"><a href="#cb3-54" aria-hidden="true" tabindex="-1"></a>  solucao<span class="op">?:</span> string<span class="op">,</span></span>
+<span id="cb3-55"><a href="#cb3-55" aria-hidden="true" tabindex="-1"></a>  tempoAtendimentoMinutos<span class="op">?:</span> number</span>
+<span id="cb3-56"><a href="#cb3-56" aria-hidden="true" tabindex="-1"></a>}</span>
+<span id="cb3-57"><a href="#cb3-57" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-58"><a href="#cb3-58" aria-hidden="true" tabindex="-1"></a><span class="co">// avaliacoes_satisfacao</span></span>
+<span id="cb3-59"><a href="#cb3-59" aria-hidden="true" tabindex="-1"></a>{</span>
+<span id="cb3-60"><a href="#cb3-60" aria-hidden="true" tabindex="-1"></a>  <span class="dt">id</span><span class="op">:</span> string<span class="op">,</span></span>
+<span id="cb3-61"><a href="#cb3-61" aria-hidden="true" tabindex="-1"></a>  <span class="dt">solicitacaoId</span><span class="op">:</span> string<span class="op">,</span></span>
+<span id="cb3-62"><a href="#cb3-62" aria-hidden="true" tabindex="-1"></a>  <span class="dt">nota</span><span class="op">:</span> <span class="fu">number</span> (<span class="dv">1</span><span class="op">-</span><span class="dv">5</span>)<span class="op">,</span></span>
+<span id="cb3-63"><a href="#cb3-63" aria-hidden="true" tabindex="-1"></a>  comentario<span class="op">?:</span> string<span class="op">,</span></span>
+<span id="cb3-64"><a href="#cb3-64" aria-hidden="true" tabindex="-1"></a>  <span class="dt">dataAvaliacao</span><span class="op">:</span> timestamp<span class="op">,</span></span>
+<span id="cb3-65"><a href="#cb3-65" aria-hidden="true" tabindex="-1"></a>  <span class="dt">usuarioUid</span><span class="op">:</span> string</span>
+<span id="cb3-66"><a href="#cb3-66" aria-hidden="true" tabindex="-1"></a>}</span></code></pre></div>
+<h2 id="sistema-de-segurança">🔐 SISTEMA DE SEGURANÇA</h2>
+<h3 id="autenticação">Autenticação</h3>
+<div class="sourceCode" id="cb4"><pre
+class="sourceCode javascript"><code class="sourceCode javascript"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a><span class="co">// Firebase Authentication</span></span>
+<span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a><span class="op">-</span> OAuth2 <span class="op">+</span> JWT tokens</span>
+<span id="cb4-3"><a href="#cb4-3" aria-hidden="true" tabindex="-1"></a><span class="op">-</span> Session management automático</span>
+<span id="cb4-4"><a href="#cb4-4" aria-hidden="true" tabindex="-1"></a><span class="op">-</span> Password policies configuráveis</span>
+<span id="cb4-5"><a href="#cb4-5" aria-hidden="true" tabindex="-1"></a><span class="op">-</span> Rate limiting integrado</span></code></pre></div>
+<h3 id="autorização-rbac">Autorização (RBAC)</h3>
+<div class="sourceCode" id="cb5"><pre
+class="sourceCode javascript"><code class="sourceCode javascript"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a><span class="co">// Role-Based Access Control</span></span>
+<span id="cb5-2"><a href="#cb5-2" aria-hidden="true" tabindex="-1"></a><span class="kw">function</span> <span class="fu">verificarPermissoes</span>(usuario<span class="op">,</span> acao) {</span>
+<span id="cb5-3"><a href="#cb5-3" aria-hidden="true" tabindex="-1"></a>  <span class="kw">const</span> permissoes <span class="op">=</span> {</span>
+<span id="cb5-4"><a href="#cb5-4" aria-hidden="true" tabindex="-1"></a>    <span class="dt">super_admin</span><span class="op">:</span> [<span class="st">&#39;*&#39;</span>]<span class="op">,</span> <span class="co">// Todas as permissões</span></span>
+<span id="cb5-5"><a href="#cb5-5" aria-hidden="true" tabindex="-1"></a>    <span class="dt">admin</span><span class="op">:</span> [<span class="st">&#39;view_all&#39;</span><span class="op">,</span> <span class="st">&#39;export_reports&#39;</span><span class="op">,</span> <span class="st">&#39;view_satisfaction&#39;</span>]<span class="op">,</span></span>
+<span id="cb5-6"><a href="#cb5-6" aria-hidden="true" tabindex="-1"></a>    <span class="dt">equipe</span><span class="op">:</span> [<span class="st">&#39;view_own_team&#39;</span><span class="op">,</span> <span class="st">&#39;update_requests&#39;</span>]<span class="op">,</span></span>
+<span id="cb5-7"><a href="#cb5-7" aria-hidden="true" tabindex="-1"></a>    <span class="dt">acompanhante</span><span class="op">:</span> [<span class="st">&#39;create_request&#39;</span><span class="op">,</span> <span class="st">&#39;view_own_requests&#39;</span>]</span>
+<span id="cb5-8"><a href="#cb5-8" aria-hidden="true" tabindex="-1"></a>  }<span class="op">;</span></span>
+<span id="cb5-9"><a href="#cb5-9" aria-hidden="true" tabindex="-1"></a>  </span>
+<span id="cb5-10"><a href="#cb5-10" aria-hidden="true" tabindex="-1"></a>  <span class="cf">return</span> permissoes[usuario<span class="op">.</span><span class="at">role</span>]<span class="op">.</span><span class="fu">includes</span>(acao) <span class="op">||</span> </span>
+<span id="cb5-11"><a href="#cb5-11" aria-hidden="true" tabindex="-1"></a>         permissoes[usuario<span class="op">.</span><span class="at">role</span>]<span class="op">.</span><span class="fu">includes</span>(<span class="st">&#39;*&#39;</span>)<span class="op">;</span></span>
+<span id="cb5-12"><a href="#cb5-12" aria-hidden="true" tabindex="-1"></a>}</span></code></pre></div>
+<h3 id="firestore-security-rules">Firestore Security Rules</h3>
+<div class="sourceCode" id="cb6"><pre
+class="sourceCode javascript"><code class="sourceCode javascript"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a><span class="co">// Regras de segurança no servidor</span></span>
+<span id="cb6-2"><a href="#cb6-2" aria-hidden="true" tabindex="-1"></a>rules_version <span class="op">=</span> <span class="st">&#39;2&#39;</span><span class="op">;</span></span>
+<span id="cb6-3"><a href="#cb6-3" aria-hidden="true" tabindex="-1"></a>service cloud<span class="op">.</span><span class="at">firestore</span> {</span>
+<span id="cb6-4"><a href="#cb6-4" aria-hidden="true" tabindex="-1"></a>  match <span class="op">/</span>databases<span class="op">/</span>{database}<span class="ss">/documents {</span></span>
+<span id="cb6-5"><a href="#cb6-5" aria-hidden="true" tabindex="-1"></a><span class="ss">    // Solicitações - filtro por equipe</span></span>
+<span id="cb6-6"><a href="#cb6-6" aria-hidden="true" tabindex="-1"></a><span class="ss">    match /solicitacoes/{document} {</span></span>
+<span id="cb6-7"><a href="#cb6-7" aria-hidden="true" tabindex="-1"></a><span class="ss">      allow read: if isAuthenticated</span><span class="sc">()</span><span class="ss"> &amp;&amp; </span></span>
+<span id="cb6-8"><a href="#cb6-8" aria-hidden="true" tabindex="-1"></a><span class="ss">        </span><span class="sc">(</span><span class="ss">isSuperAdmin</span><span class="sc">()</span><span class="ss"> </span><span class="sc">||</span><span class="ss"> isAdmin</span><span class="sc">()</span><span class="ss"> </span><span class="sc">||</span><span class="ss"> </span></span>
+<span id="cb6-9"><a href="#cb6-9" aria-hidden="true" tabindex="-1"></a><span class="ss">         </span><span class="sc">(</span><span class="ss">isEquipe</span><span class="sc">()</span><span class="ss"> &amp;&amp; resource.data.equipe == getUser</span><span class="sc">()</span><span class="ss">.equipe</span><span class="sc">)</span><span class="ss"> </span><span class="sc">||</span></span>
+<span id="cb6-10"><a href="#cb6-10" aria-hidden="true" tabindex="-1"></a><span class="ss">         </span><span class="sc">(</span><span class="ss">isAcompanhante</span><span class="sc">()</span><span class="ss"> &amp;&amp; resource.data.usuarioUid == request.auth.uid</span><span class="sc">))</span><span class="ss">;</span></span>
+<span id="cb6-11"><a href="#cb6-11" aria-hidden="true" tabindex="-1"></a><span class="ss">      </span></span>
+<span id="cb6-12"><a href="#cb6-12" aria-hidden="true" tabindex="-1"></a><span class="ss">      allow write: if isAuthenticated</span><span class="sc">()</span><span class="ss"> &amp;&amp; </span></span>
+<span id="cb6-13"><a href="#cb6-13" aria-hidden="true" tabindex="-1"></a><span class="ss">        </span><span class="sc">(</span><span class="ss">isSuperAdmin</span><span class="sc">()</span><span class="ss"> </span><span class="sc">||</span><span class="ss"> </span></span>
+<span id="cb6-14"><a href="#cb6-14" aria-hidden="true" tabindex="-1"></a><span class="ss">         </span><span class="sc">(</span><span class="ss">isEquipe</span><span class="sc">()</span><span class="ss"> &amp;&amp; resource.data.equipe == getUser</span><span class="sc">()</span><span class="ss">.equipe</span><span class="sc">)</span><span class="ss"> </span><span class="sc">||</span></span>
+<span id="cb6-15"><a href="#cb6-15" aria-hidden="true" tabindex="-1"></a><span class="ss">         </span><span class="sc">(</span><span class="ss">isAcompanhante</span><span class="sc">()</span><span class="ss"> &amp;&amp; request.auth.uid != null</span><span class="sc">))</span><span class="ss">;</span></span>
+<span id="cb6-16"><a href="#cb6-16" aria-hidden="true" tabindex="-1"></a><span class="ss">    }</span></span>
+<span id="cb6-17"><a href="#cb6-17" aria-hidden="true" tabindex="-1"></a><span class="ss">  }</span></span>
+<span id="cb6-18"><a href="#cb6-18" aria-hidden="true" tabindex="-1"></a><span class="ss">}</span></span></code></pre></div>
+<h2 id="performance-e-otimização">⚡ PERFORMANCE E OTIMIZAÇÃO</h2>
+<h3 id="pwa-progressive-web-app">PWA (Progressive Web App)</h3>
+<div class="sourceCode" id="cb7"><pre
+class="sourceCode javascript"><code class="sourceCode javascript"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a><span class="co">// Service Worker Strategy</span></span>
+<span id="cb7-2"><a href="#cb7-2" aria-hidden="true" tabindex="-1"></a><span class="kw">const</span> CACHE_NAME <span class="op">=</span> <span class="st">&#39;yuna-v1.0&#39;</span><span class="op">;</span></span>
+<span id="cb7-3"><a href="#cb7-3" aria-hidden="true" tabindex="-1"></a><span class="kw">const</span> urlsToCache <span class="op">=</span> [</span>
+<span id="cb7-4"><a href="#cb7-4" aria-hidden="true" tabindex="-1"></a>  <span class="st">&#39;/admin/&#39;</span><span class="op">,</span></span>
+<span id="cb7-5"><a href="#cb7-5" aria-hidden="true" tabindex="-1"></a>  <span class="st">&#39;/acompanhantes/&#39;</span><span class="op">,</span></span>
+<span id="cb7-6"><a href="#cb7-6" aria-hidden="true" tabindex="-1"></a>  <span class="st">&#39;/firebase-config-secure.js&#39;</span><span class="op">,</span></span>
+<span id="cb7-7"><a href="#cb7-7" aria-hidden="true" tabindex="-1"></a>  <span class="st">&#39;/manifest.json&#39;</span></span>
+<span id="cb7-8"><a href="#cb7-8" aria-hidden="true" tabindex="-1"></a>]<span class="op">;</span></span>
+<span id="cb7-9"><a href="#cb7-9" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-10"><a href="#cb7-10" aria-hidden="true" tabindex="-1"></a><span class="co">// Cache Strategy: Network First para dados dinâmicos</span></span>
+<span id="cb7-11"><a href="#cb7-11" aria-hidden="true" tabindex="-1"></a><span class="co">// Cache Strategy: Cache First para assets estáticos</span></span></code></pre></div>
+<h3 id="otimizações-implementadas">Otimizações Implementadas:</h3>
+<ul>
+<li><strong>Lazy Loading:</strong> Carregamento sob demanda</li>
+<li><strong>Code Splitting:</strong> Divisão de código por módulos<br />
+</li>
+<li><strong>Minificação:</strong> Compressão CSS/JS automática</li>
+<li><strong>CDN:</strong> Distribuição global via Netlify</li>
+<li><strong>Gzip:</strong> Compressão de transferência</li>
+<li><strong>Critical CSS:</strong> CSS inline para above-the-fold</li>
+</ul>
+<h3 id="métricas-de-performance">Métricas de Performance:</h3>
+<div class="sourceCode" id="cb8"><pre
+class="sourceCode javascript"><code class="sourceCode javascript"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true" tabindex="-1"></a><span class="co">// Core Web Vitals Targets</span></span>
+<span id="cb8-2"><a href="#cb8-2" aria-hidden="true" tabindex="-1"></a><span class="fu">LCP</span> (Largest Contentful Paint)<span class="op">:</span> <span class="op">&lt;</span> <span class="fl">2.5</span>s</span>
+<span id="cb8-3"><a href="#cb8-3" aria-hidden="true" tabindex="-1"></a><span class="fu">FID</span> (First Input Delay)<span class="op">:</span> <span class="op">&lt;</span> <span class="dv">100</span><span class="er">ms</span></span>
+<span id="cb8-4"><a href="#cb8-4" aria-hidden="true" tabindex="-1"></a><span class="fu">CLS</span> (Cumulative Layout Shift)<span class="op">:</span> <span class="op">&lt;</span> <span class="fl">0.1</span></span>
+<span id="cb8-5"><a href="#cb8-5" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb8-6"><a href="#cb8-6" aria-hidden="true" tabindex="-1"></a><span class="co">// Additional Metrics</span></span>
+<span id="cb8-7"><a href="#cb8-7" aria-hidden="true" tabindex="-1"></a><span class="fu">TTFB</span> (Time to First Byte)<span class="op">:</span> <span class="op">&lt;</span> <span class="dv">200</span><span class="er">ms</span></span>
+<span id="cb8-8"><a href="#cb8-8" aria-hidden="true" tabindex="-1"></a>Speed <span class="bu">Index</span><span class="op">:</span> <span class="op">&lt;</span> <span class="fl">3.0</span>s</span>
+<span id="cb8-9"><a href="#cb8-9" aria-hidden="true" tabindex="-1"></a>Total Blocking Time<span class="op">:</span> <span class="op">&lt;</span> <span class="dv">200</span><span class="er">ms</span></span></code></pre></div>
+<h2 id="responsividade-e-ux">📱 RESPONSIVIDADE E UX</h2>
+<h3 id="breakpoints-css">Breakpoints CSS:</h3>
+<div class="sourceCode" id="cb9"><pre
+class="sourceCode css"><code class="sourceCode css"><span id="cb9-1"><a href="#cb9-1" aria-hidden="true" tabindex="-1"></a><span class="co">/* Mobile First Approach */</span></span>
+<span id="cb9-2"><a href="#cb9-2" aria-hidden="true" tabindex="-1"></a><span class="im">@media</span> <span class="fu">(</span><span class="kw">min-width</span><span class="ch">:</span> <span class="dv">768</span><span class="dt">px</span><span class="fu">)</span> { <span class="co">/* Tablet */</span> }</span>
+<span id="cb9-3"><a href="#cb9-3" aria-hidden="true" tabindex="-1"></a><span class="im">@media</span> <span class="fu">(</span><span class="kw">min-width</span><span class="ch">:</span> <span class="dv">1024</span><span class="dt">px</span><span class="fu">)</span> { <span class="co">/* Desktop */</span> }</span>
+<span id="cb9-4"><a href="#cb9-4" aria-hidden="true" tabindex="-1"></a><span class="im">@media</span> <span class="fu">(</span><span class="kw">min-width</span><span class="ch">:</span> <span class="dv">1440</span><span class="dt">px</span><span class="fu">)</span> { <span class="co">/* Large Desktop */</span> }</span>
+<span id="cb9-5"><a href="#cb9-5" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb9-6"><a href="#cb9-6" aria-hidden="true" tabindex="-1"></a><span class="co">/* High DPI Displays */</span></span>
+<span id="cb9-7"><a href="#cb9-7" aria-hidden="true" tabindex="-1"></a><span class="im">@media</span> <span class="fu">(</span><span class="dv">-webkit-min-device-pixel-ratio</span><span class="ch">:</span> <span class="dv">2</span><span class="fu">)</span> { <span class="co">/* Retina */</span> }</span></code></pre></div>
+<h3 id="design-system">Design System:</h3>
+<div class="sourceCode" id="cb10"><pre
+class="sourceCode css"><code class="sourceCode css"><span id="cb10-1"><a href="#cb10-1" aria-hidden="true" tabindex="-1"></a><span class="in">:root</span> {</span>
+<span id="cb10-2"><a href="#cb10-2" aria-hidden="true" tabindex="-1"></a>  <span class="co">/* Cores Primárias */</span></span>
+<span id="cb10-3"><a href="#cb10-3" aria-hidden="true" tabindex="-1"></a>  <span class="va">--primary-blue</span><span class="ch">:</span> <span class="cn">#3b82f6</span><span class="op">;</span></span>
+<span id="cb10-4"><a href="#cb10-4" aria-hidden="true" tabindex="-1"></a>  <span class="va">--primary-green</span><span class="ch">:</span> <span class="cn">#10b981</span><span class="op">;</span></span>
+<span id="cb10-5"><a href="#cb10-5" aria-hidden="true" tabindex="-1"></a>  <span class="va">--primary-orange</span><span class="ch">:</span> <span class="cn">#f59e0b</span><span class="op">;</span></span>
+<span id="cb10-6"><a href="#cb10-6" aria-hidden="true" tabindex="-1"></a>  </span>
+<span id="cb10-7"><a href="#cb10-7" aria-hidden="true" tabindex="-1"></a>  <span class="co">/* Cores por Equipe */</span></span>
+<span id="cb10-8"><a href="#cb10-8" aria-hidden="true" tabindex="-1"></a>  <span class="va">--manutencao</span><span class="ch">:</span> <span class="cn">#ef4444</span><span class="op">;</span></span>
+<span id="cb10-9"><a href="#cb10-9" aria-hidden="true" tabindex="-1"></a>  <span class="va">--nutricao</span><span class="ch">:</span> <span class="cn">#22c55e</span><span class="op">;</span></span>
+<span id="cb10-10"><a href="#cb10-10" aria-hidden="true" tabindex="-1"></a>  <span class="va">--higienizacao</span><span class="ch">:</span> <span class="cn">#3b82f6</span><span class="op">;</span></span>
+<span id="cb10-11"><a href="#cb10-11" aria-hidden="true" tabindex="-1"></a>  <span class="va">--hotelaria</span><span class="ch">:</span> <span class="cn">#a855f7</span><span class="op">;</span></span>
+<span id="cb10-12"><a href="#cb10-12" aria-hidden="true" tabindex="-1"></a>  </span>
+<span id="cb10-13"><a href="#cb10-13" aria-hidden="true" tabindex="-1"></a>  <span class="co">/* Tipografia */</span></span>
+<span id="cb10-14"><a href="#cb10-14" aria-hidden="true" tabindex="-1"></a>  <span class="va">--font-family</span><span class="ch">:</span> <span class="st">&#39;Inter&#39;</span><span class="op">,</span> <span class="dv">-apple-system</span><span class="op">,</span> <span class="dv">BlinkMacSystemFont</span><span class="op">,</span> <span class="dv">sans-serif</span><span class="op">;</span></span>
+<span id="cb10-15"><a href="#cb10-15" aria-hidden="true" tabindex="-1"></a>  <span class="va">--font-size-base</span><span class="ch">:</span> <span class="dv">16</span><span class="dt">px</span><span class="op">;</span></span>
+<span id="cb10-16"><a href="#cb10-16" aria-hidden="true" tabindex="-1"></a>  <span class="va">--line-height</span><span class="ch">:</span> <span class="dv">1.5</span><span class="op">;</span></span>
+<span id="cb10-17"><a href="#cb10-17" aria-hidden="true" tabindex="-1"></a>  </span>
+<span id="cb10-18"><a href="#cb10-18" aria-hidden="true" tabindex="-1"></a>  <span class="co">/* Spacing System */</span></span>
+<span id="cb10-19"><a href="#cb10-19" aria-hidden="true" tabindex="-1"></a>  <span class="va">--spacing-xs</span><span class="ch">:</span> <span class="dv">0.25</span><span class="dt">rem</span><span class="op">;</span></span>
+<span id="cb10-20"><a href="#cb10-20" aria-hidden="true" tabindex="-1"></a>  <span class="va">--spacing-sm</span><span class="ch">:</span> <span class="dv">0.5</span><span class="dt">rem</span><span class="op">;</span></span>
+<span id="cb10-21"><a href="#cb10-21" aria-hidden="true" tabindex="-1"></a>  <span class="va">--spacing-md</span><span class="ch">:</span> <span class="dv">1</span><span class="dt">rem</span><span class="op">;</span></span>
+<span id="cb10-22"><a href="#cb10-22" aria-hidden="true" tabindex="-1"></a>  <span class="va">--spacing-lg</span><span class="ch">:</span> <span class="dv">1.5</span><span class="dt">rem</span><span class="op">;</span></span>
+<span id="cb10-23"><a href="#cb10-23" aria-hidden="true" tabindex="-1"></a>  <span class="va">--spacing-xl</span><span class="ch">:</span> <span class="dv">2</span><span class="dt">rem</span><span class="op">;</span></span>
+<span id="cb10-24"><a href="#cb10-24" aria-hidden="true" tabindex="-1"></a>}</span></code></pre></div>
+<h2 id="integração-e-apis">🔄 INTEGRAÇÃO E APIs</h2>
+<h3 id="firebase-integration">Firebase Integration:</h3>
+<div class="sourceCode" id="cb11"><pre
+class="sourceCode javascript"><code class="sourceCode javascript"><span id="cb11-1"><a href="#cb11-1" aria-hidden="true" tabindex="-1"></a><span class="co">// Configuração Firebase</span></span>
+<span id="cb11-2"><a href="#cb11-2" aria-hidden="true" tabindex="-1"></a><span class="kw">const</span> firebaseConfig <span class="op">=</span> {</span>
+<span id="cb11-3"><a href="#cb11-3" aria-hidden="true" tabindex="-1"></a>  <span class="dt">apiKey</span><span class="op">:</span> <span class="bu">process</span><span class="op">.</span><span class="at">env</span><span class="op">.</span><span class="at">FIREBASE_API_KEY</span><span class="op">,</span></span>
+<span id="cb11-4"><a href="#cb11-4" aria-hidden="true" tabindex="-1"></a>  <span class="dt">authDomain</span><span class="op">:</span> <span class="st">&quot;studio-5526632052-23813.firebaseapp.com&quot;</span><span class="op">,</span></span>
+<span id="cb11-5"><a href="#cb11-5" aria-hidden="true" tabindex="-1"></a>  <span class="dt">projectId</span><span class="op">:</span> <span class="st">&quot;studio-5526632052-23813&quot;</span><span class="op">,</span></span>
+<span id="cb11-6"><a href="#cb11-6" aria-hidden="true" tabindex="-1"></a>  <span class="dt">storageBucket</span><span class="op">:</span> <span class="st">&quot;studio-5526632052-23813.appspot.com&quot;</span><span class="op">,</span></span>
+<span id="cb11-7"><a href="#cb11-7" aria-hidden="true" tabindex="-1"></a>  <span class="dt">messagingSenderId</span><span class="op">:</span> <span class="bu">process</span><span class="op">.</span><span class="at">env</span><span class="op">.</span><span class="at">FIREBASE_MESSAGING_SENDER_ID</span><span class="op">,</span></span>
+<span id="cb11-8"><a href="#cb11-8" aria-hidden="true" tabindex="-1"></a>  <span class="dt">appId</span><span class="op">:</span> <span class="bu">process</span><span class="op">.</span><span class="at">env</span><span class="op">.</span><span class="at">FIREBASE_APP_ID</span></span>
+<span id="cb11-9"><a href="#cb11-9" aria-hidden="true" tabindex="-1"></a>}<span class="op">;</span></span>
+<span id="cb11-10"><a href="#cb11-10" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb11-11"><a href="#cb11-11" aria-hidden="true" tabindex="-1"></a><span class="co">// Real-time Listeners</span></span>
+<span id="cb11-12"><a href="#cb11-12" aria-hidden="true" tabindex="-1"></a><span class="kw">const</span> unsubscribe <span class="op">=</span> db<span class="op">.</span><span class="fu">collection</span>(<span class="st">&#39;solicitacoes&#39;</span>)</span>
+<span id="cb11-13"><a href="#cb11-13" aria-hidden="true" tabindex="-1"></a>  <span class="op">.</span><span class="fu">where</span>(<span class="st">&#39;equipe&#39;</span><span class="op">,</span> <span class="st">&#39;==&#39;</span><span class="op">,</span> userEquipe)</span>
+<span id="cb11-14"><a href="#cb11-14" aria-hidden="true" tabindex="-1"></a>  <span class="op">.</span><span class="fu">onSnapshot</span>((snapshot) <span class="kw">=&gt;</span> {</span>
+<span id="cb11-15"><a href="#cb11-15" aria-hidden="true" tabindex="-1"></a>    snapshot<span class="op">.</span><span class="fu">docChanges</span>()<span class="op">.</span><span class="fu">forEach</span>((change) <span class="kw">=&gt;</span> {</span>
+<span id="cb11-16"><a href="#cb11-16" aria-hidden="true" tabindex="-1"></a>      <span class="cf">if</span> (change<span class="op">.</span><span class="at">type</span> <span class="op">===</span> <span class="st">&#39;added&#39;</span>) {</span>
+<span id="cb11-17"><a href="#cb11-17" aria-hidden="true" tabindex="-1"></a>        <span class="fu">handleNewRequest</span>(change<span class="op">.</span><span class="at">doc</span><span class="op">.</span><span class="fu">data</span>())<span class="op">;</span></span>
+<span id="cb11-18"><a href="#cb11-18" aria-hidden="true" tabindex="-1"></a>      }</span>
+<span id="cb11-19"><a href="#cb11-19" aria-hidden="true" tabindex="-1"></a>      <span class="cf">if</span> (change<span class="op">.</span><span class="at">type</span> <span class="op">===</span> <span class="st">&#39;modified&#39;</span>) {</span>
+<span id="cb11-20"><a href="#cb11-20" aria-hidden="true" tabindex="-1"></a>        <span class="fu">handleRequestUpdate</span>(change<span class="op">.</span><span class="at">doc</span><span class="op">.</span><span class="fu">data</span>())<span class="op">;</span></span>
+<span id="cb11-21"><a href="#cb11-21" aria-hidden="true" tabindex="-1"></a>      }</span>
+<span id="cb11-22"><a href="#cb11-22" aria-hidden="true" tabindex="-1"></a>    })<span class="op">;</span></span>
+<span id="cb11-23"><a href="#cb11-23" aria-hidden="true" tabindex="-1"></a>  })<span class="op">;</span></span></code></pre></div>
+<h3 id="emailjs-integration">EmailJS Integration:</h3>
+<div class="sourceCode" id="cb12"><pre
+class="sourceCode javascript"><code class="sourceCode javascript"><span id="cb12-1"><a href="#cb12-1" aria-hidden="true" tabindex="-1"></a><span class="co">// Sistema de Notificações</span></span>
+<span id="cb12-2"><a href="#cb12-2" aria-hidden="true" tabindex="-1"></a><span class="kw">const</span> emailParams <span class="op">=</span> {</span>
+<span id="cb12-3"><a href="#cb12-3" aria-hidden="true" tabindex="-1"></a>  <span class="dt">to_email</span><span class="op">:</span> userEmail<span class="op">,</span></span>
+<span id="cb12-4"><a href="#cb12-4" aria-hidden="true" tabindex="-1"></a>  <span class="dt">from_name</span><span class="op">:</span> <span class="st">&#39;Sistema YUNA&#39;</span><span class="op">,</span></span>
+<span id="cb12-5"><a href="#cb12-5" aria-hidden="true" tabindex="-1"></a>  <span class="dt">subject</span><span class="op">:</span> <span class="st">&#39;Nova Solicitação de Serviço&#39;</span><span class="op">,</span></span>
+<span id="cb12-6"><a href="#cb12-6" aria-hidden="true" tabindex="-1"></a>  <span class="dt">message</span><span class="op">:</span> <span class="vs">`Solicitação #</span><span class="sc">${</span>requestId<span class="sc">}</span><span class="vs"> foi </span><span class="sc">${</span>status<span class="sc">}</span><span class="vs">`</span></span>
+<span id="cb12-7"><a href="#cb12-7" aria-hidden="true" tabindex="-1"></a>}<span class="op">;</span></span>
+<span id="cb12-8"><a href="#cb12-8" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb12-9"><a href="#cb12-9" aria-hidden="true" tabindex="-1"></a>emailjs<span class="op">.</span><span class="fu">send</span>(SERVICE_ID<span class="op">,</span> TEMPLATE_ID<span class="op">,</span> emailParams<span class="op">,</span> PUBLIC_KEY)<span class="op">;</span></span></code></pre></div>
+<h2 id="deployment-e-cicd">🚀 DEPLOYMENT E CI/CD</h2>
+<h3 id="environment-configuration">Environment Configuration:</h3>
+<div class="sourceCode" id="cb13"><pre
+class="sourceCode javascript"><code class="sourceCode javascript"><span id="cb13-1"><a href="#cb13-1" aria-hidden="true" tabindex="-1"></a><span class="co">// Netlify Deploy Settings</span></span>
+<span id="cb13-2"><a href="#cb13-2" aria-hidden="true" tabindex="-1"></a>[build]</span>
+<span id="cb13-3"><a href="#cb13-3" aria-hidden="true" tabindex="-1"></a>  publish <span class="op">=</span> <span class="st">&quot;.&quot;</span></span>
+<span id="cb13-4"><a href="#cb13-4" aria-hidden="true" tabindex="-1"></a>  command <span class="op">=</span> <span class="st">&quot;echo &#39;Static site - no build required&#39;&quot;</span></span>
+<span id="cb13-5"><a href="#cb13-5" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb13-6"><a href="#cb13-6" aria-hidden="true" tabindex="-1"></a>[[redirects]]</span>
+<span id="cb13-7"><a href="#cb13-7" aria-hidden="true" tabindex="-1"></a>  <span class="im">from</span> <span class="op">=</span> <span class="st">&quot;/admin/*&quot;</span></span>
+<span id="cb13-8"><a href="#cb13-8" aria-hidden="true" tabindex="-1"></a>  to <span class="op">=</span> <span class="st">&quot;/admin/index.html&quot;</span></span>
+<span id="cb13-9"><a href="#cb13-9" aria-hidden="true" tabindex="-1"></a>  status <span class="op">=</span> <span class="dv">200</span></span>
+<span id="cb13-10"><a href="#cb13-10" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb13-11"><a href="#cb13-11" aria-hidden="true" tabindex="-1"></a>[[redirects]]</span>
+<span id="cb13-12"><a href="#cb13-12" aria-hidden="true" tabindex="-1"></a>  <span class="im">from</span> <span class="op">=</span> <span class="st">&quot;/acompanhantes/*&quot;</span> </span>
+<span id="cb13-13"><a href="#cb13-13" aria-hidden="true" tabindex="-1"></a>  to <span class="op">=</span> <span class="st">&quot;/acompanhantes/index.html&quot;</span></span>
+<span id="cb13-14"><a href="#cb13-14" aria-hidden="true" tabindex="-1"></a>  status <span class="op">=</span> <span class="dv">200</span></span>
+<span id="cb13-15"><a href="#cb13-15" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb13-16"><a href="#cb13-16" aria-hidden="true" tabindex="-1"></a><span class="co">// API Proxy</span></span>
+<span id="cb13-17"><a href="#cb13-17" aria-hidden="true" tabindex="-1"></a>[[redirects]]</span>
+<span id="cb13-18"><a href="#cb13-18" aria-hidden="true" tabindex="-1"></a>  <span class="im">from</span> <span class="op">=</span> <span class="st">&quot;/api/*&quot;</span></span>
+<span id="cb13-19"><a href="#cb13-19" aria-hidden="true" tabindex="-1"></a>  to <span class="op">=</span> <span class="st">&quot;https://api.yuna.com.br/:splat&quot;</span></span>
+<span id="cb13-20"><a href="#cb13-20" aria-hidden="true" tabindex="-1"></a>  status <span class="op">=</span> <span class="dv">200</span></span></code></pre></div>
+<h3 id="github-actions-pipeline">GitHub Actions Pipeline:</h3>
+<div class="sourceCode" id="cb14"><pre
+class="sourceCode yaml"><code class="sourceCode yaml"><span id="cb14-1"><a href="#cb14-1" aria-hidden="true" tabindex="-1"></a><span class="fu">name</span><span class="kw">:</span><span class="at"> Deploy to Production</span></span>
+<span id="cb14-2"><a href="#cb14-2" aria-hidden="true" tabindex="-1"></a><span class="fu">on</span><span class="kw">:</span></span>
+<span id="cb14-3"><a href="#cb14-3" aria-hidden="true" tabindex="-1"></a><span class="at">  </span><span class="fu">push</span><span class="kw">:</span></span>
+<span id="cb14-4"><a href="#cb14-4" aria-hidden="true" tabindex="-1"></a><span class="at">    </span><span class="fu">branches</span><span class="kw">:</span><span class="at"> </span><span class="kw">[</span><span class="at"> main </span><span class="kw">]</span></span>
+<span id="cb14-5"><a href="#cb14-5" aria-hidden="true" tabindex="-1"></a><span class="at">    </span></span>
+<span id="cb14-6"><a href="#cb14-6" aria-hidden="true" tabindex="-1"></a><span class="fu">jobs</span><span class="kw">:</span></span>
+<span id="cb14-7"><a href="#cb14-7" aria-hidden="true" tabindex="-1"></a><span class="at">  </span><span class="fu">deploy</span><span class="kw">:</span></span>
+<span id="cb14-8"><a href="#cb14-8" aria-hidden="true" tabindex="-1"></a><span class="at">    </span><span class="fu">runs-on</span><span class="kw">:</span><span class="at"> ubuntu-latest</span></span>
+<span id="cb14-9"><a href="#cb14-9" aria-hidden="true" tabindex="-1"></a><span class="at">    </span><span class="fu">steps</span><span class="kw">:</span></span>
+<span id="cb14-10"><a href="#cb14-10" aria-hidden="true" tabindex="-1"></a><span class="at">    </span><span class="kw">-</span><span class="at"> </span><span class="fu">uses</span><span class="kw">:</span><span class="at"> actions/checkout@v3</span></span>
+<span id="cb14-11"><a href="#cb14-11" aria-hidden="true" tabindex="-1"></a><span class="at">    </span><span class="kw">-</span><span class="at"> </span><span class="fu">name</span><span class="kw">:</span><span class="at"> Deploy to Netlify</span></span>
+<span id="cb14-12"><a href="#cb14-12" aria-hidden="true" tabindex="-1"></a><span class="at">      </span><span class="fu">uses</span><span class="kw">:</span><span class="at"> netlify/actions/build@master</span></span>
+<span id="cb14-13"><a href="#cb14-13" aria-hidden="true" tabindex="-1"></a><span class="at">      </span><span class="fu">env</span><span class="kw">:</span></span>
+<span id="cb14-14"><a href="#cb14-14" aria-hidden="true" tabindex="-1"></a><span class="at">        </span><span class="fu">NETLIFY_AUTH_TOKEN</span><span class="kw">:</span><span class="at"> ${{ secrets.NETLIFY_AUTH_TOKEN }}</span></span>
+<span id="cb14-15"><a href="#cb14-15" aria-hidden="true" tabindex="-1"></a><span class="at">        </span><span class="fu">NETLIFY_SITE_ID</span><span class="kw">:</span><span class="at"> ${{ secrets.NETLIFY_SITE_ID }}</span></span></code></pre></div>
+<h2 id="monitoring-e-analytics">📊 MONITORING E ANALYTICS</h2>
+<h3 id="error-tracking">Error Tracking:</h3>
+<div class="sourceCode" id="cb15"><pre
+class="sourceCode javascript"><code class="sourceCode javascript"><span id="cb15-1"><a href="#cb15-1" aria-hidden="true" tabindex="-1"></a><span class="co">// Custom Error Handler</span></span>
+<span id="cb15-2"><a href="#cb15-2" aria-hidden="true" tabindex="-1"></a><span class="bu">window</span><span class="op">.</span><span class="fu">addEventListener</span>(<span class="st">&#39;error&#39;</span><span class="op">,</span> (<span class="bu">event</span>) <span class="kw">=&gt;</span> {</span>
+<span id="cb15-3"><a href="#cb15-3" aria-hidden="true" tabindex="-1"></a>  <span class="bu">console</span><span class="op">.</span><span class="fu">error</span>(<span class="st">&#39;[SISTEMA-ERRO]&#39;</span><span class="op">,</span> {</span>
+<span id="cb15-4"><a href="#cb15-4" aria-hidden="true" tabindex="-1"></a>    <span class="dt">message</span><span class="op">:</span> <span class="bu">event</span><span class="op">.</span><span class="at">message</span><span class="op">,</span></span>
+<span id="cb15-5"><a href="#cb15-5" aria-hidden="true" tabindex="-1"></a>    <span class="dt">filename</span><span class="op">:</span> <span class="bu">event</span><span class="op">.</span><span class="at">filename</span><span class="op">,</span></span>
+<span id="cb15-6"><a href="#cb15-6" aria-hidden="true" tabindex="-1"></a>    <span class="dt">lineno</span><span class="op">:</span> <span class="bu">event</span><span class="op">.</span><span class="at">lineno</span><span class="op">,</span></span>
+<span id="cb15-7"><a href="#cb15-7" aria-hidden="true" tabindex="-1"></a>    <span class="dt">colno</span><span class="op">:</span> <span class="bu">event</span><span class="op">.</span><span class="at">colno</span><span class="op">,</span></span>
+<span id="cb15-8"><a href="#cb15-8" aria-hidden="true" tabindex="-1"></a>    <span class="dt">error</span><span class="op">:</span> <span class="bu">event</span><span class="op">.</span><span class="at">error</span><span class="op">,</span></span>
+<span id="cb15-9"><a href="#cb15-9" aria-hidden="true" tabindex="-1"></a>    <span class="dt">timestamp</span><span class="op">:</span> <span class="kw">new</span> <span class="bu">Date</span>()<span class="op">.</span><span class="fu">toISOString</span>()<span class="op">,</span></span>
+<span id="cb15-10"><a href="#cb15-10" aria-hidden="true" tabindex="-1"></a>    <span class="dt">userAgent</span><span class="op">:</span> <span class="bu">navigator</span><span class="op">.</span><span class="at">userAgent</span><span class="op">,</span></span>
+<span id="cb15-11"><a href="#cb15-11" aria-hidden="true" tabindex="-1"></a>    <span class="dt">url</span><span class="op">:</span> <span class="bu">window</span><span class="op">.</span><span class="at">location</span><span class="op">.</span><span class="at">href</span></span>
+<span id="cb15-12"><a href="#cb15-12" aria-hidden="true" tabindex="-1"></a>  })<span class="op">;</span></span>
+<span id="cb15-13"><a href="#cb15-13" aria-hidden="true" tabindex="-1"></a>  </span>
+<span id="cb15-14"><a href="#cb15-14" aria-hidden="true" tabindex="-1"></a>  <span class="co">// Enviar para sistema de monitoramento</span></span>
+<span id="cb15-15"><a href="#cb15-15" aria-hidden="true" tabindex="-1"></a>  <span class="fu">sendErrorToMonitoring</span>(<span class="bu">event</span>)<span class="op">;</span></span>
+<span id="cb15-16"><a href="#cb15-16" aria-hidden="true" tabindex="-1"></a>})<span class="op">;</span></span></code></pre></div>
+<h3 id="performance-monitoring">Performance Monitoring:</h3>
+<div class="sourceCode" id="cb16"><pre
+class="sourceCode javascript"><code class="sourceCode javascript"><span id="cb16-1"><a href="#cb16-1" aria-hidden="true" tabindex="-1"></a><span class="co">// Web Vitals Tracking</span></span>
+<span id="cb16-2"><a href="#cb16-2" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> { getCLS<span class="op">,</span> getFID<span class="op">,</span> getFCP<span class="op">,</span> getLCP<span class="op">,</span> getTTFB } <span class="im">from</span> <span class="st">&#39;web-vitals&#39;</span><span class="op">;</span></span>
+<span id="cb16-3"><a href="#cb16-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb16-4"><a href="#cb16-4" aria-hidden="true" tabindex="-1"></a><span class="fu">getCLS</span>(sendToAnalytics)<span class="op">;</span></span>
+<span id="cb16-5"><a href="#cb16-5" aria-hidden="true" tabindex="-1"></a><span class="fu">getFID</span>(sendToAnalytics)<span class="op">;</span></span>
+<span id="cb16-6"><a href="#cb16-6" aria-hidden="true" tabindex="-1"></a><span class="fu">getFCP</span>(sendToAnalytics)<span class="op">;</span></span>
+<span id="cb16-7"><a href="#cb16-7" aria-hidden="true" tabindex="-1"></a><span class="fu">getLCP</span>(sendToAnalytics)<span class="op">;</span></span>
+<span id="cb16-8"><a href="#cb16-8" aria-hidden="true" tabindex="-1"></a><span class="fu">getTTFB</span>(sendToAnalytics)<span class="op">;</span></span></code></pre></div>
+<h2 id="escalabilidade-e-futuro">🔮 ESCALABILIDADE E FUTURO</h2>
+<h3 id="arquitetura-preparada-para">Arquitetura Preparada Para:</h3>
+<ul>
+<li><strong>Microservices:</strong> Migração gradual para arquitetura
+distribuída</li>
+<li><strong>Multi-tenant:</strong> Suporte a múltiplas
+clínicas/hospitais</li>
+<li><strong>Mobile Apps:</strong> Base PWA facilita desenvolvimento
+nativo</li>
+<li><strong>AI/ML:</strong> APIs preparadas para integração de IA</li>
+<li><strong>IoT:</strong> Integração com dispositivos hospitalares</li>
+</ul>
+<h3 id="roadmap-técnico">Roadmap Técnico:</h3>
+<ol type="1">
+<li><strong>v1.1:</strong> Mobile apps nativas (React Native)</li>
+<li><strong>v1.2:</strong> Sistema de relatórios avançado (BI)</li>
+<li><strong>v2.0:</strong> Multi-tenant completo</li>
+<li><strong>v2.1:</strong> Integração HL7/FHIR</li>
+<li><strong>v3.0:</strong> AI para predição de demandas</li>
+</ol>
+<hr />
+<p><strong>© 2024-2025 Samuel dos Reis Lacerda Junior - Todos os
+direitos reservados</strong><br />
+<strong>Sistema YUNA - Especificações Técnicas
+Proprietárias</strong><br />
+<strong>Desenvolvido por:</strong> Samuel dos Reis Lacerda Junior<br />
+<strong>CNPJ:</strong> 55.004.442 SAMUEL DOS REIS LACERDA JUNIOR<br />
+<strong>Contato:</strong> samukajr82@gmail.com | +55 11 94586-4671</p>
+</body>
+</html>

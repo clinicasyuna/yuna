@@ -264,17 +264,18 @@
         }
 
         .service-card {
-            background: linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%);
+            --accent: #2563eb;
+            background: linear-gradient(135deg, #f8fafc 0%, #eef2f7 100%);
             padding: 2rem 1.5rem;
             border-radius: 20px;
             text-align: center;
             cursor: pointer;
             transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
-            color: white;
+            color: #0f172a;
             position: relative;
             overflow: hidden;
-            box-shadow: 0 8px 32px rgba(59, 130, 246, 0.2);
-            border: 1px solid rgba(255, 255, 255, 0.1);
+            box-shadow: 0 12px 30px rgba(15, 23, 42, 0.08);
+            border: 1px solid #e2e8f0;
             display: flex;
             flex-direction: column;
             align-items: center;
@@ -308,8 +309,8 @@
 
         .service-card:hover {
             transform: translateY(-8px) scale(1.02);
-            box-shadow: 0 24px 48px rgba(59, 130, 246, 0.3);
-            border-color: rgba(255, 255, 255, 0.2);
+            box-shadow: 0 16px 36px rgba(15, 23, 42, 0.12);
+            border-color: #cbd5e1;
         }
 
         .service-card:active {
@@ -321,6 +322,7 @@
             margin-bottom: 1rem;
             filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.1));
             transition: transform 0.3s ease;
+            color: var(--accent, #2563eb);
         }
 
         .service-card:hover .icon {
@@ -358,41 +360,45 @@
             word-wrap: break-word;
         }
 
-        /* Paleta baseada no logo YUNA (peach > coral > pink) */
+        /* Paleta suavizada com acentos por serviço */
         .service-card.manutencao {
-            background: linear-gradient(135deg, #f6b86b 0%, #f9a07d 100%);
-            box-shadow: 0 8px 32px rgba(246, 184, 107, 0.25);
+            --accent: #2563eb;
+            background: linear-gradient(135deg, #eef2ff 0%, #dbeafe 100%);
+            box-shadow: 0 10px 30px rgba(37, 99, 235, 0.12);
         }
 
         .service-card.manutencao:hover {
-            box-shadow: 0 24px 48px rgba(246, 184, 107, 0.35);
+            box-shadow: 0 18px 40px rgba(37, 99, 235, 0.18);
         }
 
         .service-card.nutricao {
-            background: linear-gradient(135deg, #f9a07d 0%, #f4768c 100%);
-            box-shadow: 0 8px 32px rgba(249, 160, 125, 0.25);
+            --accent: #7c3aed;
+            background: linear-gradient(135deg, #f3e8ff 0%, #ede9fe 100%);
+            box-shadow: 0 10px 30px rgba(124, 58, 237, 0.12);
         }
 
         .service-card.nutricao:hover {
-            box-shadow: 0 24px 48px rgba(249, 160, 125, 0.35);
+            box-shadow: 0 18px 40px rgba(124, 58, 237, 0.18);
         }
 
         .service-card.higienizacao {
-            background: linear-gradient(135deg, #f4768c 0%, #f05c8d 100%);
-            box-shadow: 0 8px 32px rgba(244, 118, 140, 0.25);
+            --accent: #059669;
+            background: linear-gradient(135deg, #e8f7f0 0%, #d1fae5 100%);
+            box-shadow: 0 10px 30px rgba(5, 150, 105, 0.12);
         }
 
         .service-card.higienizacao:hover {
-            box-shadow: 0 24px 48px rgba(244, 118, 140, 0.35);
+            box-shadow: 0 18px 40px rgba(5, 150, 105, 0.18);
         }
 
         .service-card.hotelaria {
-            background: linear-gradient(135deg, #f05c8d 0%, #d93e6f 100%);
-            box-shadow: 0 8px 32px rgba(240, 92, 141, 0.25);
+            --accent: #ea580c;
+            background: linear-gradient(135deg, #fff3e7 0%, #ffe7d5 100%);
+            box-shadow: 0 10px 30px rgba(234, 88, 12, 0.12);
         }
 
         .service-card.hotelaria:hover {
-            box-shadow: 0 24px 48px rgba(240, 92, 141, 0.35);
+            box-shadow: 0 18px 40px rgba(234, 88, 12, 0.18);
         }
 
         .toast {
