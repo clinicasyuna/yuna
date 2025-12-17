@@ -4204,50 +4204,79 @@ window.confirmarAlteracaoSenhaAdmin = async function(userId, userEmail) {
             return;
         }
 
-        // Confirmar ação
-        const confirmacao = confirm(`ATENÇÃO: Você está alterando a senha do usuário!\n\nEmail: ${userEmail}\n\nEsta ação não pode ser desfeita. Confirma?`);
+        // Confirmar ação com aviso importante
+        const confirmacao = confirm(
+            `⚠️ ATENÇÃO - LIMITAÇÃO DO FIREBASE ⚠️\n\n` +
+            `Email: ${userEmail}\n\n` +
+            `⚠️ IMPORTANTE: Devido às limitações de segurança do Firebase, não é possível alterar a senha de outro usuário diretamente pelo painel web.\n\n` +
+            `🔹 OPÇÃO 1 (Recomendada): Será enviado um email de redefinição de senha para o usuário.\n\n` +
+            `🔹 OPÇÃO 2: Você pode deletar e recriar o usuário com a nova senha.\n\n` +
+            `Deseja enviar o email de redefinição de senha?`
+        );
+        
         if (!confirmacao) return;
 
         // Desabilitar botão para evitar cliques duplos
         const botao = event.target;
         botao.disabled = true;
-        botao.textContent = 'Alterando...';
+        botao.textContent = 'Enviando email...';
 
-        // Usar Firebase Admin SDK via Cloud Function para alterar senha
-        // Como não temos acesso direto ao Admin SDK no frontend, vamos usar um método alternativo
-        
-        // MÉTODO: Enviar email de redefinição de senha
+        // Enviar email de redefinição de senha
         await window.auth.sendPasswordResetEmail(userEmail);
         
-        showToast('Sucesso', `Email de redefinição de senha enviado para ${userEmail}. O usuário deve verificar a caixa de entrada.`, 'success');
+        showToast('Sucesso', `✅ Email de redefinição enviado para ${userEmail}\n\nO usuário deve verificar a caixa de entrada e seguir as instruções para criar uma nova senha.`, 'success');
+        
+        console.log(`[INFO] Email de redefinição de senha enviado para: ${userEmail}`);
         
         // Registrar na auditoria
         if (window.registrarLogAuditoria) {
-            window.registrarLogAuditoria('PASSWORD_RESET_SENT', {
+            window.registrarLogAuditoria('PASSWORD_RESET_EMAIL_SENT', {
                 targetUserId: userId,
                 targetUserEmail: userEmail,
-                method: 'admin_initiated'
+                method: 'admin_initiated',
+                timestamp: new Date().toISOString()
             });
         }
+        
+        // Mostrar instruções adicionais
+        setTimeout(() => {
+            alert(
+                `📧 Email de Redefinição Enviado!\n\n` +
+                `Para: ${userEmail}\n\n` +
+                `INSTRUÇÕES PARA O USUÁRIO:\n` +
+                `1. Verificar a caixa de entrada (e spam)\n` +
+                `2. Clicar no link do email\n` +
+                `3. Definir a nova senha\n` +
+                `4. Fazer login com a nova senha\n\n` +
+                `⏱️ O link expira em 1 hora.\n\n` +
+                `ALTERNATIVA:\n` +
+                `Se o usuário não receber o email, você pode deletá-lo e criar novamente com a senha desejada.`
+            );
+        }, 1000);
         
         fecharModalAlterarSenha();
         
     } catch (error) {
-        console.error('[ERRO] Erro ao alterar senha:', error);
+        console.error('[ERRO] Erro ao enviar email de redefinição:', error);
         
-        let mensagem = 'Erro ao alterar senha. Tente novamente.';
+        let mensagem = 'Erro ao enviar email de redefinição.';
         if (error.code === 'auth/user-not-found') {
-            mensagem = 'Usuário não encontrado no Firebase Authentication.';
+            mensagem = '❌ Usuário não encontrado no Firebase Authentication.\n\nSOLUÇÃO: Este usuário precisa ser criado novamente no sistema de autenticação.';
         } else if (error.code === 'auth/invalid-email') {
-            mensagem = 'Email inválido.';
+            mensagem = '❌ Email inválido.';
+        } else if (error.code === 'auth/too-many-requests') {
+            mensagem = '⏳ Muitas tentativas. Aguarde alguns minutos e tente novamente.';
         }
         
         showToast('Erro', mensagem, 'error');
+        alert(mensagem + '\n\nPara resolver: Delete o usuário e crie novamente com a senha correta.');
         
         // Reabilitar botão
         const botao = event.target;
-        botao.disabled = false;
-        botao.textContent = '🔑 Alterar Senha';
+        if (botao) {
+            botao.disabled = false;
+            botao.textContent = '🔑 Alterar Senha';
+        }
     }
 };
 
