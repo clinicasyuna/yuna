@@ -45,8 +45,7 @@ const db = admin.firestore();
 const USUARIOS_EQUIPES = [
     {
         email: 'nutricao.jardins@yuna.com.br',
-        senhaAtual: 'ninhuma',  // não importa, será sobrescrita
-        senhaNova: 'Nuti@123456',
+        senha: 'Nuti@123456',
         nome: 'Nutricao Jardins',
         departamento: 'nutricao',
         equipe: 'nutricao',
