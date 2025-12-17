@@ -5520,13 +5520,16 @@ function atualizarVisibilidadeBotoes() {
     const btnDashboard = document.getElementById('dashboard-btn');
     const btnLimpeza = document.getElementById('limpeza-btn');
     const btnSatisfacao = document.getElementById('satisfacao-btn');
-        btnGerenciarUsuarios: !!btnGerenciarUsuarios,
-        btnAcompanhantes: !!btnAcompanhantes,
-        btnRelatorios: !!btnRelatorios,
-        btnDashboard: !!btnDashboard,
-        btnLimpeza: !!btnLimpeza,
-        btnSatisfacao: !!btnSatisfacao
-    });
+
+        // Log de verificação dos elementos do header
+        debugLog('[DEBUG] Elementos do header:', {
+            btnGerenciarUsuarios: !!btnGerenciarUsuarios,
+            btnAcompanhantes: !!btnAcompanhantes,
+            btnRelatorios: !!btnRelatorios,
+            btnDashboard: !!btnDashboard,
+            btnLimpeza: !!btnLimpeza,
+            btnSatisfacao: !!btnSatisfacao
+        });
     
     debugLog('[DEBUG] Atualizando botões para usuário:', usuarioAdmin);
     
