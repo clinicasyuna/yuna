@@ -5517,9 +5517,13 @@ function atualizarVisibilidadeBotoes() {
         const btnGerenciarUsuarios = document.getElementById('manage-users-btn');
         const btnAcompanhantes = document.getElementById('acompanhantes-btn');
         const btnRelatorios = document.getElementById('relatorios-btn');
-    const btnDashboard = document.getElementById('dashboard-btn');
-    const btnLimpeza = document.getElementById('limpeza-btn');
-    const btnSatisfacao = document.getElementById('satisfacao-btn');
+        const btnDashboard = document.getElementById('dashboard-btn');
+        const btnLimpeza = document.getElementById('limpeza-btn');
+        const btnSatisfacao = document.getElementById('satisfacao-btn');
+        const btnMinhaSenha = document.getElementById('alterar-senha-btn');
+        const panelTitle = document.getElementById('panel-title');
+        const userRoleBadge = document.getElementById('user-role-badge');
+        const msgPermissao = document.getElementById('admin-permission-msg');
 
         // Log de verificação dos elementos do header
         debugLog('[DEBUG] Elementos do header:', {
