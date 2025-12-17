@@ -2693,6 +2693,21 @@ window.criarNovoUsuario = async function() {
 window.showManageUsersModal = async function() {
     debugLog('[DEBUG] showManageUsersModal: iniciando...');
     
+    // GARANTIR que modal de edição esteja fechado
+    const editModal = document.getElementById('edit-user-modal');
+    if (editModal) {
+        editModal.classList.add('hidden');
+        editModal.style.display = 'none';
+    }
+    
+    // Remover qualquer modal dinâmico de edição anterior
+    const dynamicEditModals = document.querySelectorAll('.modal-edicao-usuario');
+    dynamicEditModals.forEach(modal => {
+        if (modal.id !== 'edit-user-modal') { // Não remover o fixo
+            modal.remove();
+        }
+    });
+    
     // Debug completo do estado atual
     window.debugModals();
     

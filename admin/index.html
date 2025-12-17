@@ -127,13 +127,20 @@
             z-index: 999999999 !important;
         }
         
-        /* FORÇA EXTREMA - Modal de edição sempre no topo */
-        #edit-user-modal,
-        #edit-user-modal.modal,
-        .modal#edit-user-modal {
+        /* FORÇA EXTREMA - Modal de edição sempre no topo QUANDO VISÍVEL */
+        #edit-user-modal:not(.hidden),
+        #edit-user-modal.modal:not(.hidden),
+        .modal#edit-user-modal:not(.hidden) {
             z-index: 999999999 !important;
             position: fixed !important;
             display: flex !important;
+        }
+        
+        /* Garantir que modal escondido fique realmente invisível */
+        #edit-user-modal.hidden {
+            display: none !important;
+            visibility: hidden !important;
+            opacity: 0 !important;
         }
         
         /* FORÇA EXTREMA - Modal de gerenciar sempre atrás do editar */
