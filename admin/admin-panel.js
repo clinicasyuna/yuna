@@ -4121,13 +4121,18 @@ window.abrirModalAlterarSenha = async function(userId, collection) {
         const senhaModal = document.createElement('div');
         senhaModal.id = 'alterar-senha-modal';
         senhaModal.style.cssText = `
-            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-            background: rgba(0,0,0,0.6); z-index: 100001; display: flex;
-            align-items: center; justify-content: center;
+            position: fixed !important; top: 0 !important; left: 0 !important; 
+            width: 100% !important; height: 100% !important;
+            background: rgba(0,0,0,0.8) !important; 
+            z-index: 99999999999 !important; 
+            display: flex !important;
+            align-items: center !important; 
+            justify-content: center !important;
+            backdrop-filter: blur(3px) !important;
         `;
         
         senhaModal.innerHTML = `
-            <div style="background: white; border-radius: 12px; padding: 24px; max-width: 450px; width: 90%; box-shadow: 0 10px 30px rgba(0,0,0,0.2);">
+            <div style="background: white; border-radius: 12px; padding: 24px; max-width: 450px; width: 90%; box-shadow: 0 25px 50px rgba(0,0,0,0.5); position: relative !important; z-index: 99999999999 !important;">
                 <div style="display: flex; align-items: center; margin-bottom: 20px;">
                     <span style="font-size: 24px; margin-right: 12px;">🔑</span>
                     <h3 style="margin: 0; color: #374151;">Alterar Senha do Usuário</h3>
