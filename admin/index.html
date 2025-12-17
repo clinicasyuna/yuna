@@ -6,7 +6,7 @@
     <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
     <meta http-equiv="Pragma" content="no-cache">
     <meta http-equiv="Expires" content="0">
-    <meta name="cache-version" content="20251113-153000">
+    <meta name="cache-version" content="20251217-0900">
     <title>YUNA - Painel Administrativo</title>
     
     <!-- FUNÇÃO CRÍTICA DEFINIDA ANTECIPADAMENTE -->
@@ -203,6 +203,45 @@
             opacity: 1 !important;
         }
     </style>
+
+    <!-- HARD CACHE-BUST: garante atualização mesmo com SW/cache antigo -->
+    <script>
+        (function() {
+            try {
+                const EXPECTED = '20251217-0900';
+                const meta = document.querySelector('meta[name="cache-version"]');
+                const pageVersion = meta ? meta.getAttribute('content') : '';
+                const alreadyForced = sessionStorage.getItem('yuna:forcedReload') === '1';
+
+                if (pageVersion !== EXPECTED && !alreadyForced) {
+                    if (meta) meta.setAttribute('content', EXPECTED);
+                    // Desregistrar Service Workers deste escopo
+                    if (navigator.serviceWorker && navigator.serviceWorker.getRegistrations) {
+                        navigator.serviceWorker.getRegistrations().then(regs => {
+                            regs.forEach(r => {
+                                try { r.unregister(); } catch(e) {}
+                            });
+                        }).catch(() => {});
+                    }
+                    // Limpar Cache Storage por segurança
+                    if (window.caches && caches.keys) {
+                        caches.keys().then(keys => Promise.all(keys.map(k => caches.delete(k)))).catch(() => {});
+                    }
+                    // Recarregar com parâmetro de versão na URL para bustar todo o carregamento
+                    const url = new URL(window.location.href);
+                    url.searchParams.set('v', EXPECTED);
+                    sessionStorage.setItem('yuna:forcedReload', '1');
+                    window.location.replace(url.toString());
+                } else if (alreadyForced) {
+                    // Limpar o flag após primeira carga bem-sucedida
+                    sessionStorage.removeItem('yuna:forcedReload');
+                }
+            } catch (e) {
+                // Não bloquear carregamento em caso de erro
+                console.warn('[CACHE-BUST] Falha ao forçar atualização:', e);
+            }
+        })();
+    </script>
     
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link rel="stylesheet" href="admin-panel-styles.css">
@@ -959,13 +998,13 @@
     <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
-    <script src="firebase-config-secure.js"></script>
-    <script src="../security-audit.js"></script>
+    <script src="firebase-config-secure.js?v=20251217-0900"></script>
+    <script src="../security-audit.js?v=20251217-0900"></script>
     
     <!-- NOVOS ARQUIVOS DE SEGURANÇA E VALIDAÇÃO (Fase 4) -->
-    <script src="debug-config.js"></script>
-    <script src="login-rate-limit.js"></script>
-    <script src="validation-helpers.js"></script>
+    <script src="debug-config.js?v=20251217-0900"></script>
+    <script src="login-rate-limit.js?v=20251217-0900"></script>
+    <script src="validation-helpers.js?v=20251217-0900"></script>
     <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js"></script>
     <script>
         (function(){
@@ -985,10 +1024,10 @@
     </script>
     
     <!-- Script principal DEVE vir ANTES das permissões -->
-    <script src="admin-panel.js?v=20251113-153000"></script>
+    <script src="admin-panel.js?v=20251217-0900"></script>
     
     <!-- Script de permissões após principal -->
-    <script src="admin-permissions.js"></script>
+    <script src="admin-permissions.js?v=20251217-0900"></script>
     <!-- Debug mini removido - arquivo não existe -->
     <!-- Sistema de debug para controle de equipes -->
     <!-- <script src="debug-sistema-equipes.js"></script> -->

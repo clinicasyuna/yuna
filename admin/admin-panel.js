@@ -5518,11 +5518,8 @@ function atualizarVisibilidadeBotoes() {
         const btnAcompanhantes = document.getElementById('acompanhantes-btn');
         const btnRelatorios = document.getElementById('relatorios-btn');
     const btnDashboard = document.getElementById('dashboard-btn');
-    const userRoleBadge = document.getElementById('user-role-badge');
-    const panelTitle = document.getElementById('panel-title');
-    
-    debugLog('[DEBUG] Elementos encontrados:', {
-        btnNovoUsuario: !!btnNovoUsuario,
+    const btnLimpeza = document.getElementById('limpeza-btn');
+    const btnSatisfacao = document.getElementById('satisfacao-btn');
         btnGerenciarUsuarios: !!btnGerenciarUsuarios,
         btnAcompanhantes: !!btnAcompanhantes,
         btnRelatorios: !!btnRelatorios,
