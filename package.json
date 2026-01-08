@@ -8,13 +8,20 @@
     "build": "echo 'Projeto pronto para deploy'",
     "start": "echo 'Deploy no Vercel - acesse: https://vercel.com'"
   },
-  "keywords": ["healthcare", "pwa", "solicitacoes", "yuna", "progressive-web-app"],
+  "keywords": [
+    "healthcare",
+    "pwa",
+    "solicitacoes",
+    "yuna",
+    "progressive-web-app"
+  ],
   "author": "Clínicas YUNA",
   "license": "MIT",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/clinicasyuna/yuna.git"
   },
-  "dependencies": {},
-  "devDependencies": {}
+  "dependencies": {
+    "firebase-admin": "^13.6.0"
+  }
 }

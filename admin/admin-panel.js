@@ -12,11 +12,42 @@
 
 // admin-panel.js - Painel Administrativo YUNA
 
-// === INICIALIZAÇÃO DO CACHE GLOBAL ===
-// CORREÇÃO DEFINITIVA: Criar cache logo no início para evitar erros
-window.cachedSolicitacoes = window.cachedSolicitacoes || [];
-window.cachedUsuarios = window.cachedUsuarios || [];
-console.log('[INIT] ✅ Cache global inicializado');
+// === INICIALIZAÇÃO DOS MÓDULOS DE OTIMIZAÇÃO ===
+// Performance Monitor - rastreamento de performance
+if (!window.perfMonitor) {
+    console.warn('[INIT] ⚠️ PerformanceMonitor não carregado! Verificar se performance-monitor.js está no HTML.');
+}
+
+// Listener Manager - gerenciamento centralizado de listeners
+if (!window.listenerManager) {
+    console.warn('[INIT] ⚠️ ListenerManager não carregado! Verificar se listener-manager.js está no HTML.');
+}
+
+// Cache Manager - cache LRU com limite de 200 itens
+if (!window.cacheManager) {
+    console.warn('[INIT] ⚠️ CacheManager não carregado! Verificar se cache-manager.js está no HTML.');
+    // Fallback: criar cache legado
+    window.cachedSolicitacoes = window.cachedSolicitacoes || [];
+    window.cachedUsuarios = window.cachedUsuarios || [];
+} else {
+    console.log('[INIT] ✅ CacheManager ativo com LRU (limite: 200 itens)');
+}
+
+// Query Helper - paginação e otimização de queries
+if (!window.queryHelper) {
+    console.warn('[INIT] ⚠️ QueryHelper não carregado! Verificar se query-helper.js está no HTML.');
+}
+
+// === COMPATIBILIDADE: Cache legado como proxy para CacheManager ===
+// Permite código legado usar window.cachedSolicitacoes enquanto migra para CacheManager
+if (window.cacheManager) {
+    window.cacheManager.syncWithLegacyCache();
+    console.log('[INIT] ✅ Cache legado sincronizado com CacheManager');
+} else {
+    window.cachedSolicitacoes = window.cachedSolicitacoes || [];
+    window.cachedUsuarios = window.cachedUsuarios || [];
+    console.log('[INIT] ✅ Cache legado inicializado (fallback)');
+}
 
 // === SISTEMA DE TIMEOUT DE SESSÃO ===
 let sessionTimeout;
@@ -112,6 +143,25 @@ function extendSession() {
 // Realizar logout automático
 function performAutoLogout() {
     console.log('[TIMEOUT] 🚪 Realizando logout automático por inatividade');
+    
+    // === LIMPEZA DE RECURSOS (OTIMIZAÇÕES) ===
+    // Limpar todos os listeners Firestore ativos
+    if (window.listenerManager) {
+        const listenerCount = window.listenerManager.unregisterAll();
+        console.log(`[CLEANUP] ✅ ${listenerCount} listeners Firestore removidos`);
+    }
+    
+    // Limpar cache LRU
+    if (window.cacheManager) {
+        window.cacheManager.limpar();
+        console.log('[CLEANUP] ✅ Cache LRU limpo');
+    }
+    
+    // Gerar relatório final de performance
+    if (window.perfMonitor) {
+        const report = window.perfMonitor.generateReport();
+        console.log('[PERFORMANCE] 📊 Relatório final:', report);
+    }
     
     // Limpar modal se existir
     const modal = document.getElementById('timeout-warning-modal');
@@ -4512,9 +4562,13 @@ let carregandoSolicitacoes = false;
 let timeoutRecarregar = null;
 
 async function carregarSolicitacoes() {
+    // Iniciar timer de performance
+    const timerId = window.perfMonitor?.startTimer('carregarSolicitacoes');
+    
     // Verificar se o usuário ainda está autenticado
     if (!window.auth?.currentUser) {
         console.error('[ERRO] Usuário não autenticado!');
+        window.perfMonitor?.endTimer(timerId);
         return;
     }
     
@@ -4631,10 +4685,23 @@ async function carregarSolicitacoes() {
         console.log('[DEBUG] Projeto:', window.db.app.options.projectId);
         console.log('[DEBUG] Coleção: solicitacoes');
         
-        // TESTE SIMPLIFICADO: Apenas query simples sem ordenação
-        console.log('[DEBUG] Executando query SIMPLES sem ordenação...');
-        const snapshot = await window.db.collection('solicitacoes').get();
-        console.log('[DEBUG] Query simples executada com sucesso');
+        // OTIMIZAÇÃO: Usar QueryHelper para busca com paginação (se disponível)
+        let snapshot;
+        if (window.queryHelper) {
+            console.log('[DEBUG] Usando QueryHelper para busca otimizada com paginação...');
+            const resultado = await window.queryHelper.buscarSolicitacoes({
+                filtros: isEquipe ? { equipe: usuarioAdmin.equipe } : {},
+                limit: 50,
+                ordenacao: { campo: 'criadoEm', direcao: 'desc' }
+            });
+            snapshot = { docs: resultado.solicitacoes.map(s => ({ id: s.id, data: () => s, exists: true })), size: resultado.solicitacoes.length };
+            console.log('[DEBUG] QueryHelper retornou', resultado.solicitacoes.length, 'solicitações');
+        } else {
+            // Fallback: query simples sem ordenação (evita índice composto)
+            console.log('[DEBUG] QueryHelper não disponível - usando query simples...');
+            snapshot = await window.db.collection('solicitacoes').get();
+            console.log('[DEBUG] Query simples executada com sucesso');
+        }
         
         console.log('[DEBUG] Snapshot recebido:', {
             size: snapshot.size,
@@ -4792,9 +4859,19 @@ async function carregarSolicitacoes() {
         console.log(`[DEBUG] Dados ordenados e prontos para renderização`);
         console.log(`[DEBUG] Solicitações por equipe:`, Object.keys(equipes).map(e => `${e}: ${equipes[e].length}`));
         
-        // Atualizar cache global para cronômetros
-        window.cachedSolicitacoes = Array.isArray(solicitacoes) ? solicitacoes : [];
-        console.log('[DEBUG] Cache de solicitações atualizado:', window.cachedSolicitacoes.length, 'itens');
+        // Atualizar cache (com LRU se disponível)
+        if (window.cacheManager) {
+            // Usar CacheManager com limite LRU de 200 itens
+            solicitacoes.forEach(sol => {
+                window.cacheManager.setSolicitacao(sol);
+            });
+            console.log('[CACHE] Solicitações armazenadas no CacheManager (LRU ativo)');
+        } else {
+            // Fallback: cache legado sem limite
+            window.cachedSolicitacoes = Array.isArray(solicitacoes) ? solicitacoes : [];
+            console.log('[CACHE] Solicitações armazenadas no cache legado (sem limite)');
+        }
+        console.log('[DEBUG] Cache atualizado:', solicitacoes.length, 'itens');
         
         // RENDERIZAÇÃO BASEADA NO TIPO DE USUÁRIO
         if (isEquipe && usuarioAdmin.equipe) {
@@ -5147,6 +5224,16 @@ function configurarListenerNotificacoes() {
                     window.notificationListenerConfigured = false;
                 }
             });
+        
+        // Registrar listener no ListenerManager para auto-cleanup
+        if (window.listenerManager && window.notificationUnsubscribe) {
+            window.listenerManager.register(
+                window.notificationUnsubscribe,
+                'notificacoes-solicitacoes',
+                { collection: 'solicitacoes', type: 'todas' }
+            );
+            console.log('[LISTENER] ✅ Listener de notificações registrado no ListenerManager');
+        }
             
     } catch (error) {
         console.error('[ERRO] configurarListenerNotificacoes:', error);
@@ -8501,10 +8588,19 @@ function renderizarCardsEquipe(equipes) {
     
     console.log(`[DEBUG] Cards renderizados para ${equipesParaMostrar.length} equipe(s)`);
     
-    // Atualizar cache global para cronômetros
+    // Atualizar cache (com LRU se disponível)
     if (typeof solicitacoesProcessadas !== 'undefined' && Array.isArray(solicitacoesProcessadas)) {
-        window.cachedSolicitacoes = solicitacoesProcessadas;
-        console.log('[DEBUG] Cache de solicitações atualizado:', window.cachedSolicitacoes.length, 'itens');
+        if (window.cacheManager) {
+            // Usar CacheManager com limite LRU
+            solicitacoesProcessadas.forEach(sol => {
+                window.cacheManager.setSolicitacao(sol);
+            });
+            console.log('[CACHE] ✅ Solicitações armazenadas no CacheManager (LRU):', solicitacoesProcessadas.length, 'itens');
+        } else {
+            // Fallback: cache legado
+            window.cachedSolicitacoes = solicitacoesProcessadas;
+            console.log('[CACHE] Solicitações armazenadas no cache legado:', window.cachedSolicitacoes.length, 'itens');
+        }
     }
 }
 
@@ -11088,6 +11184,16 @@ async function configurarListenerAcompanhantes() {
     }, (error) => {
         console.error('[ERRO] Listener acompanhantes (erro):', error);
     });
+    
+    // Registrar listener no ListenerManager
+    if (window.listenerManager && acompanhantesListener) {
+        window.listenerManager.register(
+            acompanhantesListener,
+            'lista-acompanhantes',
+            { collection: 'usuarios_acompanhantes' }
+        );
+        console.log('[LISTENER] Listener de acompanhantes registrado no ListenerManager');
+    }
 }
 
 // Função para atualizar a exibição da lista de acompanhantes
