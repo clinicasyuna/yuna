@@ -1295,7 +1295,7 @@ h1, h2, h3, h4, h5, h6, .header, .logo-header, #panel-title, .stat-info p, .stat
   background: #fff;
   border-radius: 16px;
   box-shadow: 0 4px 20px rgba(0,0,0,0.08);
-  padding: 2rem 2.5rem;
+  padding: 1rem 2.5rem 2rem;
   max-width: 400px;
   width: 100%;
 }
@@ -1420,7 +1420,7 @@ h2.finalizar-solicitacao {
 
 .logo-header {
   text-align: center;
-  margin-bottom: 2rem;
+  margin-bottom: 1rem;
 }
 
 .logo-header img {
@@ -1428,7 +1428,7 @@ h2.finalizar-solicitacao {
   width: auto;
   max-width: 90%;
   object-fit: contain;
-  margin-bottom: 1.5rem;
+  margin-bottom: 0.5rem;
 }
 
 .logo-header h1 {
