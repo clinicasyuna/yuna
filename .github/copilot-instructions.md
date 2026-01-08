@@ -1,7 +1,7 @@
-# Sistema de Gerenciamento de Solicitações YUNA - Guia de Programação para IA
+# Yuna Solicite - Guia de Programação para IA
 
 ## Visão Geral do Sistema
-Sistema de gerenciamento de solicitações de serviços de saúde para clínicas YUNA com duas SPAs independentes:
+Yuna Solicite: Sistema de gerenciamento de solicitações de serviços de saúde para clínicas YUNA com duas SPAs independentes:
 - **Painel Administrativo** (`/admin/`) - Dashboard 13k+ linhas para gestão completa de solicitações, usuários e analytics
 - **Portal dos Acompanhantes** (`/acompanhantes/`) - Interface 4.5k+ linhas auto-contida em single-file HTML para submissão de solicitações
 

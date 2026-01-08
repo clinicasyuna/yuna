@@ -7587,7 +7587,7 @@ function gerarHTMLDashboardAvancado(metricas, opcoes = {}) {
 
             <!-- Footer -->
             <div style="background: #f9fafb; padding: 15px 20px; text-align: center; color: #6b7280; font-size: 0.9rem; border-radius: 0 0 12px 12px;">
-                Atualizado em: ${new Date().toLocaleString('pt-BR')} | Sistema YUNA v2.0
+                Atualizado em: ${new Date().toLocaleString('pt-BR')} | Yuna Solicite v2.0
             </div>
         </div>
     `;
@@ -11844,7 +11844,7 @@ window.verificarEstatisticas = async function() {
         console.log('[STATS] Estatísticas coletadas:', stats);
         
         const relatorio = `
-📊 ESTATÍSTICAS DO SISTEMA YUNA
+📊 ESTATÍSTICAS DO YUNA SOLICITE
 ===============================
 
 📋 SOLICITAÇÕES:

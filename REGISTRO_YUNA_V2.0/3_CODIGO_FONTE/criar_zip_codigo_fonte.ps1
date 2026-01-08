@@ -116,7 +116,7 @@ if (Test-Path $githubSourcePath) {
 Write-Host "`n📝 Criando README do código-fonte..." -ForegroundColor Cyan
 $readmeContent = @"
 ================================================================================
-  CÓDIGO-FONTE: SISTEMA YUNA V2.0
+  CÓDIGO-FONTE: YUNA SOLICITE V2.0
   Sistema de Gerenciamento de Solicitações de Serviços
 ================================================================================
 

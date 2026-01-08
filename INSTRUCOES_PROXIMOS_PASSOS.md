@@ -219,7 +219,7 @@ Criar conta e submeter registro na Biblioteca Nacional.
 
 4. **Iniciar novo registro:**
    - Selecionar: "Programa de Computador"
-   - Título: **"YUNA - Sistema de Gerenciamento de Solicitações"**
+   - Título: **"Yuna Solicite - Sistema de Gerenciamento de Solicitações"**
    - Versão: **2.0**
 
 5. **Preencher formulário:**
@@ -348,7 +348,7 @@ Para garantir operação contínua (3+ anos):
 
 ## 🎯 OBJETIVO FINAL
 
-Obter **certificado digital de registro de direitos autorais** da **Biblioteca Nacional** para o **Sistema YUNA v2.0**, garantindo **proteção legal** da propriedade intelectual.
+Obter **certificado digital de registro de direitos autorais** da **Biblioteca Nacional** para o **Yuna Solicite v2.0**, garantindo **proteção legal** da propriedade intelectual.
 
 ---
 

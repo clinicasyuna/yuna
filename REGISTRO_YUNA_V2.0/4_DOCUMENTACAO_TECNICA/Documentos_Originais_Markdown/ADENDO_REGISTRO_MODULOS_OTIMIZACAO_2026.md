@@ -2,7 +2,7 @@
 
 ## 📋 INFORMAÇÕES DO ADENDO
 
-**Sistema:** YUNA - Sistema de Gerenciamento de Solicitações de Serviços Hospitalares  
+**Sistema:** Yuna Solicite - Sistema de Gerenciamento de Solicitações de Serviços Hospitalares  
 **Versão Original:** 1.0 (2024-2025)  
 **Nova Versão:** 2.0 (Janeiro 2026)  
 **Tipo de Atualização:** Módulos Proprietários de Otimização e Escalabilidade  
@@ -348,7 +348,7 @@ Eu, **Samuel dos Reis Lacerda Junior**, portador do CNPJ **55.004.442 SAMUEL DOS
 ---
 
 **© 2026 Samuel dos Reis Lacerda Junior - Todos os direitos reservados**  
-**Sistema YUNA - Módulos de Otimização Versão 2.0**  
+**Yuna Solicite - Módulos de Otimização Versão 2.0**  
 **Data do Registro:** 08 de Janeiro de 2026  
 **Localização:** Rua Eugene Carrieri nº17 Bloco C AP 81, São Paulo - SP, CEP: 05541-100  
 **Contato:** samukajr82@gmail.com | +55 11 94586-4671

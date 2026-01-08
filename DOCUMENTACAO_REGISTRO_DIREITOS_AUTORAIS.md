@@ -17,7 +17,7 @@
 
 ## 🏥 DESCRIÇÃO DO SISTEMA
 
-O Sistema YUNA é uma solução inovadora de gerenciamento de solicitações de serviços para clínicas e hospitais, desenvolvida especificamente para otimizar a comunicação entre acompanhantes de pacientes e as equipes de serviços (Manutenção, Nutrição, Higienização e Hotelaria).
+O Yuna Solicite é uma solução inovadora de gerenciamento de solicitações de serviços para clínicas e hospitais, desenvolvida especificamente para otimizar a comunicação entre acompanhantes de pacientes e as equipes de serviços (Manutenção, Nutrição, Higienização e Hotelaria).
 
 ### Principais Características:
 - **Interface Dual:** Portal para acompanhantes + Painel administrativo

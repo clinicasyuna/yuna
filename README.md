@@ -1,4 +1,4 @@
-# 🏥 YUNA Healthcare System
+# 🏥 Yuna Solicite
 
 [![Deploy](https://img.shields.io/badge/Deploy-Ready-success?logo=github)](https://github.com/clinicasyuna/yuna)
 [![PWA](https://img.shields.io/badge/PWA-Ready-purple?logo=pwa)](#)

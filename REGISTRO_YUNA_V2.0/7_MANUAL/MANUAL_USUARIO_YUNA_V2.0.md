@@ -1,4 +1,4 @@
-# 📖 MANUAL DO USUÁRIO - SISTEMA YUNA V2.0
+# 📖 MANUAL DO USUÁRIO - YUNA SOLICITE V2.0
 
 **Sistema de Gerenciamento de Solicitações de Serviços Hospitalares**
 
@@ -29,9 +29,9 @@
 
 ## 1. INTRODUÇÃO
 
-### O que é o Sistema YUNA?
+### O que é o Yuna Solicite?
 
-O Sistema YUNA é uma plataforma moderna e intuitiva que facilita a comunicação entre **acompanhantes de pacientes** e as **equipes de serviços** da clínica (Manutenção, Nutrição, Higienização e Hotelaria).
+O Yuna Solicite é uma plataforma moderna e intuitiva que facilita a comunicação entre **acompanhantes de pacientes** e as **equipes de serviços** da clínica (Manutenção, Nutrição, Higienização e Hotelaria).
 
 ### Para quem é este sistema?
 
@@ -756,7 +756,7 @@ Ao reconectar, tudo sincroniza automaticamente!
 
 ## 🏆 CERTIFICAÇÕES E QUALIDADE
 
-O Sistema YUNA possui:
+O Yuna Solicite possui:
 
 ✅ **Código 100% Original** - 19.825+ linhas proprietárias  
 ✅ **Segurança SSL/TLS** - Criptografia de ponta  
@@ -784,12 +784,12 @@ Agora você sabe tudo sobre o Sistema YUNA!
 **Equipes:** Veja as solicitações pendentes e atenda! 💪  
 **Admins:** Gerencie tudo de forma eficiente! 📊
 
-**Boa sorte e obrigado por usar o Sistema YUNA!** 🙏
+**Boa sorte e obrigado por usar o Yuna Solicite!** 🙏
 
 ---
 
 **© 2024-2026 Samuel dos Reis Lacerda Junior - Todos os direitos reservados**  
-**Sistema YUNA v2.0 - Inovação em Gestão Hospitalar**
+**Yuna Solicite v2.0 - Inovação em Gestão Hospitalar**
 
 ---
 

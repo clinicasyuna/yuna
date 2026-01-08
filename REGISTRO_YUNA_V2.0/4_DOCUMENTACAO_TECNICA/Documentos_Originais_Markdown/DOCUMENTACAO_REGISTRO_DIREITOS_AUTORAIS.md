@@ -281,7 +281,7 @@ Sistema proprietário de otimização de queries Firestore:
 ---
 
 **© 2024-2026 Samuel dos Reis Lacerda Junior - Todos os direitos reservados**  
-**Sistema YUNA - Inovação em Gestão Hospitalar**  
+**Yuna Solicite - Inovação em Gestão Hospitalar**  
 **Versão 2.0 - Otimizada para Alta Escalabilidade**  
 **Desenvolvido por:** Samuel dos Reis Lacerda Junior  
 **CNPJ:** 55.004.442 SAMUEL DOS REIS LACERDA JUNIOR  

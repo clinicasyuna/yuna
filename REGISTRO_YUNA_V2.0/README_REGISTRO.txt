@@ -1,8 +1,8 @@
-# 📦 PACOTE DE REGISTRO - SISTEMA YUNA V2.0
+# 📦 PACOTE DE REGISTRO - YUNA SOLICITE V2.0
 
 ## 🎯 BIBLIOTECA NACIONAL - ESCRITÓRIO DE DIREITOS AUTORAIS
 
-**Sistema:** YUNA - Sistema de Gerenciamento de Solicitações  
+**Sistema:** Yuna Solicite - Sistema de Gerenciamento de Solicitações  
 **Versão:** 2.0  
 **Autor:** Samuel Jesus Santos  
 **CPF:** [A preencher]  
@@ -535,7 +535,7 @@ Aguardar criação de: `codigo-fonte-yuna-v2.0.zip` (~500KB)
 
 ## 🎯 OBJETIVO FINAL
 
-**Obter certificado digital de registro** de direitos autorais emitido pela **Biblioteca Nacional do Brasil** para o **Sistema YUNA v2.0**, garantindo proteção legal da propriedade intelectual do software.
+**Obter certificado digital de registro** de direitos autorais emitido pela **Biblioteca Nacional do Brasil** para o **Yuna Solicite v2.0**, garantindo proteção legal da propriedade intelectual do software.
 
 ---
 
