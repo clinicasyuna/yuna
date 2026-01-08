@@ -4694,8 +4694,27 @@ async function carregarSolicitacoes() {
                 limit: 50,
                 ordenacao: { campo: 'criadoEm', direcao: 'desc' }
             });
-            snapshot = { docs: resultado.solicitacoes.map(s => ({ id: s.id, data: () => s, exists: true })), size: resultado.solicitacoes.length };
-            console.log('[DEBUG] QueryHelper retornou', resultado.solicitacoes.length, 'solicitações');
+            
+            // Validar resultado e tratar casos onde pode ser undefined ou array direto
+            let solicitacoesData = [];
+            if (resultado && resultado.solicitacoes && Array.isArray(resultado.solicitacoes)) {
+                solicitacoesData = resultado.solicitacoes;
+            } else if (Array.isArray(resultado)) {
+                solicitacoesData = resultado;
+            } else if (resultado && resultado.docs && Array.isArray(resultado.docs)) {
+                solicitacoesData = resultado.docs;
+            }
+            
+            snapshot = { 
+                docs: solicitacoesData.map(s => ({ 
+                    id: s.id || s.docId || Math.random().toString(), 
+                    data: () => s, 
+                    exists: true 
+                })), 
+                size: solicitacoesData.length,
+                empty: solicitacoesData.length === 0
+            };
+            console.log('[DEBUG] QueryHelper retornou', solicitacoesData.length, 'solicitações');
         } else {
             // Fallback: query simples sem ordenação (evita índice composto)
             console.log('[DEBUG] QueryHelper não disponível - usando query simples...');
