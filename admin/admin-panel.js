@@ -4687,39 +4687,33 @@ async function carregarSolicitacoes() {
         
         // OTIMIZAÇÃO: Usar QueryHelper para busca com paginação (se disponível)
         let snapshot;
-        if (window.queryHelper) {
-            console.log('[DEBUG] Usando QueryHelper para busca otimizada com paginação...');
-            const resultado = await window.queryHelper.buscarSolicitacoes({
-                filtros: isEquipe ? { equipe: usuarioAdmin.equipe } : {},
-                limit: 50,
-                ordenacao: { campo: 'criadoEm', direcao: 'desc' }
-            });
-            
-            // Validar resultado e tratar casos onde pode ser undefined ou array direto
-            let solicitacoesData = [];
-            if (resultado && resultado.solicitacoes && Array.isArray(resultado.solicitacoes)) {
-                solicitacoesData = resultado.solicitacoes;
-            } else if (Array.isArray(resultado)) {
-                solicitacoesData = resultado;
-            } else if (resultado && resultado.docs && Array.isArray(resultado.docs)) {
-                solicitacoesData = resultado.docs;
+        try {
+            if (window.queryHelper) {
+                console.log('[DEBUG] Usando QueryHelper para busca otimizada com paginação...');
+                const resultado = await window.queryHelper.buscarSolicitacoes({
+                    filtros: isEquipe ? { equipe: usuarioAdmin.equipe } : {},
+                    limit: 50,
+                    ordenacao: { campo: 'criadoEm', direcao: 'desc' }
+                });
+                
+                // Se QueryHelper retornou dados válidos, usar Firestore query para compatibilidade
+                if (resultado && (resultado.solicitacoes?.length > 0 || resultado.docs?.length > 0 || Array.isArray(resultado))) {
+                    console.log('[DEBUG] QueryHelper retornou resultados, usando Firestore query para compatibilidade...');
+                    snapshot = await window.db.collection('solicitacoes').get();
+                } else {
+                    // Se QueryHelper retornou vazio, usar query simples do Firestore
+                    console.log('[DEBUG] QueryHelper retornou vazio, usando fallback Firestore...');
+                    snapshot = await window.db.collection('solicitacoes').get();
+                }
+            } else {
+                // Fallback padrão: query simples do Firestore
+                console.log('[DEBUG] QueryHelper não disponível - usando query simples Firestore...');
+                snapshot = await window.db.collection('solicitacoes').get();
             }
-            
-            snapshot = { 
-                docs: solicitacoesData.map(s => ({ 
-                    id: s.id || s.docId || Math.random().toString(), 
-                    data: () => s, 
-                    exists: true 
-                })), 
-                size: solicitacoesData.length,
-                empty: solicitacoesData.length === 0
-            };
-            console.log('[DEBUG] QueryHelper retornou', solicitacoesData.length, 'solicitações');
-        } else {
-            // Fallback: query simples sem ordenação (evita índice composto)
-            console.log('[DEBUG] QueryHelper não disponível - usando query simples...');
+        } catch (queryError) {
+            console.error('[ERRO QueryHelper] Falha na busca otimizada:', queryError);
+            console.log('[DEBUG] Caindo para fallback Firestore por causa do erro...');
             snapshot = await window.db.collection('solicitacoes').get();
-            console.log('[DEBUG] Query simples executada com sucesso');
         }
         
         console.log('[DEBUG] Snapshot recebido:', {
