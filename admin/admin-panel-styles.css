@@ -1424,7 +1424,9 @@ h2.finalizar-solicitacao {
 }
 
 .logo-header img {
-  height: 50px;
+  height: 280px;
+  max-width: 600px;
+  object-fit: contain;
   margin-bottom: 1rem;
 }
 
