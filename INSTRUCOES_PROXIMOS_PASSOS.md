@@ -275,6 +275,27 @@ Criar conta e submeter registro na Biblioteca Nacional.
 
 ---
 
+### 🟢 PASSO 8 (RECOMENDADO): BACKUP E ALERTAS (30 min)
+
+Para garantir operação contínua (3+ anos):
+
+1. **Alerta de billing (GCP/Firebase):**
+   - Criar budget mensal com alerta em 80% do valor
+   - Enviar para seu email principal
+
+2. **Backup do Firestore:**
+   - Se tiver `gcloud`: `gcloud firestore export gs://<bucket>/backups/$(date +%Y%m%d)`
+   - Sem `gcloud`: usar console Firebase (Firestore → Export/Import) ou exportar CSV/JSON das coleções e salvar em nuvem
+   - Frequência recomendada: semanal; retenção: 6-12 meses
+
+3. **Higienização/arquivamento:**
+   - Se o volume crescer (>1M docs), arquivar solicitações concluídas há 6+ meses para coleção de histórico ou CSV/JSON em storage frio
+
+4. **Métricas a acompanhar:**
+   - Leituras Firestore/dia, cache hit rate, listeners ativos, latência p95, erros por hora
+
+---
+
 ## ⏱️ CRONOGRAMA SUGERIDO
 
 | Dia | O que fazer | Tempo |

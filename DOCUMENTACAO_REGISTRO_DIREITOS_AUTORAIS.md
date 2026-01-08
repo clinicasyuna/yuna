@@ -208,6 +208,28 @@ Sistema proprietário de otimização de queries Firestore:
 - **Análise Temporal:** Tendências e padrões
 - **Satisfação:** Feedback detalhado
 
+## ♻️ BACKUP E MONITORAMENTO (OPERAÇÃO 3+ ANOS)
+
+### Backup
+- **Frequência recomendada:** Semanal (full) + mensal (frio, se preferir)
+- **Como fazer (gcloud):** `gcloud firestore export gs://<bucket>/backups/$(date +%Y%m%d)`
+- **Sem gcloud:** Exportar via console Firebase (Firestore → Export/Import) ou baixar coleção como CSV e armazenar em nuvem
+- **Retenção sugerida:** 6-12 meses de backups semanais
+
+### Monitoramento
+- **Billing:** Criar alerta de orçamento no GCP (limite mensal + alerta em 80%)
+- **Métricas chave:** leituras Firestore/dia, cache hit rate, listeners ativos, latência p95, erros por hora
+- **Alertas operacionais:** aviso se listeners >20, se cache hit <60%, ou se leituras diárias subirem 5-10x do normal
+
+### Limpeza / Arquivamento
+- **Volume:** Se coleções crescerem demais (>1M docs), arquivar por ano (ex.: `solicitacoes_2026`) ou exportar histórico para storage frio
+- **Rotina simples:** mover solicitações concluídas +6 meses para coleção de arquivo ou para CSV/JSON em Cloud Storage
+
+### Continuidade (3+ anos)
+- Backups regulares + alertas de custo são suficientes para manter operação contínua
+- Manter paginação (50 itens) e Query Helper para evitar explosão de custos
+- Listener Manager deve seguir ativo para prevenir memory leaks em longas sessões
+
 ## 🚀 DEPLOYMENT E INFRAESTRUTURA
 
 ### Ambiente de Produção:

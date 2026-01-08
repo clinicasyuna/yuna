@@ -252,6 +252,10 @@ Criar arquivo `CHANGELOG.md` formatado:
 - [ ] **Preencher formulário** online de registro
 - [ ] **Gerar boleto** e efetuar pagamento (R$20)
 
+#### 🟠 OPERAÇÃO CONTÍNUA (RECOMENDADO):
+- [ ] **Configurar alerta de billing** no GCP/Firebase (limite mensal + aviso 80%)
+- [ ] **Definir rotina de backup** do Firestore (export semanal ou mensal para Storage)
+
 #### 🟡 MÉDIA PRIORIDADE:
 - [ ] **Capturar** 30 screenshots do sistema
 - [ ] **Consolidar** screenshots em PDF
