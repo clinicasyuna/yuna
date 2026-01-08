@@ -1424,10 +1424,11 @@ h2.finalizar-solicitacao {
 }
 
 .logo-header img {
-  height: 280px;
-  max-width: 600px;
+  height: 160px;
+  width: auto;
+  max-width: 90%;
   object-fit: contain;
-  margin-bottom: 1rem;
+  margin-bottom: 1.5rem;
 }
 
 .logo-header h1 {
