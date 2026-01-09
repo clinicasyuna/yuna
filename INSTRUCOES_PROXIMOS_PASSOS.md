@@ -342,7 +342,7 @@ Para garantir operação contínua (3+ anos):
 - **Tel:** (21) 2220-3096 / 2220-3097
 
 ### Suporte Técnico:
- - **Email:** informaticasamtech@gmail.com
+ - **Email:** ti@yuna.com.br
  - **Nota:** O e-mail de acesso operacional do Firebase permanece em samukajr82@gmail.com (uso interno para autenticação e serviços). Esta mudança padroniza apenas o contato público.
 - **Tel:** +55 11 94586-4671
 
@@ -364,7 +364,7 @@ Não precisa fazer tudo em um dia. Siga o cronograma sugerido e você terá o ce
 
 **Boa sorte! 🚀**
 
-Se tiver qualquer dúvida, estou à disposição no email: informaticasamtech@gmail.com
+Se tiver qualquer dúvida, estou à disposição no email: ti@yuna.com.br
 
 ---
 

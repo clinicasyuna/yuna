@@ -370,7 +370,7 @@ Antes de consolidar em PDF, verificar:
 
 Se tiver dificuldade com screenshots:
 
-📧 **Email:** informaticasamtech@gmail.com  
+📧 **Email:** ti@yuna.com.br  
 ☎️ **Telefone:** +55 11 94586-4671
 
 ---

@@ -381,4 +381,4 @@ getTTFB(sendToAnalytics);
 **Sistema YUNA - Especificações Técnicas Proprietárias**  
 **Desenvolvido por:** Samuel dos Reis Lacerda Junior  
 **CNPJ:** 55.004.442 SAMUEL DOS REIS LACERDA JUNIOR  
-**Contato:** informaticasamtech@gmail.com | +55 11 94586-4671
+**Contato:** ti@yuna.com.br | +55 11 94586-4671

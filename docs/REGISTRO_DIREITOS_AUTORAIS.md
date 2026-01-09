@@ -103,7 +103,7 @@ Data de Criação: 14 de novembro de 2024
 Versão: 2.0.0
 Autor: Samuel dos Reis Lacerda Junior
 CPF: [Inserir CPF para registro]
-Email: informaticasamtech@gmail.com
+Email: ti@yuna.com.br
 Telefone: +55 11 94586-4671
 ```
 

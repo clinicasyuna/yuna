@@ -393,7 +393,7 @@ Antes de enviar, verificar:
 - Site: https://www.bn.gov.br
 
 **Autor (Samuel dos Reis Lacerda Junior):**
-- Email: informaticasamtech@gmail.com
+- Email: ti@yuna.com.br
 - Telefone: +55 11 94586-4671
 - Endereço: Rua Eugene Carrieri nº17 Bloco C AP 81, São Paulo - SP
 

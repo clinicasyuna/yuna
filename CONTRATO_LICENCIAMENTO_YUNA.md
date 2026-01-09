@@ -5,7 +5,7 @@
 **LICENCIADOR:** Samuel dos Reis Lacerda Junior  
 **CNPJ:** 55.004.442 SAMUEL DOS REIS LACERDA JUNIOR  
 **Endereço:** Rua Eugene Carrieri nº17 Bloco C AP 81 CEP: 05541-100  
-**Contato:** informaticasamtech@gmail.com | +55 11 94586-4671  
+**Contato:** ti@yuna.com.br | +55 11 94586-4671  
 
 **LICENCIADO:** [Nome da Clínica/Hospital]  
 **CNPJ:** [CNPJ do Cliente]  

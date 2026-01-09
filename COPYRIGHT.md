@@ -64,7 +64,7 @@ Qualquer uso não autorizado é estritamente proibido e sujeito a
 penalidades legais.
 
 Para obter licenças de uso, entre em contato:
-- Email: informaticasamtech@gmail.com
+- Email: ti@yuna.com.br
 - Telefone: +55 11 94586-4671
 - GitHub: https://github.com/clinicasyuna/yuna
 

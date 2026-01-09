@@ -176,7 +176,7 @@ Após publicar as regras, testar:
 
 **Desenvolvedor:**
 - Samuel dos Reis Lacerda Junior
-- Email: informaticasamtech@gmail.com
+- Email: ti@yuna.com.br
 - Tel: +55 11 94586-4671
 - GitHub: @samukajr82 (inferido)
 

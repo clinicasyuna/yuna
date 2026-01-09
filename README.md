@@ -192,5 +192,5 @@ Certifique-se de configurar as regras do Firebase para aceitar requisições do 
 
 Para suporte técnico, entre em contato com a equipe de desenvolvimento.
 
-• Email de contato: informaticasamtech@gmail.com
+• Email de contato: ti@yuna.com.br
 • Nota operacional: o acesso e autenticação do Firebase permanecem vinculados ao email samukajr82@gmail.com (apenas uso interno). Caso precise alterar, abra uma solicitação para migração de credenciais.
