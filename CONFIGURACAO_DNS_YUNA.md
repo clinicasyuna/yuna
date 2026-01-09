@@ -1,5 +1,20 @@
 # 🔧 Configuração DNS para ti@yuna.com.br
 
+## 🚀 ATENÇÃO - Hostinger: AUTOMÁTICO!
+
+> **Se você usa Hostinger:** 
+> 
+> ✅ **Configuração DNS é automática!** Ao criar o e-mail ti@yuna.com.br no Hostinger, os registros SPF, DKIM e DMARC são configurados automaticamente.
+>
+> 📖 **Este documento é para referência** se você precisar:
+> - Configurar manualmente em outro registrador
+> - Entender o que está configurado
+> - Adicionar serviços adicionais (SendGrid, SES, etc.)
+>
+> 👉 **Próximo passo:** Siga o [GUIA_HOSTINGER_EMAIL_YUNA.md](GUIA_HOSTINGER_EMAIL_YUNA.md) para criar a conta de e-mail.
+
+---
+
 ## Resumo Executivo
 Este documento descreve as configurações recomendadas de DNS para o domínio **yuna.com.br**, essenciais para:
 - ✅ Entregas confiáveis de e-mails
@@ -294,8 +309,16 @@ yuna.com.br CAA 0 issue "letsencrypt.org"
 
 **Para dúvidas sobre configuração DNS:**
 - **Suporte YUNA:** ti@yuna.com.br
-- **Seu registrar (ex. NameCheap, GoDaddy):** Contato suporte
-- **Seu provedor e-mail (ex. Google):** Admin console
+- **Hostinger (registrador recomendado):** https://hpanel.hostinger.com | Chat 24/7
+- **Outro registrador:** Contato suporte
+- **Seu provedor e-mail:** Admin console
+
+---
+
+## 📚 Documentação Relacionada
+
+- [GUIA_HOSTINGER_EMAIL_YUNA.md](GUIA_HOSTINGER_EMAIL_YUNA.md) - Como criar ti@yuna.com.br no Hostinger (recomendado, automático)
+- [GUIA_BOAS_PRATICAS_TI_YUNA.md](GUIA_BOAS_PRATICAS_TI_YUNA.md) - Boas práticas de suporte e monitoramento
 
 ---
 
