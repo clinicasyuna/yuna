@@ -10432,23 +10432,63 @@ async function exportarRelatorioSatisfacaoExcel() {
         
         console.log(`[EXPORT-SATISFACAO] ${avaliacoes.length} avaliações para exportar`);
         
+        // DEBUG: Ver estrutura da primeira avaliação
+        if (avaliacoes.length > 0) {
+            console.log('[EXPORT-SATISFACAO] Estrutura da primeira avaliação:', avaliacoes[0]);
+            console.log('[EXPORT-SATISFACAO] Campos disponíveis:', Object.keys(avaliacoes[0]));
+        }
+        
         // Preparar dados para Excel
         const dadosExcel = avaliacoes.map(avaliacao => {
-            const nota = avaliacao.avaliacao || avaliacao.nota || avaliacao.rating || avaliacao.estrelas || 0;
-            const quarto = avaliacao.quarto || avaliacao.numeroQuarto || avaliacao.quartoSolicitacao || 'N/A';
-            const equipe = avaliacao.equipaAvaliada || avaliacao.equipe || 'N/A';
-            const dataFormatada = formatarDataHora(avaliacao.dataAvaliacao || avaliacao.timestamp);
+            // Extrair nota com várias tentativas
+            let nota = avaliacao.avaliacao || avaliacao.nota || avaliacao.rating || avaliacao.estrelas || 0;
+            if (typeof nota === 'string') nota = Number(nota);
+            if (isNaN(nota)) nota = 0;
+            
+            // Extrair quarto com várias tentativas
+            const quarto = avaliacao.quarto || avaliacao.numeroQuarto || avaliacao.quartoSolicitacao || avaliacao.quartoNumero || 'N/A';
+            
+            // Extrair equipe com várias tentativas
+            const equipe = avaliacao.equipaAvaliada || avaliacao.equipe || avaliacao.equipeResponsavel || avaliacao.tipo || 'N/A';
+            
+            // Extrair data
+            const dataFormatada = formatarDataHora(avaliacao.dataAvaliacao || avaliacao.timestamp || avaliacao.criadoEm);
+            
+            // Extrair aspectos (podem estar em objeto aspectos ou diretamente)
+            const rapidez = avaliacao.aspectos?.rapidez || avaliacao.rapidez || '-';
+            const qualidade = avaliacao.aspectos?.qualidade || avaliacao.qualidade || '-';
+            const atendimento = avaliacao.aspectos?.atendimento || avaliacao.atendimento || '-';
+            
+            // Extrair comentário
+            const comentario = avaliacao.comentario || avaliacao.comentarios || avaliacao.comentarioAvaliacao || '-';
+            
+            // Extrair recomendaria (verificar diferentes formatos)
+            let recomendaria = 'Não';
+            if (avaliacao.recomendaria === true || avaliacao.recomendaria === 'sim' || avaliacao.recomendaria === 'Sim') {
+                recomendaria = 'Sim';
+            } else if (avaliacao.recomendacao === true || avaliacao.recomendacao === 'sim') {
+                recomendaria = 'Sim';
+            }
+            
+            console.log('[EXPORT-SATISFACAO] Processando avaliação:', {
+                id: avaliacao.id,
+                equipe,
+                nota,
+                recomendaria,
+                campoRecomendaria: avaliacao.recomendaria,
+                campoEquipe: avaliacao.equipaAvaliada || avaliacao.equipe
+            });
             
             return {
                 'Data': dataFormatada,
                 'Equipe': equipe,
                 'Quarto': quarto,
                 'Nota': nota,
-                'Rapidez': avaliacao.aspectos?.rapidez || avaliacao.rapidez || '-',
-                'Qualidade': avaliacao.aspectos?.qualidade || avaliacao.qualidade || '-',
-                'Atendimento': avaliacao.aspectos?.atendimento || avaliacao.atendimento || '-',
-                'Comentário': avaliacao.comentario || avaliacao.comentarios || '-',
-                'Recomendaria': avaliacao.recomendaria ? 'Sim' : 'Não'
+                'Rapidez': rapidez,
+                'Qualidade': qualidade,
+                'Atendimento': atendimento,
+                'Comentário': comentario,
+                'Recomendaria': recomendaria
             };
         });
         
