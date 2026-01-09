@@ -10,7 +10,7 @@
 **Empresa:** 55.004.442 SAMUEL DOS REIS LACERDA JUNIOR (MEI)  
 **Endereço:** Rua Eugene Carrieri nº17 Bloco C AP 81 CEP: 05541-100  
 **Telefone:** +55 11 94586-4671  
-**E-mail:** samukajr82@gmail.com  
+**E-mail:** informaticasamtech@gmail.com  
 **Cliente:** Clínicas YUNA  
 **Tecnologia:** Sistema Web Progressive Web App (PWA)  
 **Licença:** Todos os direitos reservados  
