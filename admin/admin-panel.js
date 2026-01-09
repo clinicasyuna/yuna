@@ -9828,18 +9828,38 @@ async function abrirDashboardSatisfacao() {
                         </div>
                     </div>
                     
-                    <!-- Botão de Exclusão de Pesquisas -->
+                    <!-- Botões de Ação -->
                     <div style="border-top: 1px solid #e5e7eb; margin-top: 32px; padding-top: 24px;">
-                        <div style="display: flex; justify-content: center; align-items: center; gap: 12px;">
-                            <button onclick="confirmarExclusaoPesquisasSatisfacao()" 
-                                    style="background: #dc2626; color: white; border: none; padding: 12px 24px; border-radius: 8px; 
-                                           font-weight: 600; cursor: pointer; transition: all 0.3s ease; display: flex; align-items: center; gap: 8px;">
-                                <i class="fas fa-trash-alt"></i>
-                                Excluir Todas as Pesquisas de Satisfação
+                        <div style="display: flex; justify-content: center; align-items: center; gap: 16px; flex-wrap: wrap;">
+                            <!-- Botão Exportar Excel -->
+                            <button onclick="exportarRelatorioSatisfacaoExcel()" 
+                                    style="background: #10b981; color: white; border: none; padding: 14px 28px; border-radius: 8px; 
+                                           font-weight: 600; cursor: pointer; transition: all 0.3s ease; display: flex; align-items: center; gap: 10px;
+                                           font-size: 15px; box-shadow: 0 4px 12px rgba(16, 185, 129, 0.3);">
+                                <i class="fas fa-file-excel" style="font-size: 18px;"></i>
+                                Exportar Relatório (Excel)
                             </button>
-                            <div style="color: #6b7280; font-size: 14px; max-width: 300px; text-align: center;">
-                                Esta ação remove permanentemente todas as avaliações de satisfação do sistema
-                            </div>
+                            
+                            <!-- Botão Filtrar -->
+                            <button onclick="abrirFiltrosSatisfacao()" 
+                                    style="background: #3b82f6; color: white; border: none; padding: 14px 28px; border-radius: 8px; 
+                                           font-weight: 600; cursor: pointer; transition: all 0.3s ease; display: flex; align-items: center; gap: 10px;
+                                           font-size: 15px; box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3);">
+                                <i class="fas fa-filter" style="font-size: 18px;"></i>
+                                Filtrar Resultados
+                            </button>
+                            
+                            <!-- Botão Excluir -->
+                            <button onclick="confirmarExclusaoPesquisasSatisfacao()" 
+                                    style="background: #dc2626; color: white; border: none; padding: 14px 28px; border-radius: 8px; 
+                                           font-weight: 600; cursor: pointer; transition: all 0.3s ease; display: flex; align-items: center; gap: 10px;
+                                           font-size: 15px; box-shadow: 0 4px 12px rgba(220, 38, 38, 0.3);">
+                                <i class="fas fa-trash-alt" style="font-size: 18px;"></i>
+                                Excluir Todas as Pesquisas
+                            </button>
+                        </div>
+                        <div style="color: #6b7280; font-size: 13px; max-width: 600px; text-align: center; margin: 16px auto 0;">
+                            💡 Exporte relatórios detalhados, filtre por equipe/período ou remova permanentemente todas as avaliações
                         </div>
                     </div>
                 </div>
@@ -10387,8 +10407,208 @@ function fecharDashboardSatisfacao() {
     }
 }
 
+// === EXPORTAÇÃO EXCEL DE RELATÓRIO DE SATISFAÇÃO ===
+
+async function exportarRelatorioSatisfacaoExcel() {
+    try {
+        console.log('[EXPORT-SATISFACAO] Iniciando exportação de relatório...');
+        showToast('Info', 'Preparando relatório para exportação...', 'info');
+        
+        // Buscar todas as avaliações
+        const avaliacoesSnapshot = await window.db.collection('avaliacoes_satisfacao')
+            .orderBy('dataAvaliacao', 'desc')
+            .get();
+        
+        if (avaliacoesSnapshot.empty) {
+            showToast('Aviso', 'Nenhuma avaliação encontrada para exportar.', 'warning');
+            return;
+        }
+        
+        const avaliacoes = [];
+        avaliacoesSnapshot.forEach(doc => {
+            const data = doc.data();
+            avaliacoes.push({ id: doc.id, ...data });
+        });
+        
+        console.log(`[EXPORT-SATISFACAO] ${avaliacoes.length} avaliações para exportar`);
+        
+        // Preparar dados para Excel
+        const dadosExcel = avaliacoes.map(avaliacao => {
+            const nota = avaliacao.avaliacao || avaliacao.nota || avaliacao.rating || avaliacao.estrelas || 0;
+            const quarto = avaliacao.quarto || avaliacao.numeroQuarto || avaliacao.quartoSolicitacao || 'N/A';
+            const equipe = avaliacao.equipaAvaliada || avaliacao.equipe || 'N/A';
+            const dataFormatada = formatarDataHora(avaliacao.dataAvaliacao || avaliacao.timestamp);
+            
+            return {
+                'Data': dataFormatada,
+                'Equipe': equipe,
+                'Quarto': quarto,
+                'Nota': nota,
+                'Rapidez': avaliacao.aspectos?.rapidez || avaliacao.rapidez || '-',
+                'Qualidade': avaliacao.aspectos?.qualidade || avaliacao.qualidade || '-',
+                'Atendimento': avaliacao.aspectos?.atendimento || avaliacao.atendimento || '-',
+                'Comentário': avaliacao.comentario || avaliacao.comentarios || '-',
+                'Recomendaria': avaliacao.recomendaria ? 'Sim' : 'Não'
+            };
+        });
+        
+        // Calcular estatísticas por equipe
+        const estatisticasPorEquipe = {};
+        avaliacoes.forEach(avaliacao => {
+            const equipe = avaliacao.equipaAvaliada || avaliacao.equipe || 'N/A';
+            const nota = Number(avaliacao.avaliacao || avaliacao.nota || avaliacao.rating || 0);
+            
+            if (!estatisticasPorEquipe[equipe]) {
+                estatisticasPorEquipe[equipe] = { total: 0, soma: 0, positivas: 0 };
+            }
+            
+            estatisticasPorEquipe[equipe].total++;
+            estatisticasPorEquipe[equipe].soma += nota;
+            if (nota >= 4) estatisticasPorEquipe[equipe].positivas++;
+        });
+        
+        const resumoEquipes = Object.entries(estatisticasPorEquipe).map(([equipe, stats]) => ({
+            'Equipe': equipe,
+            'Total Avaliações': stats.total,
+            'Média': (stats.soma / stats.total).toFixed(2),
+            'Satisfação Positiva (%)': ((stats.positivas / stats.total) * 100).toFixed(1) + '%'
+        }));
+        
+        // Verificar se XLSX está disponível
+        if (typeof XLSX === 'undefined') {
+            console.error('[EXPORT-SATISFACAO] XLSX não carregado');
+            showToast('Erro', 'Biblioteca de exportação não disponível. Recarregue a página.', 'error');
+            return;
+        }
+        
+        // Criar workbook
+        const wb = XLSX.utils.book_new();
+        
+        // Aba 1: Avaliações detalhadas
+        const ws1 = XLSX.utils.json_to_sheet(dadosExcel);
+        XLSX.utils.book_append_sheet(wb, ws1, 'Avaliações');
+        
+        // Aba 2: Resumo por equipe
+        const ws2 = XLSX.utils.json_to_sheet(resumoEquipes);
+        XLSX.utils.book_append_sheet(wb, ws2, 'Resumo por Equipe');
+        
+        // Gerar arquivo
+        const nomeArquivo = `Relatorio_Satisfacao_${new Date().toISOString().split('T')[0]}.xlsx`;
+        XLSX.writeFile(wb, nomeArquivo);
+        
+        console.log('[EXPORT-SATISFACAO] ✅ Arquivo exportado:', nomeArquivo);
+        showToast('Sucesso', `Relatório exportado com sucesso! ${avaliacoes.length} avaliações`, 'success');
+        
+    } catch (error) {
+        console.error('[EXPORT-SATISFACAO] Erro:', error);
+        showToast('Erro', `Erro ao exportar relatório: ${error.message}`, 'error');
+    }
+}
+
+// === FILTROS DE SATISFAÇÃO ===
+
+function abrirFiltrosSatisfacao() {
+    const modalFiltros = document.createElement('div');
+    modalFiltros.id = 'modal-filtros-satisfacao';
+    modalFiltros.style.cssText = `
+        position: fixed; 
+        top: 0; 
+        left: 0; 
+        width: 100%; 
+        height: 100%; 
+        background: rgba(0, 0, 0, 0.6); 
+        display: flex; 
+        justify-content: center; 
+        align-items: center; 
+        z-index: 10001;
+        padding: 20px;
+    `;
+    
+    modalFiltros.innerHTML = `
+        <div style="background: white; border-radius: 12px; padding: 24px; max-width: 500px; width: 90%;">
+            <h3 style="margin: 0 0 20px 0; color: #374151; display: flex; align-items: center; gap: 8px;">
+                <i class="fas fa-filter"></i>
+                Filtrar Avaliações
+            </h3>
+            
+            <div style="margin-bottom: 16px;">
+                <label style="display: block; margin-bottom: 8px; color: #374151; font-weight: 500;">Equipe:</label>
+                <select id="filtro-equipe" style="width: 100%; padding: 10px; border: 1px solid #d1d5db; border-radius: 6px;">
+                    <option value="">Todas as equipes</option>
+                    <option value="manutencao">Manutenção</option>
+                    <option value="nutricao">Nutrição</option>
+                    <option value="higienizacao">Higienização</option>
+                    <option value="hotelaria">Hotelaria</option>
+                </select>
+            </div>
+            
+            <div style="margin-bottom: 16px;">
+                <label style="display: block; margin-bottom: 8px; color: #374151; font-weight: 500;">Nota mínima:</label>
+                <select id="filtro-nota" style="width: 100%; padding: 10px; border: 1px solid #d1d5db; border-radius: 6px;">
+                    <option value="0">Todas as notas</option>
+                    <option value="4">4 estrelas ou mais</option>
+                    <option value="3">3 estrelas ou mais</option>
+                    <option value="2">2 estrelas ou mais</option>
+                    <option value="1">1 estrela ou mais</option>
+                </select>
+            </div>
+            
+            <div style="margin-bottom: 16px;">
+                <label style="display: block; margin-bottom: 8px; color: #374151; font-weight: 500;">Período:</label>
+                <select id="filtro-periodo" style="width: 100%; padding: 10px; border: 1px solid #d1d5db; border-radius: 6px;">
+                    <option value="0">Todo o período</option>
+                    <option value="7">Últimos 7 dias</option>
+                    <option value="30">Últimos 30 dias</option>
+                    <option value="90">Últimos 90 dias</option>
+                </select>
+            </div>
+            
+            <div style="display: flex; gap: 12px; margin-top: 24px;">
+                <button onclick="fecharFiltrosSatisfacao()" style="flex: 1; background: #f3f4f6; color: #374151; border: none; padding: 12px; border-radius: 8px; font-weight: 500; cursor: pointer;">
+                    Cancelar
+                </button>
+                <button onclick="aplicarFiltrosSatisfacao()" style="flex: 1; background: #3b82f6; color: white; border: none; padding: 12px; border-radius: 8px; font-weight: 500; cursor: pointer;">
+                    Aplicar Filtros
+                </button>
+            </div>
+        </div>
+    `;
+    
+    document.body.appendChild(modalFiltros);
+}
+
+function fecharFiltrosSatisfacao() {
+    const modal = document.getElementById('modal-filtros-satisfacao');
+    if (modal) modal.remove();
+}
+
+async function aplicarFiltrosSatisfacao() {
+    const equipe = document.getElementById('filtro-equipe').value;
+    const notaMinima = parseInt(document.getElementById('filtro-nota').value);
+    const periodo = parseInt(document.getElementById('filtro-periodo').value);
+    
+    console.log('[FILTROS] Aplicando:', { equipe, notaMinima, periodo });
+    
+    fecharFiltrosSatisfacao();
+    fecharDashboardSatisfacao();
+    
+    // Reabrir dashboard com filtros
+    await abrirDashboardSatisfacaoComFiltros(equipe, notaMinima, periodo);
+}
+
+async function abrirDashboardSatisfacaoComFiltros(equipe, notaMinima, periodo) {
+    // TODO: Implementar lógica de filtragem
+    // Por enquanto, reabre dashboard normal
+    showToast('Info', 'Filtros aplicados! Funcionalidade em desenvolvimento.', 'info');
+    abrirDashboardSatisfacao();
+}
+
 // Expor função globalmente
 window.abrirDashboardSatisfacao = abrirDashboardSatisfacao;
+window.exportarRelatorioSatisfacaoExcel = exportarRelatorioSatisfacaoExcel;
+window.abrirFiltrosSatisfacao = abrirFiltrosSatisfacao;
+window.fecharFiltrosSatisfacao = fecharFiltrosSatisfacao;
+window.aplicarFiltrosSatisfacao = aplicarFiltrosSatisfacao;
 
 // Função para mostrar informações de visualização para administradores
 function mostrarInfoVisualizacao(solicitacaoId) {
