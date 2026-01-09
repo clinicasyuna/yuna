@@ -211,6 +211,22 @@
             opacity: 1 !important;
         }
     </style>
+    <style>
+        footer.site-footer {
+            position: fixed;
+            bottom: 12px;
+            right: 12px;
+            background: rgba(255,255,255,0.9);
+            color: #111827;
+            border: 1px solid #e5e7eb;
+            border-radius: 8px;
+            padding: 8px 12px;
+            font-size: 12px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+            z-index: 9999999999;
+        }
+        footer.site-footer a { color: #2563eb; text-decoration: none; }
+    </style>
 
     <!-- HARD CACHE-BUST: garante atualização mesmo com SW/cache antigo -->
     <script>
@@ -1132,5 +1148,6 @@
         #manage-users-modal { z-index: 1000005 !important; }
         #modal-novo-usuario { z-index: 1000015 !important; }
     </style>
+    <footer class="site-footer">Suporte: <a href="mailto:informaticasamtech@gmail.com">informaticasamtech@gmail.com</a></footer>
 </body>
 </html>
