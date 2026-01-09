@@ -342,7 +342,8 @@ Para garantir operação contínua (3+ anos):
 - **Tel:** (21) 2220-3096 / 2220-3097
 
 ### Suporte Técnico:
-- **Email:** informaticasamtech@gmail.com
+ - **Email:** informaticasamtech@gmail.com
+ - **Nota:** O e-mail de acesso operacional do Firebase permanece em samukajr82@gmail.com (uso interno para autenticação e serviços). Esta mudança padroniza apenas o contato público.
 - **Tel:** +55 11 94586-4671
 
 ---
