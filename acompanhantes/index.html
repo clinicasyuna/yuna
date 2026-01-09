@@ -2469,41 +2469,85 @@
         // FUNÇÃO AUXILIAR: Buscar dados do usuário de forma robusta
         async function buscarDadosUsuarioRobusta(user) {
             try {
-                console.log('[DEBUG] buscarDadosUsuarioRobusta: iniciando busca para UID:', user.uid);
+                console.log('[DEBUG] 🔍 buscarDadosUsuarioRobusta: iniciando busca');
+                console.log('[DEBUG] 📋 UID do usuário:', user.uid);
+                console.log('[DEBUG] 📧 Email do usuário:', user.email);
                 
                 // PRIMEIRA TENTATIVA: Buscar por UID
+                console.log('[DEBUG] 🎯 TENTATIVA 1: Buscando por UID em usuarios_acompanhantes...');
                 let userDoc = await window.db.collection('usuarios_acompanhantes').doc(user.uid).get();
                 
                 if (userDoc.exists) {
-                    console.log('[DEBUG] buscarDadosUsuarioRobusta: encontrado por UID');
-                    return { docId: user.uid, data: userDoc.data() };
+                    const data = userDoc.data();
+                    console.log('[DEBUG] ✅ Encontrado por UID!');
+                    console.log('[DEBUG] 📦 Dados:', data);
+                    console.log('[DEBUG] 🚪 Quarto:', data.quarto);
+                    console.log('[DEBUG] 👤 Nome:', data.nome);
+                    console.log('[DEBUG] ✉️ Email:', data.email);
+                    console.log('[DEBUG] 🔐 UID no doc:', data.uid);
+                    console.log('[DEBUG] ✅ Ativo:', data.ativo);
+                    return { docId: user.uid, data: data };
                 }
                 
                 // SEGUNDA TENTATIVA: Buscar por email
-                console.log('[DEBUG] buscarDadosUsuarioRobusta: buscando por email:', user.email);
+                console.log('[DEBUG] ⚠️ Não encontrado por UID');
+                console.log('[DEBUG] 🎯 TENTATIVA 2: Buscando por email:', user.email);
                 const emailQuery = await window.db.collection('usuarios_acompanhantes')
                     .where('email', '==', user.email)
                     .limit(1)
                     .get();
                 
+                console.log('[DEBUG] 📊 Resultados da query por email:', emailQuery.size);
+                
                 if (!emailQuery.empty) {
                     const doc = emailQuery.docs[0];
-                    console.log('[DEBUG] buscarDadosUsuarioRobusta: encontrado por email, ID:', doc.id);
+                    const data = doc.data();
+                    console.log('[DEBUG] ✅ Encontrado por email!');
+                    console.log('[DEBUG] 🆔 Document ID:', doc.id);
+                    console.log('[DEBUG] 📦 Dados:', data);
+                    console.log('[DEBUG] 🚪 Quarto:', data.quarto);
+                    console.log('[DEBUG] 👤 Nome:', data.nome);
+                    console.log('[DEBUG] ✉️ Email:', data.email);
+                    console.log('[DEBUG] 🔐 UID no doc:', data.uid);
                     
-                    // Corrigir UID no documento
-                    await window.db.collection('usuarios_acompanhantes').doc(doc.id).update({
-                        uid: user.uid,
-                        ultimaCorrecaoUID: new Date().toISOString()
-                    });
+                    // Corrigir UID no documento se estiver diferente
+                    if (data.uid !== user.uid) {
+                        console.log('[DEBUG] 🔧 Corrigindo UID no documento...');
+                        await window.db.collection('usuarios_acompanhantes').doc(doc.id).update({
+                            uid: user.uid,
+                            ultimaCorrecaoUID: firebase.firestore.FieldValue.serverTimestamp()
+                        });
+                        console.log('[DEBUG] ✅ UID corrigido com sucesso');
+                    }
                     
-                    return { docId: doc.id, data: doc.data() };
+                    return { docId: doc.id, data: data };
                 }
                 
-                console.error('[ERRO] buscarDadosUsuarioRobusta: usuário não encontrado');
+                // TERCEIRA TENTATIVA: Buscar todos os documentos ativos para debug
+                console.log('[DEBUG] ⚠️ Não encontrado por email');
+                console.log('[DEBUG] 🎯 TENTATIVA 3: Listando TODOS os acompanhantes ativos para debug...');
+                const todosSnapshot = await window.db.collection('usuarios_acompanhantes')
+                    .where('ativo', '==', true)
+                    .get();
+                
+                console.log('[DEBUG] 📊 Total de acompanhantes ativos:', todosSnapshot.size);
+                todosSnapshot.forEach((doc, index) => {
+                    const data = doc.data();
+                    console.log(`[DEBUG] 🔢 Acompanhante ${index + 1}:`, {
+                        docId: doc.id,
+                        email: data.email,
+                        uid: data.uid,
+                        nome: data.nome,
+                        quarto: data.quarto
+                    });
+                });
+                
+                console.error('[ERRO] ❌ Usuário não encontrado em nenhuma tentativa');
                 return null;
                 
             } catch (error) {
-                console.error('[ERRO] buscarDadosUsuarioRobusta:', error);
+                console.error('[ERRO] 💥 buscarDadosUsuarioRobusta:', error);
+                console.error('[ERRO] 📋 Stack:', error.stack);
                 return null;
             }
         }
