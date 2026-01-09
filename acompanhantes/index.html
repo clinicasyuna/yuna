@@ -1862,6 +1862,7 @@
         let sessionTimeout;
         let warningTimeout;
         let lastActivity = Date.now();
+        let sessionTimeoutInitialized = false;
         const TIMEOUT_DURATION = 10 * 60 * 1000; // 10 minutos
         const WARNING_TIME = 2 * 60 * 1000; // 2 minutos antes do logout
 
@@ -1985,6 +1986,10 @@
 
         // Inicializar sistema de timeout
         function initializeSessionTimeout() {
+            if (sessionTimeoutInitialized) {
+                return; // evita registrar múltiplos listeners e timers
+            }
+            sessionTimeoutInitialized = true;
             console.log('[TIMEOUT] ⏱️ Sistema de timeout inicializado (10 minutos)');
             
             // Events de atividade
@@ -2012,6 +2017,11 @@
         window.auth = firebase.auth();
         window.db = firebase.firestore();
 
+        // Garantir sessão persistente mesmo em GitHub Pages
+        window.auth.setPersistence(firebase.auth.Auth.Persistence.LOCAL)
+            .then(() => console.log('[AUTH] Persistência configurada como LOCAL'))
+            .catch(err => console.error('[AUTH] Falha ao configurar persistência:', err));
+
         let currentUser = null;
         let equipeSelecionada = null;
 
@@ -2028,7 +2038,7 @@
                 // Inicializar sistema de timeout de sessão
                 initializeSessionTimeout();
             } else {
-                console.log('👤 Usuário não logado');
+                console.warn('👤 Usuário não logado (onAuthStateChanged)');
                 showAuthSection();
             }
         });
@@ -4499,7 +4509,8 @@ console.log('✅ Sistema YUNA - Painel de Acompanhantes com Métricas Avançadas
 // Registrar Service Worker para PWA
 if ('serviceWorker' in navigator) {
     window.addEventListener('load', function() {
-        navigator.serviceWorker.register('/service-worker.js')
+        // Usar caminho relativo correto para GitHub Pages (/yuna/acompanhantes)
+        navigator.serviceWorker.register('./service-worker.js')
             .then(function(registration) {
                 console.log('✅ Service Worker registrado:', registration.scope);
             })
