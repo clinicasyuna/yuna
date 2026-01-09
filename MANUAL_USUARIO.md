@@ -216,4 +216,4 @@ O dashboard apresenta um resumo visual das suas solicitações organizadas por s
 **© 2024-2025 Samuel dos Reis Lacerda Junior - Todos os direitos reservados**  
 **Sistema YUNA desenvolvido por Samuel dos Reis Lacerda Junior**  
 **CNPJ: 55.004.442 SAMUEL DOS REIS LACERDA JUNIOR**  
-**Contato:** samukajr82@gmail.com | +55 11 94586-4671
+**Contato:** informaticasamtech@gmail.com | +55 11 94586-4671

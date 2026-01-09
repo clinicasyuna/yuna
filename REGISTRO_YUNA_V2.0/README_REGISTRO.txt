@@ -479,7 +479,7 @@ Aguardar criação de: `codigo-fonte-yuna-v2.0.zip` (~500KB)
 
 ### Dúvidas Técnicas do Sistema:
 - **Desenvolvedor:** Samuel Jesus Santos
-- **Email:** samukajr82@gmail.com
+- **Email:** informaticasamtech@gmail.com
 - **Telefone:** +55 11 94586-4671
 
 ---
@@ -592,7 +592,7 @@ REGISTRO_YUNA_V2.0/
 
 Este pacote foi preparado automaticamente para facilitar seu processo de registro na Biblioteca Nacional. Siga os próximos passos com calma, um de cada vez, e você terá seu certificado em aproximadamente 7-8 dias.
 
-**Qualquer dúvida, estou à disposição! 📧 samukajr82@gmail.com**
+**Qualquer dúvida, estou à disposição! 📧 informaticasamtech@gmail.com**
 
 ---
 

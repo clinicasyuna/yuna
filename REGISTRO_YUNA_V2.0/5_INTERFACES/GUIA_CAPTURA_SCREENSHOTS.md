@@ -370,7 +370,7 @@ Antes de consolidar em PDF, verificar:
 
 Se tiver dificuldade com screenshots:
 
-📧 **Email:** samukajr82@gmail.com  
+📧 **Email:** informaticasamtech@gmail.com  
 ☎️ **Telefone:** +55 11 94586-4671
 
 ---

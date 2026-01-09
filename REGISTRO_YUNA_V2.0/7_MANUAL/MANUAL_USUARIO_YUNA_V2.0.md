@@ -10,7 +10,7 @@
 **Desenvolvedor:** Samuel dos Reis Lacerda Junior  
 **Cliente:** Clínicas YUNA  
 **Data:** Janeiro 2026  
-**Suporte:** samukajr82@gmail.com | +55 11 94586-4671
+**Suporte:** informaticasamtech@gmail.com | +55 11 94586-4671
 
 ---
 
@@ -651,7 +651,7 @@ Entre em contato se:
 ### 📞 Informações de Contato
 
 **Suporte Técnico:**
-- 📧 Email: samukajr82@gmail.com
+- 📧 Email: informaticasamtech@gmail.com
 - ☎️ Telefone: +55 11 94586-4671
 - ⏰ Horário: Segunda a Sexta, 8h às 18h
 
@@ -828,4 +828,4 @@ Agora você sabe tudo sobre o Sistema YUNA!
 
 ## 📞 PRECISA DE AJUDA?
 
-**Suporte:** samukajr82@gmail.com | +55 11 94586-4671
+**Suporte:** informaticasamtech@gmail.com | +55 11 94586-4671

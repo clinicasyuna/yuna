@@ -125,7 +125,7 @@ Autorizo o **registro desta obra junto à Biblioteca Nacional do Brasil** (Funda
 - **Estado:** São Paulo (SP)
 - **CEP:** 05541-100
 - **Telefone:** +55 11 94586-4671
-- **Email:** samukajr82@gmail.com
+- **Email:** informaticasamtech@gmail.com
 
 ---
 

@@ -411,7 +411,7 @@ Para documentação técnica completa, consultar:
   - QUICKSTART.md
 
 Para suporte técnico:
-  Email: samukajr82@gmail.com
+  Email: informaticasamtech@gmail.com
   Telefone: +55 11 94586-4671
 
 ================================================================================
@@ -430,7 +430,7 @@ Direitos Autorais (EDA) para proteção legal.
 Uso comercial, distribuição, modificação ou reprodução não autorizados 
 são estritamente proibidos.
 
-Para licenciamento comercial, contatar: samukajr82@gmail.com
+Para licenciamento comercial, contatar: informaticasamtech@gmail.com
 
 ================================================================================
 FIM DO README

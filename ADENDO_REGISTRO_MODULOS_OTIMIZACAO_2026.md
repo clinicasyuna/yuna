@@ -351,7 +351,7 @@ Eu, **Samuel dos Reis Lacerda Junior**, portador do CNPJ **55.004.442 SAMUEL DOS
 **Sistema YUNA - Módulos de Otimização Versão 2.0**  
 **Data do Registro:** 08 de Janeiro de 2026  
 **Localização:** Rua Eugene Carrieri nº17 Bloco C AP 81, São Paulo - SP, CEP: 05541-100  
-**Contato:** samukajr82@gmail.com | +55 11 94586-4671
+**Contato:** informaticasamtech@gmail.com | +55 11 94586-4671
 
 ---
 
