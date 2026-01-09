@@ -10935,7 +10935,7 @@ function gerarListaDetalhada(solicitacoes, stats) {
                                         ${sol.tipo || sol.equipe || '--'}
                                     </td>
                                     <td style="padding: 8px 10px; font-size: 11px; max-width: 200px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">
-                                        ${sol.descricao || sol.detalhes || '--'}
+                                        ${sol.descricao || sol.detalhes || sol.observacoes || '--'}
                                     </td>
                                     <td style="padding: 8px 10px; font-size: 11px;">
                                         ${sol.quarto || '--'}
@@ -11081,6 +11081,16 @@ async function exportarDados() {
                 return 'Invalid Date';
             };
 
+            // Função para extrair descrição dos diferentes campos possíveis
+            const extrairDescricao = (sol) => {
+                // Cada equipe usa um campo diferente:
+                // - Manutenção: descricao
+                // - Nutrição: detalhes
+                // - Higienização: observacoes
+                // - Hotelaria: detalhes
+                return sol.descricao || sol.detalhes || sol.observacoes || '--';
+            };
+
             return {
                 'ID': sol.id,
                 'Data/Hora': extrairDataHora(sol),
@@ -11089,7 +11099,7 @@ async function exportarDados() {
                 'Status': sol.status || '--',
                 'Quarto': sol.quarto || '--',
                 'Solicitante': sol.usuarioNome || sol.nome || '--',
-                'Descrição': sol.descricao || '--',
+                'Descrição': extrairDescricao(sol),
                 'Responsável': sol.responsavel || '--',
                 'Solução': sol.solucao || '--',
                 'TMA (min)': sol.tempoAtendimentoMinutos || '--',
