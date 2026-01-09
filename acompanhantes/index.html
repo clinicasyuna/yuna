@@ -2533,13 +2533,14 @@
                 console.log('[DEBUG] 📊 Total de acompanhantes ativos:', todosSnapshot.size);
                 todosSnapshot.forEach((doc, index) => {
                     const data = doc.data();
-                    console.log(`[DEBUG] 🔢 Acompanhante ${index + 1}:`, {
-                        docId: doc.id,
-                        email: data.email,
-                        uid: data.uid,
-                        nome: data.nome,
-                        quarto: data.quarto
-                    });
+                    console.log(`[DEBUG] 🔢 Acompanhante #${index + 1}:`);
+                    console.log('  📋 Doc ID:', doc.id);
+                    console.log('  ✉️ Email:', data.email);
+                    console.log('  🔐 UID:', data.uid);
+                    console.log('  👤 Nome:', data.nome);
+                    console.log('  🚪 Quarto:', data.quarto);
+                    console.log('  ✅ Ativo:', data.ativo);
+                    console.log('  📦 Documento completo:', data);
                 });
                 
                 console.error('[ERRO] ❌ Usuário não encontrado em nenhuma tentativa');
