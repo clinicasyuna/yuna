@@ -111,8 +111,20 @@ O sistema é um **Progressive Web App** que pode ser instalado:
 1. Verifique se o domínio está autorizado no Firebase Console
 2. Adicione o novo domínio em Authentication → Settings → Authorized domains
 
-## 🎯 **Contatos de Suporte**
+## 🎯 **Contatos e Documentação**
 
+### 📧 Suporte
+- **E-mail de suporte:** ti@yuna.com.br
+- **Nota:** O e-mail operacional do Firebase permanece em samukajr82@gmail.com (uso interno).
+
+### 📚 Documentação Técnica
+- [Guia de Boas Práticas - ti@yuna.com.br](GUIA_BOAS_PRATICAS_TI_YUNA.md) - Implementação e monitoramento do novo e-mail
+- [Configuração DNS para yuna.com.br](CONFIGURACAO_DNS_YUNA.md) - SPF, DKIM, DMARC e monitoramento de e-mails
+- [Próximos Passos de Registro](INSTRUCOES_PROXIMOS_PASSOS.md) - Guia para registro de direitos autorais
+- [Especificações Técnicas](ESPECIFICACOES_TECNICAS.md) - Arquitetura e stack tecnológico
+- [Manual do Usuário](MANUAL_USUARIO.md) - Guia completo de utilização
+
+### 👥 Informações do Projeto
 - **Desenvolvedor:** Samuel Lacerda
 - **GitHub Organization:** [clinicasyuna](https://github.com/clinicasyuna)
 - **Repositório:** [yuna](https://github.com/clinicasyuna/yuna)
