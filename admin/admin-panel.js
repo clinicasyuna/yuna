@@ -8915,26 +8915,36 @@ function preencherDetalhesModal(solicitacao, dadosAcompanhante) {
         // Calcular métricas de tempo para exibição
         let metricas = '';
         const agora = new Date();
+        let tempoDesdeAbertura = 0; // Inicializar para estar disponível em todo o escopo
         
-        if (solicitacao.criadoEm) {
-            let dataCreacao;
-            
-            // Verificar se criadoEm é um timestamp do Firestore ou uma string
-            if (solicitacao.criadoEm && typeof solicitacao.criadoEm.toDate === 'function') {
-                dataCreacao = solicitacao.criadoEm.toDate();
-            } else if (solicitacao.criadoEm && typeof solicitacao.criadoEm === 'string') {
-                dataCreacao = new Date(solicitacao.criadoEm);
-            } else if (solicitacao.dataAbertura && typeof solicitacao.dataAbertura.toDate === 'function') {
+        // Tentar extrair data de criação (priorizar dataAbertura)
+        let dataCreacao = null;
+        
+        // 1. Tentar dataAbertura primeiro (mais confiável)
+        if (solicitacao.dataAbertura) {
+            if (typeof solicitacao.dataAbertura.toDate === 'function') {
                 dataCreacao = solicitacao.dataAbertura.toDate();
-            } else if (solicitacao.dataAbertura && typeof solicitacao.dataAbertura === 'string') {
+            } else if (solicitacao.dataAbertura.seconds) {
+                dataCreacao = new Date(solicitacao.dataAbertura.seconds * 1000);
+            } else if (typeof solicitacao.dataAbertura === 'string') {
                 dataCreacao = new Date(solicitacao.dataAbertura);
-            } else {
-                // Fallback: usar data atual se não conseguir parsear
-                dataCreacao = new Date();
-                console.warn('Não foi possível determinar data de criação para solicitação:', solicitacao.id);
             }
-            
-            const tempoDesdeAbertura = Math.round((agora - dataCreacao) / (1000 * 60));
+        }
+        
+        // 2. Se não encontrou, tentar criadoEm
+        if (!dataCreacao && solicitacao.criadoEm) {
+            if (typeof solicitacao.criadoEm.toDate === 'function') {
+                dataCreacao = solicitacao.criadoEm.toDate();
+            } else if (solicitacao.criadoEm.seconds) {
+                dataCreacao = new Date(solicitacao.criadoEm.seconds * 1000);
+            } else if (typeof solicitacao.criadoEm === 'string') {
+                dataCreacao = new Date(solicitacao.criadoEm);
+            }
+        }
+        
+        // Verificar se conseguiu extrair uma data válida
+        if (dataCreacao && !isNaN(dataCreacao.getTime())) {
+            tempoDesdeAbertura = Math.round((agora - dataCreacao) / (1000 * 60));
             
             metricas += `
                 <div style="background: #f3f4f6; padding: 12px; border-radius: 6px; margin: 12px 0;">
@@ -8943,6 +8953,19 @@ function preencherDetalhesModal(solicitacao, dadosAcompanhante) {
                         <div><strong>Criado em:</strong> ${dataCreacao.toLocaleDateString('pt-BR')} às ${dataCreacao.toLocaleTimeString('pt-BR')}</div>
                         <div><strong>Tempo desde abertura:</strong> ${tempoDesdeAbertura} min (${Math.round(tempoDesdeAbertura/60*10)/10}h)</div>
             `;
+        } else {
+            console.warn('[AVISO] Não foi possível determinar data de criação para solicitação:', solicitacao.id);
+            metricas += `
+                <div style="background: #f3f4f6; padding: 12px; border-radius: 6px; margin: 12px 0;">
+                    <h4 style="margin: 0 0 8px 0; color: #374151; font-size: 14px;">⏱️ Métricas de Tempo</h4>
+                    <div style="font-size: 13px; color: #6b7280;">
+                        <div><strong>Criado em:</strong> Data não disponível</div>
+                        <div><strong>Tempo desde abertura:</strong> N/A</div>
+            `;
+        }
+        
+        // Métricas específicas por status (sempre executa)
+        if (dataCreacao && !isNaN(dataCreacao.getTime())) {
             
             // Métricas específicas por status
             if (solicitacao.status === 'em-andamento' && solicitacao.dataInicioAtendimento) {
@@ -9009,7 +9032,7 @@ function preencherDetalhesModal(solicitacao, dadosAcompanhante) {
                     return 'Solicitação';
                 })()}</div>
             </div>
-            <div><strong>ID:</strong> ${solicitacao.id || 'N/A'}</div>
+            <!-- ID oculto: ${solicitacao.id || 'N/A'} -->
             <div><strong>Equipe:</strong> ${solicitacao.equipe || 'N/A'}</div>
             <div><strong>Descrição:</strong> ${(() => {
                 if (solicitacao.descricao) return solicitacao.descricao;
@@ -11091,6 +11114,69 @@ async function exportarDados() {
                 return sol.descricao || sol.detalhes || sol.observacoes || '--';
             };
 
+            // Função para calcular TMA (Tempo Médio de Atendimento)
+            const calcularTMA = (sol) => {
+                // Se já existe o campo calculado, usar
+                if (sol.tempoAtendimentoMinutos) {
+                    return sol.tempoAtendimentoMinutos;
+                }
+                
+                // Se tem métricas.tempoTotal, usar
+                if (sol.metricas && sol.metricas.tempoTotal) {
+                    return sol.metricas.tempoTotal;
+                }
+                
+                // Se tem metricas.tempoTrabalho, usar
+                if (sol.metricas && sol.metricas.tempoTrabalho) {
+                    return sol.metricas.tempoTrabalho;
+                }
+                
+                // Se está finalizada, calcular pela diferença de timestamps
+                if (sol.status === 'finalizada' && (sol.dataAbertura || sol.criadoEm) && sol.finalizadoEm) {
+                    let dataInicio = null;
+                    let dataFim = null;
+                    
+                    // Extrair data de início
+                    if (sol.dataAbertura) {
+                        if (typeof sol.dataAbertura.toDate === 'function') {
+                            dataInicio = sol.dataAbertura.toDate();
+                        } else if (sol.dataAbertura.seconds) {
+                            dataInicio = new Date(sol.dataAbertura.seconds * 1000);
+                        } else if (typeof sol.dataAbertura === 'string') {
+                            dataInicio = new Date(sol.dataAbertura);
+                        }
+                    } else if (sol.criadoEm) {
+                        if (typeof sol.criadoEm.toDate === 'function') {
+                            dataInicio = sol.criadoEm.toDate();
+                        } else if (sol.criadoEm.seconds) {
+                            dataInicio = new Date(sol.criadoEm.seconds * 1000);
+                        } else if (typeof sol.criadoEm === 'string') {
+                            dataInicio = new Date(sol.criadoEm);
+                        }
+                    }
+                    
+                    // Extrair data de finalização
+                    if (sol.finalizadoEm) {
+                        if (typeof sol.finalizadoEm.toDate === 'function') {
+                            dataFim = sol.finalizadoEm.toDate();
+                        } else if (sol.finalizadoEm.seconds) {
+                            dataFim = new Date(sol.finalizadoEm.seconds * 1000);
+                        } else if (typeof sol.finalizadoEm === 'string') {
+                            dataFim = new Date(sol.finalizadoEm);
+                        }
+                    }
+                    
+                    // Calcular diferença em minutos
+                    if (dataInicio && dataFim && !isNaN(dataInicio.getTime()) && !isNaN(dataFim.getTime())) {
+                        const diferencaMs = dataFim - dataInicio;
+                        const minutos = Math.round(diferencaMs / (1000 * 60));
+                        return minutos > 0 ? minutos : '--';
+                    }
+                }
+                
+                return '--';
+            };
+
             return {
                 'ID': sol.id,
                 'Data/Hora': extrairDataHora(sol),
@@ -11102,7 +11188,7 @@ async function exportarDados() {
                 'Descrição': extrairDescricao(sol),
                 'Responsável': sol.responsavel || '--',
                 'Solução': sol.solucao || '--',
-                'TMA (min)': sol.tempoAtendimentoMinutos || '--',
+                'TMA (min)': calcularTMA(sol),
                 'Avaliação': sol.avaliacaoNota ? `${sol.avaliacaoNota}/5 estrelas` : '--'
             };
         });
