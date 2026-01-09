@@ -11063,6 +11063,18 @@ async function exportarDados() {
                     key.toLowerCase().includes('time')
                 )
             });
+            
+            // Debug COMPLETO: Ver TODOS os campos da primeira solicitação
+            console.log('[DEBUG-EXCEL] ===== ESTRUTURA COMPLETA DA PRIMEIRA SOLICITAÇÃO =====');
+            console.log('[DEBUG-EXCEL] Todos os campos:', Object.keys(primeiroItem));
+            console.log('[DEBUG-EXCEL] Campos relacionados a avaliação:', Object.keys(primeiroItem).filter(key => 
+                key.toLowerCase().includes('avalia') || 
+                key.toLowerCase().includes('nota') || 
+                key.toLowerCase().includes('satisf') ||
+                key.toLowerCase().includes('recomen')
+            ));
+            console.log('[DEBUG-EXCEL] Objeto completo da solicitação:', primeiroItem);
+            console.log('[DEBUG-EXCEL] =========================================================');
         }
 
         // Preparar dados para Excel
