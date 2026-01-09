@@ -179,16 +179,19 @@ function performAutoLogout() {
     // Mostrar notificação
     showToast('Sessão Expirada', 'Você foi desconectado por inatividade.', 'warning');
     
-    // Realizar logout
+    // Realizar logout e redirecionar para página de login
     setTimeout(() => {
         if (window.auth) {
             window.auth.signOut().then(() => {
-                window.location.reload();
+                // Redirecionar para página de login em vez de reload
+                window.location.href = window.location.origin + window.location.pathname.replace('/admin/', '/');
             }).catch(() => {
-                window.location.reload();
+                // Fallback: redirecionar mesmo com erro
+                window.location.href = window.location.origin + window.location.pathname.replace('/admin/', '/');
             });
         } else {
-            window.location.reload();
+            // Fallback: redirecionar mesmo sem auth
+            window.location.href = window.location.origin + window.location.pathname.replace('/admin/', '/');
         }
     }, 2000);
 }
@@ -740,13 +743,16 @@ window.emergencyReset = function() {
     if (window.auth) {
         window.auth.signOut().then(() => {
             console.log('✅ Logout forçado realizado');
-            window.location.reload();
+            // Redirecionar para página de login em vez de reload
+            window.location.href = window.location.origin + window.location.pathname.replace('/admin/', '/');
         }).catch(error => {
             console.error('Erro no logout:', error);
-            window.location.reload();
+            // Redirecionar mesmo com erro
+            window.location.href = window.location.origin + window.location.pathname.replace('/admin/', '/');
         });
     } else {
-        window.location.reload();
+        // Redirecionar se auth não estiver disponível
+        window.location.href = window.location.origin + window.location.pathname.replace('/admin/', '/');
     }
 };
 
