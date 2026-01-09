@@ -102,6 +102,7 @@ O Sistema YUNA é uma solução inovadora de gerenciamento de solicitações de 
 - **Sistema RBAC:** Controle granular de permissões
 - **Relatórios Avançados:** Exportação Excel/PDF
 - **Métricas em Tempo Real:** Dashboard analítico
+- **Dashboard de Satisfação:** Análise completa de avaliações com exportação Excel (2 abas: detalhado e resumo), filtros por equipe/período/nota, estatísticas consolidadas, aspectos avaliados (rapidez, qualidade, atendimento)
 - **Auditoria:** Logs de segurança
 
 ### Sistema de Notificações:

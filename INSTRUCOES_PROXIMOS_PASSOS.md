@@ -246,7 +246,8 @@ Criar conta e submeter registro na Biblioteca Nacional.
    Administrativo. Inclui 4 módulos proprietários de otimização: 
    Performance Monitor, Listener Manager, Cache Manager LRU e Query 
    Helper. Sistema RBAC completo, real-time sync via Firestore, 
-   session timeout automático e avaliação de satisfação.
+   session timeout automático, avaliação de satisfação com dashboard 
+   analítico e exportação de relatórios detalhados em Excel.
    ```
 
 6. **Anexar documentos:**

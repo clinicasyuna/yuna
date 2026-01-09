@@ -435,7 +435,40 @@ Um modal aparecerá com:
 - Por equipe
 - Evolução temporal
 
-#### Exportar Dados:
+#### Dashboard de Satisfação:
+
+*Nova funcionalidade para análise detalhada de avaliações*
+
+1. Clique em **"⭐ Pesquisa de Satisfação"** no menu
+2. Visualize métricas agregadas:
+   - Média geral de satisfação
+   - Total de avaliações recebidas
+   - Percentual de satisfação positiva (4-5 estrelas)
+   - Melhor equipe avaliada
+   - Estatísticas por equipe (média, total de avaliações)
+
+📊 **Exportar Relatório em Excel:**
+1. No Dashboard de Satisfação, clique em **"📄 Exportar Relatório (Excel)"**
+2. O arquivo será baixado automaticamente com 2 abas:
+   - **Avaliações:** Lista detalhada (data, equipe, quarto, nota, aspectos, comentários)
+   - **Resumo por Equipe:** Estatísticas consolidadas
+
+🔍 **Filtrar Avaliações:**
+1. Clique em **"🔍 Filtrar Resultados"**
+2. Escolha os critérios:
+   - Equipe específica ou todas
+   - Nota mínima (1-5 estrelas)
+   - Período (7/30/90 dias ou todo período)
+3. Clique em **"Aplicar Filtros"**
+
+📋 **Aspectos Avaliados:**
+- Rapidez do atendimento
+- Qualidade do serviço
+- Atendimento da equipe
+- Comentários adicionais dos acompanhantes
+- Recomendação do serviço (Sim/Não)
+
+#### Exportar Dados (Geral):
 
 1. Configure os filtros desejados
 2. Clique em **"Exportar Excel"**
