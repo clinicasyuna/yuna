@@ -11177,8 +11177,38 @@ async function exportarDados() {
                 return '--';
             };
 
+            // Função para formatar avaliação de satisfação
+            const formatarAvaliacao = (sol) => {
+                // Verifica se tem avaliação de satisfação
+                if (sol.avaliacaoSatisfacao && sol.avaliacaoSatisfacao.nota) {
+                    const aval = sol.avaliacaoSatisfacao;
+                    let resultado = `${aval.nota}/5 ⭐`;
+                    
+                    // Adicionar aspectos se existirem
+                    if (aval.aspectos && Object.keys(aval.aspectos).length > 0) {
+                        const aspectosTexto = Object.entries(aval.aspectos)
+                            .map(([chave, valor]) => `${chave}: ${valor}/5`)
+                            .join(', ');
+                        resultado += ` | ${aspectosTexto}`;
+                    }
+                    
+                    // Adicionar recomendação se existir
+                    if (aval.recomendaria !== undefined) {
+                        resultado += ` | Recomenda: ${aval.recomendaria ? 'Sim' : 'Não'}`;
+                    }
+                    
+                    return resultado;
+                }
+                
+                // Fallback para campo antigo se existir
+                if (sol.avaliacaoNota) {
+                    return `${sol.avaliacaoNota}/5 ⭐`;
+                }
+                
+                return '--';
+            };
+
             return {
-                'ID': sol.id,
                 'Data/Hora': extrairDataHora(sol),
                 'Tipo': sol.tipo || '--',
                 'Equipe': sol.equipe || '--',
@@ -11189,7 +11219,7 @@ async function exportarDados() {
                 'Responsável': sol.responsavel || '--',
                 'Solução': sol.solucao || '--',
                 'TMA (min)': calcularTMA(sol),
-                'Avaliação': sol.avaliacaoNota ? `${sol.avaliacaoNota}/5 estrelas` : '--'
+                'Avaliação': formatarAvaliacao(sol)
             };
         });
 
@@ -11199,18 +11229,17 @@ async function exportarDados() {
 
         // Ajustar largura das colunas
         const colWidths = [
-            { wch: 15 }, // ID
             { wch: 20 }, // Data/Hora
             { wch: 15 }, // Tipo
             { wch: 15 }, // Equipe
             { wch: 12 }, // Status
             { wch: 10 }, // Quarto
             { wch: 20 }, // Solicitante
-            { wch: 30 }, // Descrição
+            { wch: 35 }, // Descrição
             { wch: 20 }, // Responsável
-            { wch: 30 }, // Solução
+            { wch: 35 }, // Solução
             { wch: 12 }, // TMA
-            { wch: 15 }  // Avaliação
+            { wch: 50 }  // Avaliação (maior para caber nota + aspectos + recomendação)
         ];
         worksheet['!cols'] = colWidths;
 
