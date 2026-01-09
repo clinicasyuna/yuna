@@ -11179,7 +11179,18 @@ async function exportarDados() {
 
             // Função para formatar avaliação de satisfação
             const formatarAvaliacao = (sol) => {
-                // Verifica se tem avaliação de satisfação
+                // Debug: verificar estrutura da avaliação
+                if (sol.id && (sol.avaliacaoSatisfacao || sol.avaliada || sol.notaAvaliacao)) {
+                    console.log('[DEBUG-AVALIACAO] Solicitação com avaliação:', {
+                        id: sol.id,
+                        avaliacaoSatisfacao: sol.avaliacaoSatisfacao,
+                        avaliada: sol.avaliada,
+                        notaAvaliacao: sol.notaAvaliacao,
+                        recomendacao: sol.recomendacao
+                    });
+                }
+                
+                // Formato 1: avaliacaoSatisfacao (usado pelo admin)
                 if (sol.avaliacaoSatisfacao && sol.avaliacaoSatisfacao.nota) {
                     const aval = sol.avaliacaoSatisfacao;
                     let resultado = `${aval.nota}/5 ⭐`;
@@ -11200,7 +11211,19 @@ async function exportarDados() {
                     return resultado;
                 }
                 
-                // Fallback para campo antigo se existir
+                // Formato 2: avaliada + notaAvaliacao (usado pelos acompanhantes)
+                if (sol.avaliada === true && sol.notaAvaliacao) {
+                    let resultado = `${sol.notaAvaliacao}/5 ⭐`;
+                    
+                    // Adicionar recomendação se existir
+                    if (sol.recomendacao !== undefined) {
+                        resultado += ` | Recomenda: ${sol.recomendacao ? 'Sim' : 'Não'}`;
+                    }
+                    
+                    return resultado;
+                }
+                
+                // Formato 3: Fallback para campo antigo
                 if (sol.avaliacaoNota) {
                     return `${sol.avaliacaoNota}/5 ⭐`;
                 }
