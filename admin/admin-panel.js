@@ -80,51 +80,136 @@ function resetSessionTimeout() {
 
 // Mostrar aviso de timeout
 function showTimeoutWarning() {
+    // Remove modal anterior se existir
+    const existingModal = document.getElementById('timeout-warning-modal');
+    if (existingModal) {
+        if (existingModal.countdownInterval) {
+            clearInterval(existingModal.countdownInterval);
+        }
+        existingModal.remove();
+    }
+    
     const modal = document.createElement('div');
     modal.id = 'timeout-warning-modal';
-    modal.className = 'fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50';
+    modal.style.cssText = `
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(0, 0, 0, 0.6);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        z-index: 100000 !important;
+        animation: timeoutFadeIn 0.3s ease-in;
+    `;
+    
     modal.innerHTML = `
-        <div class="bg-white rounded-lg p-6 max-w-md mx-4 shadow-xl">
-            <div class="flex items-center mb-4">
-                <div class="flex-shrink-0">
-                    <svg class="h-8 w-8 text-yellow-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+        <div style="
+            background: white;
+            border-radius: 12px;
+            padding: 2rem;
+            max-width: 420px;
+            width: 90vw;
+            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+            animation: timeoutSlideUp 0.3s ease-out;
+        ">
+            <div style="display: flex; gap: 1rem; margin-bottom: 1.5rem;">
+                <div style="flex-shrink: 0;">
+                    <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" style="color: #fbbf24; width: 32px; height: 32px; flex-shrink: 0;">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L3.732 16.5c-.77.833.192 2.5 1.732 2.5z"></path>
                     </svg>
                 </div>
-                <div class="ml-3">
-                    <h3 class="text-lg font-medium text-gray-900">Sessão Expirando</h3>
-                    <p class="text-sm text-gray-500">Sua sessão será encerrada em <span id="countdown">2:00</span> por inatividade.</p>
+                <div style="flex: 1;">
+                    <h3 style="margin: 0 0 0.5rem 0; font-size: 1.125rem; font-weight: 600; color: #1f2937;">Sessão Expirando</h3>
+                    <p style="margin: 0; font-size: 0.875rem; color: #6b7280; line-height: 1.5;">
+                        Sua sessão será encerrada em <span id="countdown" style="font-weight: 700; color: #dc2626;">2:00</span> por inatividade.
+                    </p>
                 </div>
             </div>
-            <div class="flex gap-3">
-                <button onclick="extendSession()" class="flex-1 bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors">
+            <div style="display: flex; gap: 0.75rem;">
+                <button onclick="extendSession()" style="
+                    flex: 1;
+                    background: #3b82f6;
+                    color: white;
+                    padding: 0.75rem 1rem;
+                    border-radius: 0.5rem;
+                    border: none;
+                    font-weight: 600;
+                    cursor: pointer;
+                    font-size: 0.875rem;
+                    transition: all 0.2s ease;
+                " onmouseover="this.style.background='#2563eb'" onmouseout="this.style.background='#3b82f6'" onmousedown="this.style.transform='scale(0.98)'" onmouseup="this.style.transform='scale(1)'">
                     Continuar Sessão
                 </button>
-                <button onclick="performAutoLogout()" class="flex-1 bg-gray-300 text-gray-700 px-4 py-2 rounded-lg hover:bg-gray-400 transition-colors">
+                <button onclick="performAutoLogout()" style="
+                    flex: 1;
+                    background: #e5e7eb;
+                    color: #374151;
+                    padding: 0.75rem 1rem;
+                    border-radius: 0.5rem;
+                    border: none;
+                    font-weight: 600;
+                    cursor: pointer;
+                    font-size: 0.875rem;
+                    transition: all 0.2s ease;
+                " onmouseover="this.style.background='#d1d5db'" onmouseout="this.style.background='#e5e7eb'" onmousedown="this.style.transform='scale(0.98)'" onmouseup="this.style.transform='scale(1)'">
                     Sair Agora
                 </button>
             </div>
         </div>
     `;
+    
+    // Inserir estilos de animação se não existirem
+    if (!document.getElementById('timeout-warning-styles')) {
+        const style = document.createElement('style');
+        style.id = 'timeout-warning-styles';
+        style.textContent = `
+            @keyframes timeoutFadeIn {
+                from { opacity: 0; }
+                to { opacity: 1; }
+            }
+            @keyframes timeoutSlideUp {
+                from {
+                    opacity: 0;
+                    transform: translateY(20px);
+                }
+                to {
+                    opacity: 1;
+                    transform: translateY(0);
+                }
+            }
+        `;
+        document.head.appendChild(style);
+    }
+    
     document.body.appendChild(modal);
+    
+    // Impedir scroll de fundo
+    document.body.style.overflow = 'hidden';
     
     // Countdown de 2 minutos
     let timeLeft = 120;
     const countdownEl = document.getElementById('countdown');
-    const countdownInterval = setInterval(() => {
-        timeLeft--;
-        const minutes = Math.floor(timeLeft / 60);
-        const seconds = timeLeft % 60;
-        countdownEl.textContent = `${minutes}:${seconds.toString().padStart(2, '0')}`;
+    if (countdownEl) {
+        const countdownInterval = setInterval(() => {
+            timeLeft--;
+            const minutes = Math.floor(timeLeft / 60);
+            const seconds = timeLeft % 60;
+            if (countdownEl) {
+                countdownEl.textContent = `${minutes}:${seconds.toString().padStart(2, '0')}`;
+            }
+            
+            if (timeLeft <= 0) {
+                clearInterval(countdownInterval);
+                performAutoLogout();
+            }
+        }, 1000);
         
-        if (timeLeft <= 0) {
-            clearInterval(countdownInterval);
-            performAutoLogout();
-        }
-    }, 1000);
-    
-    // Salvar interval para limpeza
-    modal.countdownInterval = countdownInterval;
+        // Salvar interval para limpeza
+        modal.countdownInterval = countdownInterval;
+    }
 }
 
 // Estender sessão
@@ -135,9 +220,10 @@ function extendSession() {
             clearInterval(modal.countdownInterval);
         }
         modal.remove();
+        document.body.style.overflow = '';
     }
     detectUserActivity();
-    showToast('Sucesso', 'Sessão estendida com sucesso!', 'success');
+    showToast('Sucesso', 'Sessão estendida por mais 10 minutos!', 'success');
 }
 
 // Realizar logout automático
@@ -170,6 +256,7 @@ function performAutoLogout() {
             clearInterval(modal.countdownInterval);
         }
         modal.remove();
+        document.body.style.overflow = '';
     }
     
     // Limpar timeouts
@@ -7519,6 +7606,13 @@ function calcularSatisfacaoPorEquipe(solicitacoes) {
 }
 
 function calcularSLACompliance(tempos, equipe) {
+    // ✅ VERSÃO COM PAUSA DE HORÁRIO (07:00-19:00) - 13/01/2026
+    // Usa função com pausa se disponível, senão usa fallback
+    if (typeof window.calcularSLAComplianceComPausa === 'function') {
+        return window.calcularSLAComplianceComPausa(tempos, equipe);
+    }
+    
+    // Fallback: versão original (sem pausa)
     const limites = {
         'manutencao': 240, 'nutricao': 60, 'higienizacao': 120, 'hotelaria': 180
     };
@@ -8281,6 +8375,13 @@ function renderizarCardsEquipe(equipes) {
     
     // Função para calcular tempo decorrido de atendimento
     window.calcularTempoAtendimento = function calcularTempoAtendimento(solicitacao) {
+        // ✅ VERSÃO COM PAUSA DE HORÁRIO (07:00-19:00) - 13/01/2026
+        // Usa função com pausa se disponível, senão usa versão original
+        if (typeof window.calcularTempoAtendimentoComPausa === 'function') {
+            return window.calcularTempoAtendimentoComPausa(solicitacao);
+        }
+        
+        // Fallback: versão original (sem pausa) caso script não carregue
         try {
             let dataInicio = null;
             

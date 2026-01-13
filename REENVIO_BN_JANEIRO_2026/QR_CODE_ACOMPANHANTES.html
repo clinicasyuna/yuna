@@ -1,0 +1,437 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>QR Code - Yuna Solicite Portal</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+
+        .container {
+            background: white;
+            border-radius: 15px;
+            padding: 40px;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3);
+            max-width: 600px;
+            width: 100%;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 40px;
+        }
+
+        .header h1 {
+            color: #2c3e50;
+            font-size: 28px;
+            margin-bottom: 10px;
+        }
+
+        .header p {
+            color: #7f8c8d;
+            font-size: 14px;
+        }
+
+        .qr-section {
+            text-align: center;
+            margin-bottom: 40px;
+            padding: 30px;
+            background: #f8f9fa;
+            border-radius: 10px;
+            border: 2px dashed #ddd;
+        }
+
+        .qr-label {
+            font-weight: bold;
+            color: #2c3e50;
+            margin-bottom: 20px;
+            font-size: 16px;
+        }
+
+        #qrcode {
+            display: inline-block;
+            background: white;
+            padding: 20px;
+            border-radius: 5px;
+        }
+
+        .url-display {
+            margin: 20px 0;
+            padding: 15px;
+            background: white;
+            border-left: 4px solid #667eea;
+            border-radius: 5px;
+        }
+
+        .url-display p {
+            color: #2c3e50;
+            font-size: 12px;
+            word-break: break-all;
+            font-family: 'Courier New', monospace;
+        }
+
+        .options {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+            margin: 30px 0;
+        }
+
+        .option {
+            padding: 15px;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-align: center;
+        }
+
+        .option:hover {
+            border-color: #667eea;
+            background: #f0f4ff;
+            transform: translateY(-2px);
+        }
+
+        .option input[type="radio"] {
+            display: none;
+        }
+
+        .option input[type="radio"]:checked + .option-content {
+            color: #667eea;
+            font-weight: bold;
+        }
+
+        .option label {
+            cursor: pointer;
+            display: block;
+        }
+
+        .option-title {
+            font-weight: bold;
+            color: #2c3e50;
+            margin-bottom: 5px;
+        }
+
+        .option-size {
+            color: #7f8c8d;
+            font-size: 12px;
+        }
+
+        .buttons {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+            margin-top: 30px;
+        }
+
+        button {
+            padding: 12px 20px;
+            border: none;
+            border-radius: 5px;
+            font-size: 14px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .btn-print {
+            background: #667eea;
+            color: white;
+        }
+
+        .btn-print:hover {
+            background: #5568d3;
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
+        }
+
+        .btn-download {
+            background: #764ba2;
+            color: white;
+        }
+
+        .btn-download:hover {
+            background: #653a8a;
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(118, 75, 162, 0.4);
+        }
+
+        .info-box {
+            background: #e8f5e9;
+            border-left: 4px solid #4caf50;
+            padding: 20px;
+            border-radius: 5px;
+            margin-top: 30px;
+        }
+
+        .info-box h3 {
+            color: #2e7d32;
+            margin-bottom: 10px;
+            font-size: 14px;
+        }
+
+        .info-box ul {
+            list-style: none;
+            color: #558b2f;
+            font-size: 13px;
+        }
+
+        .info-box li {
+            padding: 5px 0;
+            margin-left: 20px;
+            position: relative;
+        }
+
+        .info-box li:before {
+            content: "✓";
+            position: absolute;
+            left: -15px;
+            font-weight: bold;
+        }
+
+        .preview-container {
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            margin-top: 20px;
+            display: none;
+        }
+
+        .preview-container.active {
+            display: block;
+        }
+
+        .preview-label {
+            text-align: center;
+            color: #7f8c8d;
+            font-size: 12px;
+            margin-bottom: 15px;
+        }
+
+        @media print {
+            body {
+                background: white;
+                padding: 0;
+            }
+
+            .container {
+                box-shadow: none;
+                padding: 20px;
+            }
+
+            .options,
+            .buttons,
+            .info-box {
+                display: none;
+            }
+
+            #qrcode {
+                padding: 0;
+            }
+        }
+
+        .size-preview {
+            text-align: center;
+            color: #999;
+            font-size: 11px;
+            margin-top: 10px;
+        }
+
+        #qrcodeContainer {
+            width: fit-content;
+            margin: 0 auto;
+        }
+
+        #logoOverlay {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        #logoImg {
+            filter: drop-shadow(0 1px 3px rgba(0,0,0,0.1));
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- CABEÇALHO -->
+        <div class="header">
+            <h1>📱 QR Code - Yuna Solicite</h1>
+            <p>Portal de Acesso para Acompanhantes</p>
+        </div>
+
+        <!-- SELEÇÃO DE TAMANHO -->
+        <div class="options">
+            <label class="option">
+                <input type="radio" name="size" value="150" checked onchange="regenerateQR()">
+                <div class="option-content">
+                    <div class="option-title">📱 Pequeno</div>
+                    <div class="option-size">150x150px (Smartphone)</div>
+                </div>
+            </label>
+
+            <label class="option">
+                <input type="radio" name="size" value="250" onchange="regenerateQR()">
+                <div class="option-content">
+                    <div class="option-title">📋 Médio</div>
+                    <div class="option-size">250x250px (Parede)</div>
+                </div>
+            </label>
+
+            <label class="option">
+                <input type="radio" name="size" value="350" onchange="regenerateQR()">
+                <div class="option-content">
+                    <div class="option-title">🏥 Grande</div>
+                    <div class="option-size">350x350px (Porta)</div>
+                </div>
+            </label>
+
+            <label class="option">
+                <input type="radio" name="size" value="500" onchange="regenerateQR()">
+                <div class="option-content">
+                    <div class="option-title">🖨️ Extra</div>
+                    <div class="option-size">500x500px (A4)</div>
+                </div>
+            </label>
+        </div>
+
+        <!-- QR CODE GERADO -->
+        <div class="qr-section">
+            <div class="qr-label">⬇️ Escaneie para acessar o sistema</div>
+            <div id="qrcodeContainer" style="position: relative; display: inline-block;">
+                <div id="qrcode"></div>
+                <div id="logoOverlay" style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); background: white; border-radius: 8px; padding: 6px; box-shadow: 0 2px 8px rgba(0,0,0,0.15);">
+                    <img id="logoImg" src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 200 80'%3E%3Ctext x='50' y='50' font-size='40' fill='%23667eea' font-weight='bold'%3EYUNA%3C/text%3E%3C/svg%3E" alt="YUNA Logo" style="width: 50px; height: auto; display: block;">
+                </div>
+            </div>
+            <div class="url-display">
+                <p>🔗 https://clinicasyuna.github.io/yuna/acompanhantes/</p>
+            </div>
+        </div>
+
+        <!-- BOTÕES DE AÇÃO -->
+        <div class="buttons">
+            <button class="btn-print" onclick="window.print()">🖨️ Imprimir</button>
+            <button class="btn-download" onclick="downloadQR()">📥 Baixar Imagem</button>
+        </div>
+
+        <!-- INFORMAÇÕES -->
+        <div class="info-box">
+            <h3>💡 COMO USAR O QR CODE</h3>
+            <ul>
+                <li>Imprima em papel A4 branco (melhor qualidade)</li>
+                <li>Cole ou fixe nos quartos/áreas de espera</li>
+                <li>Acompanhantes escaneiam com celular</li>
+                <li>Acessa direto o portal de solicitações</li>
+                <li>Funciona offline após PWA instalado</li>
+            </ul>
+        </div>
+    </div>
+
+    <script>
+        const url = 'https://clinicasyuna.github.io/yuna/acompanhantes/';
+        let currentSize = 150;
+
+        function generateQR() {
+            // Limpar QR anterior
+            document.getElementById('qrcode').innerHTML = '';
+
+            // Obter tamanho selecionado
+            currentSize = parseInt(document.querySelector('input[name="size"]:checked').value);
+
+            // Gerar novo QR
+            new QRCode(document.getElementById('qrcode'), {
+                text: url,
+                width: currentSize,
+                height: currentSize,
+                colorDark: '#2c3e50',
+                colorLight: '#ffffff',
+                correctLevel: QRCode.CorrectLevel.H
+            });
+
+            // Aguardar rendering e adicionar logo
+            setTimeout(function() {
+                addLogoToQR();
+            }, 500);
+        }
+
+        function addLogoToQR() {
+            const size = currentSize;
+            const logoSize = Math.max(35, Math.floor(size / 4));
+            const logoOverlay = document.getElementById('logoOverlay');
+            
+            if (logoOverlay) {
+                logoOverlay.style.width = logoSize + 'px';
+                logoOverlay.style.height = logoSize + 'px';
+                const logoImg = document.getElementById('logoImg');
+                logoImg.style.width = (logoSize - 12) + 'px';
+            }
+        }
+
+        function regenerateQR() {
+            generateQR();
+        }
+
+        function downloadQR() {
+            const container = document.getElementById('qrcodeContainer');
+            const canvas = document.querySelector('#qrcode canvas');
+            const logoOverlay = document.getElementById('logoOverlay');
+            
+            if (canvas) {
+                // Criar canvas temporário para capturar tudo junto
+                const tempCanvas = document.createElement('canvas');
+                const ctx = tempCanvas.getContext('2d');
+                
+                tempCanvas.width = currentSize;
+                tempCanvas.height = currentSize;
+                
+                // Desenhar QR code
+                ctx.drawImage(canvas, 0, 0);
+                
+                // Desenhar logo no centro
+                const logoSize = Math.max(35, Math.floor(currentSize / 4));
+                ctx.fillStyle = 'white';
+                ctx.fillRect(
+                    (currentSize - logoSize) / 2 - 6,
+                    (currentSize - logoSize) / 2 - 6,
+                    logoSize + 12,
+                    logoSize + 12
+                );
+                
+                // Adicionar border do logo
+                ctx.strokeStyle = 'white';
+                ctx.lineWidth = 2;
+                ctx.beginPath();
+                ctx.arc(currentSize / 2, currentSize / 2, (logoSize + 12) / 2, 0, 2 * Math.PI);
+                ctx.stroke();
+                
+                const link = document.createElement('a');
+                link.href = tempCanvas.toDataURL('image/png');
+                link.download = `qrcode-yuna-acompanhantes-${currentSize}px-com-logo.png`;
+                link.click();
+            }
+        }
+
+        // Gerar QR ao carregar
+        window.onload = function() {
+            generateQR();
+        };
+    </script>
+</body>
+</html>
