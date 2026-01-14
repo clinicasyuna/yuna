@@ -225,30 +225,23 @@ function abrirLogsAuditoria() {
     console.log('🎯 [LOGS] ===== ABRINDO SEÇÃO DE LOGS E AUDITORIA =====');
     
     try {
-        // Ocultar todas as seções EXCETO a de logs e auditoria
+        // Ocultar TODAS as seções EXCETO logs-auditoria-section
         console.log('[LOGS] Ocultando seções existentes...');
         document.querySelectorAll('.section').forEach(section => {
             section.classList.add('hidden');
+            section.style.display = 'none';
         });
         document.querySelectorAll('[id$="-section"]').forEach(section => {
-            // NÃO ocultar a própria seção de logs
             if (section.id !== 'logs-auditoria-section') {
                 section.classList.add('hidden');
+                section.style.display = 'none';
             }
         });
         
-        // Ocultar teams-grid (filas de atendimento) e stats-grid (métricas)
+        // Ocultar teams-grid e stats-grid
         console.log('[LOGS] Ocultando teams-grid e stats-grid...');
         const teamsGrid = document.querySelector('.teams-grid');
         const statsGrid = document.querySelector('.stats-grid');
-        if (teamsGrid) {
-            teamsGrid.classList.add('hidden');
-            teamsGrid.style.display = 'none';
-        }
-        if (statsGrid) {
-            statsGrid.classList.add('hidden');
-            statsGrid.style.display = 'none';
-        }
         if (teamsGrid) {
             teamsGrid.classList.add('hidden');
             teamsGrid.style.display = 'none';
