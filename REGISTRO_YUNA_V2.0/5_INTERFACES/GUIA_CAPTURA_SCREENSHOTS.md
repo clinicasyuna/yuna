@@ -84,7 +84,7 @@ Capturar imagens das interfaces do sistema para incluir no registro da Bibliotec
 
 ---
 
-### PAINEL ADMINISTRATIVO (15 capturas)
+### PAINEL ADMINISTRATIVO (14 capturas)
 
 #### 12. Tela de Login Admin
 - **URL:** https://clinicasyuna.github.io/yuna/admin/
@@ -142,17 +142,12 @@ Capturar imagens das interfaces do sistema para incluir no registro da Bibliotec
 - **Capturar:** Gráfico de avaliações
 - **Nome do arquivo:** `23_admin_grafico_satisfacao.png`
 
-#### 24. Sistema RBAC - Permissões
-- **Mostrar diferentes níveis de acesso**
-- **Capturar:** Tela de permissões
-- **Nome do arquivo:** `24_admin_rbac_permissoes.png`
-
-#### 25. Notificações em Tempo Real
+#### 24. Notificações em Tempo Real
 - **Quando aparecer notificação**
 - **Capturar:** Notificação na tela
 - **Nome do arquivo:** `25_admin_notificacao.png`
 
-#### 26. Timeout de Sessão
+#### 25. Timeout de Sessão
 - **Aguardar aparecer modal de timeout**
 - **Capturar:** Modal de aviso de sessão
 - **Nome do arquivo:** `26_admin_timeout_sessao.png`
@@ -161,35 +156,35 @@ Capturar imagens das interfaces do sistema para incluir no registro da Bibliotec
 
 ### CONSOLE - MÓDULOS DE OTIMIZAÇÃO (4 capturas)
 
-#### 27. Performance Monitor
+#### 26. Performance Monitor
 1. **Abrir DevTools (F12)**
 2. **Na aba Console, digitar:**
    ```javascript
-   window.perfMonitor.showPerformanceReport()
+   showPerformanceReport()
    ```
 3. **Capturar:** Saída do console
 4. **Nome do arquivo:** `27_console_performance_monitor.png`
 
-#### 28. Cache Manager
+#### 27. Cache Manager
 1. **No console, digitar:**
    ```javascript
-   window.cacheManager.showCacheStats()
+   showCacheStats()
    ```
 2. **Capturar:** Estatísticas de cache
 3. **Nome do arquivo:** `28_console_cache_manager.png`
 
-#### 29. Listener Manager
+#### 28. Listener Manager
 1. **No console, digitar:**
    ```javascript
-   window.listenerManager.showListeners()
+   showListeners()
    ```
 2. **Capturar:** Lista de listeners ativos
 3. **Nome do arquivo:** `29_console_listener_manager.png`
 
-#### 30. Query Helper
+#### 29. Query Helper
 1. **No console, digitar:**
    ```javascript
-   window.queryHelper.showPaginationStats()
+   showQueryReport()
    ```
 2. **Capturar:** Estatísticas de paginação
 3. **Nome do arquivo:** `30_console_query_helper.png`
@@ -330,7 +325,7 @@ Após capturar todas as screenshots:
 
 Antes de consolidar em PDF, verificar:
 
-- [ ] Todas as 30 screenshots capturadas
+- [ ] Todas as 29 screenshots capturadas
 - [ ] Resolução adequada (mínimo 1920x1080)
 - [ ] Formato PNG ou JPG alta qualidade
 - [ ] Nomes dos arquivos corretos

@@ -1,0 +1,504 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>YUNA Solicite v2.0 - Checklist Registro BN</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; line-height: 1.6; color: #111; background: #fff; }
+    .page { width: 210mm; height: 297mm; margin: 0 auto; padding: 15mm; background: white; box-shadow: 0 0 10px rgba(0,0,0,0.1); page-break-after: always; }
+    
+    header { text-align: center; border-bottom: 3px solid #2563eb; padding-bottom: 15px; margin-bottom: 20px; }
+    header h1 { font-size: 28px; color: #1f2937; margin: 0 0 5px 0; }
+    header p { font-size: 12px; color: #6b7280; margin: 2px 0; }
+    
+    .section { margin-bottom: 20px; }
+    .section-title { font-size: 14px; font-weight: 700; color: #fff; background: #2563eb; padding: 8px 12px; border-radius: 4px; margin-bottom: 10px; }
+    
+    .checklist-item { display: flex; align-items: flex-start; margin-bottom: 10px; padding: 8px; border-left: 3px solid #e5e7eb; }
+    .checklist-item input[type="checkbox"] { width: 18px; height: 18px; margin-right: 12px; margin-top: 2px; cursor: pointer; flex-shrink: 0; }
+    .checklist-item .item-text { flex: 1; }
+    .checklist-item .item-title { font-weight: 600; color: #1f2937; }
+    .checklist-item .item-desc { font-size: 12px; color: #6b7280; margin-top: 2px; }
+    
+    .timeline { position: relative; margin: 15px 0; }
+    .timeline-item { display: flex; margin-bottom: 12px; }
+    .timeline-marker { width: 24px; height: 24px; background: #2563eb; color: white; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 12px; flex-shrink: 0; margin-right: 12px; }
+    .timeline-content { flex: 1; }
+    .timeline-content .title { font-weight: 600; color: #1f2937; }
+    .timeline-content .desc { font-size: 12px; color: #6b7280; margin-top: 2px; }
+    
+    .info-box { background: #eff6ff; border-left: 4px solid #3b82f6; padding: 12px; margin: 15px 0; border-radius: 4px; }
+    .info-box .label { font-weight: 700; color: #1e40af; margin-bottom: 4px; }
+    .info-box .text { font-size: 12px; color: #1e3a8a; }
+    
+    .document-list { background: #f3f4f6; padding: 12px; border-radius: 4px; margin: 10px 0; }
+    .document-list .item { font-size: 12px; color: #374151; padding: 6px 0; display: flex; align-items: center; }
+    .document-list .item:before { content: "✓"; color: #10b981; font-weight: 700; margin-right: 8px; }
+    
+    table { width: 100%; border-collapse: collapse; margin: 10px 0; font-size: 12px; }
+    table th { background: #e5e7eb; padding: 8px; text-align: left; font-weight: 700; color: #1f2937; }
+    table td { padding: 8px; border-bottom: 1px solid #e5e7eb; color: #4b5563; }
+    table tr:nth-child(even) { background: #f9fafb; }
+    
+    .contact { background: #fef2f2; border-left: 4px solid #ef4444; padding: 12px; margin: 15px 0; border-radius: 4px; }
+    .contact .label { font-weight: 700; color: #991b1b; }
+    .contact .text { font-size: 12px; color: #7c2d12; margin-top: 4px; }
+    
+    .footer { margin-top: 30px; padding-top: 15px; border-top: 1px solid #e5e7eb; font-size: 11px; color: #6b7280; text-align: center; }
+    
+    .important { background: #fef3c7; border: 1px solid #fcd34d; padding: 12px; border-radius: 4px; margin: 15px 0; }
+    .important .title { font-weight: 700; color: #92400e; }
+    .important .text { font-size: 12px; color: #78350f; margin-top: 4px; }
+    
+    @media print {
+      body { background: white; margin: 0; padding: 0; }
+      .page { width: 100%; height: auto; margin: 0; padding: 15mm; box-shadow: none; }
+    }
+  </style>
+</head>
+<body>
+  <!-- PÁGINA 1 -->
+  <div class="page">
+    <header>
+      <h1>📋 YUNA Solicite v2.0</h1>
+      <p>Checklist Completo - Registro de Direitos Autorais</p>
+      <p>Biblioteca Nacional do Brasil</p>
+    </header>
+
+    <div class="section">
+      <div class="section-title">📁 DOCUMENTOS JÁ PREPARADOS</div>
+      <div class="document-list">
+        <div class="item">Código-fonte compactado (ZIP) - 2.24 MB</div>
+        <div class="item">HASHES.txt - SHA256 de 13 arquivos</div>
+        <div class="item">9 PDFs técnicos - Documentação completa</div>
+        <div class="item">29 Screenshots consolidadas em PDF</div>
+        <div class="item">Estrutura REGISTRO_YUNA_V2.0/ organizada</div>
+      </div>
+    </div>
+
+    <div class="section">
+      <div class="section-title">⏱️ CRONOGRAMA (Esta Semana)</div>
+      <div class="timeline">
+        <div class="timeline-item">
+          <div class="timeline-marker">1</div>
+          <div class="timeline-content">
+            <div class="title">Hoje/Amanhã - Reunir Documentos Pessoais</div>
+            <div class="desc">RG/CPF e comprovante de residência (3 últimos meses)</div>
+          </div>
+        </div>
+        <div class="timeline-item">
+          <div class="timeline-marker">2</div>
+          <div class="timeline-content">
+            <div class="title">2-3 dias - Reconhecimento em Cartório</div>
+            <div class="desc">Levar RG/CPF + 2 vias impressas da declaração de autoria</div>
+          </div>
+        </div>
+        <div class="timeline-item">
+          <div class="timeline-marker">3</div>
+          <div class="timeline-content">
+            <div class="title">3-4 dias - Preencher Formulário RDA</div>
+            <div class="desc">Baixar, preencher e reunir todos os anexos</div>
+          </div>
+        </div>
+        <div class="timeline-item">
+          <div class="timeline-marker">4</div>
+          <div class="timeline-content">
+            <div class="title">5 dias - Protocolar na Biblioteca Nacional</div>
+            <div class="desc">Pessoalmente ou via Correios (recomenda-se pessoal)</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="section">
+      <div class="section-title">✅ CHECKLIST - FASE 1: DOCUMENTOS PESSOAIS</div>
+      <div class="checklist-item">
+        <input type="checkbox" />
+        <div class="item-text">
+          <div class="item-title">Fotocópia RG</div>
+          <div class="item-desc">Frente e verso - Samuel dos Reis Lacerda Junior</div>
+        </div>
+      </div>
+      <div class="checklist-item">
+        <input type="checkbox" />
+        <div class="item-text">
+          <div class="item-title">Fotocópia CPF</div>
+          <div class="item-desc">Frente e verso (se houver cartão físico)</div>
+        </div>
+      </div>
+      <div class="checklist-item">
+        <input type="checkbox" />
+        <div class="item-text">
+          <div class="item-title">Comprovante de Residência</div>
+          <div class="item-desc">Conta água, luz ou telefone - últimos 3 meses (qualquer um)</div>
+        </div>
+      </div>
+      <div class="checklist-item">
+        <input type="checkbox" />
+        <div class="item-text">
+          <div class="item-title">CNPJ da Empresa (se houver)</div>
+          <div class="item-desc">CNPJ: 55.004.442 - Cópia do cartório</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="important">
+      <div class="title">⚠️ IMPORTANTE</div>
+      <div class="text">Todos os documentos devem estar legíveis e em fotocópia. Originais para confrontação podem ser solicitados.</div>
+    </div>
+  </div>
+
+  <!-- PÁGINA 2 -->
+  <div class="page">
+    <header>
+      <h1>📋 YUNA Solicite v2.0 (Continuação)</h1>
+      <p>Fase 2: Cartório e Documentação</p>
+    </header>
+
+    <div class="section">
+      <div class="section-title">✅ CHECKLIST - FASE 2: RECONHECIMENTO EM CARTÓRIO</div>
+      <div class="checklist-item">
+        <input type="checkbox" />
+        <div class="item-text">
+          <div class="item-title">Imprimir Declaração de Autoria</div>
+          <div class="item-desc">Arquivo: DOCUMENTACAO_REGISTRO_DIREITOS_AUTORAIS.pdf - 2 vias</div>
+        </div>
+      </div>
+      <div class="checklist-item">
+        <input type="checkbox" />
+        <div class="item-text">
+          <div class="item-title">Agendar Cartório</div>
+          <div class="item-desc">Buscar cartório mais próximo de você (Reconhecimento de Firma por Autenticidade)</div>
+        </div>
+      </div>
+      <div class="checklist-item">
+        <input type="checkbox" />
+        <div class="item-text">
+          <div class="item-title">Levar à Cartório</div>
+          <div class="item-desc">RG/CPF + 2 vias da declaração + comparecer pessoalmente</div>
+        </div>
+      </div>
+      <div class="checklist-item">
+        <input type="checkbox" />
+        <div class="item-text">
+          <div class="item-title">Obter Declaração Assinada</div>
+          <div class="item-desc">Custo aprox. R$50 - Guardar 2 cópias assinadas e reconhecidas</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="info-box">
+      <div class="label">💡 DICA CARTÓRIO</div>
+      <div class="text">Se for primeira vez registrando copyright, algumas cartórios oferecem desconto ou isenção. Pergunte na hora!</div>
+    </div>
+
+    <div class="section">
+      <div class="section-title">✅ CHECKLIST - FASE 3: FORMULÁRIO RDA</div>
+      <div class="checklist-item">
+        <input type="checkbox" />
+        <div class="item-text">
+          <div class="item-title">Baixar Formulário RDA</div>
+          <div class="item-desc">Site: https://www.bn.gov.br/servicos/direito-autoral</div>
+        </div>
+      </div>
+      <div class="checklist-item">
+        <input type="checkbox" />
+        <div class="item-text">
+          <div class="item-title">Preencher Dados Pessoais</div>
+          <div class="item-desc">Nome: Samuel dos Reis Lacerda Junior | CNPJ: 55.004.442</div>
+        </div>
+      </div>
+      <div class="checklist-item">
+        <input type="checkbox" />
+        <div class="item-text">
+          <div class="item-title">Informações da Obra</div>
+          <div class="item-desc">Título: Yuna Solicite v2.0 | Tipo: Software | Linguagem: JavaScript/HTML5</div>
+        </div>
+      </div>
+      <div class="checklist-item">
+        <input type="checkbox" />
+        <div class="item-text">
+          <div class="item-title">Data de Criação</div>
+          <div class="item-desc">Primeira versão: Jan 2024 | Versão atual: Jan 2026</div>
+        </div>
+      </div>
+      <div class="checklist-item">
+        <input type="checkbox" />
+        <div class="item-text">
+          <div class="item-title">Descrição Breve</div>
+          <div class="item-desc">Sistema web PWA para gerenciamento de solicitações de saúde em clínicas (19.825+ linhas)</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="section">
+      <div class="section-title">📎 ANEXOS PARA O FORMULÁRIO RDA</div>
+      <div class="document-list">
+        <div class="item">Formulário RDA preenchido (original + cópia)</div>
+        <div class="item">Declaração de autoria (cartorizada, 2 cópias)</div>
+        <div class="item">Código-fonte ZIP</div>
+        <div class="item">HASHES.txt</div>
+        <div class="item">Documentação técnica (9 PDFs)</div>
+        <div class="item">Screenshots PDF</div>
+        <div class="item">Fotocópias RG/CPF</div>
+        <div class="item">Comprovante de residência</div>
+        <div class="item">Guia de recolhimento (taxa de registro)</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- PÁGINA 3 -->
+  <div class="page">
+    <header>
+      <h1>📋 YUNA Solicite v2.0 (Continuação)</h1>
+      <p>Fase 3: Protocolo e Finalização</p>
+    </header>
+
+    <div class="section">
+      <div class="section-title">✅ CHECKLIST - FASE 4: PAGAMENTO E PROTOCOLO</div>
+      <div class="checklist-item">
+        <input type="checkbox" />
+        <div class="item-text">
+          <div class="item-title">Confirmar Taxa</div>
+          <div class="item-desc">Valor aprox. R$50-110 - Consultar site da BN (pode variar)</div>
+        </div>
+      </div>
+      <div class="checklist-item">
+        <input type="checkbox" />
+        <div class="item-text">
+          <div class="item-title">Gerar Guia de Recolhimento</div>
+          <div class="item-desc">Download no site da BN ou solicitar no protocolo</div>
+        </div>
+      </div>
+      <div class="checklist-item">
+        <input type="checkbox" />
+        <div class="item-text">
+          <div class="item-title">Pagar Taxa (Banco/Online)</div>
+          <div class="item-desc">Preferível pagar antes de protocolar (mais rápido)</div>
+        </div>
+      </div>
+      <div class="checklist-item">
+        <input type="checkbox" />
+        <div class="item-text">
+          <div class="item-title">Montar Pacote de Envio</div>
+          <div class="item-desc">Tudo numerado e em pasta organizada</div>
+        </div>
+      </div>
+      <div class="checklist-item">
+        <input type="checkbox" />
+        <div class="item-text">
+          <div class="item-title">Protocolar na BN (Pessoal)</div>
+          <div class="item-desc">Endereço: Av. Rio Branco, 219 - Centro - Rio de Janeiro, RJ</div>
+        </div>
+      </div>
+      <div class="checklist-item">
+        <input type="checkbox" />
+        <div class="item-text">
+          <div class="item-title">Obter Número de Protocolo</div>
+          <div class="item-desc">Guardar com segurança para acompanhamento</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="important">
+      <div class="title">⚠️ OPÇÃO: ENVIO POR CORREIOS</div>
+      <div class="text">Se não puder ir pessoalmente, envie por SEDEX. Tempo maior (2-3 semanas), mas válido. Use caixa resistente e acompanhamento.</div>
+    </div>
+
+    <div class="section">
+      <div class="section-title">⏳ PRAZOS ESPERADOS APÓS PROTOCOLO</div>
+      <table>
+        <tr>
+          <th>Etapa</th>
+          <th>Prazo</th>
+          <th>Observação</th>
+        </tr>
+        <tr>
+          <td>Análise da BN</td>
+          <td>30-60 dias</td>
+          <td>Podem solicitar documentação adicional</td>
+        </tr>
+        <tr>
+          <td>Aprovação</td>
+          <td>1-2 dias úteis</td>
+          <td>Se tudo estiver correto</td>
+        </tr>
+        <tr>
+          <td>Expedição do certificado</td>
+          <td>15 dias</td>
+          <td>Enviado por correio</td>
+        </tr>
+        <tr>
+          <td>Total</td>
+          <td>45-90 dias</td>
+          <td>Estimativa realista</td>
+        </tr>
+      </table>
+    </div>
+
+    <div class="section">
+      <div class="section-title">✅ CHECKLIST - FASE 5: BACKUP E ARQUIVAMENTO</div>
+      <div class="checklist-item">
+        <input type="checkbox" />
+        <div class="item-text">
+          <div class="item-title">Fazer Backup em HD Externo</div>
+          <div class="item-desc">Copiar todo REGISTRO_YUNA_V2.0/ para local seguro</div>
+        </div>
+      </div>
+      <div class="checklist-item">
+        <input type="checkbox" />
+        <div class="item-text">
+          <div class="item-title">Guardar Declaração Cartorizada</div>
+          <div class="item-desc">Em lugar seguro (cópia de segurança também)</div>
+        </div>
+      </div>
+      <div class="checklist-item">
+        <input type="checkbox" />
+        <div class="item-text">
+          <div class="item-title">Registrar Número de Protocolo</div>
+          <div class="item-desc">Anote em local seguro (planilha, anotação, e-mail)</div>
+        </div>
+      </div>
+      <div class="checklist-item">
+        <input type="checkbox" />
+        <div class="item-text">
+          <div class="item-title">Acompanhar BN pelo Portal</div>
+          <div class="item-desc">Consultar status do processo online com número de protocolo</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="contact">
+      <div class="label">📞 CONTATO BIBLIOTECA NACIONAL</div>
+      <div class="text">
+        <strong>Site:</strong> https://www.bn.gov.br<br>
+        <strong>E-mail:</strong> copyright@bn.gov.br<br>
+        <strong>Telefone:</strong> (21) 3878-9898<br>
+        <strong>Horário:</strong> Seg-Sex, 9h-17h (Brasília)
+      </div>
+    </div>
+  </div>
+
+  <!-- PÁGINA 4 -->
+  <div class="page">
+    <header>
+      <h1>📋 YUNA Solicite v2.0</h1>
+      <p>Informações Técnicas para Preenchimento</p>
+    </header>
+
+    <div class="section">
+      <div class="section-title">🖥️ DADOS TÉCNICOS DO SOFTWARE</div>
+      <table>
+        <tr>
+          <th>Informação</th>
+          <th>Valor</th>
+        </tr>
+        <tr>
+          <td>Nome/Título</td>
+          <td>Yuna Solicite v2.0</td>
+        </tr>
+        <tr>
+          <td>Linguagem Primária</td>
+          <td>JavaScript (Vanilla)</td>
+        </tr>
+        <tr>
+          <td>Linguagens Secundárias</td>
+          <td>HTML5, CSS3</td>
+        </tr>
+        <tr>
+          <td>Tipo</td>
+          <td>Web Application / SPA (Single Page Application)</td>
+        </tr>
+        <tr>
+          <td>Plataforma</td>
+          <td>Browser (Web)</td>
+        </tr>
+        <tr>
+          <td>Total de Linhas de Código</td>
+          <td>19.825+ LOC</td>
+        </tr>
+        <tr>
+          <td>Versão Atual</td>
+          <td>2.0 (Jan 2026)</td>
+        </tr>
+        <tr>
+          <td>Data Criação (v1)</td>
+          <td>Janeiro 2024</td>
+        </tr>
+        <tr>
+          <td>Licença</td>
+          <td>Proprietário (ou selecionar conforme necessário)</td>
+        </tr>
+      </table>
+    </div>
+
+    <div class="section">
+      <div class="section-title">📝 DESCIÇÃO RESUMIDA (Para Formulário RDA)</div>
+      <div class="info-box">
+        <div class="label">Descrição Oficial (máx. 1000 caracteres):</div>
+        <div class="text">
+          Sistema integrado de gerenciamento de solicitações de serviços de saúde para clínicas. Desenvolvido em JavaScript Vanilla com Firebase backend, implementando arquitetura PWA (Progressive Web App) com funcionalidades offline-first. Inclui dois portais independentes: Painel Administrativo (13.4k LOC) para gestão de solicitações e usuários com RBAC (Role-Based Access Control), e Portal dos Acompanhantes (4.5k LOC) para submissão de solicitações. Incorpora 4 módulos de otimização proprietários (Performance Monitor, Cache Manager, Listener Manager, Query Helper). Implementa sistema de timeout de sessão com aviso prévio, sincronização real-time com Firestore, e avaliação automática de satisfação. Suporta 300+ pacientes simultâneos com performance estável.
+        </div>
+      </div>
+    </div>
+
+    <div class="section">
+      <div class="section-title">👤 DADOS DO AUTOR/RESPONSÁVEL</div>
+      <table>
+        <tr>
+          <th>Campo</th>
+          <th>Valor</th>
+        </tr>
+        <tr>
+          <td>Nome Completo</td>
+          <td>Samuel dos Reis Lacerda Junior</td>
+        </tr>
+        <tr>
+          <td>CPF</td>
+          <td>[Seu CPF aqui]</td>
+        </tr>
+        <tr>
+          <td>CNPJ Empresa</td>
+          <td>55.004.442</td>
+        </tr>
+        <tr>
+          <td>Endereço</td>
+          <td>[Seu endereço conforme comprovante]</td>
+        </tr>
+        <tr>
+          <td>E-mail</td>
+          <td>ti@yuna.com.br (ou seu e-mail)</td>
+        </tr>
+        <tr>
+          <td>Telefone</td>
+          <td>+55 11 94586-4671 (ou seu telefone)</td>
+        </tr>
+      </table>
+    </div>
+
+    <div class="section">
+      <div class="section-title">📂 ESTRUTURA PASTA REGISTRO_YUNA_V2.0/</div>
+      <div class="document-list">
+        <div class="item">1_FORMULARIOS/ - Formulário RDA (blank e preenchido)</div>
+        <div class="item">2_DOCUMENTOS_IDENTIFICACAO/ - RG, CPF, Comprovante</div>
+        <div class="item">3_CODIGO_FONTE/ - ZIP + HASHES.txt</div>
+        <div class="item">4_DOCUMENTACAO_TECNICA/ - 9 PDFs técnicos</div>
+        <div class="item">5_INTERFACES/ - Screenshots PDF + originais</div>
+        <div class="item">6_DIAGRAMAS/ - Arquitetura (se houver)</div>
+        <div class="item">7_MANUAL/ - Manual do usuário</div>
+        <div class="item">8_HISTORICO/ - Histórico de desenvolvimento</div>
+        <div class="item">README_PACOTE_REGISTRO.md - Índice completo</div>
+      </div>
+    </div>
+
+    <div class="footer">
+      <p><strong>Data de Criação:</strong> 13 de janeiro de 2026</p>
+      <p><strong>Sistema:</strong> Yuna Solicite v2.0 | <strong>Autor:</strong> Samuel dos Reis Lacerda Junior | <strong>CNPJ:</strong> 55.004.442</p>
+      <p>Para dúvidas adicionais, consulte o site: https://www.bn.gov.br/servicos/direito-autoral</p>
+    </div>
+  </div>
+
+</body>
+</html>

@@ -1,0 +1,376 @@
+<h1 id="integração-dos-módulos-de-otimização---yuna">🚀 Integração dos
+Módulos de Otimização - YUNA</h1>
+<h2 id="status-da-implementação">📋 Status da Implementação</h2>
+<h3 id="módulos-criados-prontos">✅ Módulos Criados (Prontos)</h3>
+<ol type="1">
+<li><strong><code>performance-monitor.js</code></strong> - 349 linhas
+<ul>
+<li>Monitoramento de performance, memória e erros</li>
+<li>Snapshots automáticos a cada 5 minutos</li>
+<li>Alertas quando RAM &gt; 200MB</li>
+</ul></li>
+<li><strong><code>listener-manager.js</code></strong> - 286 linhas
+<ul>
+<li>Gerenciamento centralizado de listeners Firestore</li>
+<li>Auto-cleanup em unload</li>
+<li>Rastreamento com descrições</li>
+</ul></li>
+<li><strong><code>cache-manager.js</code></strong> - 410 linhas
+<ul>
+<li>Cache LRU com limite de 200 itens</li>
+<li>Eviction automática de itens antigos</li>
+<li>Sincronização com cache legado</li>
+</ul></li>
+<li><strong><code>query-helper.js</code></strong> - 380 linhas
+<ul>
+<li>Paginação com limit(50) e startAfter()</li>
+<li>Cache de queries</li>
+<li>Logging de reads</li>
+</ul></li>
+</ol>
+<h3 id="integração-em-andamento">⏳ Integração em Andamento</h3>
+<ul>
+<li><strong><code>admin-panel.js</code></strong> (13.400 linhas) - 30%
+integrado
+<ul>
+<li>✅ Inicialização dos módulos no topo</li>
+<li>✅ Performance monitor em <code>carregarSolicitacoes()</code></li>
+<li>✅ QueryHelper com fallback</li>
+<li>⏳ Substituir atribuições diretas
+<code>window.cachedSolicitacoes =</code> por
+<code>cacheManager.setSolicitacao()</code></li>
+<li>⏳ Registrar listeners com
+<code>listenerManager.register()</code></li>
+<li>⏳ Finalizar timers de performance</li>
+</ul></li>
+</ul>
+<hr />
+<h2 id="próximos-passos-de-integração">🎯 Próximos Passos de
+Integração</h2>
+<h3 id="fase-1-substituir-cache-direto-crítico">Fase 1: Substituir Cache
+Direto (CRÍTICO)</h3>
+<p><strong>Arquivo:</strong> <code>admin-panel.js</code> <strong>Linhas
+afetadas:</strong> 11 ocorrências de
+<code>window.cachedSolicitacoes =</code></p>
+<p><strong>Padrão atual (PROBLEMA):</strong></p>
+<div class="sourceCode" id="cb1"><pre
+class="sourceCode javascript"><code class="sourceCode javascript"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="co">// Linha 4844 - atualiza cache inteiro (RUIM: sem limite)</span></span>
+<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a><span class="bu">window</span><span class="op">.</span><span class="at">cachedSolicitacoes</span> <span class="op">=</span> <span class="bu">Array</span><span class="op">.</span><span class="fu">isArray</span>(solicitacoes) <span class="op">?</span> solicitacoes <span class="op">:</span> []<span class="op">;</span></span></code></pre></div>
+<p><strong>Novo padrão (SOLUÇÃO):</strong></p>
+<div class="sourceCode" id="cb2"><pre
+class="sourceCode javascript"><code class="sourceCode javascript"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="co">// Atualiza cache com limite LRU</span></span>
+<span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a><span class="cf">if</span> (<span class="bu">window</span><span class="op">.</span><span class="at">cacheManager</span>) {</span>
+<span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a>    solicitacoes<span class="op">.</span><span class="fu">forEach</span>(sol <span class="kw">=&gt;</span> <span class="bu">window</span><span class="op">.</span><span class="at">cacheManager</span><span class="op">.</span><span class="fu">setSolicitacao</span>(sol))<span class="op">;</span></span>
+<span id="cb2-4"><a href="#cb2-4" aria-hidden="true" tabindex="-1"></a>} <span class="cf">else</span> {</span>
+<span id="cb2-5"><a href="#cb2-5" aria-hidden="true" tabindex="-1"></a>    <span class="co">// Fallback: cache legado</span></span>
+<span id="cb2-6"><a href="#cb2-6" aria-hidden="true" tabindex="-1"></a>    <span class="bu">window</span><span class="op">.</span><span class="at">cachedSolicitacoes</span> <span class="op">=</span> <span class="bu">Array</span><span class="op">.</span><span class="fu">isArray</span>(solicitacoes) <span class="op">?</span> solicitacoes <span class="op">:</span> []<span class="op">;</span></span>
+<span id="cb2-7"><a href="#cb2-7" aria-hidden="true" tabindex="-1"></a>}</span></code></pre></div>
+<p><strong>Substituições necessárias:</strong> - [ ] Linha 4844:
+<code>window.cachedSolicitacoes = Array.isArray(solicitacoes)</code> - [
+] Linha 8554:
+<code>window.cachedSolicitacoes = solicitacoesProcessadas</code> - [ ]
+Linha 8570: <code>window.cachedSolicitacoes = []</code> (reset em erro)
+- [ ] Outras 8 ocorrências</p>
+<hr />
+<h3 id="fase-2-registrar-listeners-crítico---memory-leaks">Fase 2:
+Registrar Listeners (CRÍTICO - Memory Leaks)</h3>
+<p><strong>Arquivo:</strong> <code>admin-panel.js</code>
+<strong>Buscar:</strong> <code>.onSnapshot(</code> (todos os
+listeners)</p>
+<p><strong>Padrão atual (PROBLEMA):</strong></p>
+<div class="sourceCode" id="cb3"><pre
+class="sourceCode javascript"><code class="sourceCode javascript"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a><span class="co">// Listener sem cleanup - MEMORY LEAK!</span></span>
+<span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a><span class="kw">const</span> unsubscribe <span class="op">=</span> db<span class="op">.</span><span class="fu">collection</span>(<span class="st">&#39;solicitacoes&#39;</span>)</span>
+<span id="cb3-3"><a href="#cb3-3" aria-hidden="true" tabindex="-1"></a>    <span class="op">.</span><span class="fu">where</span>(<span class="st">&#39;usuarioId&#39;</span><span class="op">,</span> <span class="st">&#39;==&#39;</span><span class="op">,</span> userId)</span>
+<span id="cb3-4"><a href="#cb3-4" aria-hidden="true" tabindex="-1"></a>    <span class="op">.</span><span class="fu">onSnapshot</span>(snapshot <span class="kw">=&gt;</span> {</span>
+<span id="cb3-5"><a href="#cb3-5" aria-hidden="true" tabindex="-1"></a>        <span class="co">// processar</span></span>
+<span id="cb3-6"><a href="#cb3-6" aria-hidden="true" tabindex="-1"></a>    })<span class="op">;</span></span></code></pre></div>
+<p><strong>Novo padrão (SOLUÇÃO):</strong></p>
+<div class="sourceCode" id="cb4"><pre
+class="sourceCode javascript"><code class="sourceCode javascript"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a><span class="co">// Listener com gerenciamento centralizado</span></span>
+<span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a><span class="kw">const</span> unsubscribe <span class="op">=</span> db<span class="op">.</span><span class="fu">collection</span>(<span class="st">&#39;solicitacoes&#39;</span>)</span>
+<span id="cb4-3"><a href="#cb4-3" aria-hidden="true" tabindex="-1"></a>    <span class="op">.</span><span class="fu">where</span>(<span class="st">&#39;usuarioId&#39;</span><span class="op">,</span> <span class="st">&#39;==&#39;</span><span class="op">,</span> userId)</span>
+<span id="cb4-4"><a href="#cb4-4" aria-hidden="true" tabindex="-1"></a>    <span class="op">.</span><span class="fu">onSnapshot</span>(snapshot <span class="kw">=&gt;</span> {</span>
+<span id="cb4-5"><a href="#cb4-5" aria-hidden="true" tabindex="-1"></a>        <span class="co">// processar</span></span>
+<span id="cb4-6"><a href="#cb4-6" aria-hidden="true" tabindex="-1"></a>    })<span class="op">;</span></span>
+<span id="cb4-7"><a href="#cb4-7" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-8"><a href="#cb4-8" aria-hidden="true" tabindex="-1"></a><span class="co">// Registrar para auto-cleanup</span></span>
+<span id="cb4-9"><a href="#cb4-9" aria-hidden="true" tabindex="-1"></a><span class="cf">if</span> (<span class="bu">window</span><span class="op">.</span><span class="at">listenerManager</span>) {</span>
+<span id="cb4-10"><a href="#cb4-10" aria-hidden="true" tabindex="-1"></a>    <span class="bu">window</span><span class="op">.</span><span class="at">listenerManager</span><span class="op">.</span><span class="fu">register</span>(</span>
+<span id="cb4-11"><a href="#cb4-11" aria-hidden="true" tabindex="-1"></a>        unsubscribe<span class="op">,</span> </span>
+<span id="cb4-12"><a href="#cb4-12" aria-hidden="true" tabindex="-1"></a>        <span class="st">&#39;solicitacoes-usuario&#39;</span><span class="op">,</span> </span>
+<span id="cb4-13"><a href="#cb4-13" aria-hidden="true" tabindex="-1"></a>        { userId }</span>
+<span id="cb4-14"><a href="#cb4-14" aria-hidden="true" tabindex="-1"></a>    )<span class="op">;</span></span>
+<span id="cb4-15"><a href="#cb4-15" aria-hidden="true" tabindex="-1"></a>}</span></code></pre></div>
+<p><strong>Locais para buscar:</strong> - [ ] Listeners em
+<code>initRealtimeSync()</code> - [ ] Listeners em
+<code>carregarSolicitacoes()</code> - [ ] Listeners em funções de
+monitoramento - [ ] Listeners em telas específicas (relatórios,
+usuários)</p>
+<hr />
+<h3 id="fase-3-adicionar-timers-de-performance-alta">Fase 3: Adicionar
+Timers de Performance (ALTA)</h3>
+<p><strong>Arquivo:</strong> <code>admin-panel.js</code> <strong>Funções
+críticas para monitorar:</strong></p>
+<p><strong>Padrão:</strong></p>
+<div class="sourceCode" id="cb5"><pre
+class="sourceCode javascript"><code class="sourceCode javascript"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a><span class="kw">async</span> <span class="kw">function</span> <span class="fu">funcaoPesada</span>() {</span>
+<span id="cb5-2"><a href="#cb5-2" aria-hidden="true" tabindex="-1"></a>    <span class="kw">const</span> timerId <span class="op">=</span> <span class="bu">window</span><span class="op">.</span><span class="at">perfMonitor</span><span class="op">?.</span><span class="fu">startTimer</span>(<span class="st">&#39;funcaoPesada&#39;</span>)<span class="op">;</span></span>
+<span id="cb5-3"><a href="#cb5-3" aria-hidden="true" tabindex="-1"></a>    </span>
+<span id="cb5-4"><a href="#cb5-4" aria-hidden="true" tabindex="-1"></a>    <span class="cf">try</span> {</span>
+<span id="cb5-5"><a href="#cb5-5" aria-hidden="true" tabindex="-1"></a>        <span class="co">// código pesado aqui</span></span>
+<span id="cb5-6"><a href="#cb5-6" aria-hidden="true" tabindex="-1"></a>        </span>
+<span id="cb5-7"><a href="#cb5-7" aria-hidden="true" tabindex="-1"></a>        <span class="bu">window</span><span class="op">.</span><span class="at">perfMonitor</span><span class="op">?.</span><span class="fu">endTimer</span>(timerId)<span class="op">;</span></span>
+<span id="cb5-8"><a href="#cb5-8" aria-hidden="true" tabindex="-1"></a>    } <span class="cf">catch</span> (error) {</span>
+<span id="cb5-9"><a href="#cb5-9" aria-hidden="true" tabindex="-1"></a>        <span class="bu">window</span><span class="op">.</span><span class="at">perfMonitor</span><span class="op">?.</span><span class="fu">endTimer</span>(timerId)<span class="op">;</span></span>
+<span id="cb5-10"><a href="#cb5-10" aria-hidden="true" tabindex="-1"></a>        <span class="bu">window</span><span class="op">.</span><span class="at">perfMonitor</span><span class="op">?.</span><span class="fu">logError</span>(error<span class="op">,</span> <span class="st">&#39;funcaoPesada&#39;</span>)<span class="op">;</span></span>
+<span id="cb5-11"><a href="#cb5-11" aria-hidden="true" tabindex="-1"></a>        <span class="cf">throw</span> error<span class="op">;</span></span>
+<span id="cb5-12"><a href="#cb5-12" aria-hidden="true" tabindex="-1"></a>    }</span>
+<span id="cb5-13"><a href="#cb5-13" aria-hidden="true" tabindex="-1"></a>}</span></code></pre></div>
+<p><strong>Funções para adicionar timers:</strong> - [x]
+<code>carregarSolicitacoes()</code> - JÁ IMPLEMENTADO - [ ]
+<code>carregarUsuarios()</code> - [ ] <code>buscarAcompanhantes()</code>
+- [ ] <code>buscarEquipes()</code> - [ ]
+<code>renderizarCardsEquipe()</code> - [ ] <code>exportarExcel()</code>
+- [ ] <code>gerarRelatorio()</code></p>
+<hr />
+<h3 id="fase-4-usar-queryhelper-em-todas-as-queries-alta">Fase 4: Usar
+QueryHelper em Todas as Queries (ALTA)</h3>
+<p><strong>Arquivo:</strong> <code>admin-panel.js</code>
+<strong>Buscar:</strong>
+<code>db.collection('solicitacoes').get()</code> e similares</p>
+<p><strong>Padrão atual (PROBLEMA):</strong></p>
+<div class="sourceCode" id="cb6"><pre
+class="sourceCode javascript"><code class="sourceCode javascript"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a><span class="co">// Busca tudo sem limite - LENTO com 300+ pacientes!</span></span>
+<span id="cb6-2"><a href="#cb6-2" aria-hidden="true" tabindex="-1"></a><span class="kw">const</span> snapshot <span class="op">=</span> <span class="cf">await</span> db<span class="op">.</span><span class="fu">collection</span>(<span class="st">&#39;solicitacoes&#39;</span>)</span>
+<span id="cb6-3"><a href="#cb6-3" aria-hidden="true" tabindex="-1"></a>    <span class="op">.</span><span class="fu">where</span>(<span class="st">&#39;status&#39;</span><span class="op">,</span> <span class="st">&#39;==&#39;</span><span class="op">,</span> <span class="st">&#39;pendente&#39;</span>)</span>
+<span id="cb6-4"><a href="#cb6-4" aria-hidden="true" tabindex="-1"></a>    <span class="op">.</span><span class="fu">get</span>()<span class="op">;</span></span></code></pre></div>
+<p><strong>Novo padrão (SOLUÇÃO):</strong></p>
+<div class="sourceCode" id="cb7"><pre
+class="sourceCode javascript"><code class="sourceCode javascript"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a><span class="co">// Paginação automática com limite 50</span></span>
+<span id="cb7-2"><a href="#cb7-2" aria-hidden="true" tabindex="-1"></a><span class="kw">const</span> resultado <span class="op">=</span> <span class="cf">await</span> <span class="bu">window</span><span class="op">.</span><span class="at">queryHelper</span><span class="op">.</span><span class="fu">buscarSolicitacoes</span>({</span>
+<span id="cb7-3"><a href="#cb7-3" aria-hidden="true" tabindex="-1"></a>    <span class="dt">filtros</span><span class="op">:</span> { <span class="dt">status</span><span class="op">:</span> <span class="st">&#39;pendente&#39;</span> }<span class="op">,</span></span>
+<span id="cb7-4"><a href="#cb7-4" aria-hidden="true" tabindex="-1"></a>    <span class="dt">limit</span><span class="op">:</span> <span class="dv">50</span><span class="op">,</span></span>
+<span id="cb7-5"><a href="#cb7-5" aria-hidden="true" tabindex="-1"></a>    <span class="dt">ordenacao</span><span class="op">:</span> { <span class="dt">campo</span><span class="op">:</span> <span class="st">&#39;criadoEm&#39;</span><span class="op">,</span> <span class="dt">direcao</span><span class="op">:</span> <span class="st">&#39;desc&#39;</span> }</span>
+<span id="cb7-6"><a href="#cb7-6" aria-hidden="true" tabindex="-1"></a>})<span class="op">;</span></span>
+<span id="cb7-7"><a href="#cb7-7" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-8"><a href="#cb7-8" aria-hidden="true" tabindex="-1"></a><span class="kw">const</span> solicitacoes <span class="op">=</span> resultado<span class="op">.</span><span class="at">solicitacoes</span><span class="op">;</span></span>
+<span id="cb7-9"><a href="#cb7-9" aria-hidden="true" tabindex="-1"></a><span class="kw">const</span> hasMore <span class="op">=</span> resultado<span class="op">.</span><span class="at">hasMore</span><span class="op">;</span></span></code></pre></div>
+<p><strong>Queries para migrar:</strong> - [ ]
+<code>carregarSolicitacoes()</code> - já parcialmente implementado - [ ]
+<code>carregarUsuarios()</code> - [ ]
+<code>buscarSolicitacoesPorEquipe()</code> - [ ]
+<code>buscarSolicitacoesPorStatus()</code> - [ ] Relatórios e
+exports</p>
+<hr />
+<h3 id="fase-5-cleanup-em-logout-crítico">Fase 5: Cleanup em Logout
+(CRÍTICO)</h3>
+<p><strong>Arquivo:</strong> <code>admin-panel.js</code>
+<strong>Função:</strong> <code>performAutoLogout()</code> e
+<code>logout()</code></p>
+<p><strong>Adicionar no logout:</strong></p>
+<div class="sourceCode" id="cb8"><pre
+class="sourceCode javascript"><code class="sourceCode javascript"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true" tabindex="-1"></a><span class="kw">async</span> <span class="kw">function</span> <span class="fu">performAutoLogout</span>() {</span>
+<span id="cb8-2"><a href="#cb8-2" aria-hidden="true" tabindex="-1"></a>    <span class="bu">console</span><span class="op">.</span><span class="fu">log</span>(<span class="st">&#39;[TIMEOUT] Iniciando logout automático...&#39;</span>)<span class="op">;</span></span>
+<span id="cb8-3"><a href="#cb8-3" aria-hidden="true" tabindex="-1"></a>    </span>
+<span id="cb8-4"><a href="#cb8-4" aria-hidden="true" tabindex="-1"></a>    <span class="co">// Limpar listeners ativos</span></span>
+<span id="cb8-5"><a href="#cb8-5" aria-hidden="true" tabindex="-1"></a>    <span class="cf">if</span> (<span class="bu">window</span><span class="op">.</span><span class="at">listenerManager</span>) {</span>
+<span id="cb8-6"><a href="#cb8-6" aria-hidden="true" tabindex="-1"></a>        <span class="kw">const</span> count <span class="op">=</span> <span class="bu">window</span><span class="op">.</span><span class="at">listenerManager</span><span class="op">.</span><span class="fu">unregisterAll</span>()<span class="op">;</span></span>
+<span id="cb8-7"><a href="#cb8-7" aria-hidden="true" tabindex="-1"></a>        <span class="bu">console</span><span class="op">.</span><span class="fu">log</span>(<span class="vs">`[CLEANUP] </span><span class="sc">${</span>count<span class="sc">}</span><span class="vs"> listeners removidos`</span>)<span class="op">;</span></span>
+<span id="cb8-8"><a href="#cb8-8" aria-hidden="true" tabindex="-1"></a>    }</span>
+<span id="cb8-9"><a href="#cb8-9" aria-hidden="true" tabindex="-1"></a>    </span>
+<span id="cb8-10"><a href="#cb8-10" aria-hidden="true" tabindex="-1"></a>    <span class="co">// Limpar cache</span></span>
+<span id="cb8-11"><a href="#cb8-11" aria-hidden="true" tabindex="-1"></a>    <span class="cf">if</span> (<span class="bu">window</span><span class="op">.</span><span class="at">cacheManager</span>) {</span>
+<span id="cb8-12"><a href="#cb8-12" aria-hidden="true" tabindex="-1"></a>        <span class="bu">window</span><span class="op">.</span><span class="at">cacheManager</span><span class="op">.</span><span class="fu">limpar</span>()<span class="op">;</span></span>
+<span id="cb8-13"><a href="#cb8-13" aria-hidden="true" tabindex="-1"></a>        <span class="bu">console</span><span class="op">.</span><span class="fu">log</span>(<span class="st">&#39;[CLEANUP] Cache LRU limpo&#39;</span>)<span class="op">;</span></span>
+<span id="cb8-14"><a href="#cb8-14" aria-hidden="true" tabindex="-1"></a>    }</span>
+<span id="cb8-15"><a href="#cb8-15" aria-hidden="true" tabindex="-1"></a>    </span>
+<span id="cb8-16"><a href="#cb8-16" aria-hidden="true" tabindex="-1"></a>    <span class="co">// Gerar relatório final de performance</span></span>
+<span id="cb8-17"><a href="#cb8-17" aria-hidden="true" tabindex="-1"></a>    <span class="cf">if</span> (<span class="bu">window</span><span class="op">.</span><span class="at">perfMonitor</span>) {</span>
+<span id="cb8-18"><a href="#cb8-18" aria-hidden="true" tabindex="-1"></a>        <span class="kw">const</span> report <span class="op">=</span> <span class="bu">window</span><span class="op">.</span><span class="at">perfMonitor</span><span class="op">.</span><span class="fu">generateReport</span>()<span class="op">;</span></span>
+<span id="cb8-19"><a href="#cb8-19" aria-hidden="true" tabindex="-1"></a>        <span class="bu">console</span><span class="op">.</span><span class="fu">log</span>(<span class="st">&#39;[PERFORMANCE] Relatório final:&#39;</span><span class="op">,</span> report)<span class="op">;</span></span>
+<span id="cb8-20"><a href="#cb8-20" aria-hidden="true" tabindex="-1"></a>    }</span>
+<span id="cb8-21"><a href="#cb8-21" aria-hidden="true" tabindex="-1"></a>    </span>
+<span id="cb8-22"><a href="#cb8-22" aria-hidden="true" tabindex="-1"></a>    <span class="co">// Continuar com logout normal...</span></span>
+<span id="cb8-23"><a href="#cb8-23" aria-hidden="true" tabindex="-1"></a>    <span class="cf">await</span> firebase<span class="op">.</span><span class="fu">auth</span>()<span class="op">.</span><span class="fu">signOut</span>()<span class="op">;</span></span>
+<span id="cb8-24"><a href="#cb8-24" aria-hidden="true" tabindex="-1"></a>}</span></code></pre></div>
+<hr />
+<h2 id="como-testar-após-integração">🧪 Como Testar Após Integração</h2>
+<h3 id="testar-cache-lru">1. Testar Cache LRU</h3>
+<div class="sourceCode" id="cb9"><pre
+class="sourceCode javascript"><code class="sourceCode javascript"><span id="cb9-1"><a href="#cb9-1" aria-hidden="true" tabindex="-1"></a><span class="co">// Console do navegador</span></span>
+<span id="cb9-2"><a href="#cb9-2" aria-hidden="true" tabindex="-1"></a><span class="bu">console</span><span class="op">.</span><span class="fu">log</span>(<span class="st">&#39;=== TESTE CACHE LRU ===&#39;</span>)<span class="op">;</span></span>
+<span id="cb9-3"><a href="#cb9-3" aria-hidden="true" tabindex="-1"></a><span class="bu">window</span><span class="op">.</span><span class="at">cacheManager</span><span class="op">.</span><span class="fu">showCacheStats</span>()<span class="op">;</span></span>
+<span id="cb9-4"><a href="#cb9-4" aria-hidden="true" tabindex="-1"></a><span class="co">// Deve mostrar: tamanho &lt;= 200, hits/misses, evictions</span></span></code></pre></div>
+<h3 id="testar-listeners">2. Testar Listeners</h3>
+<div class="sourceCode" id="cb10"><pre
+class="sourceCode javascript"><code class="sourceCode javascript"><span id="cb10-1"><a href="#cb10-1" aria-hidden="true" tabindex="-1"></a><span class="co">// Console do navegador</span></span>
+<span id="cb10-2"><a href="#cb10-2" aria-hidden="true" tabindex="-1"></a><span class="bu">console</span><span class="op">.</span><span class="fu">log</span>(<span class="st">&#39;=== TESTE LISTENERS ===&#39;</span>)<span class="op">;</span></span>
+<span id="cb10-3"><a href="#cb10-3" aria-hidden="true" tabindex="-1"></a><span class="bu">window</span><span class="op">.</span><span class="at">listenerManager</span><span class="op">.</span><span class="fu">showListeners</span>()<span class="op">;</span></span>
+<span id="cb10-4"><a href="#cb10-4" aria-hidden="true" tabindex="-1"></a><span class="co">// Deve mostrar: lista de listeners ativos com descrições</span></span>
+<span id="cb10-5"><a href="#cb10-5" aria-hidden="true" tabindex="-1"></a><span class="co">// Máximo esperado: 10-15 listeners</span></span></code></pre></div>
+<h3 id="testar-performance">3. Testar Performance</h3>
+<div class="sourceCode" id="cb11"><pre
+class="sourceCode javascript"><code class="sourceCode javascript"><span id="cb11-1"><a href="#cb11-1" aria-hidden="true" tabindex="-1"></a><span class="co">// Console do navegador</span></span>
+<span id="cb11-2"><a href="#cb11-2" aria-hidden="true" tabindex="-1"></a><span class="bu">console</span><span class="op">.</span><span class="fu">log</span>(<span class="st">&#39;=== TESTE PERFORMANCE ===&#39;</span>)<span class="op">;</span></span>
+<span id="cb11-3"><a href="#cb11-3" aria-hidden="true" tabindex="-1"></a><span class="bu">window</span><span class="op">.</span><span class="at">perfMonitor</span><span class="op">.</span><span class="fu">showPerformanceReport</span>()<span class="op">;</span></span>
+<span id="cb11-4"><a href="#cb11-4" aria-hidden="true" tabindex="-1"></a><span class="co">// Verificar: tempos de carregarSolicitacoes &lt; 1000ms</span></span>
+<span id="cb11-5"><a href="#cb11-5" aria-hidden="true" tabindex="-1"></a><span class="co">// Verificar: memória &lt; 200MB</span></span></code></pre></div>
+<h3 id="testar-paginação">4. Testar Paginação</h3>
+<div class="sourceCode" id="cb12"><pre
+class="sourceCode javascript"><code class="sourceCode javascript"><span id="cb12-1"><a href="#cb12-1" aria-hidden="true" tabindex="-1"></a><span class="co">// Console do navegador</span></span>
+<span id="cb12-2"><a href="#cb12-2" aria-hidden="true" tabindex="-1"></a><span class="bu">console</span><span class="op">.</span><span class="fu">log</span>(<span class="st">&#39;=== TESTE PAGINAÇÃO ===&#39;</span>)<span class="op">;</span></span>
+<span id="cb12-3"><a href="#cb12-3" aria-hidden="true" tabindex="-1"></a><span class="bu">window</span><span class="op">.</span><span class="at">queryHelper</span><span class="op">.</span><span class="fu">showPaginationStats</span>()<span class="op">;</span></span>
+<span id="cb12-4"><a href="#cb12-4" aria-hidden="true" tabindex="-1"></a><span class="co">// Verificar: reads por query &lt;= 50</span></span>
+<span id="cb12-5"><a href="#cb12-5" aria-hidden="true" tabindex="-1"></a><span class="co">// Verificar: cache hits &gt; 0 após segunda busca</span></span></code></pre></div>
+<h3 id="teste-de-carga-manual">5. Teste de Carga (Manual)</h3>
+<ol type="1">
+<li>Criar 100+ solicitações de teste</li>
+<li>Recarregar página</li>
+<li>Verificar:
+<ul>
+<li>Tempo de carregamento &lt; 3 segundos</li>
+<li>Memória usada &lt; 200MB (DevTools → Memory)</li>
+<li>Console sem erros</li>
+</ul></li>
+</ol>
+<h3 id="teste-de-memory-leak">6. Teste de Memory Leak</h3>
+<ol type="1">
+<li>Navegar entre telas 10x (Dashboard → Relatórios → Usuários →
+Dashboard)</li>
+<li>Abrir Chrome DevTools → Memory → Take Heap Snapshot</li>
+<li>Verificar:
+<ul>
+<li>Listeners não aumentam indefinidamente</li>
+<li>Detached DOM nodes &lt; 10</li>
+<li>Memória não cresce &gt;10MB por ciclo</li>
+</ul></li>
+</ol>
+<hr />
+<h2 id="métricas-de-sucesso">📊 Métricas de Sucesso</h2>
+<h3 id="antes-da-otimização-100-pacientes">Antes da Otimização (100
+pacientes)</h3>
+<ul>
+<li>⏱️ Tempo de carregamento: <strong>3-5 segundos</strong></li>
+<li>💾 Memória usada: <strong>150-300MB</strong></li>
+<li>📊 Firestore reads/carga: <strong>600-800 documentos</strong></li>
+<li>🐛 Memory leaks: <strong>Sim</strong> (listeners não limpos)</li>
+</ul>
+<h3 id="depois-da-otimização-300-pacientes">Depois da Otimização (300+
+pacientes)</h3>
+<ul>
+<li>⏱️ Tempo de carregamento: <strong>&lt; 2 segundos</strong>
+(target)</li>
+<li>💾 Memória usada: <strong>&lt; 150MB</strong> (target)</li>
+<li>📊 Firestore reads/carga: <strong>&lt; 100 documentos</strong>
+(paginação)</li>
+<li>🐛 Memory leaks: <strong>Não</strong> (cleanup automático)</li>
+</ul>
+<hr />
+<h2 id="problemas-conhecidos-e-soluções">🚨 Problemas Conhecidos e
+Soluções</h2>
+<h3 id="problema-1-window.cachemanager-is-undefined">Problema 1:
+“window.cacheManager is undefined”</h3>
+<p><strong>Causa:</strong> Ordem de carregamento dos scripts no HTML
+incorreta</p>
+<p><strong>Solução:</strong> Verificar <code>admin/index.html</code> -
+deve ter:</p>
+<div class="sourceCode" id="cb13"><pre
+class="sourceCode html"><code class="sourceCode html"><span id="cb13-1"><a href="#cb13-1" aria-hidden="true" tabindex="-1"></a><span class="dt">&lt;</span><span class="kw">script</span><span class="ot"> src</span><span class="op">=</span><span class="st">&quot;cache-manager.js&quot;</span><span class="dt">&gt;&lt;/</span><span class="kw">script</span><span class="dt">&gt;</span></span>
+<span id="cb13-2"><a href="#cb13-2" aria-hidden="true" tabindex="-1"></a><span class="dt">&lt;</span><span class="kw">script</span><span class="ot"> src</span><span class="op">=</span><span class="st">&quot;admin-panel.js&quot;</span><span class="dt">&gt;&lt;/</span><span class="kw">script</span><span class="dt">&gt;</span> <span class="co">&lt;!-- SEMPRE POR ÚLTIMO --&gt;</span></span></code></pre></div>
+<h3 id="problema-2-cache-legado-ainda-cresce-ilimitado">Problema 2:
+Cache legado ainda cresce ilimitado</h3>
+<p><strong>Causa:</strong> Código legado ainda usa
+<code>window.cachedSolicitacoes.push()</code></p>
+<p><strong>Solução:</strong> Buscar TODOS os <code>.push(</code> no
+código:</p>
+<div class="sourceCode" id="cb14"><pre
+class="sourceCode bash"><code class="sourceCode bash"><span id="cb14-1"><a href="#cb14-1" aria-hidden="true" tabindex="-1"></a><span class="co"># PowerShell</span></span>
+<span id="cb14-2"><a href="#cb14-2" aria-hidden="true" tabindex="-1"></a><span class="ex">Select-String</span> <span class="at">-Path</span> <span class="st">&quot;admin-panel.js&quot;</span> <span class="at">-Pattern</span> <span class="st">&quot;cachedSolicitacoes\.push&quot;</span></span></code></pre></div>
+<h3 id="problema-3-listeners-não-são-removidos">Problema 3: Listeners
+não são removidos</h3>
+<p><strong>Causa:</strong> Esqueceu de registrar no ListenerManager</p>
+<p><strong>Solução:</strong> Verificar console no logout:</p>
+<div class="sourceCode" id="cb15"><pre
+class="sourceCode javascript"><code class="sourceCode javascript"><span id="cb15-1"><a href="#cb15-1" aria-hidden="true" tabindex="-1"></a><span class="bu">window</span><span class="op">.</span><span class="at">listenerManager</span><span class="op">.</span><span class="fu">showListeners</span>()<span class="op">;</span></span>
+<span id="cb15-2"><a href="#cb15-2" aria-hidden="true" tabindex="-1"></a><span class="co">// Se lista não está vazia, há listeners esquecidos</span></span></code></pre></div>
+<h3 id="problema-4-performance-não-melhora">Problema 4: Performance não
+melhora</h3>
+<p><strong>Causa:</strong> Query sem paginação ainda busca tudo</p>
+<p><strong>Solução:</strong> Verificar logs no console:</p>
+<pre><code>[QueryHelper] Buscando solicitações com filtros...
+[QueryHelper] Reads executados: 50 (esperado: &lt;= 50)</code></pre>
+<hr />
+<h2 id="checklist-de-integração-completa">📝 Checklist de Integração
+Completa</h2>
+<h3 id="admin-panel.js">admin-panel.js</h3>
+<ul class="task-list">
+<li><label><input type="checkbox" checked="" />Inicialização dos módulos
+no topo do arquivo</label></li>
+<li><label><input type="checkbox" checked="" />Performance timer em
+<code>carregarSolicitacoes()</code></label></li>
+<li><label><input type="checkbox" />Performance timers em todas funções
+pesadas</label></li>
+<li><label><input type="checkbox" />Substituir
+<code>window.cachedSolicitacoes =</code> por
+<code>cacheManager.setSolicitacao()</code></label></li>
+<li><label><input type="checkbox" />Registrar todos
+<code>.onSnapshot()</code> no <code>listenerManager</code></label></li>
+<li><label><input type="checkbox" />Usar
+<code>queryHelper.buscarSolicitacoes()</code> em todas
+queries</label></li>
+<li><label><input type="checkbox" />Cleanup completo em
+<code>performAutoLogout()</code></label></li>
+</ul>
+<h3 id="acompanhantesindex.html">acompanhantes/index.html</h3>
+<ul class="task-list">
+<li><label><input type="checkbox" />Adicionar imports dos
+módulos</label></li>
+<li><label><input type="checkbox" />Implementar mesmos padrões que
+admin</label></li>
+<li><label><input type="checkbox" />Testar paginação de histórico de
+solicitações</label></li>
+</ul>
+<h3 id="testes">Testes</h3>
+<ul class="task-list">
+<li><label><input type="checkbox" />Teste de cache LRU
+(console)</label></li>
+<li><label><input type="checkbox" />Teste de listeners
+(console)</label></li>
+<li><label><input type="checkbox" />Teste de performance
+(console)</label></li>
+<li><label><input type="checkbox" />Teste de paginação
+(console)</label></li>
+<li><label><input type="checkbox" />Teste de carga (100+
+solicitações)</label></li>
+<li><label><input type="checkbox" />Teste de memory leak (navegação
+10x)</label></li>
+</ul>
+<h3 id="deploy">Deploy</h3>
+<ul class="task-list">
+<li><label><input type="checkbox" />Commit com mensagem
+descritiva</label></li>
+<li><label><input type="checkbox" />Push para GitHub</label></li>
+<li><label><input type="checkbox" />Verificar deploy automático
+(Netlify/GitHub Pages)</label></li>
+<li><label><input type="checkbox" />Testar em produção</label></li>
+<li><label><input type="checkbox" />Monitorar logs do Firebase por
+24h</label></li>
+</ul>
+<hr />
+<h2 id="recursos-de-referência">🎓 Recursos de Referência</h2>
+<ul>
+<li><strong>Módulos criados:</strong>
+<code>admin/performance-monitor.js</code>,
+<code>listener-manager.js</code>, <code>cache-manager.js</code>,
+<code>query-helper.js</code></li>
+<li><strong>Documentação de índices:</strong>
+<code>FIRESTORE-INDEXES.md</code></li>
+<li><strong>Guia para IA:</strong>
+<code>.github/copilot-instructions.md</code></li>
+<li><strong>Análise de escalabilidade:</strong> (conversa anterior)</li>
+</ul>
+<hr />
+<p><strong>Última atualização:</strong> 08/01/2026<br />
+<strong>Autor:</strong> GitHub Copilot<br />
+<strong>Status:</strong> 🟡 Integração 30% completa</p>

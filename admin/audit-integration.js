@@ -263,21 +263,92 @@ function abrirLogsAuditoria() {
         
         console.log('✅ [LOGS] Seção encontrada! Exibindo...');
         logsSection.classList.remove('hidden');
-        logsSection.style.display = 'block'; // CRÍTICO: Forçar display block
-        logsSection.style.visibility = 'visible'; // Garantir visibilidade
-        logsSection.style.opacity = '1'; // Garantir opacidade
-        logsSection.style.position = 'relative'; // Garantir posição
-        logsSection.style.zIndex = '1'; // Garantir z-index
         
-        // DEBUG: Verificar estilos aplicados
+        // Aplicar styles com setAttribute para garantir máxima precedência
+        logsSection.setAttribute('style', `
+            display: block !important;
+            visibility: visible !important;
+            opacity: 1 !important;
+            position: relative !important;
+            z-index: 2147483647 !important;
+            min-height: 100vh !important;
+            padding: 24px 16px !important;
+            background: #f8fafc !important;
+            pointer-events: auto !important;
+            transform: translateY(0) !important;
+            height: auto !important;
+            max-height: none !important;
+            top: 0 !important;
+            left: 0 !important;
+            right: 0 !important;
+            bottom: auto !important;
+            width: 100% !important;
+            overflow: visible !important;
+        `);
+        logsSection.classList.add('force-show');
+
+        // Desbloquear possíveis ancestrais escondidos
+        let parent = logsSection.parentElement;
+        while (parent) {
+            if (parent.classList && parent.classList.contains('hidden')) {
+                parent.classList.remove('hidden');
+                parent.style.display = 'block';
+                parent.style.visibility = 'visible';
+                parent.style.opacity = '1';
+                parent.style.maxHeight = 'none';
+                parent.style.height = 'auto';
+            }
+            parent = parent.parentElement;
+        }
+
+        // Garantir que body/html possam rolar até a seção
+        document.documentElement.style.overflow = 'auto';
+        document.body.style.overflow = 'auto';
+
+        // Garantir que o usuário veja a seção imediatamente
+        if (typeof logsSection.scrollIntoView === 'function') {
+            logsSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        } else {
+            window.scrollTo({ top: logsSection.offsetTop || 0, behavior: 'smooth' });
+        }
+
+        // BANNER de fallback visível para validar renderização
+        let banner = document.getElementById('logs-visibility-banner');
+        if (!banner) {
+            banner = document.createElement('div');
+            banner.id = 'logs-visibility-banner';
+            banner.innerText = 'Seção de Logs e Auditoria ativa (banner de verificação)';
+            banner.style.position = 'fixed';
+            banner.style.top = '10px';
+            banner.style.left = '10px';
+            banner.style.zIndex = '2147483647';
+            banner.style.background = '#f59e0b';
+            banner.style.color = '#111827';
+            banner.style.padding = '12px 16px';
+            banner.style.border = '2px solid #b45309';
+            banner.style.borderRadius = '8px';
+            banner.style.boxShadow = '0 10px 30px rgba(0,0,0,0.25)';
+            banner.style.fontWeight = '700';
+            banner.style.pointerEvents = 'none';
+            document.body.appendChild(banner);
+        }
+        
+        // DEBUG: Verificar estilos aplicados com bounding box
+        const cs = window.getComputedStyle(logsSection);
+        const rect = logsSection.getBoundingClientRect();
         console.log('[DEBUG] 🔍 Estilos computados após aplicação:', {
-            display: window.getComputedStyle(logsSection).display,
-            visibility: window.getComputedStyle(logsSection).visibility,
-            opacity: window.getComputedStyle(logsSection).opacity,
-            position: window.getComputedStyle(logsSection).position,
-            zIndex: window.getComputedStyle(logsSection).zIndex,
-            width: window.getComputedStyle(logsSection).width,
-            height: window.getComputedStyle(logsSection).height,
+            display: cs.display,
+            visibility: cs.visibility,
+            opacity: cs.opacity,
+            position: cs.position,
+            zIndex: cs.zIndex,
+            width: cs.width,
+            height: cs.height,
+            padding: cs.padding,
+            top: rect.top,
+            left: rect.left,
+            clientHeight: logsSection.clientHeight,
+            scrollHeight: logsSection.scrollHeight,
             classList: Array.from(logsSection.classList).join(', ')
         });
         
