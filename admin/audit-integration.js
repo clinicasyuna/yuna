@@ -344,16 +344,24 @@ function abrirLogsAuditoria() {
         const cardsWithHidden = logsSection.querySelectorAll('.card.hidden, .card');
         cardsWithHidden.forEach(card => {
             card.classList.remove('hidden');
-            // 🔥 FORÇA BRUTA - Inline styles sobrescrevem tudo
-            card.style.display = 'block';
-            card.style.visibility = 'visible';
-            card.style.opacity = '1';
-            card.style.maxHeight = 'none';
-            card.style.minHeight = '100px'; // ← FORÇAR MIN-HEIGHT VIA JS
-            card.style.height = 'auto';
-            card.style.overflow = 'visible';
-            card.style.position = 'relative';
-            card.style.marginBottom = '2rem';
+            // 🔥🔥🔥 FORÇA NUCLEAR - setProperty com !important
+            card.style.setProperty('display', 'block', 'important');
+            card.style.setProperty('visibility', 'visible', 'important');
+            card.style.setProperty('opacity', '1', 'important');
+            card.style.setProperty('max-height', 'none', 'important');
+            card.style.setProperty('min-height', '200px', 'important'); // AUMENTADO para 200px
+            card.style.setProperty('height', 'auto', 'important'); // FORCE AUTO HEIGHT
+            card.style.setProperty('overflow', 'visible', 'important');
+            card.style.setProperty('position', 'relative', 'important');
+            card.style.setProperty('margin-bottom', '2rem', 'important');
+            
+            // FORÇA EXPANSÃO DOS FILHOS
+            Array.from(card.children).forEach(child => {
+                child.style.setProperty('position', 'relative', 'important'); // Remove absolute positioning
+                child.style.setProperty('display', 'block', 'important');
+                child.style.setProperty('visibility', 'visible', 'important');
+            });
+            
             console.log('[LOGS] ✅ Card desbloqueado:', card.id || card.className);
         });
         
