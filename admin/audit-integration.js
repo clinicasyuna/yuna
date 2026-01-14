@@ -763,6 +763,7 @@ async function carregarHistoricoLogs() {
         
         snapshot.forEach(doc => {
             const log = doc.data();
+            console.log('[AUDIT] 📝 Estrutura do log:', log); // DEBUG
             const timestamp = log.timestamp?.toDate() || new Date();
             const dataFormatada = timestamp.toLocaleDateString('pt-BR') + ' ' + timestamp.toLocaleTimeString('pt-BR');
             
@@ -784,6 +785,40 @@ async function carregarHistoricoLogs() {
             `;
             tbody.appendChild(row);
         });
+        
+        // 🔥 FORÇAR VISIBILIDADE DA TABELA E CONTAINERS PAIS
+        console.log('[LOGS-DEBUG] 🔥 Forçando visibilidade da tabela e containers...');
+        const tabela = document.getElementById('logs-tabela');
+        const tabelaContainer = document.getElementById('logs-tabela-container');
+        const cardPai = tbody.closest('.card');
+        
+        if (tabela) {
+            tabela.style.display = 'table';
+            tabela.style.visibility = 'visible';
+            tabela.style.opacity = '1';
+            console.log('[LOGS-DEBUG] ✅ Tabela forçada visível');
+        }
+        
+        if (tabelaContainer) {
+            tabelaContainer.style.display = 'block';
+            tabelaContainer.style.visibility = 'visible';
+            tabelaContainer.style.opacity = '1';
+            tabelaContainer.style.height = 'auto';
+            tabelaContainer.style.overflow = 'auto';
+            console.log('[LOGS-DEBUG] ✅ Container da tabela forçado visível');
+        }
+        
+        if (cardPai) {
+            cardPai.classList.remove('hidden');
+            cardPai.style.display = 'block';
+            cardPai.style.visibility = 'visible';
+            cardPai.style.opacity = '1';
+            cardPai.style.height = 'auto';
+            cardPai.style.maxHeight = 'none';
+            console.log('[LOGS-DEBUG] ✅ Card pai da tabela forçado visível');
+        }
+        
+        console.log('[LOGS-DEBUG] ✅ Tabela renderizada com', snapshot.size, 'linhas');
         
     } catch (error) {
         console.error('[LOGS] Erro ao carregar histórico de logs:', error);
