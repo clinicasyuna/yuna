@@ -234,6 +234,19 @@ function abrirLogsAuditoria() {
             section.classList.add('hidden');
         });
         
+        // Ocultar teams-grid (filas de atendimento) e stats-grid (métricas)
+        console.log('[LOGS] Ocultando teams-grid e stats-grid...');
+        const teamsGrid = document.querySelector('.teams-grid');
+        const statsGrid = document.querySelector('.stats-grid');
+        if (teamsGrid) {
+            teamsGrid.classList.add('hidden');
+            teamsGrid.style.display = 'none';
+        }
+        if (statsGrid) {
+            statsGrid.classList.add('hidden');
+            statsGrid.style.display = 'none';
+        }
+        
         // Mostrar seção de logs
         console.log('[LOGS] Buscando seção logs-auditoria-section...');
         const logsSection = document.getElementById('logs-auditoria-section');
