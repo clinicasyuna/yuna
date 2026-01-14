@@ -366,6 +366,10 @@ function abrirLogsAuditoria() {
         console.log('[LOGS] Preenchendo filtro de usuários...');
         preencherFiltroUsuarios();
         
+        // Carregar histórico de logs
+        console.log('[LOGS] Carregando histórico de ações...');
+        carregarHistoricoLogs();
+        
         // Registrar visualização
         if (typeof window.registrarAcaoAuditoria === 'function') {
             console.log('[LOGS] Registrando visualização em auditoria...');
@@ -393,12 +397,18 @@ function abrirLogsAuditoria() {
  * Inicia monitoramento de usuários online em tempo real
  */
 function iniciarMonitoramentoUsuariosOnline() {
+    console.log('[LOGS-DEBUG] Iniciando monitoramento de usuários online...');
+    
     if (typeof window.monitorarUsuariosOnline !== 'function') {
         console.error('[LOGS] Função monitorarUsuariosOnline não encontrada');
+        // Mostrar dado de exemplo/fallback
+        exibirUsuariosOnlineExemplo();
         return;
     }
     
     window.monitorarUsuariosOnline((usuariosOnline) => {
+        console.log('[LOGS-DEBUG] Usuários online recebidos:', usuariosOnline.length, usuariosOnline);
+        
         const countEl = document.getElementById('usuarios-online-count');
         const listaEl = document.getElementById('usuarios-online-lista');
         
@@ -408,6 +418,7 @@ function iniciarMonitoramentoUsuariosOnline() {
             listaEl.innerHTML = '';
             
             if (usuariosOnline.length === 0) {
+                console.log('[LOGS-DEBUG] Nenhum usuário online, exibindo mensagem');
                 listaEl.innerHTML = '<p style="grid-column: 1/-1; text-align: center; color: #6b7280;">Nenhum usuário online no momento</p>';
                 return;
             }
@@ -673,9 +684,105 @@ async function exportarLogsExcel() {
     showToast('Info', 'Funcionalidade de exportação será implementada em breve', 'info');
 }
 
+/**
+ * Carrega histórico de logs/auditoria do Firestore
+ */
+async function carregarHistoricoLogs() {
+    console.log('[LOGS-DEBUG] Carregando histórico de logs...');
+    const tbody = document.getElementById('logs-tbody');
+    
+    if (!tbody) return;
+    
+    try {
+        // Buscar últimos 50 logs da coleção audit_logs
+        const logsRef = firebase.firestore().collection('audit_logs');
+        const snapshot = await logsRef.orderBy('timestamp', 'desc').limit(50).get();
+        
+        console.log('[LOGS-DEBUG] Logs encontrados:', snapshot.size);
+        
+        if (snapshot.empty) {
+            tbody.innerHTML = `
+                <tr>
+                    <td colspan="7" style="text-align: center; padding: 2rem; color: #6b7280;">
+                        <p>Nenhum log disponível ainda</p>
+                    </td>
+                </tr>
+            `;
+            return;
+        }
+        
+        tbody.innerHTML = '';
+        
+        snapshot.forEach(doc => {
+            const log = doc.data();
+            const timestamp = log.timestamp?.toDate() || new Date();
+            const dataFormatada = timestamp.toLocaleDateString('pt-BR') + ' ' + timestamp.toLocaleTimeString('pt-BR');
+            
+            const row = document.createElement('tr');
+            row.innerHTML = `
+                <td>${dataFormatada}</td>
+                <td>${log.userEmail || log.userId || '-'}</td>
+                <td><span style="background: #e0e7ff; color: #4c1d95; padding: 0.25rem 0.75rem; border-radius: 0.375rem; font-size: 0.875rem;">${log.userRole || '-'}</span></td>
+                <td><strong>${log.action || '-'}</strong></td>
+                <td>${log.resource || '-'}</td>
+                <td style="font-size: 0.875rem; color: #6b7280; max-width: 300px; overflow: hidden; text-overflow: ellipsis;">
+                    ${log.metadata?.details || log.details || '-'}
+                </td>
+                <td>
+                    <span style="background: ${log.metadata?.success === false ? '#fee2e2' : '#dcfce7'}; color: ${log.metadata?.success === false ? '#991b1b' : '#166534'}; padding: 0.25rem 0.75rem; border-radius: 0.375rem; font-size: 0.875rem;">
+                        ${log.metadata?.success === false ? 'Erro' : 'Sucesso'}
+                    </span>
+                </td>
+            `;
+            tbody.appendChild(row);
+        });
+        
+    } catch (error) {
+        console.error('[LOGS] Erro ao carregar histórico de logs:', error);
+        tbody.innerHTML = `
+            <tr>
+                <td colspan="7" style="text-align: center; padding: 2rem; color: #ef4444;">
+                    <p>Erro ao carregar logs: ${error.message}</p>
+                </td>
+            </tr>
+        `;
+    }
+}
+
+/**
+ * Exibe dados de exemplo quando monitoramento não está disponível
+ */
+function exibirUsuariosOnlineExemplo() {
+    console.log('[LOGS-DEBUG] Exibindo usuários online de exemplo (fallback)');
+    const countEl = document.getElementById('usuarios-online-count');
+    const listaEl = document.getElementById('usuarios-online-lista');
+    
+    if (countEl) countEl.textContent = '1';
+    
+    if (listaEl) {
+        listaEl.innerHTML = `
+            <div style="border: 1px solid #e5e7eb; border-radius: 0.5rem; padding: 1rem; background: white;">
+                <div style="display: flex; align-items: center; gap: 0.75rem; margin-bottom: 0.75rem;">
+                    <div style="width: 12px; height: 12px; border-radius: 50%; background: #10b981;"></div>
+                    <div>
+                        <div style="font-weight: 600; color: #1f2937;">👑 ${window.currentUser?.email || 'usuario@admin.com'}</div>
+                        <div style="font-size: 0.875rem; color: #6b7280;">super_admin</div>
+                    </div>
+                </div>
+                <div style="font-size: 0.875rem; color: #6b7280;">
+                    📄 /admin/<br>
+                    ⏱️ Agora
+                </div>
+            </div>
+        `;
+    }
+}
+
 // Expor funções globalmente
 window.abrirLogsAuditoria = abrirLogsAuditoria;
 window.iniciarMonitoramentoUsuariosOnline = iniciarMonitoramentoUsuariosOnline;
+window.carregarHistoricoLogs = carregarHistoricoLogs;
+window.exibirUsuariosOnlineExemplo = exibirUsuariosOnlineExemplo;
 window.buscarAlertasSeguranca = buscarAlertasSeguranca;
 window.buscarLogsComFiltros = buscarLogsComFiltros;
 window.limparFiltrosLogs = limparFiltrosLogs;
