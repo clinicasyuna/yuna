@@ -264,6 +264,22 @@ function abrirLogsAuditoria() {
         console.log('✅ [LOGS] Seção encontrada! Exibindo...');
         logsSection.classList.remove('hidden');
         logsSection.style.display = 'block'; // CRÍTICO: Forçar display block
+        logsSection.style.visibility = 'visible'; // Garantir visibilidade
+        logsSection.style.opacity = '1'; // Garantir opacidade
+        logsSection.style.position = 'relative'; // Garantir posição
+        logsSection.style.zIndex = '1'; // Garantir z-index
+        
+        // DEBUG: Verificar estilos aplicados
+        console.log('[DEBUG] 🔍 Estilos computados após aplicação:', {
+            display: window.getComputedStyle(logsSection).display,
+            visibility: window.getComputedStyle(logsSection).visibility,
+            opacity: window.getComputedStyle(logsSection).opacity,
+            position: window.getComputedStyle(logsSection).position,
+            zIndex: window.getComputedStyle(logsSection).zIndex,
+            width: window.getComputedStyle(logsSection).width,
+            height: window.getComputedStyle(logsSection).height,
+            classList: Array.from(logsSection.classList).join(', ')
+        });
         
         // Iniciar monitoramento de usuários online
         console.log('[LOGS] Iniciando monitoramento de usuários online...');
