@@ -297,29 +297,22 @@ function abrirLogsAuditoria() {
         
         console.log('✅ [LOGS] Seção encontrada! Exibindo...');
         logsSection.classList.remove('hidden');
-        
-        // Aplicar styles com setAttribute para garantir máxima precedência
-        logsSection.setAttribute('style', `
-            display: block !important;
-            visibility: visible !important;
-            opacity: 1 !important;
-            position: relative !important;
-            z-index: 2147483647 !important;
-            min-height: 100vh !important;
-            padding: 24px 16px !important;
-            background: #f8fafc !important;
-            pointer-events: auto !important;
-            transform: translateY(0) !important;
-            height: auto !important;
-            max-height: none !important;
-            top: 0 !important;
-            left: 0 !important;
-            right: 0 !important;
-            bottom: auto !important;
-            width: 100% !important;
-            overflow: visible !important;
-        `);
         logsSection.classList.add('force-show');
+        logsSection.style.display = 'block !important';
+        logsSection.style.visibility = 'visible';
+        logsSection.style.opacity = '1';
+        logsSection.style.position = 'fixed';
+        logsSection.style.top = '0';
+        logsSection.style.left = '0';
+        logsSection.style.right = '0';
+        logsSection.style.bottom = '0';
+        logsSection.style.width = '100vw';
+        logsSection.style.height = '100vh';
+        logsSection.style.zIndex = '2147483647';
+        logsSection.style.overflow = 'auto';
+        logsSection.style.padding = '24px 16px';
+        logsSection.style.background = '#f8fafc';
+        logsSection.style.pointerEvents = 'auto';
 
         // Desbloquear possíveis ancestrais escondidos
         let parent = logsSection.parentElement;

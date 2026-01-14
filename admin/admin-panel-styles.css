@@ -9,6 +9,17 @@
   margin-left: 1rem;
 }
 
+/* FORÇAR EXIBIÇÃO DE LOGS - SOBRESCREVE .hidden */
+#logs-auditoria-section.force-show {
+  display: block !important;
+  visibility: visible !important;
+  opacity: 1 !important;
+  height: auto !important;
+  max-height: none !important;
+  overflow: visible !important;
+  pointer-events: auto !important;
+}
+
 /* Animação pulse para badges */
 @keyframes pulse {
   0% {
