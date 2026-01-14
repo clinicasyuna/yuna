@@ -222,38 +222,68 @@ if (typeof window.registrarAcaoAuditoria === 'function') {
  * Abre a seção de Logs e Auditoria
  */
 function abrirLogsAuditoria() {
-    console.log('[LOGS] Abrindo seção de Logs e Auditoria');
+    console.log('🎯 [LOGS] ===== ABRINDO SEÇÃO DE LOGS E AUDITORIA =====');
     
-    // Ocultar todas as seções
-    document.querySelectorAll('.section').forEach(section => {
-        section.classList.add('hidden');
-    });
-    document.querySelectorAll('[id$="-section"]').forEach(section => {
-        section.classList.add('hidden');
-    });
-    
-    // Mostrar seção de logs
-    const logsSection = document.getElementById('logs-auditoria-section');
-    if (logsSection) {
+    try {
+        // Ocultar todas as seções
+        console.log('[LOGS] Ocultando seções existentes...');
+        document.querySelectorAll('.section').forEach(section => {
+            section.classList.add('hidden');
+        });
+        document.querySelectorAll('[id$="-section"]').forEach(section => {
+            section.classList.add('hidden');
+        });
+        
+        // Mostrar seção de logs
+        console.log('[LOGS] Buscando seção logs-auditoria-section...');
+        const logsSection = document.getElementById('logs-auditoria-section');
+        
+        if (!logsSection) {
+            console.error('❌ [LOGS] Seção logs-auditoria-section NÃO ENCONTRADA!');
+            if (typeof showToast === 'function') {
+                showToast('Erro', 'Seção de logs não encontrada. Recarregue a página.', 'error');
+            } else {
+                alert('Erro: Seção de logs não encontrada. Recarregue a página.');
+            }
+            return;
+        }
+        
+        console.log('✅ [LOGS] Seção encontrada! Exibindo...');
         logsSection.classList.remove('hidden');
         
         // Iniciar monitoramento de usuários online
+        console.log('[LOGS] Iniciando monitoramento de usuários online...');
+        iniciarMonitoramentoUsuariosOnline();
+        console.log('[LOGS] Iniciando monitoramento de usuários online...');
         iniciarMonitoramentoUsuariosOnline();
         
         // Buscar alertas de segurança
+        console.log('[LOGS] Buscando alertas de segurança...');
         buscarAlertasSeguranca();
         
         // Preencher filtro de usuários
+        console.log('[LOGS] Preenchendo filtro de usuários...');
         preencherFiltroUsuarios();
         
         // Registrar visualização
         if (typeof window.registrarAcaoAuditoria === 'function') {
+            console.log('[LOGS] Registrando visualização em auditoria...');
             window.registrarAcaoAuditoria({
                 action: 'view',
                 resource: 'relatorios',
                 success: true,
                 details: { tipo: 'logs_auditoria' }
             });
+        }
+        
+        console.log('✅ [LOGS] Seção de Logs e Auditoria aberta com sucesso!');
+        
+    } catch (error) {
+        console.error('❌ [LOGS] Erro ao abrir seção de logs:', error);
+        if (typeof showToast === 'function') {
+            showToast('Erro', 'Erro ao abrir logs: ' + error.message, 'error');
+        } else {
+            alert('Erro ao abrir logs: ' + error.message);
         }
     }
 }
@@ -551,3 +581,6 @@ window.limparFiltrosLogs = limparFiltrosLogs;
 window.exportarLogsExcel = exportarLogsExcel;
 
 console.log('✅ [AUDIT-INTEGRATION] Funções de integração carregadas');
+console.log('✅ [AUDIT-INTEGRATION] window.abrirLogsAuditoria disponível:', typeof window.abrirLogsAuditoria);
+console.log('✅ [AUDIT-INTEGRATION] Teste no console: abrirLogsAuditoria()');
+

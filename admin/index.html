@@ -1060,15 +1060,17 @@
     <!-- Sistema de Pausa TMA/TME/SLA (Horário 07:00-19:00) -->
     <script src="TMA_TME_SLA_BUSINESS_HOURS.js?v=20260113-001"></script>
     
-    <!-- Sistema de Auditoria e Monitoramento -->
+    <!-- Sistema de Auditoria e Monitoramento - Core -->
     <script src="audit-system.js?v=20260114-001"></script>
-    <script src="audit-integration.js?v=20260114-001"></script>
     
     <!-- Script principal DEVE vir ANTES das permissões -->
     <script src="admin-panel.js?v=20251217-0900"></script>
     
     <!-- Script de permissões após principal -->
     <script src="admin-permissions.js?v=20251217-0900"></script>
+    
+    <!-- Sistema de Auditoria - Integração UI (após admin-panel) -->
+    <script src="audit-integration.js?v=20260114-002"></script>
     <!-- Debug mini removido - arquivo não existe -->
     <!-- Sistema de debug para controle de equipes -->
     <!-- <script src="debug-sistema-equipes.js"></script> -->
