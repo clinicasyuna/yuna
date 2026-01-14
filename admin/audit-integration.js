@@ -301,20 +301,42 @@ function abrirLogsAuditoria() {
         
         // 🔥🔥🔥 CRITICAL FIX - FORÇAR SECTION PAI COM setProperty !important
         console.log('[LOGS] 🔥 FORÇANDO ESTILOS NA SECTION PAI...');
-        logsSection.style.setProperty('display', 'block', 'important');
-        logsSection.style.setProperty('visibility', 'visible', 'important');
-        logsSection.style.setProperty('opacity', '1', 'important');
-        logsSection.style.setProperty('width', '100%', 'important'); // ← FIX CRÍTICO!
-        logsSection.style.setProperty('max-width', '100%', 'important');
-        logsSection.style.setProperty('min-height', '100vh', 'important'); // ← FIX CRÍTICO!
-        logsSection.style.setProperty('position', 'static', 'important');
-        logsSection.style.setProperty('overflow', 'visible', 'important');
-        logsSection.style.setProperty('padding', '24px 16px', 'important');
-        logsSection.style.setProperty('background', '#f8fafc', 'important');
-        logsSection.style.setProperty('z-index', 'auto', 'important');
-        logsSection.style.setProperty('pointer-events', 'auto', 'important');
         
-        console.log('[LOGS] ✅ Section forçada - width: 100%, min-height: 100vh');
+        // FUNÇÃO PARA FORÇAR ESTILOS (será reusada pelo Observer)
+        const forceStyles = () => {
+            logsSection.style.setProperty('display', 'block', 'important');
+            logsSection.style.setProperty('visibility', 'visible', 'important');
+            logsSection.style.setProperty('opacity', '1', 'important');
+            logsSection.style.setProperty('width', '100%', 'important'); // ← FIX CRÍTICO!
+            logsSection.style.setProperty('max-width', '100%', 'important');
+            logsSection.style.setProperty('min-height', '100vh', 'important'); // ← FIX CRÍTICO!
+            logsSection.style.setProperty('position', 'static', 'important');
+            logsSection.style.setProperty('overflow', 'visible', 'important');
+            logsSection.style.setProperty('padding', '24px 16px', 'important');
+            logsSection.style.setProperty('background', '#f8fafc', 'important');
+            logsSection.style.setProperty('z-index', 'auto', 'important');
+            logsSection.style.setProperty('pointer-events', 'auto', 'important');
+        };
+        
+        // Aplicar estilos imediatamente
+        forceStyles();
+        
+        // 🛡️ MUTATION OBSERVER - PREVINE SOBRESCRITAS
+        const observer = new MutationObserver((mutations) => {
+            for (const mutation of mutations) {
+                if (mutation.type === 'attributes' && mutation.attributeName === 'style') {
+                    const currentPos = window.getComputedStyle(logsSection).position;
+                    if (currentPos === 'fixed') {
+                        console.log('[LOGS] 🛡️ BLOQUEANDO SOBRESCRITA! Reaplicando position: static');
+                        forceStyles();
+                    }
+                }
+            }
+        });
+        
+        observer.observe(logsSection, { attributes: true, attributeFilter: ['style'] });
+        
+        console.log('[LOGS] ✅ Section forçada - width: 100%, min-height: 100vh + Observer ativo');
 
         // Desbloquear possíveis ancestrais escondidos
         let parent = logsSection.parentElement;
