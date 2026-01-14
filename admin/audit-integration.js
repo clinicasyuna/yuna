@@ -359,8 +359,6 @@ function abrirLogsAuditoria() {
         // Iniciar monitoramento de usuários online
         console.log('[LOGS] Iniciando monitoramento de usuários online...');
         iniciarMonitoramentoUsuariosOnline();
-        console.log('[LOGS] Iniciando monitoramento de usuários online...');
-        iniciarMonitoramentoUsuariosOnline();
         
         // Buscar alertas de segurança
         console.log('[LOGS] Buscando alertas de segurança...');
@@ -379,7 +377,7 @@ function abrirLogsAuditoria() {
             console.log('[LOGS] Registrando visualização em auditoria...');
             window.registrarAcaoAuditoria({
                 action: 'view',
-                resource: 'relatorios',
+                resource: 'audit_logs',
                 success: true,
                 details: { tipo: 'logs_auditoria' }
             });
