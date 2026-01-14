@@ -6,7 +6,7 @@
     <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
     <meta http-equiv="Pragma" content="no-cache">
     <meta http-equiv="Expires" content="0">
-    <meta name="cache-version" content="20260114-2000">
+    <meta name="cache-version" content="20260114-2100">
     <title>Yuna Solicite - Painel Administrativo</title>
     
     <!-- FUNÇÃO CRÍTICA DEFINIDA ANTECIPADAMENTE -->
@@ -260,7 +260,7 @@
     <script>
         (function() {
             try {
-                const EXPECTED = '20260114-2000';
+                const EXPECTED = '20260114-2100';
                 const meta = document.querySelector('meta[name="cache-version"]');
                 const pageVersion = meta ? meta.getAttribute('content') : '';
                 const alreadyForced = sessionStorage.getItem('yuna:forcedReload') === '1';
@@ -810,7 +810,7 @@
                             </div>
                         </div>
                         <div class="filtros-btns">
-                            <button onclick="gerarRelatorioAdmin()" class="btn-relatorio" title="Gerar Relatório">
+                            <button onclick="window.gerarRelatorioAuditoria ? gerarRelatorioAuditoria() : gerarRelatorioAdmin()" class="btn-relatorio" title="Gerar Relatório de Auditoria">
                                 <i class="fas fa-chart-bar"></i> Gerar Relatório
                             </button>
                             <button onclick="exportarDados()" class="btn-exportar-excel" title="Exportar Dados (Excel)">
@@ -1053,8 +1053,8 @@
     <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
-    <script src="firebase-config-secure.js?v=20260114-2000"></script>
-    <script src="../security-audit.js?v=20260114-2000"></script>
+    <script src="firebase-config-secure.js?v=20260114-2100"></script>
+    <script src="../security-audit.js?v=20260114-2100"></script>
     
     <!-- NOVOS ARQUIVOS DE SEGURANÇA E VALIDAÇÃO (Fase 4) -->
     <script src="debug-config.js?v=20260114-1500"></script>
@@ -1097,7 +1097,7 @@
     <script src="admin-permissions.js?v=20260114-1500"></script>
     
     <!-- Sistema de Auditoria - Integração UI (após admin-panel) -->
-    <script src="audit-integration.js?v=20260114-1525"></script>
+    <script src="audit-integration.js?v=20260114-2100"></script>
     <!-- Debug mini removido - arquivo não existe -->
     <!-- Sistema de debug para controle de equipes -->
     <!-- <script src="debug-sistema-equipes.js"></script> -->
