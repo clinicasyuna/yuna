@@ -1121,8 +1121,63 @@ function gerarRelatorioAuditoriaHTML(logs) {
     console.log('[AUDIT-REPORT] Relatório gerado e aberto em nova janela');
 }
 
+/**
+ * Fecha a seção de Logs e Auditoria e volta ao painel principal
+ */
+function fecharLogsAuditoria() {
+    try {
+        console.log('🔽 [LOGS] Fechando seção de Logs e Auditoria...');
+        
+        // 1. Remover banner de verificação
+        const banner = document.getElementById('logs-visibility-banner');
+        if (banner) {
+            banner.remove();
+            console.log('[LOGS] ✅ Banner removido');
+        }
+        
+        // 2. Ocultar seção de logs
+        const logsSection = document.getElementById('logs-auditoria-section');
+        if (logsSection) {
+            logsSection.classList.add('hidden');
+            logsSection.style.display = 'none';
+            console.log('[LOGS] ✅ Seção ocultada');
+        }
+        
+        // 3. Mostrar painel principal (teams-grid e stats-grid)
+        const teamsGrid = document.getElementById('teams-grid');
+        const statsGrid = document.getElementById('stats-grid');
+        
+        if (teamsGrid) {
+            teamsGrid.classList.remove('hidden');
+            teamsGrid.style.display = '';
+            console.log('[LOGS] ✅ Teams-grid exibida');
+        }
+        
+        if (statsGrid) {
+            statsGrid.classList.remove('hidden');
+            statsGrid.style.display = '';
+            console.log('[LOGS] ✅ Stats-grid exibida');
+        }
+        
+        // 4. Voltar ao topo da página
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+        
+        console.log('✅ [LOGS] Seção fechada com sucesso, voltando ao painel principal');
+        
+        // 5. Opcional: recarregar solicitações para atualizar cards
+        if (typeof window.carregarSolicitacoes === 'function') {
+            console.log('[LOGS] Recarregando solicitações...');
+            window.carregarSolicitacoes();
+        }
+        
+    } catch (error) {
+        console.error('❌ [LOGS] Erro ao fechar seção:', error);
+    }
+}
+
 // Expor funções globalmente
 window.abrirLogsAuditoria = abrirLogsAuditoria;
+window.fecharLogsAuditoria = fecharLogsAuditoria;
 window.iniciarMonitoramentoUsuariosOnline = iniciarMonitoramentoUsuariosOnline;
 window.carregarHistoricoLogs = carregarHistoricoLogs;
 window.exibirUsuariosOnlineExemplo = exibirUsuariosOnlineExemplo;
@@ -1134,6 +1189,7 @@ window.gerarRelatorioAuditoria = gerarRelatorioAuditoria;
 
 console.log('✅ [AUDIT-INTEGRATION] Funções de integração carregadas');
 console.log('✅ [AUDIT-INTEGRATION] window.abrirLogsAuditoria disponível:', typeof window.abrirLogsAuditoria);
+console.log('✅ [AUDIT-INTEGRATION] window.fecharLogsAuditoria disponível:', typeof window.fecharLogsAuditoria);
 console.log('✅ [AUDIT-INTEGRATION] window.gerarRelatorioAuditoria disponível:', typeof window.gerarRelatorioAuditoria);
 console.log('✅ [AUDIT-INTEGRATION] Teste no console: abrirLogsAuditoria()');
 
