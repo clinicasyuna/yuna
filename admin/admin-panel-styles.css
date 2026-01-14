@@ -20,6 +20,31 @@
   pointer-events: auto !important;
 }
 
+/* DESBLOQUEAR CARDS DENTRO DE LOGS - SOBRESCREVE .hidden */
+#logs-auditoria-section .card.hidden {
+  display: block !important;
+  visibility: visible !important;
+  opacity: 1 !important;
+  height: auto !important;
+  max-height: none !important;
+  overflow: visible !important;
+  pointer-events: auto !important;
+}
+
+/* Garantir que section-header está visível */
+#logs-auditoria-section .section-header {
+  display: flex !important;
+  visibility: visible !important;
+  opacity: 1 !important;
+}
+
+/* Garantir que alertas-seguranca-container está visível */
+#logs-auditoria-section #alertas-seguranca-container.hidden {
+  display: block !important;
+  visibility: visible !important;
+  opacity: 1 !important;
+}
+
 /* Animação pulse para badges */
 @keyframes pulse {
   0% {

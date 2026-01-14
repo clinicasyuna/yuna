@@ -339,6 +339,29 @@ function abrirLogsAuditoria() {
             window.scrollTo({ top: logsSection.offsetTop || 0, behavior: 'smooth' });
         }
 
+        // 🔑 REMOVER CLASSE .hidden DE TODOS OS CARDS DENTRO DE LOGS
+        console.log('[LOGS] 🔑 Removendo classe .hidden dos cards...');
+        const cardsWithHidden = logsSection.querySelectorAll('.card.hidden');
+        cardsWithHidden.forEach(card => {
+            card.classList.remove('hidden');
+            card.style.display = 'block';
+            card.style.visibility = 'visible';
+            card.style.opacity = '1';
+            card.style.maxHeight = 'none';
+            card.style.height = 'auto';
+            card.style.overflow = 'visible';
+            console.log('[LOGS] ✅ Card desbloqueado:', card.id || card.className);
+        });
+        
+        // Também desbloquear container interno se existir
+        const logsAlertasContainer = document.getElementById('alertas-seguranca-container');
+        if (logsAlertasContainer && logsAlertasContainer.classList.contains('hidden')) {
+            logsAlertasContainer.classList.remove('hidden');
+            logsAlertasContainer.style.display = 'block';
+            logsAlertasContainer.style.visibility = 'visible';
+            console.log('[LOGS] ✅ Alertas container desbloqueado');
+        }
+
         // BANNER de fallback visível para validar renderização
         let banner = document.getElementById('logs-visibility-banner');
         if (!banner) {
