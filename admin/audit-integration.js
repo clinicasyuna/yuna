@@ -341,15 +341,19 @@ function abrirLogsAuditoria() {
 
         // 🔑 REMOVER CLASSE .hidden DE TODOS OS CARDS DENTRO DE LOGS
         console.log('[LOGS] 🔑 Removendo classe .hidden dos cards...');
-        const cardsWithHidden = logsSection.querySelectorAll('.card.hidden');
+        const cardsWithHidden = logsSection.querySelectorAll('.card.hidden, .card');
         cardsWithHidden.forEach(card => {
             card.classList.remove('hidden');
+            // 🔥 FORÇA BRUTA - Inline styles sobrescrevem tudo
             card.style.display = 'block';
             card.style.visibility = 'visible';
             card.style.opacity = '1';
             card.style.maxHeight = 'none';
+            card.style.minHeight = '100px'; // ← FORÇAR MIN-HEIGHT VIA JS
             card.style.height = 'auto';
             card.style.overflow = 'visible';
+            card.style.position = 'relative';
+            card.style.marginBottom = '2rem';
             console.log('[LOGS] ✅ Card desbloqueado:', card.id || card.className);
         });
         
