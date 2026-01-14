@@ -298,21 +298,23 @@ function abrirLogsAuditoria() {
         console.log('✅ [LOGS] Seção encontrada! Exibindo...');
         logsSection.classList.remove('hidden');
         logsSection.classList.add('force-show');
-        logsSection.style.display = 'block !important';
-        logsSection.style.visibility = 'visible';
-        logsSection.style.opacity = '1';
-        logsSection.style.position = 'fixed';
-        logsSection.style.top = '0';
-        logsSection.style.left = '0';
-        logsSection.style.right = '0';
-        logsSection.style.bottom = '0';
-        logsSection.style.width = '100vw';
-        logsSection.style.height = '100vh';
-        logsSection.style.zIndex = '2147483647';
-        logsSection.style.overflow = 'auto';
-        logsSection.style.padding = '24px 16px';
-        logsSection.style.background = '#f8fafc';
-        logsSection.style.pointerEvents = 'auto';
+        
+        // 🔥🔥🔥 CRITICAL FIX - FORÇAR SECTION PAI COM setProperty !important
+        console.log('[LOGS] 🔥 FORÇANDO ESTILOS NA SECTION PAI...');
+        logsSection.style.setProperty('display', 'block', 'important');
+        logsSection.style.setProperty('visibility', 'visible', 'important');
+        logsSection.style.setProperty('opacity', '1', 'important');
+        logsSection.style.setProperty('width', '100%', 'important'); // ← FIX CRÍTICO!
+        logsSection.style.setProperty('max-width', '100%', 'important');
+        logsSection.style.setProperty('min-height', '100vh', 'important'); // ← FIX CRÍTICO!
+        logsSection.style.setProperty('position', 'static', 'important');
+        logsSection.style.setProperty('overflow', 'visible', 'important');
+        logsSection.style.setProperty('padding', '24px 16px', 'important');
+        logsSection.style.setProperty('background', '#f8fafc', 'important');
+        logsSection.style.setProperty('z-index', 'auto', 'important');
+        logsSection.style.setProperty('pointer-events', 'auto', 'important');
+        
+        console.log('[LOGS] ✅ Section forçada - width: 100%, min-height: 100vh');
 
         // Desbloquear possíveis ancestrais escondidos
         let parent = logsSection.parentElement;
