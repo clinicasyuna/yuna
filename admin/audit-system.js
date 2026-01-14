@@ -86,6 +86,15 @@ async function registrarAcaoAuditoria(params) {
             userRole = window.currentUser.role;
         }
 
+        // Log inicial com parâmetros recebidos
+        console.log('[AUDIT] 🔍 Registrando ação:', {
+            action: params.action,
+            resource: params.resource,
+            resourceId: params.resourceId,
+            user: user.uid,
+            userRole: userRole
+        });
+
         // Criar registro de auditoria
         const auditLog = {
             timestamp: firebase.firestore.FieldValue.serverTimestamp(),
@@ -113,13 +122,33 @@ async function registrarAcaoAuditoria(params) {
             }
         };
 
+        // Log com estrutura completa (sem dados sensíveis)
+        console.log('[AUDIT] 📝 Estrutura do log:', {
+            action: auditLog.action,
+            resource: auditLog.resource,
+            userEmail: auditLog.userEmail,
+            userRole: auditLog.userRole,
+            page: auditLog.metadata.page
+        });
+
         // Salvar no Firestore
-        await firebase.firestore().collection('audit_logs').add(auditLog);
+        const docRef = await firebase.firestore().collection('audit_logs').add(auditLog);
         
-        console.log('[AUDIT] ✅ Ação registrada:', params.action, params.resource);
+        console.log('[AUDIT] ✅ Ação registrada com sucesso:', {
+            docId: docRef.id,
+            action: params.action,
+            resource: params.resource,
+            userEmail: userEmail
+        });
         
     } catch (error) {
-        console.error('[AUDIT] ❌ Erro ao registrar ação:', error);
+        console.error('[AUDIT] ❌ Erro ao registrar ação:', {
+            error: error.message,
+            code: error.code,
+            action: params.action,
+            resource: params.resource,
+            stack: error.stack
+        });
     }
 }
 

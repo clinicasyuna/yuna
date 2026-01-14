@@ -234,9 +234,20 @@ function abrirLogsAuditoria() {
         document.querySelectorAll('[id$="-section"]').forEach(section => {
             if (section.id !== 'logs-auditoria-section') {
                 section.classList.add('hidden');
-                section.style.display = 'none';
+                section.style.display = 'none !important';
             }
         });
+        
+        // Força ocultar explicitamente relatorios-section para garantir
+        const relatoriosSection = document.getElementById('relatorios-section');
+        if (relatoriosSection) {
+            relatoriosSection.classList.add('hidden');
+            relatoriosSection.setAttribute('style', 'display: none !important; visibility: hidden !important; opacity: 0 !important; pointer-events: none !important; height: 0 !important;');
+            console.log('[LOGS] ✅ relatorios-section ocultada com force-hide');
+        }
+        
+        // Flag para indicar modo logs
+        window.MODO_LOGS_ATIVO = true;
         
         // Ocultar teams-grid e stats-grid
         console.log('[LOGS] Ocultando teams-grid e stats-grid...');
@@ -1129,6 +1140,9 @@ function gerarRelatorioAuditoriaHTML(logs) {
 function fecharLogsAuditoria() {
     try {
         console.log('🔽 [LOGS] Fechando seção de Logs e Auditoria...');
+        
+        // Limpar flag de modo logs
+        window.MODO_LOGS_ATIVO = false;
         
         // 1. Remover banner de verificação
         const banner = document.getElementById('logs-visibility-banner');

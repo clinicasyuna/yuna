@@ -1466,12 +1466,16 @@ async function mostrarSecaoPainel(secao) {
             'metricas-gerais',
             'create-user-modal',
             'manage-users-modal',
-            'teams-grid'
+            'teams-grid',
+            'logs-auditoria-section'
         ];
         secoes.forEach(id => {
             const el = document.getElementById(id) || document.querySelector('.' + id);
             if (el) el.classList.add('hidden');
         });
+        
+        // Inicializar flag de modo logs
+        if (typeof window.MODO_LOGS_ATIVO === 'undefined') window.MODO_LOGS_ATIVO = false;
         // Exibe apenas a seção desejada
         if (secao === 'painel') {
             document.getElementById('admin-panel')?.classList.remove('hidden');
@@ -1506,6 +1510,7 @@ async function mostrarSecaoPainel(secao) {
         } else if (secao === 'relatorios') {
             // Para relatórios, chamar a função específica
             debugLog('[DEBUG] mostrarSecaoPainel: chamando função mostrarRelatorios...');
+            window.MODO_LOGS_ATIVO = false;
             
             if (typeof window.mostrarRelatorios === 'function') {
                 try {
@@ -1518,6 +1523,22 @@ async function mostrarSecaoPainel(secao) {
             } else {
                 console.error('[ERRO] mostrarSecaoPainel: função mostrarRelatorios não encontrada!');
                 showToast('Erro', 'Função de relatórios não disponível', 'error');
+            }
+        } else if (secao === 'logs' || secao === 'logs-auditoria') {
+            // Para logs e auditoria
+            debugLog('[DEBUG] mostrarSecaoPainel: abrindo seção de logs e auditoria...');
+            window.MODO_LOGS_ATIVO = true;
+            if (typeof window.abrirLogsAuditoria === 'function') {
+                try {
+                    window.abrirLogsAuditoria();
+                    debugLog('[DEBUG] mostrarSecaoPainel: função abrirLogsAuditoria executada com sucesso');
+                } catch (error) {
+                    console.error('[ERRO] mostrarSecaoPainel: erro ao abrir logs:', error);
+                    showToast('Erro', 'Falha ao abrir logs: ' + error.message, 'error');
+                }
+            } else {
+                console.error('[ERRO] mostrarSecaoPainel: função abrirLogsAuditoria não encontrada!');
+                showToast('Erro', 'Função de logs não disponível', 'error');
             }
         } else if (secao === 'create-user') {
             const modal = document.getElementById('modal-novo-usuario');
@@ -4722,9 +4743,16 @@ async function carregarSolicitacoes() {
     
     window.carregandoSolicitacoes = true;
     
-    // Verificar se estamos na tela de relatórios - se sim, não carregar cards
+    // Verificar se estamos na tela de relatórios ou em modo logs - se sim, não carregar cards
     const relatoriosSection = document.getElementById('relatorios-section');
     const adminPanel = document.getElementById('admin-panel');
+    
+    // Se está em modo logs ou relatórios, não carregar cards
+    if (window.MODO_LOGS_ATIVO === true) {
+        debugLog('[DEBUG] carregarSolicitacoes: Em modo logs - não carregando cards');
+        window.carregandoSolicitacoes = false;
+        return;
+    }
     
     if (relatoriosSection && !relatoriosSection.classList.contains('hidden')) {
         debugLog('[DEBUG] carregarSolicitacoes: Na tela de relatórios - não carregando cards de solicitações');
