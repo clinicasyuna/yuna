@@ -263,6 +263,7 @@ function abrirLogsAuditoria() {
         
         console.log('✅ [LOGS] Seção encontrada! Exibindo...');
         logsSection.classList.remove('hidden');
+        logsSection.style.display = 'block'; // CRÍTICO: Forçar display block
         
         // Iniciar monitoramento de usuários online
         console.log('[LOGS] Iniciando monitoramento de usuários online...');
