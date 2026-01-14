@@ -386,6 +386,9 @@
                         style="background: #10b981; display: inline-flex !important; visibility: visible !important;">
                     <i class="fas fa-key"></i> Minha Senha
                 </button>
+                <button id="logs-auditoria-btn" class="btn-primary" onclick="abrirLogsAuditoria()" title="Logs e Auditoria do Sistema">
+                    <i class="fas fa-clipboard-list"></i> Logs e Auditoria
+                </button>
                 
 
 
@@ -1057,6 +1060,10 @@
     <!-- Sistema de Pausa TMA/TME/SLA (Horário 07:00-19:00) -->
     <script src="TMA_TME_SLA_BUSINESS_HOURS.js?v=20260113-001"></script>
     
+    <!-- Sistema de Auditoria e Monitoramento -->
+    <script src="audit-system.js?v=20260114-001"></script>
+    <script src="audit-integration.js?v=20260114-001"></script>
+    
     <!-- Script principal DEVE vir ANTES das permissões -->
     <script src="admin-panel.js?v=20251217-0900"></script>
     
@@ -1079,6 +1086,136 @@
     <!-- <script src="diagnostico-urgente.js"></script> -->
     <!-- Correção imediata para execução (carrega após correção) -->
     <!-- <script src="correcao-imediata.js"></script> -->
+    
+    <!-- ========================================================================== -->
+    <!-- SEÇÃO DE LOGS E AUDITORIA -->
+    <!-- ========================================================================== -->
+    <div id="logs-auditoria-section" class="hidden">
+        <div class="section-header">
+            <div>
+                <h2><i class="fas fa-clipboard-list"></i> Logs e Auditoria do Sistema</h2>
+                <p>Monitor
+
+amento de usuários online e histórico de ações</p>
+            </div>
+        </div>
+
+        <!-- USUÁRIOS ONLINE EM TEMPO REAL -->
+        <div class="card" style="margin-bottom: 2rem;">
+            <div class="card-header" style="background: linear-gradient(135deg, #10b981 0%, #059669 100%); color: white;">
+                <h3><i class="fas fa-users"></i> Usuários Online</h3>
+                <div id="usuarios-online-count" style="font-size: 2rem; font-weight: bold; margin-top: 0.5rem;">0</div>
+            </div>
+            <div class="card-body">
+                <div id="usuarios-online-lista" style="display: grid; gap: 1rem; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));">
+                    <!-- Lista de usuários online será preenchida aqui -->
+                </div>
+            </div>
+        </div>
+
+        <!-- FILTROS DE BUSCA -->
+        <div class="card" style="margin-bottom: 2rem;">
+            <div class="card-header">
+                <h3><i class="fas fa-filter"></i> Filtros de Busca</h3>
+            </div>
+            <div class="card-body">
+                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem;">
+                    <div>
+                        <label class="form-label">Usuário</label>
+                        <select id="filtro-usuario" class="form-input">
+                            <option value="">Todos os usuários</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="form-label">Ação</label>
+                        <select id="filtro-acao" class="form-input">
+                            <option value="">Todas as ações</option>
+                            <option value="login">Login</option>
+                            <option value="logout">Logout</option>
+                            <option value="create">Criar</option>
+                            <option value="update">Atualizar</option>
+                            <option value="delete">Deletar</option>
+                            <option value="view">Visualizar</option>
+                            <option value="export">Exportar</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="form-label">Recurso</label>
+                        <select id="filtro-recurso" class="form-input">
+                            <option value="">Todos os recursos</option>
+                            <option value="solicitacoes">Solicitações</option>
+                            <option value="usuarios_admin">Admins</option>
+                            <option value="usuarios_equipe">Equipes</option>
+                            <option value="usuarios_acompanhantes">Acompanhantes</option>
+                            <option value="dashboard">Dashboard</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="form-label">Data Início</label>
+                        <input type="date" id="filtro-data-inicio" class="form-input">
+                    </div>
+                    <div>
+                        <label class="form-label">Data Fim</label>
+                        <input type="date" id="filtro-data-fim" class="form-input">
+                    </div>
+                    <div style="display: flex; align-items: flex-end; gap: 0.5rem;">
+                        <button onclick="buscarLogsComFiltros()" class="btn-primary" style="flex: 1;">
+                            <i class="fas fa-search"></i> Buscar
+                        </button>
+                        <button onclick="limparFiltrosLogs()" class="btn-secondary" style="flex: 1;">
+                            <i class="fas fa-times"></i> Limpar
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ALERTAS DE SEGURANÇA -->
+        <div id="alertas-seguranca-container" class="card" style="margin-bottom: 2rem; display: none;">
+            <div class="card-header" style="background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%); color: white;">
+                <h3><i class="fas fa-exclamation-triangle"></i> Alertas de Segurança</h3>
+            </div>
+            <div class="card-body">
+                <div id="alertas-seguranca-lista"></div>
+            </div>
+        </div>
+
+        <!-- LISTA DE LOGS -->
+        <div class="card">
+            <div class="card-header">
+                <h3><i class="fas fa-list"></i> Histórico de Ações</h3>
+                <button onclick="exportarLogsExcel()" class="btn-primary" style="background: #059669;">
+                    <i class="fas fa-file-excel"></i> Exportar Excel
+                </button>
+            </div>
+            <div class="card-body">
+                <div id="logs-tabela-container" style="overflow-x: auto;">
+                    <table class="table" id="logs-tabela">
+                        <thead>
+                            <tr>
+                                <th>Data/Hora</th>
+                                <th>Usuário</th>
+                                <th>Role</th>
+                                <th>Ação</th>
+                                <th>Recurso</th>
+                                <th>Detalhes</th>
+                                <th>Status</th>
+                            </tr>
+                        </thead>
+                        <tbody id="logs-tbody">
+                            <tr>
+                                <td colspan="7" style="text-align: center; padding: 2rem; color: #6b7280;">
+                                    <i class="fas fa-search" style="font-size: 3rem; margin-bottom: 1rem; opacity: 0.5;"></i>
+                                    <p>Use os filtros acima para buscar logs</p>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <!-- Modal de Edição de Acompanhante -->
     <div id="modal-editar-acompanhante" class="modal hidden">
         <div class="modal-content">

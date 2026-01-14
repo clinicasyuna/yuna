@@ -28,6 +28,8 @@ usuarios_equipe/       → {uid, email, equipe/departamento, ativo}
 usuarios_acompanhantes/ → {uid, email, quarto, preCadastro?, ativo}
 solicitacoes/          → {usuarioId, tipo, status, equipe, avaliada?, satisfacao?, criadoEm, finalizadoEm}
 quartos_ocupados/      → {quarto (ID), acompanhanteId, ativo} - Controle de unicidade
+audit_logs/            → {timestamp, userId, action, resource, details, metadata} - Sistema de auditoria v2.0
+usuarios_online/       → {userId, status: 'online'|'idle'|'offline', lastActivity, page} - Presença em tempo real
 ```
 
 **Regras de Segurança Firestore (`firestore.rules`):**
@@ -313,6 +315,194 @@ console.log('🎯🎯🎯 [TAG] Debug específico:', valor); // Tags visuais par
 ### EmailJS (Notificações)
 - Configurado em admin para envio de notificações
 - Template IDs e chaves API em variáveis globais no topo de `admin-panel.js`
+
+## Sistema de Auditoria e Monitoramento v2.0
+
+### Visão Geral
+Sistema completo de logs, auditoria e monitoramento de usuários implementado em 14/01/2026. Registra todas as ações dos usuários (login, logout, CRUD) e permite monitoramento em tempo real de quem está online.
+
+### Arquivos do Sistema
+- **`admin/audit-system.js`** (500+ linhas) - Core do sistema de auditoria
+- **`admin/audit-integration.js`** (700+ linhas) - Integração com admin-panel.js + UI completa
+- **Seção HTML** - Interface em `admin/index.html` (botão "Logs e Auditoria")
+- **Regras Firestore** - Permissões para `audit_logs/` e `usuarios_online/`
+
+### Funcionalidades Principais
+
+**1. Registro Automático de Ações:**
+```javascript
+// Toda ação é registrada automaticamente
+await registrarAcaoAuditoria({
+    action: 'create|update|delete|view|export|login|logout',
+    resource: 'solicitacoes|usuarios_admin|usuarios_equipe|etc',
+    resourceId: 'ID do documento',
+    success: true|false,
+    details: {
+        before: {...}, // Estado anterior
+        after: {...},  // Estado novo
+        changes: ['campo1', 'campo2'] // Campos alterados
+    }
+});
+```
+
+**2. Monitoramento de Presença (Usuários Online):**
+- Sistema atualiza status a cada 30 segundos
+- Detecta inatividade após 5 minutos (muda para `idle`)
+- Marca como `offline` ao fechar aba/naveg
+
+ador
+- Exibe tempo de sessão em tempo real
+
+**3. Painel de Logs e Auditoria:**
+- Acesso via botão "Logs e Auditoria" no menu admin
+- Filtros: usuário, ação, recurso, período
+- Lista em tempo real de usuários online com status
+- Histórico completo de ações com detalhes
+- Alertas de atividades suspeitas (múltiplas falhas, ações fora do horário)
+- Exportação para Excel (em desenvolvimento)
+
+**4. Detecção de Atividades Suspeitas:**
+```javascript
+const alertas = await detectarAtividadesSuspeitas();
+// Detecta:
+// - Múltiplas tentativas falhas de login (>= 3)
+// - Ações de delete fora do horário (00h-06h)
+// - Ações em cascata (>10 ações em 1 minuto)
+```
+
+### Integração com Admin Panel
+
+**Pontos de Integração Implementados:**
+
+1. **Login (linha ~2150):**
+   - Registra login bem-sucedido
+   - Inicializa sistema de presença
+
+2. **Logout (linha ~2000):**
+   - Calcula tempo de sessão
+   - Registra logout com duração
+   - Para sistema de presença
+
+3. **Outras ações (via audit-integration.js):**
+   - CRUD de solicitações
+   - CRUD de usuários
+   - Exportação de relatórios
+   - Visualização de dashboards
+
+### Estrutura de Dados
+
+**audit_logs:**
+```javascript
+{
+  timestamp: Timestamp,
+  userId: "UID",
+  userEmail: "email@exemplo.com",
+  userRole: "admin",
+  action: "create",
+  resource: "solicitacoes",
+  resourceId: "DOC_ID",
+  details: {
+    before: {...},
+    after: {...},
+    changes: ["status", "prioridade"],
+    ip: "192.168.1.1",
+    userAgent: "Mozilla/5.0..."
+  },
+  metadata: {
+    page: "/admin/",
+    sessionId: "UID_timestamp",
+    success: true,
+    error: null
+  }
+}
+```
+
+**usuarios_online:**
+```javascript
+{
+  userId: "UID",
+  email: "email@exemplo.com",
+  role: "admin",
+  lastActivity: Timestamp,
+  page: "/admin/",
+  status: "online", // online|idle|offline
+  sessionId: "UID_timestamp",
+  sessionStart: Timestamp
+}
+```
+
+### Configuração
+
+**AUDIT_CONFIG (audit-system.js):**
+```javascript
+OFFLINE_TIMEOUT: 5 * 60 * 1000, // 5min sem atividade = offline
+PRESENCE_UPDATE_INTERVAL: 30 * 1000, // Atualizar status a cada 30s
+LOG_RETENTION_DAYS: 90 // Reter logs por 90 dias
+```
+
+### Manutenção
+
+**Limpeza automática de logs antigos:**
+```javascript
+await limparLogsAntigos(); // Remove logs > 90 dias
+```
+
+**Executar periodicamente** (recomendação: 1x por semana via Cloud Functions ou script manual)
+
+### Performance
+
+- **Logs:** Indexação por `userId`, `action`, `resource`, `timestamp`
+- **Presença:** TTL implícito (offline após 5min)
+- **Queries:** Limite de 200 registros por busca (paginação client-side)
+- **Cache:** Usa `window.cachedX` para evitar re-fetches
+
+### Segurança (Firestore Rules)
+
+```javascript
+match /audit_logs/{logId} {
+  allow read: if isAdmin(); // Apenas admins leem logs
+  allow create: if isSignedIn(); // Usuário autenticado pode criar log de suas ações
+  allow update, delete: if false; // Logs são IMUTÁVEIS
+}
+
+match /usuarios_online/{userId} {
+  allow read: if isAdmin(); // Apenas admins veem quem está online
+  allow write: if isSignedIn() && userId == request.auth.uid; // Só atualiza próprio status
+}
+```
+
+### Uso (Para Desenvolvedores)
+
+**Registrar ação customizada:**
+```javascript
+await window.registrarAcaoAuditoria({
+    action: 'update',
+    resource: 'solicitacoes',
+    resourceId: solicitacaoId,
+    success: true,
+    details: {
+        before: estadoAnterior,
+        after: novoEstado,
+        changes: ['status', 'prioridade']
+    }
+});
+```
+
+**Buscar histórico de recurso:**
+```javascript
+const historico = await window.buscarHistoricoRecurso('solicitacoes', 'DOC_ID');
+// Retorna array com todas as mudanças daquele documento
+```
+
+**Gerar relatório de usuário:**
+```javascript
+const relatorio = await window.gerarRelatorioUsuario(
+    userId,
+    new Date('2026-01-01'),
+    new Date('2026-01-31')
+);
+// Retorna: totalAcoes, acoesPorTipo, acoesPorRecurso, logs[]
+```
 
 ## Recursos de Referência
 - **Firebase Console:** https://console.firebase.google.com (projeto: studio-5526632052-23813)

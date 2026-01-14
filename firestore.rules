@@ -135,5 +135,21 @@ service cloud.firestore {
         );
       allow update, delete: if false; // imutável
     }
+
+    // ===== NOVO: Sistema de Auditoria v2.0 =====
+    
+    // Logs de auditoria - apenas admins podem ler, todos autenticados podem escrever
+    match /audit_logs/{logId} {
+      allow read: if isAdmin(); // Apenas admins leem
+      allow create: if isSignedIn(); // Qualquer usuário autenticado pode criar log de suas ações
+      allow update, delete: if false; // Logs são imutáveis
+    }
+    
+    // Usuários online - controle de presença
+    match /usuarios_online/{userId} {
+      allow read: if isAdmin(); // Apenas admins veem quem está online
+      allow write: if isSignedIn() && userId == request.auth.uid; // Usuário só atualiza próprio status
+      allow delete: if isSignedIn() && userId == request.auth.uid; // Usuário só remove próprio status
+    }
   }
 }

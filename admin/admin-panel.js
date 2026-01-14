@@ -1992,7 +1992,25 @@ window.addEventListener('DOMContentLoaded', async function() {
                     unsubscribeAuthListener = null;
                 }
                 
-                // Registrar logout em auditoria
+                // ========== AUDITORIA: Registrar logout ==========
+                const tempoSessao = window.currentSessionId ? 
+                    Math.floor((Date.now() - parseInt(window.currentSessionId.split('_')[1])) / 1000) : 0;
+                
+                if (typeof window.registrarAcaoAuditoria === 'function') {
+                    window.registrarAcaoAuditoria({
+                        action: 'logout',
+                        resource: 'dashboard',
+                        success: true,
+                        details: { tempoSessao: tempoSessao }
+                    });
+                }
+                
+                // Parar sistema de presença
+                if (typeof window.pararSistemaPresenca === 'function') {
+                    window.pararSistemaPresenca();
+                }
+                
+                // Registrar logout em auditoria (antigo - manter compatibilidade)
                 if (window.registrarLogAuditoria) {
                     window.registrarLogAuditoria('USER_LOGOUT', {
                         userId: window.usuarioAdmin?.uid || 'unknown',
@@ -2144,6 +2162,20 @@ window.handleLogin = async function(event) {
         
         showToast('Sucesso', 'Login realizado!', 'success');
         debugLog('[DEBUG] handleLogin: login realizado com sucesso!');
+        
+        // ========== AUDITORIA: Registrar login bem-sucedido ==========
+        if (typeof window.registrarAcaoAuditoria === 'function') {
+            window.registrarAcaoAuditoria({
+                action: 'login',
+                resource: 'dashboard',
+                success: true
+            });
+        }
+        
+        // Iniciar sistema de presença
+        if (typeof window.inicializarSistemaPresenca === 'function') {
+            window.inicializarSistemaPresenca();
+        }
         
         // ========== FASE 4: LIMPAR RATE LIMITING ==========
         window.loginRateLimiter?.clearAttempts(email);
