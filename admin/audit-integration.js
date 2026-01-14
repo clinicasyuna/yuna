@@ -344,26 +344,43 @@ function abrirLogsAuditoria() {
         const cardsWithHidden = logsSection.querySelectorAll('.card.hidden, .card');
         cardsWithHidden.forEach(card => {
             card.classList.remove('hidden');
+            
+            // 💣 REMOVE ATRIBUTOS INLINE CONFLITANTES
+            card.removeAttribute('style'); // Limpa qualquer inline style anterior
+            
             // 🔥🔥🔥 FORÇA NUCLEAR - setProperty com !important
             card.style.setProperty('display', 'block', 'important');
             card.style.setProperty('visibility', 'visible', 'important');
             card.style.setProperty('opacity', '1', 'important');
             card.style.setProperty('max-height', 'none', 'important');
-            card.style.setProperty('min-height', '200px', 'important'); // AUMENTADO para 200px
-            card.style.setProperty('height', 'auto', 'important'); // FORCE AUTO HEIGHT
+            card.style.setProperty('min-height', '200px', 'important');
+            card.style.setProperty('height', 'auto', 'important');
             card.style.setProperty('overflow', 'visible', 'important');
-            card.style.setProperty('position', 'relative', 'important');
+            card.style.setProperty('position', 'static', 'important'); // MUDADO PARA STATIC (no fluxo)
             card.style.setProperty('margin-bottom', '2rem', 'important');
+            card.style.setProperty('width', '100%', 'important'); // GARANTIR LARGURA
+            card.style.setProperty('z-index', 'auto', 'important'); // REMOVER Z-INDEX FIXO
             
             // FORÇA EXPANSÃO DOS FILHOS
             Array.from(card.children).forEach(child => {
-                child.style.setProperty('position', 'relative', 'important'); // Remove absolute positioning
+                child.style.setProperty('position', 'static', 'important'); 
                 child.style.setProperty('display', 'block', 'important');
                 child.style.setProperty('visibility', 'visible', 'important');
+                child.style.setProperty('min-height', '20px', 'important'); // Filhos com altura mínima
             });
             
             console.log('[LOGS] ✅ Card desbloqueado:', card.id || card.className);
         });
+        
+        // 🔄 REASSERÇÃO CONTÍNUA (previne outros scripts de sobrescrever)
+        setTimeout(() => {
+            cardsWithHidden.forEach(card => {
+                card.style.setProperty('position', 'static', 'important');
+                card.style.setProperty('display', 'block', 'important');
+                card.style.setProperty('min-height', '200px', 'important');
+            });
+            console.log('[LOGS] 🔄 Estilos reassertados após 100ms');
+        }, 100);
         
         // Também desbloquear container interno se existir
         const logsAlertasContainer = document.getElementById('alertas-seguranca-container');
