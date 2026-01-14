@@ -21,14 +21,17 @@
 }
 
 /* DESBLOQUEAR CARDS DENTRO DE LOGS - SOBRESCREVE .hidden */
-#logs-auditoria-section .card.hidden {
+#logs-auditoria-section .card.hidden,
+#logs-auditoria-section .card {
   display: block !important;
   visibility: visible !important;
   opacity: 1 !important;
   height: auto !important;
+  min-height: 100px !important;
   max-height: none !important;
   overflow: visible !important;
   pointer-events: auto !important;
+  margin-bottom: 2rem !important;
 }
 
 /* Garantir que section-header está visível */
@@ -36,6 +39,52 @@
   display: flex !important;
   visibility: visible !important;
   opacity: 1 !important;
+  min-height: 50px !important;
+}
+
+/* Garantir que card-header está visível */
+#logs-auditoria-section .card-header {
+  display: flex !important;
+  visibility: visible !important;
+  opacity: 1 !important;
+  min-height: 40px !important;
+}
+
+/* Garantir que card-body está visível */
+#logs-auditoria-section .card-body {
+  display: block !important;
+  visibility: visible !important;
+  opacity: 1 !important;
+  min-height: 50px !important;
+}
+
+/* Garantir que a TABELA e seus elementos estão visíveis */
+#logs-auditoria-section table,
+#logs-auditoria-section #logs-tabela {
+  display: table !important;
+  visibility: visible !important;
+  opacity: 1 !important;
+  width: 100% !important;
+  border-collapse: collapse !important;
+}
+
+#logs-auditoria-section table thead,
+#logs-auditoria-section table tbody {
+  display: table-row-group !important;
+  visibility: visible !important;
+}
+
+#logs-auditoria-section table tr {
+  display: table-row !important;
+  visibility: visible !important;
+}
+
+#logs-auditoria-section table th,
+#logs-auditoria-section table td {
+  display: table-cell !important;
+  visibility: visible !important;
+  padding: 0.75rem !important;
+  border: 1px solid #e5e7eb !important;
 }
 
 /* Garantir que alertas-seguranca-container está visível */
