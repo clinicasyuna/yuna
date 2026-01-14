@@ -64,6 +64,26 @@
             pointer-events: none !important;
         }
         
+        /* MODO LOGS: Ocultar completamente relatorios-section */
+        #relatorios-section {
+            display: none !important;
+            visibility: hidden !important;
+            opacity: 0 !important;
+            height: 0 !important;
+            max-height: 0 !important;
+            width: 0 !important;
+            margin: 0 !important;
+            padding: 0 !important;
+            border: none !important;
+            overflow: hidden !important;
+            pointer-events: none !important;
+        }
+        
+        /* Garantir que section-content de relatórios não apareça */
+        #relatorios-section .section-content {
+            display: none !important;
+        }
+        
         /* Forçar visibilidade do botão limpeza para super admin */
         #limpeza-btn.force-visible {
             display: inline-flex !important;
