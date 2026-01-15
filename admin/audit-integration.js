@@ -338,19 +338,31 @@ function abrirLogsAuditoria() {
         
         console.log('[LOGS] ✅ Section forçada - width: 100%, min-height: 100vh + Observer ativo');
 
-        // Desbloquear possíveis ancestrais escondidos
+        // 🚨 FORÇAR TODOS OS PARENTS COM !important
+        console.log('[LOGS] 🔥 FORÇANDO PARENTS A SEREM VISÍVEIS...');
         let parent = logsSection.parentElement;
-        while (parent) {
-            if (parent.classList && parent.classList.contains('hidden')) {
-                parent.classList.remove('hidden');
-                parent.style.display = 'block';
-                parent.style.visibility = 'visible';
-                parent.style.opacity = '1';
-                parent.style.maxHeight = 'none';
-                parent.style.height = 'auto';
-            }
+        let parentLevel = 0;
+        while (parent && parentLevel < 10) { // Limitar a 10 níveis
+            console.log(`[LOGS] 📦 Forçando parent nível ${parentLevel}:`, parent.id || parent.className);
+            
+            // Remover hidden
+            parent.classList.remove('hidden');
+            
+            // 🔥 FORÇA NUCLEAR COM !important
+            parent.style.setProperty('display', 'block', 'important');
+            parent.style.setProperty('visibility', 'visible', 'important');
+            parent.style.setProperty('opacity', '1', 'important');
+            parent.style.setProperty('width', '100%', 'important');
+            parent.style.setProperty('max-width', '100%', 'important');
+            parent.style.setProperty('max-height', 'none', 'important');
+            parent.style.setProperty('height', 'auto', 'important');
+            parent.style.setProperty('min-height', 'fit-content', 'important');
+            parent.style.setProperty('overflow', 'visible', 'important');
+            
             parent = parent.parentElement;
+            parentLevel++;
         }
+        console.log('[LOGS] ✅ Parents forçados até nível', parentLevel);
 
         // Garantir que body/html possam rolar até a seção
         document.documentElement.style.overflow = 'auto';
