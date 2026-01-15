@@ -709,15 +709,31 @@ function preencherTabelaLogs(logs) {
         const statusColor = log.metadata?.success !== false ? '#10b981' : '#ef4444';
         
         const detalhes = [];
-        if (log.resourceId) detalhes.push(`ID: ${log.resourceId.substring(0, 8)}...`);
-        if (log.details?.changes?.length) detalhes.push(`Campos: ${log.details.changes.join(', ')}`);
-        if (log.metadata?.error) detalhes.push(`Erro: ${log.metadata.error}`);
+        if (log.resourceId) {
+            const shortId = log.resourceId.length > 10 ? log.resourceId.substring(0, 10) + '...' : log.resourceId;
+            detalhes.push(`ID: ${shortId}`);
+        }
+        if (log.details?.changes?.length) {
+            detalhes.push(`Campos: ${log.details.changes.join(', ')}`);
+        }
+        if (log.metadata?.error) {
+            detalhes.push(`Erro: ${log.metadata.error}`);
+        }
+        // Fallback para metadata.details ou details genérico
+        if (detalhes.length === 0 && (log.metadata?.details || log.details)) {
+            const detail = log.metadata?.details || log.details;
+            if (typeof detail === 'string') {
+                detalhes.push(detail);
+            } else if (typeof detail === 'object') {
+                detalhes.push(JSON.stringify(detail).substring(0, 100));
+            }
+        }
         
         return `
             <tr>
                 <td style="white-space: nowrap;">${log.timestamp.toLocaleString('pt-BR')}</td>
                 <td>${log.userEmail}</td>
-                <td><span style="background: #e5e7eb; padding: 0.25rem 0.5rem; border-radius: 0.25rem; font-size: 0.875rem;">${log.userRole}</span></td>
+                <td><span style="background: #e5e7eb; padding: 0.25rem 0.5rem; border-radius: 0.25rem; font-size: 0.875rem;">${log.userRole || 'desconhecido'}</span></td>
                 <td>${actionIcons[log.action] || '📌'} ${log.action}</td>
                 <td>${log.resource}</td>
                 <td style="font-size: 0.875rem;">${detalhes.join('<br>') || '-'}</td>
@@ -865,17 +881,52 @@ async function carregarHistoricoLogs() {
             const log = doc.data();
             // console.log('[AUDIT] 📝 Estrutura do log:', log); // DEBUG
             const timestamp = log.timestamp?.toDate() || new Date();
-            const dataFormatada = timestamp.toLocaleDateString('pt-BR') + ' ' + timestamp.toLocaleTimeString('pt-BR');
+            const dataFormatada = timestamp.toLocaleDateString('pt-BR') + ', ' + timestamp.toLocaleTimeString('pt-BR');
+            
+            // Ícones de ação
+            const actionIcons = {
+                'login': '🔐',
+                'logout': '🚪',
+                'create': '➕',
+                'update': '✏️',
+                'delete': '🗑️',
+                'view': '👁️',
+                'export': '📤'
+            };
+            
+            // Montar detalhes (igual à preencherTabelaLogs)
+            const detalhes = [];
+            if (log.resourceId) {
+                const shortId = log.resourceId.length > 10 ? log.resourceId.substring(0, 10) + '...' : log.resourceId;
+                detalhes.push(`ID: ${shortId}`);
+            }
+            if (log.details?.changes?.length) {
+                detalhes.push(`Campos: ${log.details.changes.join(', ')}`);
+            }
+            if (log.metadata?.error) {
+                detalhes.push(`Erro: ${log.metadata.error}`);
+            }
+            // Fallback para metadata.details ou details genérico
+            if (detalhes.length === 0 && (log.metadata?.details || log.details)) {
+                const detail = log.metadata?.details || log.details;
+                if (typeof detail === 'string') {
+                    detalhes.push(detail);
+                } else if (typeof detail === 'object') {
+                    detalhes.push(JSON.stringify(detail).substring(0, 100));
+                }
+            }
+            
+            const detalhesTexto = detalhes.length > 0 ? detalhes.join('<br>') : '-';
             
             const row = document.createElement('tr');
             row.innerHTML = `
-                <td>${dataFormatada}</td>
+                <td style="white-space: nowrap;">${dataFormatada}</td>
                 <td>${log.userEmail || log.userId || '-'}</td>
-                <td><span style="background: #e0e7ff; color: #4c1d95; padding: 0.25rem 0.75rem; border-radius: 0.375rem; font-size: 0.875rem;">${log.userRole || '-'}</span></td>
-                <td><strong>${log.action || '-'}</strong></td>
+                <td><span style="background: #e0e7ff; color: #4c1d95; padding: 0.25rem 0.75rem; border-radius: 0.375rem; font-size: 0.875rem;">${log.userRole || 'desconhecido'}</span></td>
+                <td>${actionIcons[log.action] || '📌'} <strong>${log.action || '-'}</strong></td>
                 <td>${log.resource || '-'}</td>
                 <td style="font-size: 0.875rem; color: #6b7280; max-width: 300px; overflow: hidden; text-overflow: ellipsis;">
-                    ${log.metadata?.details || log.details || '-'}
+                    ${detalhesTexto}
                 </td>
                 <td>
                     <span style="background: ${log.metadata?.success === false ? '#fee2e2' : '#dcfce7'}; color: ${log.metadata?.success === false ? '#991b1b' : '#166534'}; padding: 0.25rem 0.75rem; border-radius: 0.375rem; font-size: 0.875rem;">

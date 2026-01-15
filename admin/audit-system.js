@@ -81,8 +81,10 @@ async function registrarAcaoAuditoria(params) {
         let userRole = 'desconhecido';
         let userEmail = user.email || 'email-desconhecido';
         
-        // Tentar obter role do cache
-        if (window.currentUser && window.currentUser.role) {
+        // Tentar obter role do window.usuarioAdmin (sistema usa isso, não currentUser)
+        if (window.usuarioAdmin && window.usuarioAdmin.role) {
+            userRole = window.usuarioAdmin.role;
+        } else if (window.currentUser && window.currentUser.role) {
             userRole = window.currentUser.role;
         }
 
