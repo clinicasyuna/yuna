@@ -707,14 +707,30 @@ function preencherTabelaLogs(logs) {
         if (log.metadata?.error) {
             detalhes.push(`Erro: ${log.metadata.error}`);
         }
-        // Fallback para metadata.details ou details genérico
-        if (detalhes.length === 0 && (log.metadata?.details || log.details)) {
-            const detail = log.metadata?.details || log.details;
-            if (typeof detail === 'string') {
-                detalhes.push(detail);
-            } else if (typeof detail === 'object') {
-                detalhes.push(JSON.stringify(detail).substring(0, 100));
+        
+        // Se nenhum detalhe foi montado, tentar extrair do objeto details
+        if (detalhes.length === 0 && log.details) {
+            // Extrair informações relevantes do objeto details
+            const detailObj = log.details;
+            
+            // Tentar extrair changes se existir
+            if (detailObj.changes && Array.isArray(detailObj.changes) && detailObj.changes.length > 0) {
+                detalhes.push(`Campos: ${detailObj.changes.join(', ')}`);
             }
+            
+            // Se ainda não tem detalhes e tem before/after, indicar mudança
+            if (detalhes.length === 0 && (detailObj.before || detailObj.after)) {
+                detalhes.push('Dados alterados');
+            }
+            
+            // Se ainda está vazio, mostrar "-"
+            if (detalhes.length === 0) {
+                detalhes.push('-');
+            }
+        }
+        
+        if (detalhes.length === 0) {
+            detalhes.push('-');
         }
         
         return `
@@ -724,7 +740,7 @@ function preencherTabelaLogs(logs) {
                 <td><span style="background: #e5e7eb; padding: 0.25rem 0.5rem; border-radius: 0.25rem; font-size: 0.875rem;">${log.userRole || 'desconhecido'}</span></td>
                 <td>${actionIcons[log.action] || '📌'} ${log.action}</td>
                 <td>${log.resource}</td>
-                <td style="font-size: 0.875rem;">${detalhes.join('<br>') || '-'}</td>
+                <td style="font-size: 0.875rem;">${detalhes.join('<br>')}</td>
                 <td style="text-align: center;"><span style="font-size: 1.25rem;">${statusIcon}</span></td>
             </tr>
         `;
@@ -894,17 +910,33 @@ async function carregarHistoricoLogs() {
             if (log.metadata?.error) {
                 detalhes.push(`Erro: ${log.metadata.error}`);
             }
-            // Fallback para metadata.details ou details genérico
-            if (detalhes.length === 0 && (log.metadata?.details || log.details)) {
-                const detail = log.metadata?.details || log.details;
-                if (typeof detail === 'string') {
-                    detalhes.push(detail);
-                } else if (typeof detail === 'object') {
-                    detalhes.push(JSON.stringify(detail).substring(0, 100));
+            
+            // Se nenhum detalhe foi montado, tentar extrair do objeto details
+            if (detalhes.length === 0 && log.details) {
+                // Extrair informações relevantes do objeto details
+                const detailObj = log.details;
+                
+                // Tentar extrair changes se existir
+                if (detailObj.changes && Array.isArray(detailObj.changes) && detailObj.changes.length > 0) {
+                    detalhes.push(`Campos: ${detailObj.changes.join(', ')}`);
+                }
+                
+                // Se ainda não tem detalhes e tem before/after, indicar mudança
+                if (detalhes.length === 0 && (detailObj.before || detailObj.after)) {
+                    detalhes.push('Dados alterados');
+                }
+                
+                // Se ainda está vazio, mostrar "-"
+                if (detalhes.length === 0) {
+                    detalhes.push('-');
                 }
             }
             
-            const detalhesTexto = detalhes.length > 0 ? detalhes.join('<br>') : '-';
+            if (detalhes.length === 0) {
+                detalhes.push('-');
+            }
+            
+            const detalhesTexto = detalhes.join('<br>');
             
             const row = document.createElement('tr');
             row.innerHTML = `
