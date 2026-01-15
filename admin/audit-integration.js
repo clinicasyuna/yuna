@@ -756,13 +756,79 @@ async function exportarLogsExcel() {
     // Buscar logs atuais
     await buscarLogsComFiltros();
     
-    // Implementar exportação com XLSX.js (já está carregado no admin)
-    const logs = []; // Pegar logs da tabela
-    const tbody = document.getElementById('logs-tbody');
-    if (!tbody) return;
-    
-    // ... implementar exportação
-    showToast('Info', 'Funcionalidade de exportação será implementada em breve', 'info');
+    // Exportar logs de auditoria para Excel
+    try {
+        console.log('[AUDIT-EXPORT] Iniciando exportação para Excel...');
+        
+        // Verificar se biblioteca XLSX está carregada
+        if (!window.XLSX) {
+            showToast('Erro', 'Biblioteca XLSX não carregada! Recarregue a página.', 'error');
+            return;
+        }
+        
+        const tbody = document.getElementById('logs-tbody');
+        if (!tbody) {
+            showToast('Erro', 'Tabela de logs não encontrada', 'error');
+            return;
+        }
+        
+        // Coletar dados da tabela visível
+        const rows = tbody.querySelectorAll('tr');
+        if (rows.length === 0) {
+            showToast('Aviso', 'Nenhum log para exportar', 'warning');
+            return;
+        }
+        
+        showToast('Exportando...', 'Preparando dados...', 'info');
+        
+        // Preparar dados para Excel
+        const dadosExcel = [];
+        rows.forEach(row => {
+            const cells = row.querySelectorAll('td');
+            if (cells.length >= 6) {
+                dadosExcel.push({
+                    'Data/Hora': cells[0].textContent.trim(),
+                    'Usuário': cells[1].textContent.trim(),
+                    'Ação': cells[2].textContent.trim(),
+                    'Recurso': cells[3].textContent.trim(),
+                    'Status': cells[4].textContent.trim(),
+                    'Página': cells[5].textContent.trim()
+                });
+            }
+        });
+        
+        // Criar workbook e worksheet
+        const wb = window.XLSX.utils.book_new();
+        const ws = window.XLSX.utils.json_to_sheet(dadosExcel);
+        
+        // Ajustar largura das colunas
+        const colWidths = [
+            { wch: 20 }, // Data/Hora
+            { wch: 30 }, // Usuário
+            { wch: 25 }, // Ação
+            { wch: 25 }, // Recurso
+            { wch: 15 }, // Status
+            { wch: 20 }  // Página
+        ];
+        ws['!cols'] = colWidths;
+        
+        // Adicionar worksheet ao workbook
+        window.XLSX.utils.book_append_sheet(wb, ws, 'Logs de Auditoria');
+        
+        // Gerar nome do arquivo com data/hora
+        const agora = new Date();
+        const nomeArquivo = `logs-auditoria-${agora.getFullYear()}${String(agora.getMonth()+1).padStart(2,'0')}${String(agora.getDate()).padStart(2,'0')}-${String(agora.getHours()).padStart(2,'0')}${String(agora.getMinutes()).padStart(2,'0')}.xlsx`;
+        
+        // Exportar arquivo
+        window.XLSX.writeFile(wb, nomeArquivo);
+        
+        console.log(`[AUDIT-EXPORT] ✅ ${dadosExcel.length} registros exportados para ${nomeArquivo}`);
+        showToast('Sucesso', `${dadosExcel.length} registros exportados com sucesso!`, 'success');
+        
+    } catch (error) {
+        console.error('[AUDIT-EXPORT] Erro ao exportar:', error);
+        showToast('Erro', 'Erro ao exportar dados: ' + error.message, 'error');
+    }
 }
 
 /**

@@ -8853,7 +8853,7 @@ function atualizarCronometrosNaTela() {
             timerElement.style.color = cor;
         });
         
-        console.log('[CRONOMETROS] ✅ Atualização concluída');
+        // console.log('[CRONOMETROS] ✅ Atualização concluída');
     } catch (error) {
         console.error('[CRONOMETROS] Erro:', error);
         // Garantir cache mesmo em caso de erro
