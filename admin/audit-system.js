@@ -123,13 +123,13 @@ async function registrarAcaoAuditoria(params) {
         };
 
         // Log com estrutura completa (sem dados sensíveis)
-        console.log('[AUDIT] 📝 Estrutura do log:', {
-            action: auditLog.action,
-            resource: auditLog.resource,
-            userEmail: auditLog.userEmail,
-            userRole: auditLog.userRole,
-            page: auditLog.metadata.page
-        });
+        // console.log('[AUDIT] 📝 Estrutura do log:', {
+        //     action: auditLog.action,
+        //     resource: auditLog.resource,
+        //     userEmail: auditLog.userEmail,
+        //     userRole: auditLog.userRole,
+        //     page: auditLog.metadata.page
+        // });
 
         // Salvar no Firestore
         const docRef = await firebase.firestore().collection('audit_logs').add(auditLog);

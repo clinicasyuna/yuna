@@ -488,7 +488,7 @@ function iniciarMonitoramentoUsuariosOnline() {
     }
     
     window.monitorarUsuariosOnline((usuariosOnline) => {
-        console.log('[LOGS-DEBUG] Usuários online recebidos:', usuariosOnline.length, usuariosOnline);
+        // console.log('[LOGS-DEBUG] Usuários online recebidos:', usuariosOnline.length, usuariosOnline);
         
         const countEl = document.getElementById('usuarios-online-count');
         const listaEl = document.getElementById('usuarios-online-lista');
@@ -499,7 +499,7 @@ function iniciarMonitoramentoUsuariosOnline() {
             listaEl.innerHTML = '';
             
             if (usuariosOnline.length === 0) {
-                console.log('[LOGS-DEBUG] Nenhum usuário online, exibindo mensagem');
+                // console.log('[LOGS-DEBUG] Nenhum usuário online, exibindo mensagem');
                 listaEl.innerHTML = '<p style="grid-column: 1/-1; text-align: center; color: #6b7280;">Nenhum usuário online no momento</p>';
                 return;
             }
@@ -796,7 +796,7 @@ async function carregarHistoricoLogs() {
         
         snapshot.forEach(doc => {
             const log = doc.data();
-            console.log('[AUDIT] 📝 Estrutura do log:', log); // DEBUG
+            // console.log('[AUDIT] 📝 Estrutura do log:', log); // DEBUG
             const timestamp = log.timestamp?.toDate() || new Date();
             const dataFormatada = timestamp.toLocaleDateString('pt-BR') + ' ' + timestamp.toLocaleTimeString('pt-BR');
             
