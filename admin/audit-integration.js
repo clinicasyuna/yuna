@@ -306,14 +306,15 @@ function abrirLogsAuditoria() {
             logsSection.style.setProperty('opacity', '1', 'important');
             logsSection.style.setProperty('width', '100%', 'important'); // ← FIX CRÍTICO!
             logsSection.style.setProperty('max-width', '100%', 'important');
-            logsSection.style.setProperty('max-height', '85vh', 'important'); // ← FIX TREMOR!
+            logsSection.style.setProperty('max-height', '90vh', 'important'); // ← FIX TREMOR!
             logsSection.style.setProperty('overflow-y', 'auto', 'important');
             logsSection.style.setProperty('position', 'static', 'important');
             logsSection.style.setProperty('overflow', 'visible', 'important');
-            logsSection.style.setProperty('padding', '24px 16px', 'important');
+            logsSection.style.setProperty('padding', '12px 8px', 'important'); // Reduzido: 24px → 12px
             logsSection.style.setProperty('background', '#f8fafc', 'important');
             logsSection.style.setProperty('z-index', 'auto', 'important');
             logsSection.style.setProperty('pointer-events', 'auto', 'important');
+            logsSection.style.setProperty('font-size', '13px', 'important'); // Fonte reduzida
         };
         
         // Aplicar estilos imediatamente
@@ -380,13 +381,14 @@ function abrirLogsAuditoria() {
             card.style.setProperty('visibility', 'visible', 'important');
             card.style.setProperty('opacity', '1', 'important');
             card.style.setProperty('max-height', 'none', 'important');
-            card.style.setProperty('min-height', '200px', 'important');
+            card.style.setProperty('min-height', 'auto', 'important'); // Reduzido: 200px → auto
             card.style.setProperty('height', 'auto', 'important');
             card.style.setProperty('overflow', 'visible', 'important');
             card.style.setProperty('position', 'static', 'important'); // MUDADO PARA STATIC (no fluxo)
-            card.style.setProperty('margin-bottom', '2rem', 'important');
+            card.style.setProperty('margin-bottom', '0.5rem', 'important'); // Reduzido: 2rem → 0.5rem
             card.style.setProperty('width', '100%', 'important'); // GARANTIR LARGURA
             card.style.setProperty('z-index', 'auto', 'important'); // REMOVER Z-INDEX FIXO
+            card.style.setProperty('padding', '8px', 'important'); // Padding compacto
             
             // FORÇA EXPANSÃO DOS FILHOS
             Array.from(card.children).forEach(child => {
@@ -1438,8 +1440,11 @@ function fecharLogsAuditoria() {
         
         console.log('✅ [LOGS] Seção fechada com sucesso, voltando ao painel principal');
         
-        // 5. Opcional: recarregar solicitações para atualizar cards
-        if (typeof window.carregarSolicitacoes === 'function') {
+        // 5. Restaurar dashboard completo com cards
+        if (typeof window.voltarPainelPrincipal === 'function') {
+            console.log('[LOGS] Restaurando painel principal...');
+            window.voltarPainelPrincipal();
+        } else if (typeof window.carregarSolicitacoes === 'function') {
             console.log('[LOGS] Recarregando solicitações...');
             window.carregarSolicitacoes();
         }
