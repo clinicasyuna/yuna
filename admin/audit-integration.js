@@ -309,22 +309,7 @@ function abrirLogsAuditoria() {
         // Aplicar estilos imediatamente
         forceStyles();
         
-        // 🛡️ MUTATION OBSERVER - PREVINE SOBRESCRITAS
-        const observer = new MutationObserver((mutations) => {
-            for (const mutation of mutations) {
-                if (mutation.type === 'attributes' && mutation.attributeName === 'style') {
-                    const currentPos = window.getComputedStyle(logsSection).position;
-                    if (currentPos === 'fixed') {
-                        console.log('[LOGS] 🛡️ BLOQUEANDO SOBRESCRITA! Reaplicando position: static');
-                        forceStyles();
-                    }
-                }
-            }
-        });
-        
-        observer.observe(logsSection, { attributes: true, attributeFilter: ['style'] });
-        
-        console.log('[LOGS] ✅ Section forçada - width: 100%, min-height: 100vh + Observer ativo');
+        console.log('[LOGS] ✅ Section forçada - width: 100%, height: auto, MutationObserver DESABILITADO');
 
         // 🚨 FORÇAR TODOS OS PARENTS COM !important
         console.log('[LOGS] 🔥 FORÇANDO PARENTS A SEREM VISÍVEIS...');
@@ -396,15 +381,10 @@ function abrirLogsAuditoria() {
             console.log('[LOGS] ✅ Card desbloqueado:', card.id || card.className);
         });
         
-        // 🔄 REASSERÇÃO CONTÍNUA (previne outros scripts de sobrescrever)
-        setTimeout(() => {
-            cardsWithHidden.forEach(card => {
-                card.style.setProperty('position', 'static', 'important');
-                card.style.setProperty('display', 'block', 'important');
-                card.style.setProperty('min-height', '200px', 'important');
-            });
-            console.log('[LOGS] 🔄 Estilos reassertados após 100ms');
-        }, 100);
+        // ✅ GARANTIR QUE min-height NÃO CAUSE PROBLEMAS - AJUSTAR PARA max-height COM SCROLL
+        logsSection.style.setProperty('max-height', '80vh', 'important');
+        logsSection.style.setProperty('overflow-y', 'auto', 'important');
+        logsSection.style.setProperty('min-height', 'auto', 'important');
         
         // Também desbloquear container interno se existir
         const logsAlertasContainer = document.getElementById('alertas-seguranca-container');
