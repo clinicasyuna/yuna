@@ -226,7 +226,7 @@ function abrirLogsAuditoria() {
     
     try {
         // Ocultar TODAS as seções EXCETO logs-auditoria-section
-        console.log('[LOGS] Ocultando seções existentes...');
+        // console.log('[LOGS] Ocultando seções existentes...');
         document.querySelectorAll('.section').forEach(section => {
             section.classList.add('hidden');
             section.style.display = 'none';
@@ -250,6 +250,15 @@ function abrirLogsAuditoria() {
             relatoriosSection.style.setProperty('height', 'auto', 'important');
             relatoriosSection.style.setProperty('max-height', 'none', 'important');
             relatoriosSection.style.setProperty('overflow', 'visible', 'important');
+            
+            // 🔥 OCULTAR O CONTEÚDO DE RELATÓRIOS (section-content) mas manter relatorios-section visível
+            const sectionContent = relatoriosSection.querySelector('.section-content');
+            if (sectionContent) {
+                sectionContent.style.display = 'none';
+                sectionContent.classList.add('hidden');
+                console.log('[LOGS] ✅ Centro de Relatórios ocultado (section-content)');
+            }
+            
             console.log('[LOGS] ✅ relatorios-section FORÇADA VISÍVEL (contém logs-auditoria-section)');
         }
         
@@ -257,7 +266,7 @@ function abrirLogsAuditoria() {
         window.MODO_LOGS_ATIVO = true;
         
         // Ocultar teams-grid e stats-grid
-        console.log('[LOGS] Ocultando teams-grid e stats-grid...');
+        // console.log('[LOGS] Ocultando teams-grid e stats-grid...');
         const teamsGrid = document.querySelector('.teams-grid');
         const statsGrid = document.querySelector('.stats-grid');
         if (teamsGrid) {
@@ -270,7 +279,7 @@ function abrirLogsAuditoria() {
         }
         
         // Mostrar seção de logs
-        console.log('[LOGS] Buscando seção logs-auditoria-section...');
+        // console.log('[LOGS] Buscando seção logs-auditoria-section...');
         const logsSection = document.getElementById('logs-auditoria-section');
         
         if (!logsSection) {
@@ -459,7 +468,7 @@ function abrirLogsAuditoria() {
         
         // Registrar visualização
         if (typeof window.registrarAcaoAuditoria === 'function') {
-            console.log('[LOGS] Registrando visualização em auditoria...');
+            // console.log('[LOGS] Registrando visualização em auditoria...');
             window.registrarAcaoAuditoria({
                 action: 'view',
                 resource: 'audit_logs',
@@ -1417,6 +1426,14 @@ function fecharLogsAuditoria() {
         if (relatoriosSection) {
             relatoriosSection.classList.add('hidden');
             relatoriosSection.style.display = 'none';
+            
+            // Restaurar section-content para quando abrir relatórios novamente
+            const sectionContent = relatoriosSection.querySelector('.section-content');
+            if (sectionContent) {
+                sectionContent.style.display = '';
+                sectionContent.classList.remove('hidden');
+            }
+            
             console.log('[LOGS] ✅ Relatorios-section ocultada');
         }
         
