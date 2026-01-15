@@ -238,31 +238,19 @@ function abrirLogsAuditoria() {
             }
         });
         
-        // Força ocultar explicitamente relatorios-section para garantir
+        // 🚨 NÃO OCULTAR relatorios-section - logs-auditoria-section está DENTRO dela!
         const relatoriosSection = document.getElementById('relatorios-section');
         if (relatoriosSection) {
-            relatoriosSection.classList.add('hidden');
-            relatoriosSection.setAttribute('style', 'display: none !important; visibility: hidden !important; opacity: 0 !important; pointer-events: none !important; height: 0 !important; max-height: 0 !important; overflow: hidden !important; margin: 0 !important; padding: 0 !important; border: none !important;');
-            console.log('[LOGS] ✅ relatorios-section ocultada com force-hide');
-            
-            // MutationObserver para reforçar ocultação caso algo tente reexibir
-            const observer = new MutationObserver(() => {
-                const currentStyle = relatoriosSection.getAttribute('style');
-                if (!currentStyle || !currentStyle.includes('display: none')) {
-                    relatoriosSection.setAttribute('style', 'display: none !important; visibility: hidden !important; opacity: 0 !important; pointer-events: none !important; height: 0 !important; max-height: 0 !important; overflow: hidden !important; margin: 0 !important; padding: 0 !important; border: none !important;');
-                    relatoriosSection.classList.add('hidden');
-                    console.log('[LOGS] 🔒 relatorios-section reforçada ocultada (MutationObserver)');
-                }
-            });
-            
-            observer.observe(relatoriosSection, {
-                attributes: true,
-                attributeFilter: ['style', 'class'],
-                attributeOldValue: true
-            });
-            
-            // Armazenar observer para limpeza depois
-            window.relatoriosSectionObserver = observer;
+            // FORÇAR VISIBILIDADE ao invés de ocultar
+            relatoriosSection.classList.remove('hidden', 'force-hide');
+            relatoriosSection.style.setProperty('display', 'block', 'important');
+            relatoriosSection.style.setProperty('visibility', 'visible', 'important');
+            relatoriosSection.style.setProperty('opacity', '1', 'important');
+            relatoriosSection.style.setProperty('width', '100%', 'important');
+            relatoriosSection.style.setProperty('height', 'auto', 'important');
+            relatoriosSection.style.setProperty('max-height', 'none', 'important');
+            relatoriosSection.style.setProperty('overflow', 'visible', 'important');
+            console.log('[LOGS] ✅ relatorios-section FORÇADA VISÍVEL (contém logs-auditoria-section)');
         }
         
         // Flag para indicar modo logs
