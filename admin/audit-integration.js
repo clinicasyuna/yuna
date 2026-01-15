@@ -310,6 +310,14 @@ function abrirLogsAuditoria() {
         // Aplicar estilos imediatamente
         forceStyles();
         
+        // 🔥 GARANTIR QUE BOTÕES SEJAM CLICÁVEIS
+        const botoesSecao = logsSection.querySelectorAll('button');
+        botoesSecao.forEach(btn => {
+            btn.style.setProperty('pointer-events', 'auto', 'important');
+            btn.style.setProperty('cursor', 'pointer', 'important');
+            btn.style.setProperty('z-index', '1000', 'important');
+        });
+        
         // console.log('[LOGS] ✅ Section forçada - width: 100%, height: auto, MutationObserver DESABILITADO');
 
         // 🚨 FORÇAR TODOS OS PARENTS COM !important
@@ -1383,6 +1391,7 @@ function fecharLogsAuditoria() {
         const logsSection = document.getElementById('logs-auditoria-section');
         if (logsSection) {
             logsSection.classList.add('hidden');
+            logsSection.classList.remove('force-show');
             logsSection.style.display = 'none';
             console.log('[LOGS] ✅ Seção ocultada');
         }
@@ -1390,6 +1399,7 @@ function fecharLogsAuditoria() {
         // 3. Mostrar painel principal (teams-grid e stats-grid)
         const teamsGrid = document.getElementById('teams-grid');
         const statsGrid = document.getElementById('stats-grid');
+        const relatoriosSection = document.getElementById('relatorios-section');
         
         if (teamsGrid) {
             teamsGrid.classList.remove('hidden');
@@ -1401,6 +1411,13 @@ function fecharLogsAuditoria() {
             statsGrid.classList.remove('hidden');
             statsGrid.style.display = '';
             console.log('[LOGS] ✅ Stats-grid exibida');
+        }
+        
+        // Ocultar relatorios-section (que contém logs-auditoria-section)
+        if (relatoriosSection) {
+            relatoriosSection.classList.add('hidden');
+            relatoriosSection.style.display = 'none';
+            console.log('[LOGS] ✅ Relatorios-section ocultada');
         }
         
         // 4. Voltar ao topo da página
