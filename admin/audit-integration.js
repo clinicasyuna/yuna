@@ -410,45 +410,7 @@ function abrirLogsAuditoria() {
             // console.log('[LOGS] ✅ Alertas container desbloqueado');
         }
 
-        // BANNER de fallback visível para validar renderização
-        let banner = document.getElementById('logs-visibility-banner');
-        if (!banner) {
-            banner = document.createElement('div');
-            banner.id = 'logs-visibility-banner';
-            banner.innerText = 'Seção de Logs e Auditoria ativa (banner de verificação)';
-            banner.style.position = 'fixed';
-            banner.style.top = '10px';
-            banner.style.left = '10px';
-            banner.style.zIndex = '2147483647';
-            banner.style.background = '#f59e0b';
-            banner.style.color = '#111827';
-            banner.style.padding = '12px 16px';
-            banner.style.border = '2px solid #b45309';
-            banner.style.borderRadius = '8px';
-            banner.style.boxShadow = '0 10px 30px rgba(0,0,0,0.25)';
-            banner.style.fontWeight = '700';
-            banner.style.pointerEvents = 'none';
-            document.body.appendChild(banner);
-        }
-        
-        // DEBUG: Verificar estilos aplicados com bounding box
-        const cs = window.getComputedStyle(logsSection);
-        const rect = logsSection.getBoundingClientRect();
-        console.log('[DEBUG] 🔍 Estilos computados após aplicação:', {
-            display: cs.display,
-            visibility: cs.visibility,
-            opacity: cs.opacity,
-            position: cs.position,
-            zIndex: cs.zIndex,
-            width: cs.width,
-            height: cs.height,
-            padding: cs.padding,
-            top: rect.top,
-            left: rect.left,
-            clientHeight: logsSection.clientHeight,
-            scrollHeight: logsSection.scrollHeight,
-            classList: Array.from(logsSection.classList).join(', ')
-        });
+        // Banner removido para evitar tremor/piscada da tela
         
         // Iniciar monitoramento de usuários online
         console.log('[LOGS] Iniciando monitoramento de usuários online...');
@@ -502,24 +464,32 @@ function iniciarMonitoramentoUsuariosOnline() {
         return;
     }
     
+    // Debounce para evitar atualiz açõ es muito frequentes (tremor/piscada)
+    let updateTimeout;
+    
     window.monitorarUsuariosOnline((usuariosOnline) => {
-        // console.log('[LOGS-DEBUG] Usuários online recebidos:', usuariosOnline.length, usuariosOnline);
+        // Limpar timeout anterior para debounce
+        if (updateTimeout) clearTimeout(updateTimeout);
         
-        const countEl = document.getElementById('usuarios-online-count');
-        const listaEl = document.getElementById('usuarios-online-lista');
-        
-        if (countEl) countEl.textContent = usuariosOnline.length;
-        
-        if (listaEl) {
-            listaEl.innerHTML = '';
+        // Agendar atualização após 500ms de estabilidade
+        updateTimeout = setTimeout(() => {
+            // console.log('[LOGS-DEBUG] Usuários online recebidos:', usuariosOnline.length, usuariosOnline);
             
-            if (usuariosOnline.length === 0) {
-                // console.log('[LOGS-DEBUG] Nenhum usuário online, exibindo mensagem');
-                listaEl.innerHTML = '<p style="grid-column: 1/-1; text-align: center; color: #6b7280;">Nenhum usuário online no momento</p>';
-                return;
-            }
+            const countEl = document.getElementById('usuarios-online-count');
+            const listaEl = document.getElementById('usuarios-online-lista');
             
-            usuariosOnline.forEach(usuario => {
+            if (countEl) countEl.textContent = usuariosOnline.length;
+            
+            if (listaEl) {
+                listaEl.innerHTML = '';
+                
+                if (usuariosOnline.length === 0) {
+                    // console.log('[LOGS-DEBUG] Nenhum usuário online, exibindo mensagem');
+                    listaEl.innerHTML = '<p style="grid-column: 1/-1; text-align: center; color: #6b7280;">Nenhum usuário online no momento</p>';
+                    return;
+                }
+                
+                usuariosOnline.forEach(usuario => {
                 const statusColor = {
                     'online': '#10b981',
                     'idle': '#f59e0b',
@@ -559,6 +529,7 @@ function iniciarMonitoramentoUsuariosOnline() {
                 listaEl.appendChild(card);
             });
         }
+        }, 500); // Debounce de 500ms para evitar tremor
     });
 }
 
@@ -1383,20 +1354,13 @@ function fecharLogsAuditoria() {
         if (window.relatoriosSectionObserver) {
             window.relatoriosSectionObserver.disconnect();
             window.relatoriosSectionObserver = null;
-            console.log('[LOGS] ✅ MutationObserver removido');
+            // console.log('[LOGS] ✅ MutationObserver removido');
         }
         
         // Limpar flag de modo logs
         window.MODO_LOGS_ATIVO = false;
         
-        // 1. Remover banner de verificação
-        const banner = document.getElementById('logs-visibility-banner');
-        if (banner) {
-            banner.remove();
-            console.log('[LOGS] ✅ Banner removido');
-        }
-        
-        // 2. Ocultar seção de logs
+        // 1. Ocultar seção de logs
         const logsSection = document.getElementById('logs-auditoria-section');
         if (logsSection) {
             logsSection.classList.add('hidden');
@@ -1413,13 +1377,13 @@ function fecharLogsAuditoria() {
         if (teamsGrid) {
             teamsGrid.classList.remove('hidden');
             teamsGrid.style.display = '';
-            console.log('[LOGS] ✅ Teams-grid exibida');
+            // console.log('[LOGS] ✅ Teams-grid exibida');
         }
         
         if (statsGrid) {
             statsGrid.classList.remove('hidden');
             statsGrid.style.display = '';
-            console.log('[LOGS] ✅ Stats-grid exibida');
+            // console.log('[LOGS] ✅ Stats-grid exibida');
         }
         
         // Ocultar relatorios-section (que contém logs-auditoria-section)
