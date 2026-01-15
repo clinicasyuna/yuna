@@ -283,12 +283,12 @@ function abrirLogsAuditoria() {
             return;
         }
         
-        console.log('✅ [LOGS] Seção encontrada! Exibindo...');
+        // console.log('✅ [LOGS] Seção encontrada! Exibindo...');
         logsSection.classList.remove('hidden');
         logsSection.classList.add('force-show');
         
         // 🔥🔥🔥 CRITICAL FIX - FORÇAR SECTION PAI COM setProperty !important
-        console.log('[LOGS] 🔥 FORÇANDO ESTILOS NA SECTION PAI...');
+        // console.log('[LOGS] 🔥 FORÇANDO ESTILOS NA SECTION PAI...');
         
         // FUNÇÃO PARA FORÇAR ESTILOS (será reusada pelo Observer)
         const forceStyles = () => {
@@ -297,7 +297,8 @@ function abrirLogsAuditoria() {
             logsSection.style.setProperty('opacity', '1', 'important');
             logsSection.style.setProperty('width', '100%', 'important'); // ← FIX CRÍTICO!
             logsSection.style.setProperty('max-width', '100%', 'important');
-            logsSection.style.setProperty('min-height', '100vh', 'important'); // ← FIX CRÍTICO!
+            logsSection.style.setProperty('max-height', '85vh', 'important'); // ← FIX TREMOR!
+            logsSection.style.setProperty('overflow-y', 'auto', 'important');
             logsSection.style.setProperty('position', 'static', 'important');
             logsSection.style.setProperty('overflow', 'visible', 'important');
             logsSection.style.setProperty('padding', '24px 16px', 'important');
@@ -309,14 +310,14 @@ function abrirLogsAuditoria() {
         // Aplicar estilos imediatamente
         forceStyles();
         
-        console.log('[LOGS] ✅ Section forçada - width: 100%, height: auto, MutationObserver DESABILITADO');
+        // console.log('[LOGS] ✅ Section forçada - width: 100%, height: auto, MutationObserver DESABILITADO');
 
         // 🚨 FORÇAR TODOS OS PARENTS COM !important
-        console.log('[LOGS] 🔥 FORÇANDO PARENTS A SEREM VISÍVEIS...');
+        // console.log('[LOGS] 🔥 FORÇANDO PARENTS A SEREM VISÍVEIS...');
         let parent = logsSection.parentElement;
         let parentLevel = 0;
         while (parent && parentLevel < 10) { // Limitar a 10 níveis
-            console.log(`[LOGS] 📦 Forçando parent nível ${parentLevel}:`, parent.id || parent.className);
+            // console.log(`[LOGS] 📦 Forçando parent nível ${parentLevel}:`, parent.id || parent.className);
             
             // Remover hidden
             parent.classList.remove('hidden');
@@ -335,7 +336,7 @@ function abrirLogsAuditoria() {
             parent = parent.parentElement;
             parentLevel++;
         }
-        console.log('[LOGS] ✅ Parents forçados até nível', parentLevel);
+        // console.log('[LOGS] ✅ Parents forçados até nível', parentLevel);
 
         // Garantir que body/html possam rolar até a seção
         document.documentElement.style.overflow = 'auto';
@@ -378,13 +379,10 @@ function abrirLogsAuditoria() {
                 child.style.setProperty('min-height', '20px', 'important'); // Filhos com altura mínima
             });
             
-            console.log('[LOGS] ✅ Card desbloqueado:', card.id || card.className);
+            // console.log('[LOGS] ✅ Card desbloqueado:', card.id || card.className);
         });
         
-        // ✅ GARANTIR QUE min-height NÃO CAUSE PROBLEMAS - AJUSTAR PARA max-height COM SCROLL
-        logsSection.style.setProperty('max-height', '80vh', 'important');
-        logsSection.style.setProperty('overflow-y', 'auto', 'important');
-        logsSection.style.setProperty('min-height', 'auto', 'important');
+        // ✅ Estilos já aplicados no forceStyles() acima - não reaplicar para evitar reflow
         
         // Também desbloquear container interno se existir
         const logsAlertasContainer = document.getElementById('alertas-seguranca-container');
@@ -392,7 +390,7 @@ function abrirLogsAuditoria() {
             logsAlertasContainer.classList.remove('hidden');
             logsAlertasContainer.style.display = 'block';
             logsAlertasContainer.style.visibility = 'visible';
-            console.log('[LOGS] ✅ Alertas container desbloqueado');
+            // console.log('[LOGS] ✅ Alertas container desbloqueado');
         }
 
         // BANNER de fallback visível para validar renderização
@@ -781,18 +779,20 @@ async function exportarLogsExcel() {
         
         showToast('Exportando...', 'Preparando dados...', 'info');
         
-        // Preparar dados para Excel
+        // Preparar dados para Excel (7 colunas: Data/Hora, Usuário, Role, Ação, Recurso, Detalhes, Status)
         const dadosExcel = [];
         rows.forEach(row => {
             const cells = row.querySelectorAll('td');
-            if (cells.length >= 6) {
+            // Verificar se não é a linha de mensagem vazia (colspan)
+            if (cells.length >= 7 && !cells[0].hasAttribute('colspan')) {
                 dadosExcel.push({
                     'Data/Hora': cells[0].textContent.trim(),
                     'Usuário': cells[1].textContent.trim(),
-                    'Ação': cells[2].textContent.trim(),
-                    'Recurso': cells[3].textContent.trim(),
-                    'Status': cells[4].textContent.trim(),
-                    'Página': cells[5].textContent.trim()
+                    'Role': cells[2].textContent.trim(),
+                    'Ação': cells[3].textContent.trim(),
+                    'Recurso': cells[4].textContent.trim(),
+                    'Detalhes': cells[5].textContent.trim(),
+                    'Status': cells[6].textContent.trim()
                 });
             }
         });
@@ -804,11 +804,12 @@ async function exportarLogsExcel() {
         // Ajustar largura das colunas
         const colWidths = [
             { wch: 20 }, // Data/Hora
-            { wch: 30 }, // Usuário
-            { wch: 25 }, // Ação
-            { wch: 25 }, // Recurso
-            { wch: 15 }, // Status
-            { wch: 20 }  // Página
+            { wch: 35 }, // Usuário
+            { wch: 15 }, // Role
+            { wch: 20 }, // Ação
+            { wch: 20 }, // Recurso
+            { wch: 40 }, // Detalhes
+            { wch: 12 }  // Status
         ];
         ws['!cols'] = colWidths;
         
