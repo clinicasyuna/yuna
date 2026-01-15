@@ -237,10 +237,22 @@ function performAutoLogout() {
         console.log(`[CLEANUP] ✅ ${listenerCount} listeners Firestore removidos`);
     }
     
-    // Limpar cache LRU
-    if (window.cacheManager) {
-        window.cacheManager.limpar();
-        console.log('[CLEANUP] ✅ Cache LRU limpo');
+    // Limpar cache LRU (robusto, sem quebrar fluxo em caso de erro)
+    try {
+        if (window.cacheManager) {
+            if (typeof window.cacheManager.clearSolicitacoes === 'function') {
+                window.cacheManager.clearSolicitacoes();
+            }
+            if (typeof window.cacheManager.clearUsuarios === 'function') {
+                window.cacheManager.clearUsuarios();
+            }
+            console.log('[CLEANUP] ✅ Cache LRU limpo');
+        }
+        if (typeof window.clearAllCache === 'function') {
+            window.clearAllCache();
+        }
+    } catch (e) {
+        console.warn('[CLEANUP] ⚠️ Falha ao limpar cache (seguindo com logout):', e);
     }
     
     // Gerar relatório final de performance
@@ -263,12 +275,15 @@ function performAutoLogout() {
     clearTimeout(sessionTimeout);
     clearTimeout(warningTimeout);
     
+    // Limpar storage local para evitar sessão "fantasma" após reload
+    try { localStorage.clear(); sessionStorage.clear(); } catch (_) {}
+
     // Mostrar notificação
     showToast('Sessão Expirada', 'Você foi desconectado por inatividade.', 'warning');
     
     // Realizar logout e redirecionar para página de login
     setTimeout(() => {
-        if (window.auth) {
+        if (window.auth && typeof window.auth.signOut === 'function') {
             window.auth.signOut().then(() => {
                 // Redirecionar para página de login em vez de reload
                 window.location.href = window.location.origin + window.location.pathname.replace('/admin/', '/');
