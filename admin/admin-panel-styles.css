@@ -10,13 +10,19 @@
 }
 
 /* FORÇAR EXIBIÇÃO DE LOGS - SOBRESCREVE .hidden */
+#logs-auditoria-section {
+  max-height: 80vh !important;
+  overflow-y: auto !important;
+  padding: 1rem !important;
+}
+
 #logs-auditoria-section.force-show {
   display: block !important;
   visibility: visible !important;
   opacity: 1 !important;
   height: auto !important;
-  max-height: none !important;
-  overflow: visible !important;
+  max-height: 80vh !important;
+  overflow-y: auto !important;
   pointer-events: auto !important;
 }
 
@@ -27,11 +33,13 @@
   visibility: visible !important;
   opacity: 1 !important;
   height: auto !important;
-  min-height: 100px !important;
+  min-height: auto !important;
   max-height: none !important;
   overflow: visible !important;
   pointer-events: auto !important;
-  margin-bottom: 2rem !important;
+  margin-bottom: 1rem !important;
+  padding: 1rem !important;
+  border-radius: 0.5rem !important;
 }
 
 /* Garantir que section-header está visível */
@@ -55,7 +63,10 @@
   display: block !important;
   visibility: visible !important;
   opacity: 1 !important;
-  min-height: 50px !important;
+  min-height: auto !important;
+  max-height: 50vh !important;
+  overflow-y: auto !important;
+  padding: 1rem !important;
 }
 
 /* Garantir que a TABELA e seus elementos estão visíveis */
@@ -66,12 +77,21 @@
   opacity: 1 !important;
   width: 100% !important;
   border-collapse: collapse !important;
+  max-height: 60vh !important;
+  overflow-y: auto !important;
 }
 
-#logs-auditoria-section table thead,
-#logs-auditoria-section table tbody {
-  display: table-row-group !important;
-  visibility: visible !important;
+/* Container da tabela com scroll */
+#logs-auditoria-section .card-body table {
+  max-height: 50vh !important;
+}
+
+/* Fazer thead ficar fixo durante scroll */
+#logs-auditoria-section table thead {
+  position: sticky !important;
+  top: 0 !important;
+  background-color: #f3f4f6 !important;
+  z-index: 10 !important;
 }
 
 #logs-auditoria-section table tr {
