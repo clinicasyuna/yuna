@@ -2693,3 +2693,243 @@ h2.finalizar-solicitacao {
   display: block;
 }
 
+/* ============================================
+   NOVO MENU HORIZONTAL MODERNO (20/01/2026)
+   ============================================ */
+
+.admin-nav {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%);
+  padding: 0.75rem 2rem;
+  border-bottom: 2px solid #3b82f6;
+  gap: 2rem;
+  position: relative;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+/* Menu Horizontal Principal */
+.nav-menu {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  flex: 1;
+}
+
+/* Botões da navegação */
+.nav-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.6rem 1.2rem;
+  background: rgba(255, 255, 255, 0.1);
+  color: #f8f9fa;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: 8px;
+  cursor: pointer;
+  font-size: 0.95rem;
+  font-weight: 500;
+  transition: all 0.3s ease;
+  white-space: nowrap;
+}
+
+.nav-btn:hover {
+  background: rgba(59, 130, 246, 0.3);
+  border-color: #3b82f6;
+  color: #fff;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(59, 130, 246, 0.2);
+}
+
+.nav-btn:active {
+  transform: translateY(0);
+  box-shadow: 0 2px 6px rgba(59, 130, 246, 0.15);
+}
+
+.nav-btn-primary {
+  background: rgba(59, 130, 246, 0.2);
+  border-color: #3b82f6;
+  color: #e0e7ff;
+}
+
+.nav-btn-primary:hover {
+  background: rgba(59, 130, 246, 0.35);
+  border-color: #2563eb;
+  box-shadow: 0 4px 15px rgba(59, 130, 246, 0.3);
+}
+
+/* Menu Dropdown */
+.dropdown-menu {
+  position: relative;
+  display: inline-block;
+}
+
+.nav-btn-dropdown {
+  background: rgba(139, 92, 246, 0.2);
+  border-color: #8b5cf6;
+  padding: 0.6rem 0.9rem;
+}
+
+.nav-btn-dropdown:hover {
+  background: rgba(139, 92, 246, 0.35);
+  border-color: #7c3aed;
+}
+
+.dropdown-content {
+  display: none;
+  position: absolute;
+  right: 0;
+  top: 100%;
+  background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%);
+  border: 1px solid #3b82f6;
+  border-radius: 8px;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.25);
+  min-width: 220px;
+  z-index: 1000;
+  margin-top: 0.5rem;
+  overflow: hidden;
+  animation: slideDown 0.2s ease;
+}
+
+.dropdown-content.active {
+  display: block;
+}
+
+.dropdown-item {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  width: 100%;
+  padding: 0.9rem 1.2rem;
+  background: transparent;
+  color: #f8f9fa;
+  border: none;
+  text-align: left;
+  cursor: pointer;
+  font-size: 0.95rem;
+  font-weight: 500;
+  transition: all 0.2s ease;
+  white-space: nowrap;
+}
+
+.dropdown-item:hover {
+  background: rgba(59, 130, 246, 0.2);
+  padding-left: 1.4rem;
+}
+
+.dropdown-item i {
+  width: 1.2rem;
+  text-align: center;
+}
+
+.dropdown-divider {
+  height: 1px;
+  background: rgba(255, 255, 255, 0.1);
+  margin: 0.5rem 0;
+}
+
+/* Área Direita: Usuário e Sair */
+.nav-right {
+  display: flex;
+  align-items: center;
+  gap: 1.5rem;
+}
+
+.priority-badge {
+  padding: 0.5rem 1rem;
+  background: rgba(59, 130, 246, 0.15);
+  border: 1px solid #3b82f6;
+  border-radius: 6px;
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: #e0e7ff;
+}
+
+/* Botão Sair */
+.nav-btn-logout {
+  background: rgba(239, 68, 68, 0.2);
+  border-color: #ef4444;
+  color: #fca5a5;
+  padding: 0.6rem 1.2rem;
+}
+
+.nav-btn-logout:hover {
+  background: rgba(239, 68, 68, 0.35);
+  border-color: #dc2626;
+  color: #fecaca;
+  box-shadow: 0 4px 15px rgba(239, 68, 68, 0.25);
+}
+
+/* Animações */
+@keyframes slideDown {
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Responsivo */
+@media (max-width: 1024px) {
+  .admin-nav {
+    padding: 0.75rem 1rem;
+    gap: 1rem;
+  }
+
+  .nav-menu {
+    gap: 0.25rem;
+  }
+
+  .nav-btn {
+    padding: 0.5rem 0.9rem;
+    font-size: 0.85rem;
+  }
+
+  .dropdown-content {
+    min-width: 200px;
+  }
+}
+
+@media (max-width: 768px) {
+  .admin-nav {
+    flex-wrap: wrap;
+    padding: 0.75rem 0.5rem;
+  }
+
+  .nav-menu {
+    width: 100%;
+    flex-wrap: wrap;
+    gap: 0.3rem;
+  }
+
+  .nav-btn {
+    padding: 0.4rem 0.7rem;
+    font-size: 0.75rem;
+  }
+
+  .nav-right {
+    width: 100%;
+    justify-content: space-between;
+    gap: 1rem;
+    margin-top: 0.5rem;
+  }
+
+  .priority-badge {
+    font-size: 0.75rem;
+    padding: 0.4rem 0.8rem;
+  }
+
+  .nav-btn-logout {
+    padding: 0.4rem 0.8rem;
+  }
+}
+
+/* Função para toggle do dropdown (será adicionada em JS) */
+.dropdown-content.show {
+  display: block;
+}
+

@@ -390,92 +390,70 @@
                 <img src="https://clinicasyuna.github.io/yuna/assets/images/YUNA%20Logo%20with%20strapline_horizontal_RGB.svg" alt="YUNA Logo">
                 <h1 id="panel-title">🏥 Painel Administrativo</h1>
             </div>
-            <div class="user-info">
-                <span id="user-role-badge" class="priority-badge priority-media">Administrador</span>
-                <button id="btn-novo-usuario" class="btn-primary btn-hide">
-                    <i class="fas fa-user-plus"></i> Criar Usuário
-                </button>
-                <button id="manage-users-btn" class="btn-primary btn-hide">
-                    <i class="fas fa-users-cog"></i> Gerenciar Usuários
-                </button>
-                
-                <span id="admin-permission-msg" class="msg-permissao-hide">Acesso restrito: sem permissão para criar/gerenciar usuários.</span>
-                <button id="dashboard-btn" class="btn-primary" onclick="abrirDashboardExecutivo()" title="Dashboard Executivo com gráficos e métricas">
-                    <i class="fas fa-chart-line"></i> Dashboard
-                </button>
-                <button id="relatorios-btn" class="btn-primary">
-                    <i class="fas fa-chart-bar"></i> Relatórios
-                </button>
-                
-                <button id="metricas-btn" class="btn-primary" onclick="abrirDashboardMetricas()" title="Dashboard de TMA, SLA e TME">
-                    <i class="fas fa-chart-line"></i> Métricas
-                </button>
-                <button id="satisfacao-btn" class="btn-primary" onclick="abrirDashboardSatisfacao()" title="Pesquisas de Satisfação">
-                    <i class="fas fa-star"></i> Pesquisa de Satisfação
-                </button>
-                <button id="acompanhantes-btn" class="btn-primary" onclick="abrirAcompanhantesSection()">
-                    <i class="fas fa-user-friends" style="color: #000000;"></i> Acompanhantes
-                </button>
-                <button id="limpeza-btn" class="btn-primary btn-hide" onclick="limparDadosTeste()" title="Limpar dados de teste e pesquisas de satisfação">
-                    <i class="fas fa-broom"></i> Limpar Dados
-                </button>
-                <button id="alterar-senha-btn" class="btn-primary" onclick="abrirMinhaSenha()" title="Alterar minha senha" 
-                        style="background: #10b981; display: inline-flex !important; visibility: visible !important;">
-                    <i class="fas fa-key"></i> Minha Senha
-                </button>
-                
+            <nav class="admin-nav">
+                <!-- Menu Horizontal Principal -->
+                <div class="nav-menu">
+                    <!-- Botão Dashboard -->
+                    <button id="dashboard-btn" class="nav-btn nav-btn-primary" onclick="abrirDashboardExecutivo()" title="Dashboard Executivo com gráficos e métricas">
+                        <i class="fas fa-chart-line"></i> Dashboard
+                    </button>
 
+                    <!-- Botão Relatórios -->
+                    <button id="relatorios-btn" class="nav-btn nav-btn-primary" title="Gerar relatórios detalhados">
+                        <i class="fas fa-chart-bar"></i> Relatórios
+                    </button>
 
+                    <!-- Botão Métricas -->
+                    <button id="metricas-btn" class="nav-btn nav-btn-primary" onclick="abrirDashboardMetricas()" title="Dashboard de TMA, SLA e TME">
+                        <i class="fas fa-tachometer-alt"></i> Métricas
+                    </button>
 
-                <!-- Script para forçar visibilidade do botão imediatamente -->
-                <script>
-                (function() {
-                    // console.log('[🔑 SCRIPT INLINE] Forçando botão Minha Senha...');
-                    
-                    function forcarBotaoMinhaSenha() {
-                        const btn = document.getElementById('alterar-senha-btn');
-                        if (btn) {
-                            btn.style.cssText = `
-                                background: #10b981 !important;
-                                display: inline-flex !important;
-                                visibility: visible !important;
-                                opacity: 1 !important;
-                                color: white !important;
-                                border: none !important;
-                                padding: 0.5rem 1rem !important;
-                                border-radius: 0.375rem !important;
-                                cursor: pointer !important;
-                                align-items: center !important;
-                                gap: 0.5rem !important;
-                                font-weight: 500 !important;
-                                position: relative !important;
-                                z-index: 999 !important;
-                                order: 5 !important;
-                            `;
-                            btn.classList.remove('btn-hide', 'hidden', 'd-none');
-                            // console.log('[🔑 SCRIPT INLINE] Botão forçado com sucesso!');
-                            return true;
-                        }
-                        return false;
-                    }
-                    
-                    // Forçar imediatamente
-                    forcarBotaoMinhaSenha();
-                    
-                    // Forçar quando DOM carregar
-                    document.addEventListener('DOMContentLoaded', forcarBotaoMinhaSenha);
-                    
-                    // Forçar periodicamente
-                    setInterval(forcarBotaoMinhaSenha, 2000);
-                    
-                    // Expor função globalmente
-                    window.forcarBotaoMinhaSenhaInline = forcarBotaoMinhaSenha;
-                })();
-                </script>
-                <button id="logout-btn" class="logout-btn" onclick="window.auth.signOut()">
-                    <i class="fas fa-sign-out-alt"></i> Sair
-                </button>
-            </div>
+                    <!-- Botão Pesquisa de Satisfação -->
+                    <button id="satisfacao-btn" class="nav-btn nav-btn-primary" onclick="abrirDashboardSatisfacao()" title="Pesquisas de Satisfação">
+                        <i class="fas fa-star"></i> Satisfação
+                    </button>
+
+                    <!-- Botão Acompanhantes -->
+                    <button id="acompanhantes-btn" class="nav-btn nav-btn-primary" onclick="abrirAcompanhantesSection()" title="Gerenciar acompanhantes">
+                        <i class="fas fa-user-friends"></i> Acompanhantes
+                    </button>
+
+                    <!-- Menu Dropdown (Mais Opções) -->
+                    <div class="dropdown-menu">
+                        <button class="nav-btn nav-btn-dropdown" onclick="toggleDropdownMenu()" title="Mais opções">
+                            <i class="fas fa-ellipsis-h"></i>
+                        </button>
+                        <div class="dropdown-content" id="dropdown-menu-content">
+                            <button id="btn-novo-usuario" class="dropdown-item btn-hide">
+                                <i class="fas fa-user-plus"></i> Criar Usuário
+                            </button>
+                            <button id="manage-users-btn" class="dropdown-item btn-hide">
+                                <i class="fas fa-users-cog"></i> Gerenciar Usuários
+                            </button>
+                            <div class="dropdown-divider"></div>
+                            <button id="limpeza-btn" class="dropdown-item btn-hide" onclick="limparDadosTeste()" title="Limpar dados de teste">
+                                <i class="fas fa-broom"></i> Limpar Dados de Teste
+                            </button>
+                            <button id="alterar-senha-btn" class="dropdown-item" onclick="abrirMinhaSenha()" title="Alterar minha senha">
+                                <i class="fas fa-key"></i> Alterar Senha
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Área Direita: Usuário e Sair -->
+                <div class="nav-right">
+                    <span id="user-role-badge" class="priority-badge priority-media">Administrador</span>
+                    <button id="logout-btn" class="nav-btn nav-btn-logout" onclick="window.auth.signOut()" title="Sair da aplicação">
+                        <i class="fas fa-sign-out-alt"></i> Sair
+                    </button>
+                </div>
+
+                <!-- Mensagem de Permissão (oculta por padrão) -->
+                <span id="admin-permission-msg" class="msg-permissao-hide" style="position: absolute; top: 10px; right: 200px; color: #ef4444; font-size: 0.9rem;">
+                    Acesso restrito: sem permissão para criar/gerenciar usuários.
+                </span>
+            </nav>
         </header>
         <!-- MÉTRICAS ALINHADAS -->
         <div class="stats-grid">
