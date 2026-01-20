@@ -1,0 +1,46 @@
+// SCRIPT PARA EXECUTAR NO CONSOLE (F12) - Copie e cole tudo
+// Força limpeza completa e recarrega
+
+javascript:(function() {
+  console.log('🧹 [LIMPEZA] Iniciando limpeza completa...');
+  
+  // 1. Desregistrar service worker
+  if (navigator.serviceWorker && navigator.serviceWorker.getRegistrations) {
+    navigator.serviceWorker.getRegistrations().then(registrations => {
+      registrations.forEach(registration => {
+        console.log('🧹 [SW] Desregistrando:', registration);
+        registration.unregister().then(() => {
+          console.log('✅ [SW] Desregistrado com sucesso');
+        });
+      });
+    }).catch(err => console.error('[SW] Erro ao desregistrar:', err));
+  }
+  
+  // 2. Limpar todos os caches
+  if (window.caches && caches.keys) {
+    caches.keys().then(cacheNames => {
+      console.log('🧹 [CACHE] Caches encontrados:', cacheNames);
+      return Promise.all(cacheNames.map(cacheName => {
+        console.log('🧹 [CACHE] Deletando:', cacheName);
+        return caches.delete(cacheName).then(() => {
+          console.log('✅ [CACHE] Deletado:', cacheName);
+        });
+      }));
+    }).catch(err => console.error('[CACHE] Erro:', err));
+  }
+  
+  // 3. Limpar localStorage e sessionStorage
+  console.log('🧹 [STORAGE] Limpando storage...');
+  localStorage.clear();
+  sessionStorage.clear();
+  console.log('✅ [STORAGE] Storage limpo');
+  
+  // 4. Aguardar 2 segundos e recarregar
+  console.log('⏳ [RELOAD] Recarregando em 2 segundos...');
+  setTimeout(() => {
+    console.log('🔄 [RELOAD] Recarregando página...');
+    window.location.href = window.location.href;
+  }, 2000);
+  
+  console.log('✅ [LIMPEZA] Script executado! Página será recarregada automaticamente...');
+})();

@@ -4182,11 +4182,26 @@ window.salvarUsuarioEditado = async function(userId, originalCollection) {
             showToast('Sucesso', 'Usuário atualizado com sucesso', 'success');
         }
         
+        // Registrar auditoria completa
+        if (window.registrarAcaoAuditoria) {
+            await window.registrarAcaoAuditoria({
+                action: originalCollection !== novaCollection ? 'update' : 'update',
+                resource: originalCollection,
+                resourceId: userId,
+                success: true,
+                details: {
+                    before: { collection: originalCollection },
+                    after: { collection: novaCollection, ...updateData },
+                    changes: Object.keys(updateData)
+                }
+            });
+        }
+        
         // Fechar modal e recarregar lista
         fecharModalEditarUsuario();
         await window.carregarUsuarios();
         
-        // Registrar auditoria
+        // Registrar auditoria legacy (manter por compatibilidade)
         if (window.registrarLogAuditoria) {
             window.registrarLogAuditoria('USER_EDIT', {
                 userId,
@@ -6771,6 +6786,20 @@ window.criarUsuarioTeste = async function() {
                 }
             });
             console.log('✅ Usuário adicionado como admin no Firestore');
+            
+            // Registrar auditoria de criação de admin
+            if (window.registrarAcaoAuditoria) {
+                await window.registrarAcaoAuditoria({
+                    action: 'create',
+                    resource: 'usuarios_admin',
+                    resourceId: userCredential.user.uid,
+                    success: true,
+                    details: {
+                        after: { email: emailTeste, role: 'admin' },
+                        changes: ['create']
+                    }
+                });
+            }
         }
         
         showToast('Sucesso', `Usuário criado: ${emailTeste} / 123456`, 'success');
@@ -7015,13 +7044,18 @@ async function alterarStatusSolicitacao(solicitacaoId, novoStatus) {
         showToast('Sucesso', `Status alterado para: ${novoStatus}`, 'success');
         console.log(`[DEBUG] Status alterado com sucesso: ${solicitacaoId} -> ${novoStatus}`);
         
-        // Registrar auditoria
-        if (window.registrarLogAuditoria) {
-            window.registrarLogAuditoria('STATUS_CHANGE', {
-                solicitacaoId,
-                statusAnterior: solicitacaoData.status,
-                novoStatus,
-                responsavel: usuarioAdmin.nome || usuarioAdmin.email
+        // Registrar auditoria completa
+        if (window.registrarAcaoAuditoria) {
+            await window.registrarAcaoAuditoria({
+                action: 'update',
+                resource: 'solicitacoes',
+                resourceId: solicitacaoId,
+                success: true,
+                details: {
+                    before: { status: solicitacaoData.status },
+                    after: { status: novoStatus },
+                    changes: ['status']
+                }
             });
         }
         
@@ -7311,6 +7345,21 @@ async function confirmarFinalizacao(solicitacaoId) {
         await window.db.collection('solicitacoes').doc(solicitacaoId).update(updateData);
         
         showToast('Sucesso', 'Solicitação finalizada com sucesso!', 'success');
+        
+        // Registrar auditoria de finalização
+        if (window.registrarAcaoAuditoria) {
+            await window.registrarAcaoAuditoria({
+                action: 'update',
+                resource: 'solicitacoes',
+                resourceId: solicitacaoId,
+                success: true,
+                details: {
+                    before: { status: solicitacaoData.status },
+                    after: { status: 'finalizada', finalizadoEm: updateData.finalizadoEm },
+                    changes: ['status', 'finalizadoEm', 'metricas']
+                }
+            });
+        }
         
         // Limpar evidências após sucesso
         arquivosEvidencias = [];
@@ -10620,6 +10669,15 @@ async function exportarRelatorioSatisfacaoExcel() {
         
         if (avaliacoesSnapshot.empty) {
             showToast('Aviso', 'Nenhuma avaliação encontrada para exportar.', 'warning');
+            // Registrar tentativa de exportação vazia
+            if (window.registrarAcaoAuditoria) {
+                await window.registrarAcaoAuditoria({
+                    action: 'export',
+                    resource: 'avaliacoes_satisfacao',
+                    success: false,
+                    details: { reason: 'Nenhuma avaliação encontrada' }
+                });
+            }
             return;
         }
         
@@ -10630,6 +10688,19 @@ async function exportarRelatorioSatisfacaoExcel() {
         });
         
         console.log(`[EXPORT-SATISFACAO] ${avaliacoes.length} avaliações para exportar`);
+        
+        // Registrar auditoria de exportação
+        if (window.registrarAcaoAuditoria) {
+            await window.registrarAcaoAuditoria({
+                action: 'export',
+                resource: 'avaliacoes_satisfacao',
+                success: true,
+                details: {
+                    totalRecords: avaliacoes.length,
+                    exportType: 'excel'
+                }
+            });
+        }
         
         // DEBUG: Ver estrutura da primeira avaliação
         if (avaliacoes.length > 0) {
@@ -11221,7 +11292,29 @@ async function exportarDados() {
 
         if (solicitacoes.length === 0) {
             showToast('Aviso', 'Nenhuma solicitação para exportar', 'warning');
+            // Registrar tentativa de exportação vazia
+            if (window.registrarAcaoAuditoria) {
+                await window.registrarAcaoAuditoria({
+                    action: 'export',
+                    resource: 'solicitacoes',
+                    success: false,
+                    details: { reason: 'Nenhuma solicitação encontrada' }
+                });
+            }
             return;
+        }
+        
+        // Registrar auditoria de exportação
+        if (window.registrarAcaoAuditoria) {
+            await window.registrarAcaoAuditoria({
+                action: 'export',
+                resource: 'solicitacoes',
+                success: true,
+                details: {
+                    totalRecords: solicitacoes.length,
+                    exportType: 'excel'
+                }
+            });
         }
 
         // Debug: Verificar campos de data disponíveis
@@ -11594,6 +11687,20 @@ async function cadastrarAcompanhante() {
         });
 
         debugLog('[DEBUG] cadastrarAcompanhante: acompanhante salvo no Firestore (pre-cadastro)');
+        
+        // Registrar auditoria de criação de usuário
+        if (window.registrarAcaoAuditoria) {
+            await window.registrarAcaoAuditoria({
+                action: 'create',
+                resource: 'usuarios_acompanhantes',
+                resourceId: acompanhanteId,
+                success: true,
+                details: {
+                    after: { nome, email, quarto, preCadastro: true },
+                    changes: ['create']
+                }
+            });
+        }
 
         // Limpar formulário
         document.getElementById('form-cadastro-acompanhante').reset();
@@ -11904,6 +12011,20 @@ async function removerAcompanhante(acompanhanteId, quarto) {
             await window.db.collection('quartos_ocupados').doc(quarto).delete();
             debugLog('[DEBUG] removerAcompanhante: quarto liberado');
         }
+        
+        // Registrar auditoria de remoção de usuário
+        if (window.registrarAcaoAuditoria) {
+            await window.registrarAcaoAuditoria({
+                action: 'delete',
+                resource: 'usuarios_acompanhantes',
+                resourceId: acompanhanteId,
+                success: true,
+                details: {
+                    before: acompanhanteData,
+                    changes: ['delete']
+                }
+            });
+        }
 
         // Se tem UID (conta foi ativada), também remover registros órfãos
         if (acompanhanteData && acompanhanteData.uid) {
@@ -12199,6 +12320,21 @@ async function salvarEdicaoAcompanhante(event) {
         } else {
             // Apenas atualizar dados do acompanhante (quarto não mudou)
             await window.db.collection('usuarios_acompanhantes').doc(acompanhanteId).update(updateData);
+        }
+        
+        // Registrar auditoria de atualização
+        if (window.registrarAcaoAuditoria) {
+            await window.registrarAcaoAuditoria({
+                action: 'update',
+                resource: 'usuarios_acompanhantes',
+                resourceId: acompanhanteId,
+                success: true,
+                details: {
+                    before: acompanhanteAnterior,
+                    after: updateData,
+                    changes: Object.keys(updateData)
+                }
+            });
         }
         
         showToast('Sucesso', 'Acompanhante atualizado com sucesso!', 'success');

@@ -3608,6 +3608,29 @@
                 // Salvar no Firestore
                 await window.db.collection('solicitacoes').add(dadosSolicitacao);
                 
+                // Registrar auditoria de criação de solicitação
+                try {
+                    await window.db.collection('audit_logs').add({
+                        timestamp: firebase.firestore.FieldValue.serverTimestamp(),
+                        userId: currentUser.uid,
+                        userEmail: currentUser.email,
+                        userRole: 'acompanhante',
+                        action: 'create',
+                        resource: 'solicitacoes',
+                        resourceId: null,
+                        details: {
+                            after: { equipe: equipePadronizada, prioridade, tipo: dadosSolicitacao.tipo },
+                            changes: ['create']
+                        },
+                        metadata: {
+                            page: '/acompanhantes/',
+                            success: true
+                        }
+                    });
+                } catch (auditError) {
+                    console.log('[AUDIT] Erro ao registrar auditoria (não crítico):', auditError);
+                }
+                
                 showToast('Sucesso!', 'Solicitação enviada com sucesso!', 'success');
                 fecharModal();
                 
@@ -4250,6 +4273,29 @@
                         status: 'finalizada' // Garante status correto para o filtro
                     });
                     console.log('[DEBUG] Solicitação marcada como avaliada com sucesso');
+                    
+                    // Registrar auditoria de avaliação
+                    try {
+                        await window.db.collection('audit_logs').add({
+                            timestamp: firebase.firestore.FieldValue.serverTimestamp(),
+                            userId: currentUser.uid,
+                            userEmail: currentUser.email,
+                            userRole: 'acompanhante',
+                            action: 'create',
+                            resource: 'avaliacoes_satisfacao',
+                            resourceId: solicitacaoParaAvaliar,
+                            details: {
+                                after: { nota: avaliacaoAtual.nota, recomendaria: avaliacaoAtual.recomendacao },
+                                changes: ['create']
+                            },
+                            metadata: {
+                                page: '/acompanhantes/',
+                                success: true
+                            }
+                        });
+                    } catch (auditError) {
+                        console.log('[AUDIT] Erro ao registrar auditoria (não crítico):', auditError);
+                    }
                 } else {
                     console.error('[ERRO] ID da solicitação não encontrado para marcar como avaliada');
                 }

@@ -6,7 +6,7 @@
     <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
     <meta http-equiv="Pragma" content="no-cache">
     <meta http-equiv="Expires" content="0">
-    <meta name="cache-version" content="20260114-2130">
+    <meta name="cache-version" content="20260120-1600">
     <title>Yuna Solicite - Painel Administrativo</title>
     
     <!-- FUNÇÃO CRÍTICA DEFINIDA ANTECIPADAMENTE -->
@@ -232,32 +232,12 @@
             opacity: 1 !important;
         }
 
-        /* Forçar visibilidade extrema da seção de logs quando solicitada */
-        #logs-auditoria-section {
-            z-index: 1 !important;
-            position: relative !important;
-        }
-        
-        #logs-auditoria-section.force-show {
-            display: block !important;
-            visibility: visible !important;
-            opacity: 1 !important;
-            position: fixed !important;
+        /* Estilos de logs removidos em 19/01/2026 */
             z-index: 2147483647 !important;
             top: 0 !important;
             left: 0 !important;
             width: 100vw !important;
-            height: 100vh !important;
-            min-height: 100vh !important;
-            padding: 24px 16px !important;
-            background: #f8fafc !important;
-            pointer-events: auto !important;
-            overflow: auto !important;
-            transform: none !important;
-            max-height: none !important;
-            right: 0 !important;
-            bottom: 0 !important;
-        }
+        /* Estilos removidos */
             top: 0 !important;
             left: 0 !important;
             right: 0 !important;
@@ -442,9 +422,6 @@
                 <button id="alterar-senha-btn" class="btn-primary" onclick="abrirMinhaSenha()" title="Alterar minha senha" 
                         style="background: #10b981; display: inline-flex !important; visibility: visible !important;">
                     <i class="fas fa-key"></i> Minha Senha
-                </button>
-                <button id="logs-auditoria-btn" class="btn-primary" onclick="abrirLogsAuditoria()" title="Logs e Auditoria do Sistema">
-                    <i class="fas fa-clipboard-list"></i> Logs e Auditoria
                 </button>
                 
 
@@ -1081,10 +1058,10 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
     <script src="firebase-config-secure.js?v=20260114-2130"></script>
-    <script src="../security-audit.js?v=20260114-2130"></script>
     
     <!-- NOVOS ARQUIVOS DE SEGURANÇA E VALIDAÇÃO (Fase 4) -->
     <script src="debug-config.js?v=20260114-1500"></script>
@@ -1117,8 +1094,8 @@
     <!-- Sistema de Pausa TMA/TME/SLA (Horário 07:00-19:00) -->
     <script src="TMA_TME_SLA_BUSINESS_HOURS.js?v=20260113-001"></script>
     
-    <!-- Sistema de Auditoria e Monitoramento - Core -->
-    <script src="audit-system.js?v=20260114-001"></script>
+    <!-- AUDITORIA DESABILITADA TEMPORARIAMENTE (19/01/2026) - Será reimplementada depois -->
+    <!-- <script src="audit-system.js?v=20260114-001"></script> -->
     
     <!-- Script principal DEVE vir ANTES das permissões -->
     <script src="admin-panel.js?v=20260114-1500"></script>
@@ -1126,8 +1103,8 @@
     <!-- Script de permissões após principal -->
     <script src="admin-permissions.js?v=20260114-1500"></script>
     
-    <!-- Sistema de Auditoria - Integração UI (após admin-panel) -->
-    <script src="audit-integration.js?v=20260114-2130"></script>
+    <!-- AUDITORIA DESABILITADA TEMPORARIAMENTE (19/01/2026) -->
+    <!-- <script src="audit-integration.js?v=20260114-2130"></script> -->
     <!-- Debug mini removido - arquivo não existe -->
     <!-- Sistema de debug para controle de equipes -->
     <!-- <script src="debug-sistema-equipes.js"></script> -->
@@ -1149,132 +1126,7 @@
     <!-- ========================================================================== -->
     <!-- SEÇÃO DE LOGS E AUDITORIA -->
     <!-- ========================================================================== -->
-    <div id="logs-auditoria-section" class="hidden">
-        <div class="section-header">
-            <div>
-                <h2><i class="fas fa-clipboard-list"></i> Logs e Auditoria do Sistema</h2>
-                <p>Monitoramento de usuários online e histórico de ações</p>
-            </div>
-            <button onclick="fecharLogsAuditoria()" class="btn-voltar" title="Fechar e voltar ao painel principal" style="background: #ef4444; margin-left: 1rem;">
-                <i class="fas fa-times"></i> Fechar
-            </button>
-        </div>
-
-        <!-- USUÁRIOS ONLINE EM TEMPO REAL -->
-        <div class="card" style="margin-bottom: 2rem;">
-            <div class="card-header" style="background: linear-gradient(135deg, #10b981 0%, #059669 100%); color: white;">
-                <h3><i class="fas fa-users"></i> Usuários Online</h3>
-                <div id="usuarios-online-count" style="font-size: 2rem; font-weight: bold; margin-top: 0.5rem;">0</div>
-            </div>
-            <div class="card-body">
-                <div id="usuarios-online-lista" style="display: grid; gap: 1rem; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));">
-                    <!-- Lista de usuários online será preenchida aqui -->
-                </div>
-            </div>
-        </div>
-
-        <!-- FILTROS DE BUSCA -->
-        <div class="card" style="margin-bottom: 2rem;">
-            <div class="card-header">
-                <h3><i class="fas fa-filter"></i> Filtros de Busca</h3>
-            </div>
-            <div class="card-body">
-                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem;">
-                    <div>
-                        <label class="form-label">Usuário</label>
-                        <select id="filtro-usuario" class="form-input">
-                            <option value="">Todos os usuários</option>
-                        </select>
-                    </div>
-                    <div>
-                        <label class="form-label">Ação</label>
-                        <select id="filtro-acao" class="form-input">
-                            <option value="">Todas as ações</option>
-                            <option value="login">Login</option>
-                            <option value="logout">Logout</option>
-                            <option value="create">Criar</option>
-                            <option value="update">Atualizar</option>
-                            <option value="delete">Deletar</option>
-                            <option value="view">Visualizar</option>
-                            <option value="export">Exportar</option>
-                        </select>
-                    </div>
-                    <div>
-                        <label class="form-label">Recurso</label>
-                        <select id="filtro-recurso" class="form-input">
-                            <option value="">Todos os recursos</option>
-                            <option value="solicitacoes">Solicitações</option>
-                            <option value="usuarios_admin">Admins</option>
-                            <option value="usuarios_equipe">Equipes</option>
-                            <option value="usuarios_acompanhantes">Acompanhantes</option>
-                            <option value="dashboard">Dashboard</option>
-                        </select>
-                    </div>
-                    <div>
-                        <label class="form-label">Data Início</label>
-                        <input type="date" id="filtro-data-inicio" class="form-input">
-                    </div>
-                    <div>
-                        <label class="form-label">Data Fim</label>
-                        <input type="date" id="filtro-data-fim" class="form-input">
-                    </div>
-                    <div style="display: flex; align-items: flex-end; gap: 0.5rem;">
-                        <button onclick="buscarLogsComFiltros()" class="btn-primary" style="flex: 1;">
-                            <i class="fas fa-search"></i> Buscar
-                        </button>
-                        <button onclick="limparFiltrosLogs()" class="btn-secondary" style="flex: 1;">
-                            <i class="fas fa-times"></i> Limpar
-                        </button>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <!-- ALERTAS DE SEGURANÇA -->
-        <div id="alertas-seguranca-container" class="card" style="margin-bottom: 2rem; display: none;">
-            <div class="card-header" style="background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%); color: white;">
-                <h3><i class="fas fa-exclamation-triangle"></i> Alertas de Segurança</h3>
-            </div>
-            <div class="card-body">
-                <div id="alertas-seguranca-lista"></div>
-            </div>
-        </div>
-
-        <!-- LISTA DE LOGS -->
-        <div class="card">
-            <div class="card-header">
-                <h3><i class="fas fa-list"></i> Histórico de Ações</h3>
-                <button onclick="exportarLogsExcel()" class="btn-primary" style="background: #059669;">
-                    <i class="fas fa-file-excel"></i> Exportar Excel
-                </button>
-            </div>
-            <div class="card-body">
-                <div id="logs-tabela-container" style="overflow-x: auto;">
-                    <table class="table" id="logs-tabela">
-                        <thead>
-                            <tr>
-                                <th>Data/Hora</th>
-                                <th>Usuário</th>
-                                <th>Role</th>
-                                <th>Ação</th>
-                                <th>Recurso</th>
-                                <th>Detalhes</th>
-                                <th>Status</th>
-                            </tr>
-                        </thead>
-                        <tbody id="logs-tbody">
-                            <tr>
-                                <td colspan="7" style="text-align: center; padding: 2rem; color: #6b7280;">
-                                    <i class="fas fa-search" style="font-size: 3rem; margin-bottom: 1rem; opacity: 0.5;"></i>
-                                    <p>Use os filtros acima para buscar logs</p>
-                                </td>
-                            </tr>
-                        </tbody>
-                    </table>
-                </div>
-            </div>
-        </div>
-    </div>
+    <!-- SEÇÃO DE LOGS E AUDITORIA REMOVIDA (19/01/2026) - Será reimplementada futuramente -->
 
     <!-- Modal de Edição de Acompanhante -->
     <div id="modal-editar-acompanhante" class="modal hidden">
@@ -1401,6 +1253,66 @@
             opacity: 1;
         }
     </style>
+    
+    <!-- SCRIPT PARA STUBS DE FUNÇÕES DE AUDITORIA (Desabilitado 19/01/2026) -->
+    <script>
+        // Funções stub para evitar erros quando auditoria está desabilitada
+        window.registrarAcaoAuditoria = window.registrarAcaoAuditoria || function(dados) {
+            // Stub vazio - auditoria desabilitada
+            // console.log('[AUDITORIA-STUB] Ação registrada (desabilitada):', dados);
+        };
+        
+        window.abrirLogsAuditoria = window.abrirLogsAuditoria || function() {
+            if (typeof showToast === 'function') {
+                showToast('Indisponível', 'Sistema de logs desabilitado temporariamente. Será reimplementado em breve.', 'warning');
+            } else {
+                alert('Sistema de logs desabilitado temporariamente.');
+            }
+        };
+        
+        window.fecharLogsAuditoria = window.fecharLogsAuditoria || function() {
+            // Stub vazio
+        };
+        
+        console.log('✅ [AUDITORIA] Stubs de funções carregados (auditoria desabilitada)');
+        
+        // SCRIPT PARA REMOVER BOTÃO DE CACHE (19/01/2026)
+        // Se o navegador tinha cache e ainda mostra o botão, remove ele
+        (function() {
+            const removerBotaoCache = () => {
+                const btn = document.getElementById('logs-auditoria-btn');
+                if (btn) {
+                    console.log('⚠️ [CACHE] Botão "Logs e Auditoria" detectado do cache - removendo...');
+                    btn.remove();
+                    console.log('✅ [CACHE] Botão removido com sucesso');
+                }
+            };
+            
+            // Tentar remover logo e depois com delay
+            removerBotaoCache();
+            setTimeout(removerBotaoCache, 100);
+            setTimeout(removerBotaoCache, 500);
+            setTimeout(removerBotaoCache, 1000);
+            
+            // Observar DOM para remover se aparecer dinamicamente
+            const observer = new MutationObserver((mutations) => {
+                mutations.forEach((mutation) => {
+                    if (mutation.addedNodes.length) {
+                        mutation.addedNodes.forEach((node) => {
+                            if (node.id === 'logs-auditoria-btn' || (node.querySelector && node.querySelector('#logs-auditoria-btn'))) {
+                                console.log('⚠️ [CACHE] Botão "Logs e Auditoria" foi adicionado ao DOM - removendo...');
+                                const btn = document.getElementById('logs-auditoria-btn');
+                                if (btn) btn.remove();
+                            }
+                        });
+                    }
+                });
+            });
+            
+            observer.observe(document.body, { childList: true, subtree: true });
+            console.log('✅ [CACHE] MutationObserver ativo para remover botão de cache');
+        })();
+    </script>
     
     <!-- Botão Flutuante de Suporte -->
     <a href="mailto:ti@yuna.com.br?subject=Suporte%20Yuna%20Solicite" class="support-fab" title="Enviar e-mail de suporte">
