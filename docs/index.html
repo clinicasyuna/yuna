@@ -1,0 +1,271 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Yuna Solicite - Planos e Precos</title>
+  <style>
+    :root {
+      --bg: #f5f2ed;
+      --ink: #1f1f1f;
+      --muted: #6b6760;
+      --accent: #0f4c5c;
+      --accent-2: #e36414;
+      --card: #ffffff;
+      --border: #e6e1da;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      font-family: "Georgia", "Times New Roman", serif;
+      color: var(--ink);
+      background: radial-gradient(1200px 600px at 10% 0%, #f0e8dc, var(--bg));
+    }
+    .wrap {
+      max-width: 1100px;
+      margin: 0 auto;
+      padding: 48px 20px 80px;
+    }
+    header {
+      display: grid;
+      gap: 12px;
+      padding: 24px 0 8px;
+    }
+    .eyebrow {
+      text-transform: uppercase;
+      letter-spacing: 0.12em;
+      font-size: 12px;
+      color: var(--accent);
+      font-weight: 700;
+    }
+    h1 {
+      font-size: 42px;
+      line-height: 1.1;
+      margin: 0;
+    }
+    .sub {
+      font-size: 18px;
+      color: var(--muted);
+      max-width: 760px;
+    }
+    .hero {
+      display: grid;
+      grid-template-columns: 1.1fr 0.9fr;
+      gap: 28px;
+      margin-top: 24px;
+    }
+    .card {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 22px;
+      box-shadow: 0 10px 24px rgba(0,0,0,0.05);
+    }
+    .badge {
+      display: inline-block;
+      background: #0f4c5c12;
+      color: var(--accent);
+      border: 1px solid #0f4c5c22;
+      padding: 6px 10px;
+      border-radius: 999px;
+      font-size: 12px;
+      font-weight: 700;
+      letter-spacing: 0.04em;
+      text-transform: uppercase;
+    }
+    .benefits {
+      display: grid;
+      gap: 12px;
+      margin: 16px 0 0;
+      padding: 0;
+      list-style: none;
+    }
+    .benefits li {
+      background: #fff7ee;
+      border: 1px solid #f3e3cf;
+      padding: 10px 12px;
+      border-radius: 10px;
+      font-size: 14px;
+    }
+    .table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 18px;
+      font-size: 14px;
+    }
+    .table th,
+    .table td {
+      border-bottom: 1px solid var(--border);
+      padding: 12px 10px;
+      text-align: left;
+    }
+    .table th {
+      font-size: 12px;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      color: var(--muted);
+    }
+    .price {
+      font-weight: 700;
+      color: var(--accent);
+    }
+    .note {
+      font-size: 13px;
+      color: var(--muted);
+      margin-top: 12px;
+    }
+    .grid-2 {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 18px;
+      margin-top: 22px;
+    }
+    .cta {
+      background: var(--accent);
+      color: white;
+      padding: 16px 18px;
+      border-radius: 12px;
+      font-weight: 700;
+      text-align: center;
+      margin-top: 18px;
+      text-decoration: none;
+      display: inline-block;
+    }
+    .muted {
+      color: var(--muted);
+      font-size: 14px;
+    }
+    @media (max-width: 900px) {
+      .hero { grid-template-columns: 1fr; }
+      .grid-2 { grid-template-columns: 1fr; }
+      h1 { font-size: 34px; }
+    }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <header>
+      <div class="eyebrow">Sistema de solicitacoes para clinicas e hospitais</div>
+      <h1>Yuna Solicite: agilidade, rastreabilidade e satisfacao do acompanhante</h1>
+      <div class="sub">
+        Plataforma SaaS para acompanhantes abrirem solicitacoes e equipes de manutencao, higiene, hotelaria e nutricao atenderem com SLA e auditoria em tempo real.
+      </div>
+    </header>
+
+    <section class="hero">
+      <div class="card">
+        <div class="badge">Beneficios principais</div>
+        <ul class="benefits">
+          <li>Reduz chamadas e ruido operacional com fluxo padronizado de solicitacoes.</li>
+          <li>Tempo de resposta menor com status e prioridades visiveis.</li>
+          <li>Auditoria completa de acoes e historico por solicitacao.</li>
+          <li>Experiencia simples para acompanhantes (PWA instalavel).</li>
+        </ul>
+        <a class="cta" href="mailto:informaticasamtech@gmail.com">Solicitar demonstracao</a>
+      </div>
+      <div class="card">
+        <div class="badge">Diferenciais</div>
+        <p class="muted">Foco em operacao hospitalar, simplicidade e confiabilidade.</p>
+        <ul class="benefits">
+          <li>Dashboard administrativo completo e controle por equipe.</li>
+          <li>SLA e cronometros em tempo real.</li>
+          <li>Fluxo de avaliacao de satisfacao pos-atendimento.</li>
+          <li>Modo offline e sincronizacao automatica.</li>
+        </ul>
+      </div>
+    </section>
+
+    <section class="card" style="margin-top: 26px;">
+      <div class="badge">Planos e precos</div>
+      <table class="table">
+        <thead>
+          <tr>
+            <th>Plano</th>
+            <th>Segmento</th>
+            <th>Capacidade</th>
+            <th>Admins</th>
+            <th>Equipes</th>
+            <th>Mensalidade</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>Essential</td>
+            <td>Clinica pequena</td>
+            <td>ate 50 leitos</td>
+            <td>2</td>
+            <td>3</td>
+            <td class="price">R$ 590</td>
+          </tr>
+          <tr>
+            <td>Growth</td>
+            <td>Clinica media</td>
+            <td>51-150 leitos</td>
+            <td>4</td>
+            <td>4</td>
+            <td class="price">R$ 1.290</td>
+          </tr>
+          <tr>
+            <td>Pro Clinic</td>
+            <td>Clinica grande</td>
+            <td>151-300 leitos</td>
+            <td>8</td>
+            <td>6</td>
+            <td class="price">R$ 2.490</td>
+          </tr>
+          <tr>
+            <td>Hospital Start</td>
+            <td>Hospital pequeno</td>
+            <td>80-200 leitos</td>
+            <td>6</td>
+            <td>5</td>
+            <td class="price">R$ 2.990</td>
+          </tr>
+          <tr>
+            <td>Hospital Plus</td>
+            <td>Hospital medio</td>
+            <td>201-500 leitos</td>
+            <td>12</td>
+            <td>8</td>
+            <td class="price">R$ 4.990</td>
+          </tr>
+          <tr>
+            <td>Hospital Enterprise</td>
+            <td>Hospital grande</td>
+            <td>500+ leitos</td>
+            <td>Ilimitado</td>
+            <td>Ilimitado</td>
+            <td class="price">Sob consulta</td>
+          </tr>
+        </tbody>
+      </table>
+      <div class="note">
+        Implantacao (setup unico): clinicas a partir de R$ 1.500; hospitais de R$ 5.000 a R$ 12.000.
+        Contrato minimo: 12 meses (ou 6 meses com 10% acima do valor). Desconto anual: 2 meses gratis no pagamento a vista.
+      </div>
+    </section>
+
+    <section class="grid-2">
+      <div class="card">
+        <div class="badge">O que esta incluso</div>
+        <ul class="benefits">
+          <li>PWA para acompanhantes + painel administrativo.</li>
+          <li>Controle de solicitacoes por status e prioridade.</li>
+          <li>Relatorios basicos e historico de auditoria.</li>
+          <li>Suporte por e-mail e WhatsApp (horario comercial).</li>
+        </ul>
+      </div>
+      <div class="card">
+        <div class="badge">Contato</div>
+        <p class="muted">Vamos preparar uma demonstracao do sistema.</p>
+        <p><strong>Email:</strong> informaticasamtech@gmail.com</p>
+        <a class="cta" href="mailto:informaticasamtech@gmail.com">Falar agora</a>
+      </div>
+    </section>
+
+    <p class="note" style="margin-top: 22px;">
+      Observacao: valores podem ser ajustados conforme numero de leitos, equipes, usuarios e volume de solicitacoes.
+    </p>
+  </div>
+</body>
+</html>

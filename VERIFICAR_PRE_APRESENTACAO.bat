@@ -47,6 +47,11 @@ if not exist "E:\APP\deploy\Yuna - Estacoes de trabalho - 2026-01-15.xlsx" (
     set ARQUIVOS_OK=0
 )
 
+if not exist "E:\APP\deploy\Samuel- Planilha com equipamentos.xlsx" (
+    echo ✗ Arquivo nao encontrado: Samuel- Planilha com equipamentos.xlsx
+    set ARQUIVOS_OK=0
+)
+
 if %ARQUIVOS_OK% equ 1 (
     echo ✓ Todos os arquivos de dados encontrados
 ) else (

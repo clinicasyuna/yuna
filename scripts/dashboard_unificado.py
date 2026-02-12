@@ -70,6 +70,8 @@ def load_chamados():
 def load_inventario():
     """Carrega dados de inventário"""
     est, srv, sw = pd.DataFrame(), pd.DataFrame(), pd.DataFrame()
+    cftv = pd.DataFrame()
+    cftv_counts = {}
     
     try:
         est = pd.read_excel(r"E:\APP\deploy\Yuna - Estacoes de trabalho - 2026-01-15.xlsx")
@@ -87,6 +89,15 @@ def load_inventario():
         sw = sw.astype(str)
     except:
         pass
+    try:
+        cftv = pd.read_excel(r"E:\APP\deploy\Samuel- Planilha com equipamentos.xlsx", sheet_name="Planilha1")
+        cftv = cftv.dropna(how="all")
+        if "Tipo de dispositivo" in cftv.columns:
+            tipo_series = cftv["Tipo de dispositivo"].dropna().astype(str).str.strip()
+            cftv_counts = tipo_series.value_counts().to_dict()
+        cftv = cftv.astype(str)
+    except:
+        pass
     
     # Extrair totais de switches e antenas
     n_switches, n_antenas = 0, 0
@@ -99,7 +110,7 @@ def load_inventario():
         except:
             pass
     
-    return est, srv, sw, n_switches, n_antenas
+    return est, srv, sw, n_switches, n_antenas, cftv, cftv_counts
 
 # ============================================================================
 # CARREGAR DADOS - GASTOS
@@ -269,7 +280,7 @@ def formatar_moeda(valor):
 # ============================================================================
 
 df_chamados = load_chamados()
-est, srv, sw, n_switches, n_antenas = load_inventario()
+est, srv, sw, n_switches, n_antenas, cftv, cftv_counts = load_inventario()
 df_gastos, df_metricas, df_fornecedores = load_gastos()
 
 # Header principal
@@ -356,9 +367,12 @@ with tab2:
     st.header("Inventário de Equipamentos")
     
     # Métricas
-    col1, col2, col3, col4 = st.columns(4)
+    col1, col2, col3, col4, col5, col6 = st.columns(6)
     
-    total_equip = len(est) + len(srv) + n_switches + n_antenas
+    n_nvr = int(cftv_counts.get('NVR', 0))
+    n_ipc = int(cftv_counts.get('IPC', 0))
+    n_cftv = len(cftv)
+    total_equip = len(est) + len(srv) + n_switches + n_antenas + n_cftv
     
     with col1:
         st.metric("🖥️ Estações de Trabalho", len(est))
@@ -368,6 +382,10 @@ with tab2:
         st.metric("🔌 Switches", n_switches)
     with col4:
         st.metric("📡 Antenas", n_antenas)
+    with col5:
+        st.metric("📹 NVR", n_nvr)
+    with col6:
+        st.metric("🎥 IPC", n_ipc)
     
     st.divider()
     
@@ -380,12 +398,14 @@ with tab2:
             'Estações': len(est),
             'Servidores': len(srv),
             'Switches': n_switches,
-            'Antenas': n_antenas
+            'Antenas': n_antenas,
+            'NVR': n_nvr,
+            'IPC': n_ipc
         }
         fig = px.pie(
             values=list(dados_dist.values()),
             names=list(dados_dist.keys()),
-            color_discrete_sequence=['#667eea', '#764ba2', '#f59e0b', '#10b981']
+            color_discrete_sequence=['#667eea', '#764ba2', '#f59e0b', '#10b981', '#ef4444', '#06b6d4']
         )
         fig.update_layout(height=400)
         st.plotly_chart(fig, use_container_width=True)
@@ -393,12 +413,17 @@ with tab2:
     with col_right:
         st.subheader("Total de Equipamentos")
         st.metric("📊 Total", total_equip)
-        st.info(f"""
-        - Estações: {len(est)} ({len(est)/total_equip*100:.1f}%)
-        - Servidores: {len(srv)} ({len(srv)/total_equip*100:.1f}%)
-        - Switches: {n_switches} ({n_switches/total_equip*100:.1f}%)
-        - Antenas: {n_antenas} ({n_antenas/total_equip*100:.1f}%)
-        """)
+        if total_equip > 0:
+            st.info(f"""
+            - Estações: {len(est)} ({len(est)/total_equip*100:.1f}%)
+            - Servidores: {len(srv)} ({len(srv)/total_equip*100:.1f}%)
+            - Switches: {n_switches} ({n_switches/total_equip*100:.1f}%)
+            - Antenas: {n_antenas} ({n_antenas/total_equip*100:.1f}%)
+            - NVR: {n_nvr} ({n_nvr/total_equip*100:.1f}%)
+            - IPC: {n_ipc} ({n_ipc/total_equip*100:.1f}%)
+            """)
+        else:
+            st.info("Sem dados de inventário disponíveis.")
     
     st.divider()
     
@@ -418,6 +443,12 @@ with tab2:
     if not sw.empty:
         st.subheader("Switches e Antenas")
         st.dataframe(sw, use_container_width=True, hide_index=True, height=300)
+
+    st.subheader("CFTV (NVR e IPC)")
+    if not cftv.empty:
+        st.dataframe(cftv, use_container_width=True, hide_index=True, height=300)
+    else:
+        st.info("Sem dados")
 
 # ============================================================================
 # ABA 3: GASTOS
@@ -671,7 +702,10 @@ with tab4:
     if not df_chamados.empty and not df_gastos.empty:
         col1, col2, col3 = st.columns(3)
         
-        total_equipamentos = len(est) + len(srv) + n_switches + n_antenas
+        n_nvr = int(cftv_counts.get('NVR', 0))
+        n_ipc = int(cftv_counts.get('IPC', 0))
+        n_cftv = len(cftv)
+        total_equipamentos = len(est) + len(srv) + n_switches + n_antenas + n_cftv
         total_gasto = df_gastos['Valor'].sum()
         total_chamados_ano = len(df_chamados)
         
@@ -734,6 +768,8 @@ with tab4:
                 - Servidores: {len(srv)} ({len(srv)/total_equipamentos*100:.1f}%)
                 - Switches: {n_switches} ({n_switches/total_equipamentos*100:.1f}%)
                 - Antenas: {n_antenas} ({n_antenas/total_equipamentos*100:.1f}%)
+                - NVR: {n_nvr} ({n_nvr/total_equipamentos*100:.1f}%)
+                - IPC: {n_ipc} ({n_ipc/total_equipamentos*100:.1f}%)
                 """)
         
         st.divider()
