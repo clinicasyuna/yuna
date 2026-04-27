@@ -14,18 +14,29 @@ class PerformanceMonitor {
             errors: []
         };
         this.maxHistorySize = 100;
+        this.activeConsoleTimers = new Set();
         
         console.log('[PERF] 📊 Performance Monitor iniciado');
     }
 
     // Iniciar medição de tempo
     startTimer(label) {
-        console.time(`[PERF] ${label}`);
+        const consoleLabel = `[PERF] ${label}`;
+
+        if (!this.activeConsoleTimers.has(consoleLabel)) {
+            console.time(consoleLabel);
+            this.activeConsoleTimers.add(consoleLabel);
+        }
+
         const startTime = performance.now();
         
         return {
             end: () => {
-                console.timeEnd(`[PERF] ${label}`);
+                if (this.activeConsoleTimers.has(consoleLabel)) {
+                    console.timeEnd(consoleLabel);
+                    this.activeConsoleTimers.delete(consoleLabel);
+                }
+
                 const duration = performance.now() - startTime;
                 
                 if (!this.metrics.queryTimes[label]) {

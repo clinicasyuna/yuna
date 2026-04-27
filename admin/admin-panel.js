@@ -2570,6 +2570,7 @@ window.criarNovoUsuario = async function() {
         const userRole = window.userRole || usuarioAdmin.role;
         const podecriarUsuarios = temPermissaoJS(usuarioAdmin, 'create_users');
         const podeCriarAcompanhantes = temPermissaoJS(usuarioAdmin, 'create_acompanhantes');
+        const tipo = document.getElementById('usuario-tipo')?.value || '';
         
         // Verificar se tem permissão para o tipo específico
         if (tipo === 'acompanhante' && !podeCriarAcompanhantes && userRole !== 'super_admin') {

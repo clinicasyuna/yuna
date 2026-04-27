@@ -8,6 +8,7 @@
     <meta http-equiv="Expires" content="0">
     <meta name="cache-version" content="20260120-1600">
     <title>Yuna Solicite - Painel Administrativo</title>
+    <link rel="icon" type="image/x-icon" href="../favicon.ico">
     
     <!-- FUNÇÃO CRÍTICA DEFINIDA ANTECIPADAMENTE -->
     <script>
@@ -867,15 +868,15 @@
                 </div>
                 <div class="form-group">
                     <label for="usuario-nome">Nome/Login</label>
-                    <input type="text" id="usuario-nome" class="form-input" required placeholder="Nome completo do usuário" title="Nome completo do usuário">
+                    <input type="text" id="usuario-nome" class="form-input" required placeholder="Nome completo do usuário" autocomplete="name" title="Nome completo do usuário">
                 </div>
                 <div class="form-group">
                     <label for="usuario-email">E-mail</label>
-                    <input type="email" id="usuario-email" class="form-input" required placeholder="email@yuna.com.br" title="E-mail do usuário">
+                    <input type="email" id="usuario-email" class="form-input" required placeholder="email@yuna.com.br" autocomplete="email" title="E-mail do usuário">
                 </div>
                 <div class="form-group">
                     <label for="usuario-senha">Senha</label>
-                    <input type="password" id="usuario-senha" class="form-input" required placeholder="Senha de acesso" title="Senha do usuário">
+                    <input type="password" id="usuario-senha" class="form-input" required placeholder="Senha de acesso" autocomplete="new-password" title="Senha do usuário">
                 </div>
                 <div class="modal-novo-usuario-btns">
                     <button type="button" id="btn-cancelar-novo-usuario" class="btn btn-cancelar-novo-usuario">Cancelar</button>
@@ -1035,7 +1036,6 @@
     <!-- Scripts no final do body para garantir carregamento correto -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
