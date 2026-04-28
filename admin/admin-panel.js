@@ -3018,10 +3018,13 @@ window.showManageUsersModal = async function() {
             showToast('Erro', 'Erro ao carregar usuários.', 'error');
         }
         
-        // TORNAR O MODAL ARRASTÁVEL
+        // TORNAR O MODAL ARRASTÁVEL E REDIMENSIONÁVEL
         setTimeout(() => {
             console.log('[DRAG] 🎯 Iniciando configuração de modal arrastável...');
             window.tornarModalArrastavel('manage-users-modal');
+            
+            console.log('[RESIZE] 📐 Iniciando configuração de modal redimensionável...');
+            window.tornarModalRedimensionavel('manage-users-modal');
         }, 300);
         
         debugLog('[DEBUG] showManageUsersModal: modal exibido com sucesso');
@@ -14219,6 +14222,141 @@ window.testeDragModal = function() {
         console.log('[TEST-DRAG] ❌ Função showManageUsersModal não encontrada');
         alert('❌ Função showManageUsersModal não encontrada');
     }
+};
+
+// === FUNÇÃO DE REDIMENSIONAMENTO DE MODAL ===
+window.tornarModalRedimensionavel = function(modalId) {
+    console.log('[RESIZE] 📐 Tornando modal redimensionável:', modalId);
+    
+    const modal = document.getElementById(modalId);
+    if (!modal) {
+        console.log('[RESIZE] ❌ Modal não encontrado:', modalId);
+        return;
+    }
+    
+    const modalContent = modal.querySelector('.modal-content') || modal.querySelector('[class*="modal-content"]');
+    if (!modalContent) {
+        console.log('[RESIZE] ❌ Modal content não encontrado');
+        return;
+    }
+    
+    // Verificar se já foi configurado
+    if (modalContent._resizeConfigured) {
+        console.log('[RESIZE] ⚠️ Modal já é redimensionável, pulando...');
+        return;
+    }
+    
+    // Restaurar tamanho salvo em localStorage
+    const savedSize = localStorage.getItem(`modal-size-${modalId}`);
+    if (savedSize) {
+        const { width, height } = JSON.parse(savedSize);
+        modalContent.style.width = width + 'px';
+        modalContent.style.minHeight = height + 'px';
+        console.log('[RESIZE] ✅ Tamanho restaurado de localStorage:', { width, height });
+    }
+    
+    // Garantir que o modal tem posição relativa/absolute para redimensionamento
+    if (modalContent.style.position !== 'fixed') {
+        modalContent.style.position = 'relative';
+    }
+    
+    // Variáveis de controle
+    let isResizing = false;
+    let startX = 0;
+    let startY = 0;
+    let startWidth = 0;
+    let startHeight = 0;
+    
+    // Criar zona de redimensionamento nas bordas (20px)
+    const resizeZone = 20;
+    
+    // Mousedown no modal para começar resize
+    modalContent.addEventListener('mousedown', (e) => {
+        const rect = modalContent.getBoundingClientRect();
+        
+        // Verificar se está na zona de resize (canto inferior direito)
+        const isBottomEdge = e.clientY > rect.bottom - resizeZone;
+        const isRightEdge = e.clientX > rect.right - resizeZone;
+        const isBottomRightCorner = isBottomEdge && isRightEdge;
+        
+        // Verificar bordas individuais
+        const isBottom = e.clientY > rect.bottom - resizeZone && 
+                        e.clientX < rect.right - resizeZone &&
+                        e.clientX > rect.left + resizeZone;
+        const isRight = e.clientX > rect.right - resizeZone &&
+                       e.clientY < rect.bottom - resizeZone &&
+                       e.clientY > rect.top + resizeZone;
+        
+        if (isBottomRightCorner || isBottom || isRight) {
+            isResizing = true;
+            startX = e.clientX;
+            startY = e.clientY;
+            startWidth = rect.width;
+            startHeight = rect.height;
+            
+            // Mudar cursor
+            if (isBottomRightCorner) {
+                modalContent.style.cursor = 'se-resize';
+            } else if (isBottom) {
+                modalContent.style.cursor = 's-resize';
+            } else if (isRight) {
+                modalContent.style.cursor = 'e-resize';
+            }
+            
+            console.log('[RESIZE] 🎯 Iniciando redimensionamento...');
+            e.preventDefault();
+        }
+    });
+    
+    // Mousemove para redimensionar
+    document.addEventListener('mousemove', (e) => {
+        if (!isResizing) return;
+        
+        const rect = modalContent.getBoundingClientRect();
+        const deltaX = e.clientX - startX;
+        const deltaY = e.clientY - startY;
+        
+        // Calcular novo tamanho (mínimo 500x300px, máximo 95vw x 90vh)
+        const newWidth = Math.max(500, Math.min(startWidth + deltaX, window.innerWidth * 0.95));
+        const newHeight = Math.max(300, Math.min(startHeight + deltaY, window.innerHeight * 0.9));
+        
+        modalContent.style.width = newWidth + 'px';
+        modalContent.style.minHeight = newHeight + 'px';
+        
+        // Atualizar cursor do modal conforme move
+        const currentRect = modalContent.getBoundingClientRect();
+        const isBottomEdge = e.clientY > currentRect.bottom - resizeZone;
+        const isRightEdge = e.clientX > currentRect.right - resizeZone;
+        
+        if (isBottomEdge && isRightEdge) {
+            modalContent.style.cursor = 'se-resize';
+        } else if (isBottomEdge) {
+            modalContent.style.cursor = 's-resize';
+        } else if (isRightEdge) {
+            modalContent.style.cursor = 'e-resize';
+        }
+    });
+    
+    // Mouseup para parar resize
+    document.addEventListener('mouseup', (e) => {
+        if (isResizing) {
+            isResizing = false;
+            
+            // Salvar tamanho em localStorage
+            const rect = modalContent.getBoundingClientRect();
+            localStorage.setItem(`modal-size-${modalId}`, JSON.stringify({
+                width: rect.width,
+                height: rect.height
+            }));
+            
+            console.log('[RESIZE] ✅ Redimensionamento finalizado e salvo');
+            modalContent.style.cursor = 'default';
+        }
+    });
+    
+    // Marcar como configurado
+    modalContent._resizeConfigured = true;
+    console.log('[RESIZE] ✅ Modal agora é redimensionável! Arraste as bordas para redimensionar.');
 };
 
 // Iniciar configuração Excel automaticamente
