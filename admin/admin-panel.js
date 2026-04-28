@@ -14267,19 +14267,19 @@ window.tornarModalRedimensionavel = function(modalId) {
     let startWidth = 0;
     let startHeight = 0;
     
-    // Criar zona de redimensionamento nas bordas (20px)
-    const resizeZone = 20;
+    // Criar zona de redimensionamento nas bordas (40px para facilitar puxar)
+    const resizeZone = 40;
     
     // Mousedown no modal para começar resize
     modalContent.addEventListener('mousedown', (e) => {
         const rect = modalContent.getBoundingClientRect();
         
-        // Verificar se está na zona de resize (canto inferior direito)
+        // Verificar se está na zona de resize (canto inferior direito e lateral direita)
         const isBottomEdge = e.clientY > rect.bottom - resizeZone;
         const isRightEdge = e.clientX > rect.right - resizeZone;
         const isBottomRightCorner = isBottomEdge && isRightEdge;
         
-        // Verificar bordas individuais
+        // Verificar bordas individuais (zona maior para lateral facilitar puxar)
         const isBottom = e.clientY > rect.bottom - resizeZone && 
                         e.clientX < rect.right - resizeZone &&
                         e.clientX > rect.left + resizeZone;

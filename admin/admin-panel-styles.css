@@ -440,6 +440,28 @@
   opacity: 0.5;
   transition: opacity 0.2s;
 }
+
+/* Handle de resize na lateral direita */
+.modal-gerenciar-usuarios-content::before {
+  content: '';
+  position: absolute;
+  top: 50%;
+  right: 0;
+  width: 8px;
+  height: 60px;
+  transform: translateY(-50%);
+  cursor: e-resize;
+  background: linear-gradient(90deg, transparent, rgba(99, 102, 241, 0.4), transparent);
+  border-radius: 0;
+  opacity: 0;
+  transition: opacity 0.2s;
+  z-index: 100;
+}
+
+.modal-gerenciar-usuarios-content:hover::before {
+  opacity: 1;
+  background: linear-gradient(90deg, transparent, rgba(99, 102, 241, 0.8), transparent);
+}
 .modal-gerenciar-usuarios-content:hover::after {
   opacity: 1;
 }
