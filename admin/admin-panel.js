@@ -3633,12 +3633,12 @@ window.preencherTabelaUsuarios = function(listaUsuarios) {
     console.log('[USUARIOS] Criando HTML para', usuariosPagina.length, 'usuários da página', currentPage);
     const htmlContent = usuariosPagina.map(user => `
         <div class='user-row'>
-            <span style='font-weight:600; color:#374151; min-width:120px;'>${user.nome || 'Nome não informado'}</span>
-            <span style='color:#2563eb; min-width:80px;'>${user.departamento || user.equipe || '-'}</span>
-            <span style='color:#f59e0b; min-width:60px;'>${user.tipo || '-'}</span>
-            <span style='color:#6b7280; flex:1; word-break:break-all;'>${user.email || 'Email não informado'}</span>
-            <button onclick="editarUsuario('${user.id}')" class='btn-editar' style='background:#6366f1; color:#fff; border:none; border-radius:8px; padding:6px 16px; cursor:pointer; white-space:nowrap;'>Editar</button>
-            <button onclick="removerUsuario('${user.id}')" class='btn-remover' style='background:#ef4444; color:#fff; border:none; border-radius:8px; padding:6px 16px; cursor:pointer; white-space:nowrap;'>Remover</button>
+            <span class='user-name'>${user.nome || 'Nome não informado'}</span>
+            <span class='user-department'>${user.departamento || user.equipe || '-'}</span>
+            <span class='user-type'>${user.tipo || '-'}</span>
+            <span class='user-email'>${user.email || 'Email não informado'}</span>
+            <button onclick="editarUsuario('${user.id}')" class='btn-editar'>Editar</button>
+            <button onclick="removerUsuario('${user.id}')" class='btn-remover'>Remover</button>
         </div>
     `).join('');
     
@@ -14262,56 +14262,64 @@ window.tornarModalRedimensionavel = function(modalId) {
     
     // Variáveis de controle
     let isResizing = false;
+    let resizeMode = null;
     let startX = 0;
     let startY = 0;
     let startWidth = 0;
     let startHeight = 0;
-    
-    // Criar zona de redimensionamento nas bordas (40px para facilitar puxar)
-    const resizeZone = 40;
-    
-    // Mousedown no modal para começar resize
-    modalContent.addEventListener('mousedown', (e) => {
+
+    // Criar handles reais para resize (lateral e canto)
+    let rightHandle = modalContent.querySelector('.modal-resize-handle-right');
+    if (!rightHandle) {
+        rightHandle = document.createElement('div');
+        rightHandle.className = 'modal-resize-handle-right';
+        rightHandle.style.position = 'absolute';
+        rightHandle.style.top = '0';
+        rightHandle.style.right = '0';
+        rightHandle.style.width = '18px';
+        rightHandle.style.height = '100%';
+        rightHandle.style.cursor = 'e-resize';
+        rightHandle.style.zIndex = '120';
+        rightHandle.style.background = 'transparent';
+        modalContent.appendChild(rightHandle);
+    }
+
+    let cornerHandle = modalContent.querySelector('.modal-resize-handle-corner');
+    if (!cornerHandle) {
+        cornerHandle = document.createElement('div');
+        cornerHandle.className = 'modal-resize-handle-corner';
+        cornerHandle.style.position = 'absolute';
+        cornerHandle.style.right = '0';
+        cornerHandle.style.bottom = '0';
+        cornerHandle.style.width = '24px';
+        cornerHandle.style.height = '24px';
+        cornerHandle.style.cursor = 'se-resize';
+        cornerHandle.style.zIndex = '130';
+        cornerHandle.style.background = 'transparent';
+        modalContent.appendChild(cornerHandle);
+    }
+
+    const iniciarResize = (mode, e) => {
         const rect = modalContent.getBoundingClientRect();
-        
-        // Verificar se está na zona de resize (canto inferior direito e lateral direita)
-        const isBottomEdge = e.clientY > rect.bottom - resizeZone;
-        const isRightEdge = e.clientX > rect.right - resizeZone;
-        const isBottomRightCorner = isBottomEdge && isRightEdge;
-        
-        // Verificar bordas individuais (zona maior para lateral facilitar puxar)
-        const isBottom = e.clientY > rect.bottom - resizeZone && 
-                        e.clientX < rect.right - resizeZone &&
-                        e.clientX > rect.left + resizeZone;
-        const isRight = e.clientX > rect.right - resizeZone &&
-                       e.clientY < rect.bottom - resizeZone &&
-                       e.clientY > rect.top + resizeZone;
-        
-        if (isBottomRightCorner || isBottom || isRight) {
-            isResizing = true;
-            startX = e.clientX;
-            startY = e.clientY;
-            startWidth = rect.width;
-            startHeight = rect.height;
-            
-            // Bloquear seleção de texto durante resize
-            document.body.style.userSelect = 'none';
-            document.body.style.webkitUserSelect = 'none';
-            
-            // Mudar cursor
-            if (isBottomRightCorner) {
-                modalContent.style.cursor = 'se-resize';
-            } else if (isBottom) {
-                modalContent.style.cursor = 's-resize';
-            } else if (isRight) {
-                modalContent.style.cursor = 'e-resize';
-            }
-            
-            console.log('[RESIZE] 🎯 Iniciando redimensionamento...');
-            e.preventDefault();
-            e.stopPropagation();
-        }
-    });
+        isResizing = true;
+        resizeMode = mode;
+        startX = e.clientX;
+        startY = e.clientY;
+        startWidth = rect.width;
+        startHeight = rect.height;
+
+        document.body.style.userSelect = 'none';
+        document.body.style.webkitUserSelect = 'none';
+        document.body.style.cursor = mode === 'corner' ? 'se-resize' : 'e-resize';
+        modalContent.style.cursor = mode === 'corner' ? 'se-resize' : 'e-resize';
+
+        console.log('[RESIZE] 🎯 Iniciando redimensionamento:', mode);
+        e.preventDefault();
+        e.stopPropagation();
+    };
+
+    rightHandle.addEventListener('mousedown', (e) => iniciarResize('right', e));
+    cornerHandle.addEventListener('mousedown', (e) => iniciarResize('corner', e));
     
     // Mousemove para redimensionar
     document.addEventListener('mousemove', (e) => {
@@ -14320,28 +14328,18 @@ window.tornarModalRedimensionavel = function(modalId) {
         // Prevenir seleção enquanto redimensiona
         e.preventDefault();
         
-        const rect = modalContent.getBoundingClientRect();
         const deltaX = e.clientX - startX;
         const deltaY = e.clientY - startY;
-        
+
         // Calcular novo tamanho (mínimo 500x300px, máximo 95vw x 90vh)
         const newWidth = Math.max(500, Math.min(startWidth + deltaX, window.innerWidth * 0.95));
         const newHeight = Math.max(300, Math.min(startHeight + deltaY, window.innerHeight * 0.9));
-        
-        modalContent.style.width = newWidth + 'px';
-        modalContent.style.minHeight = newHeight + 'px';
-        
-        // Atualizar cursor do modal conforme move
-        const currentRect = modalContent.getBoundingClientRect();
-        const isBottomEdge = e.clientY > currentRect.bottom - resizeZone;
-        const isRightEdge = e.clientX > currentRect.right - resizeZone;
-        
-        if (isBottomEdge && isRightEdge) {
-            modalContent.style.cursor = 'se-resize';
-        } else if (isBottomEdge) {
-            modalContent.style.cursor = 's-resize';
-        } else if (isRightEdge) {
-            modalContent.style.cursor = 'e-resize';
+
+        if (resizeMode === 'right') {
+            modalContent.style.width = newWidth + 'px';
+        } else if (resizeMode === 'corner') {
+            modalContent.style.width = newWidth + 'px';
+            modalContent.style.minHeight = newHeight + 'px';
         }
     }, true); // Usar captura para interceptar antes
     
@@ -14353,6 +14351,7 @@ window.tornarModalRedimensionavel = function(modalId) {
             // Restaurar seleção de texto
             document.body.style.userSelect = 'auto';
             document.body.style.webkitUserSelect = 'auto';
+            document.body.style.cursor = 'default';
             
             // Salvar tamanho em localStorage
             const rect = modalContent.getBoundingClientRect();
@@ -14363,6 +14362,7 @@ window.tornarModalRedimensionavel = function(modalId) {
             
             console.log('[RESIZE] ✅ Redimensionamento finalizado e salvo');
             modalContent.style.cursor = 'default';
+            resizeMode = null;
         }
     });
     
