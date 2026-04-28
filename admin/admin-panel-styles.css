@@ -426,6 +426,7 @@
   flex-direction: column;
   resize: both;
   overflow: auto;
+  user-select: none;
 }
 .modal-gerenciar-usuarios-content::after {
   content: '';
@@ -439,6 +440,7 @@
   border-radius: 0 0 20px 0;
   opacity: 0.5;
   transition: opacity 0.2s;
+  pointer-events: none;
 }
 
 /* Handle de resize na lateral direita */
@@ -456,6 +458,7 @@
   opacity: 0;
   transition: opacity 0.2s;
   z-index: 100;
+  pointer-events: none;
 }
 
 .modal-gerenciar-usuarios-content:hover::before {

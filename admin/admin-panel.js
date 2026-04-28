@@ -14294,6 +14294,10 @@ window.tornarModalRedimensionavel = function(modalId) {
             startWidth = rect.width;
             startHeight = rect.height;
             
+            // Bloquear seleção de texto durante resize
+            document.body.style.userSelect = 'none';
+            document.body.style.webkitUserSelect = 'none';
+            
             // Mudar cursor
             if (isBottomRightCorner) {
                 modalContent.style.cursor = 'se-resize';
@@ -14305,12 +14309,16 @@ window.tornarModalRedimensionavel = function(modalId) {
             
             console.log('[RESIZE] 🎯 Iniciando redimensionamento...');
             e.preventDefault();
+            e.stopPropagation();
         }
     });
     
     // Mousemove para redimensionar
     document.addEventListener('mousemove', (e) => {
         if (!isResizing) return;
+        
+        // Prevenir seleção enquanto redimensiona
+        e.preventDefault();
         
         const rect = modalContent.getBoundingClientRect();
         const deltaX = e.clientX - startX;
@@ -14335,12 +14343,16 @@ window.tornarModalRedimensionavel = function(modalId) {
         } else if (isRightEdge) {
             modalContent.style.cursor = 'e-resize';
         }
-    });
+    }, true); // Usar captura para interceptar antes
     
     // Mouseup para parar resize
     document.addEventListener('mouseup', (e) => {
         if (isResizing) {
             isResizing = false;
+            
+            // Restaurar seleção de texto
+            document.body.style.userSelect = 'auto';
+            document.body.style.webkitUserSelect = 'auto';
             
             // Salvar tamanho em localStorage
             const rect = modalContent.getBoundingClientRect();
