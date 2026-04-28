@@ -3632,13 +3632,13 @@ window.preencherTabelaUsuarios = function(listaUsuarios) {
     
     console.log('[USUARIOS] Criando HTML para', usuariosPagina.length, 'usuários da página', currentPage);
     const htmlContent = usuariosPagina.map(user => `
-        <div class='user-row' style='display:flex; align-items:center; gap:1.5rem; background:#fff; border-radius:12px; box-shadow:0 2px 8px rgba(0,0,0,0.04); padding:1rem 2rem;'>
-            <span style='font-weight:600; color:#374151;'>${user.nome || 'Nome não informado'}</span>
-            <span style='color:#2563eb;'>${user.departamento || user.equipe || '-'}</span>
-            <span style='color:#f59e0b;'>${user.tipo || '-'}</span>
-            <span style='color:#6b7280;'>${user.email || 'Email não informado'}</span>
-            <button onclick="editarUsuario('${user.id}')" style='background:#6366f1; color:#fff; border:none; border-radius:8px; padding:6px 16px; cursor:pointer;'>Editar</button>
-            <button onclick="removerUsuario('${user.id}')" style='background:#ef4444; color:#fff; border:none; border-radius:8px; padding:6px 16px; cursor:pointer;'>Remover</button>
+        <div class='user-row'>
+            <span style='font-weight:600; color:#374151; min-width:120px;'>${user.nome || 'Nome não informado'}</span>
+            <span style='color:#2563eb; min-width:80px;'>${user.departamento || user.equipe || '-'}</span>
+            <span style='color:#f59e0b; min-width:60px;'>${user.tipo || '-'}</span>
+            <span style='color:#6b7280; flex:1; word-break:break-all;'>${user.email || 'Email não informado'}</span>
+            <button onclick="editarUsuario('${user.id}')" class='btn-editar' style='background:#6366f1; color:#fff; border:none; border-radius:8px; padding:6px 16px; cursor:pointer; white-space:nowrap;'>Editar</button>
+            <button onclick="removerUsuario('${user.id}')" class='btn-remover' style='background:#ef4444; color:#fff; border:none; border-radius:8px; padding:6px 16px; cursor:pointer; white-space:nowrap;'>Remover</button>
         </div>
     `).join('');
     
