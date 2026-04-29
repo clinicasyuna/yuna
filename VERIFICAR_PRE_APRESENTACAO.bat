@@ -105,7 +105,7 @@ goto FIM
 echo.
 echo ╔════════════════════════════════════════════════════════════════╗
 echo ║                  ✗ ERRO ENCONTRADO                            ║
-echo ║  Resolva os problemas acima antes de apresentar              ║
+echo ║  Resolva os problemas acima antes de apresentar                ║
 echo ╚════════════════════════════════════════════════════════════════╝
 echo.
 pause

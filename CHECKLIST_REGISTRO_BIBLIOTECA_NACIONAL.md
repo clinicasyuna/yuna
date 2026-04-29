@@ -225,7 +225,7 @@ Criar documento formal com o seguinte conteúdo:
 ```
 DECLARAÇÃO DE AUTORIA E ORIGINALIDADE
 
-Eu, Samuel dos Reis Lacerda Junior, portador do CPF [NÚMERO], 
+Eu, Samuel dos Reis Lacerda Junior, portador do CPF INFORMAR NO ATO DE ASSINATURA, 
 inscrito no CNPJ 55.004.442 SAMUEL DOS REIS LACERDA JUNIOR, 
 residente e domiciliado na Rua Eugene Carrieri nº17 Bloco C AP 81, 
 CEP: 05541-100, São Paulo - SP, declaro para os devidos fins de 
@@ -248,11 +248,11 @@ direito que:
 5. Autorizo o registro desta obra junto à Biblioteca Nacional do Brasil 
    para fins de proteção dos direitos autorais.
 
-São Paulo, [DATA]
+São Paulo, DATA DA ASSINATURA (DD/MM/2026)
 
 _________________________________
 Samuel dos Reis Lacerda Junior
-CPF: [NÚMERO]
+CPF: INFORMAR NO ATO DE ASSINATURA
 CNPJ: 55.004.442
 ```
 

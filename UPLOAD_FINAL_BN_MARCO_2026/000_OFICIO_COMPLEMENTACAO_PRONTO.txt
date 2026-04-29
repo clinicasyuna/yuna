@@ -1,0 +1,139 @@
+═══════════════════════════════════════════════════════════════════════════════
+                    OFÍCIO DE COMPLEMENTAÇÃO - REGISTRO DE PROGRAMA
+═══════════════════════════════════════════════════════════════════════════════
+
+PARA: Biblioteca Nacional do Brasil - Divisão de Direito Autoral
+DATA: 26 de março de 2026
+DE: Samuel dos Reis Lacerda Junior
+CNPJ: 55.004.442/0001-06
+ASSUNTO: Complementação de Documentação - Protocolo INP nº 000984.0381795/2025
+
+───────────────────────────────────────────────────────────────────────────────
+
+OFÍCIO
+
+Prezados Senhores,
+
+Venho por este meio, respeitosamente, solicitar a COMPLEMENTAÇÃO de documentação 
+referente ao processo de registro de programa de computador sob o protocolo número 
+000984.0381795/2025, registrado junto a esta instituição.
+
+
+JUSTIFICATIVA
+
+Na ocasião do protocolo inicial, foram enviados documentos que, embora válidos, não 
+contemplavam a totalidade da documentação técnica atualizada e evidências de 
+interface do sistema. Posteriormente, foram desenvolvidas melhorias significativas 
+e implementação de 4 módulos proprietários de otimização que reforçam a 
+originalidade e complexidade da obra.
+
+
+DOCUMENTAÇÃO COMPLEMENTAR ENCAMINHADA
+
+Segue relação dos novos documentos anexados:
+
+1. INTERFACES DO SISTEMA (29 Capturas)
+   - YUNA_v2.0_Interfaces_Screenshots.pdf
+     • 11 screenshots: Portal dos Acompanhantes (login, dashboard, formulários, 
+       modais, mobile)
+     • 14 screenshots: Painel Administrativo (dashboard, painéis por departamento, 
+       gestão de usuários, relatórios)
+     • 4 screenshots: Console com módulos de otimização em execução
+
+2. MÓDULOS DE OTIMIZAÇÃO PROPRIETÁRIOS (v2.0 - Janeiro 2026)
+   - ADENDO_REGISTRO_MODULOS_OTIMIZACAO_2026.pdf
+     • Performance Monitor (349 linhas): Monitoramento em tempo real de memória 
+       e operações
+     • Cache Manager (410 linhas): Algoritmo LRU com limite inteligente de 
+       200 itens
+     • Listener Manager (286 linhas): Gerenciamento centralizado com auto-cleanup
+     • Query Helper (380 linhas): Paginação inteligente com cursor management
+
+3. CORREÇÃO DE SEGURANÇA CRÍTICA
+   - CORRECAO-MODAL-TIMEOUT.pdf
+     • Z-index inadequado corrigido (500 → 100000)
+     • Prevenção de acúmulo de modais no DOM
+     • Implementação de animações suaves
+     • Bloqueio de scroll de fundo
+
+4. DOCUMENTAÇÃO ATUALIZADA v2.0
+   - ESPECIFICACOES_TECNICAS.pdf (revisado com novos módulos)
+   - MANUAL_USUARIO.pdf (atualizado com referências aos módulos)
+   - HISTORICO_DESENVOLVIMENTO.pdf (timeline completa até janeiro 2026)
+   - CHECKLIST_REGISTRO.pdf (validação técnica completa)
+
+5. DECLARAÇÃO DE AUTORIA
+   - Cópias autenticadas em cartório do documento de declaração de autoria 
+     (reconhecimento de firma por autenticidade)
+
+
+RESUMO DAS ALTERAÇÕES
+
+Adições:
+  • 29 novas capturas de interface (antes não havia)
+  • 4 módulos de otimização proprietários (1.425 LOC adicionais)
+  • Documentação técnica consolidada
+
+Melhorias:
+  • Correção crítica de segurança no sistema de timeout
+  • Atualização de especificações técnicas com v2.0
+  • Validação de interfaces em múltiplas resoluções (desktop + mobile)
+
+Inovações Documentadas:
+  • Algoritmo LRU para cache (reduz leitura Firestore em 90%)
+  • Sistema inteligente de paginação com cursor
+  • Monitoramento automático de performance com alertas
+  • Cleanup automático de listeners (prevenção de memory leak)
+
+
+INFORMAÇÕES ADICIONAIS
+
+  • Título da Obra: Yuna Solicite v2.0
+  • Tipo: Software - Sistema Web PWA
+  • Linguagens: JavaScript Vanilla, HTML5, CSS3
+  • Total LOC: 19.825+ linhas (+ 1.425 novos módulos)
+  • Versão Atual: 2.0 (Janeiro 2026)
+  • Arquitetura: Single Page Application (SPA) com Firebase backend
+  • Funcionalidades: Gerenciamento de solicitações de saúde com RBAC, real-time 
+    sync, PWA offline-capable
+
+
+SOLICITAÇÃO
+
+Solicito que a presente documentação complementar seja anexada ao processo de 
+registro sob protocolo 000984.0381795/2025, reafirmando que:
+
+1. Todos os documentos são de minha autoria
+2. A documentação complementar não altera a essência da obra, apenas a complementa 
+   e atualiza
+3. Os novos módulos foram desenvolvidos como melhorias da versão original
+
+
+DADOS PARA CONTATO
+
+Nome: Samuel dos Reis Lacerda Junior
+CNPJ: 55.004.442/0001-06
+E-mail: ti@yuna.com.br
+Telefone: +55 11 94586-4671
+
+───────────────────────────────────────────────────────────────────────────────
+
+                              Atenciosamente,
+
+                    _________________________________________
+                    Samuel dos Reis Lacerda Junior
+                    CNPJ: 55.004.442/0001-06
+
+
+DATA: _____ de março de 2026
+
+═══════════════════════════════════════════════════════════════════════════════
+
+INSTRUÇÕES PARA IMPRESSÃO E ASSINATURA:
+
+1. Imprima este documento (2 páginas em A4)
+2. Preencha a DATA com caneta azul (exemplo: "26 de março de 2026")
+3. Assine AMBAS as páginas com caneta azul
+4. Este será o ofício a acompanhar o pacote para a Biblioteca Nacional
+
+═══════════════════════════════════════════════════════════════════════════════

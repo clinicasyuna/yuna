@@ -4,7 +4,7 @@
 
 ---
 
-Eu, **Samuel dos Reis Lacerda Junior**, portador do CPF **[PREENCHER SEU CPF]**, inscrito no CNPJ **55.004.442 SAMUEL DOS REIS LACERDA JUNIOR**, residente e domiciliado na **Rua Eugene Carrieri nº17 Bloco C AP 81, CEP: 05541-100, São Paulo - SP**, declaro para os devidos fins de direito que:
+Eu, **Samuel dos Reis Lacerda Junior**, portador do CPF **INFORMAR NO ATO DE ASSINATURA**, inscrito no CNPJ **55.004.442 SAMUEL DOS REIS LACERDA JUNIOR**, residente e domiciliado na **Rua Eugene Carrieri nº17 Bloco C AP 81, CEP: 05541-100, São Paulo - SP**, declaro para os devidos fins de direito que:
 
 ---
 
@@ -113,14 +113,14 @@ Autorizo o **registro desta obra junto à Biblioteca Nacional do Brasil** (Funda
 
 ### Dados do Autor:
 - **Nome Completo:** Samuel dos Reis Lacerda Junior
-- **CPF:** [PREENCHER SEU CPF]
-- **RG:** [PREENCHER SEU RG]
-- **Data de Nascimento:** [PREENCHER]
+- **CPF:** INFORMAR NO ATO DE ASSINATURA
+- **RG:** INFORMAR NO ATO DE ASSINATURA
+- **Data de Nascimento:** INFORMAR NO ATO DE ASSINATURA
 - **Nacionalidade:** Brasileiro
 - **Profissão:** Desenvolvedor de Software / Empresário
 - **CNPJ:** 55.004.442 SAMUEL DOS REIS LACERDA JUNIOR
 - **Endereço:** Rua Eugene Carrieri nº17 Bloco C AP 81
-- **Bairro:** [PREENCHER BAIRRO]
+- **Bairro:** INFORMAR NO ATO DE ASSINATURA
 - **Cidade:** São Paulo
 - **Estado:** São Paulo (SP)
 - **CEP:** 05541-100
@@ -143,13 +143,13 @@ Por ser expressão da verdade, dato e assino a presente declaração.
 
 ---
 
-**São Paulo - SP, [DATA DE HOJE: 08 de Janeiro de 2026]**
+**São Paulo - SP, DATA DA ASSINATURA (DD/MM/2026)**
 
 ---
 
 _______________________________________________  
 **Samuel dos Reis Lacerda Junior**  
-CPF: [SEU CPF]  
+CPF: INFORMAR NO ATO DE ASSINATURA  
 CNPJ: 55.004.442 SAMUEL DOS REIS LACERDA JUNIOR
 
 ---
@@ -157,7 +157,7 @@ CNPJ: 55.004.442 SAMUEL DOS REIS LACERDA JUNIOR
 ## INSTRUÇÕES PARA FINALIZAÇÃO:
 
 1. **IMPRIMIR** este documento
-2. **PREENCHER** os campos marcados com [PREENCHER]
+2. **PREENCHER** os campos marcados como "INFORMAR NO ATO DE ASSINATURA"
 3. **ASSINAR** de próprio punho com caneta azul
 4. **DATAR** com a data de hoje (08/01/2026)
 5. **RECONHECER FIRMA** em cartório (opcional mas recomendado - R$ 10-15)
@@ -172,7 +172,7 @@ CNPJ: 55.004.442 SAMUEL DOS REIS LACERDA JUNIOR
 - [ ] RG completo (xx.xxx.xxx-x)
 - [ ] Data de nascimento (DD/MM/AAAA)
 - [ ] Bairro do endereço
-- [ ] Data de assinatura (08/01/2026)
+- [ ] Data de assinatura (DD/MM/2026)
 - [ ] Assinatura manuscrita
 
 ---

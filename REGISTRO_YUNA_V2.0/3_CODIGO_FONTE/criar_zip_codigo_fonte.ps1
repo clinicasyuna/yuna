@@ -120,8 +120,8 @@ $readmeContent = @"
   Sistema de Gerenciamento de Solicitações de Serviços
 ================================================================================
 
-AUTOR: Samuel Jesus Santos
-CPF: [Preencher]
+AUTOR: Samuel dos Reis Lacerda Junior
+CPF: INFORMAR NO ATO DE ASSINATURA
 DATA: Janeiro 2026
 VERSÃO: 2.0
 COPYRIGHT: © 2026 YUNA - Todos os direitos reservados

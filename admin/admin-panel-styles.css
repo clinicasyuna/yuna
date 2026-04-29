@@ -9,6 +9,17 @@
   margin-left: 1rem;
 }
 
+#admin-permission-msg {
+  font-size: 0.85rem;
+  line-height: 1.2;
+  color: #059669;
+  max-width: 540px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  text-align: right;
+}
+
 /* FORÇAR EXIBIÇÃO DE LOGS - SOBRESCREVE .hidden */
 #logs-auditoria-section {
   max-height: 80vh !important;
@@ -3015,7 +3026,9 @@ h2.finalizar-solicitacao {
 .nav-right {
   display: flex;
   align-items: center;
-  gap: 1.5rem;
+  gap: 1rem;
+  justify-content: flex-end;
+  min-width: 0;
 }
 
 .priority-badge {
@@ -3098,6 +3111,14 @@ h2.finalizar-solicitacao {
     justify-content: space-between;
     gap: 1rem;
     margin-top: 0.5rem;
+  }
+
+  #admin-permission-msg {
+    max-width: 100%;
+    white-space: normal;
+    text-align: left;
+    order: 3;
+    width: 100%;
   }
 
   .priority-badge {

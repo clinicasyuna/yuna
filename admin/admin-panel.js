@@ -3569,8 +3569,14 @@ function atualizarKPIs(metricas) {
     }
     document.getElementById('kpi-tempo-medio').textContent = tempoMedio;
     
-    // Taxa de SLA (% de finalizadas)
-    const taxaSLA = metricas.total > 0 ? Math.round((metricas.finalizadas / metricas.total) * 100) : 0;
+    // Taxa de SLA (preferencialmente por cumprimento real de SLA)
+    let taxaSLA = 0;
+    if (metricas.slaGeral && typeof metricas.slaGeral.cumprido === 'number' && typeof metricas.slaGeral.violado === 'number') {
+        const totalSLA = metricas.slaGeral.cumprido + metricas.slaGeral.violado;
+        taxaSLA = totalSLA > 0 ? Math.round((metricas.slaGeral.cumprido / totalSLA) * 100) : 0;
+    } else {
+        taxaSLA = metricas.total > 0 ? Math.round((metricas.finalizadas / metricas.total) * 100) : 0;
+    }
     document.getElementById('kpi-sla').textContent = `${taxaSLA}%`;
     
     // Satisfação média (valor padrão até que haja dados de pesquisa)
@@ -7061,7 +7067,9 @@ async function alterarStatusSolicitacao(solicitacaoId, novoStatus) {
                 }
                 
                 if (dataCreacao && !isNaN(dataCreacao.getTime())) {
-                    const tempoEsperaMinutos = Math.round((agora - dataCreacao) / (1000 * 60));
+                    const tempoEsperaMinutos = typeof window.calcularTempoComHorariosOperacionais === 'function'
+                        ? window.calcularTempoComHorariosOperacionais(dataCreacao, agora)
+                        : Math.round((agora - dataCreacao) / (1000 * 60));
                     updateData.tempoEsperaMinutos = tempoEsperaMinutos;
                     updateData.metricas = {
                         tempoEspera: tempoEsperaMinutos,
@@ -7328,8 +7336,10 @@ async function confirmarFinalizacao(solicitacaoId) {
             }
             
             if (dataCreacao && !isNaN(dataCreacao.getTime())) {
-                // Tempo total de resolução (do registro até finalização)
-                const tempoTotalMinutos = Math.round((agora - dataCreacao) / (1000 * 60));
+                // Tempo total de resolução (do registro até finalização) em minutos operacionais
+                const tempoTotalMinutos = typeof window.calcularTempoComHorariosOperacionais === 'function'
+                    ? window.calcularTempoComHorariosOperacionais(dataCreacao, agora)
+                    : Math.round((agora - dataCreacao) / (1000 * 60));
                 updateData.tempoTotalMinutos = tempoTotalMinutos;
                 
                 // Tempo efetivo de trabalho
@@ -7339,7 +7349,9 @@ async function confirmarFinalizacao(solicitacaoId) {
                 if (solicitacaoData.status === 'em-andamento' && solicitacaoData.dataInicioAtendimento) {
                     const inicioAtendimento = new Date(solicitacaoData.dataInicioAtendimento);
                     if (!isNaN(inicioAtendimento.getTime())) {
-                        const tempoAtual = Math.round((agora - inicioAtendimento) / (1000 * 60));
+                        const tempoAtual = typeof window.calcularTempoComHorariosOperacionais === 'function'
+                            ? window.calcularTempoComHorariosOperacionais(inicioAtendimento, agora)
+                            : Math.round((agora - inicioAtendimento) / (1000 * 60));
                         tempoTrabalho += tempoAtual;
                     }
                 }
@@ -7356,6 +7368,9 @@ async function confirmarFinalizacao(solicitacaoId) {
                 
                 const config = slaConfig[solicitacaoData.equipe] || { slaMinutos: 240, prioridade: 'media' };
                 const statusSLA = tempoTotalMinutos <= config.slaMinutos ? 'cumprido' : 'violado';
+                const percentualSLA = tempoTotalMinutos > 0
+                    ? Math.round((config.slaMinutos / tempoTotalMinutos) * 100)
+                    : 100;
                 
                 // Métricas completas
                 updateData.metricas = {
@@ -7365,7 +7380,7 @@ async function confirmarFinalizacao(solicitacaoId) {
                     slaMinutos: config.slaMinutos,
                     statusSLA: statusSLA,
                     prioridade: config.prioridade,
-                    percentualSLA: Math.round((config.slaMinutos / tempoTotalMinutos) * 100),
+                    percentualSLA: percentualSLA,
                     finalizadoEm: agora.toISOString(),
                     criadoEm: dataCreacao.toISOString()
                 };
@@ -7723,7 +7738,9 @@ function calcularAlertas(solicitacoes) {
     solicitacoes.forEach(sol => {
         if ((sol.status === 'pendente' || sol.status === 'em-andamento') && sol.criadoEm) {
             const criacao = sol.criadoEm.toDate ? sol.criadoEm.toDate() : new Date(sol.criadoEm);
-            const minutosPassados = (agora - criacao) / (1000 * 60);
+            const minutosPassados = typeof window.calcularTempoComHorariosOperacionais === 'function'
+                ? window.calcularTempoComHorariosOperacionais(criacao, agora)
+                : (agora - criacao) / (1000 * 60);
             const limiteSLA = slaConfig[sol.equipe] || 240;
             const percentualSLA = (minutosPassados / limiteSLA) * 100;
             
@@ -7964,7 +7981,7 @@ function calcularMetricasGerais(solicitacoes) {
     };
     
     let tempoTotalSoma = 0;
-    let tempoTrabalhoSoma = 0;
+    let tempoEsperaSoma = 0;
     let contadorValidos = 0;
     
     solicitacoes.forEach(sol => {
@@ -7990,7 +8007,7 @@ function calcularMetricasGerais(solicitacoes) {
         if (sol.metricas && sol.metricas.tempoTotal) {
             const m = sol.metricas;
             
-            // Somar tempos para TMA e TME
+            // Somar tempos para TMA e TME (TME = tempo de espera)
             if (m.tempoTotal) {
                 tempoTotalSoma += m.tempoTotal;
                 equipeMetrica.tempoTotalSoma += m.tempoTotal;
@@ -7998,9 +8015,10 @@ function calcularMetricasGerais(solicitacoes) {
                 equipeMetrica.contadorValidos++;
             }
             
-            if (m.tempoTrabalho) {
-                tempoTrabalhoSoma += m.tempoTrabalho;
-                equipeMetrica.tempoTrabalhoSoma += m.tempoTrabalho;
+            const tempoEspera = typeof m.tempoEspera === 'number' ? m.tempoEspera : (sol.tempoEsperaMinutos || 0);
+            if (tempoEspera > 0) {
+                tempoEsperaSoma += tempoEspera;
+                equipeMetrica.tempoTrabalhoSoma += tempoEspera;
             }
             
             // Contar SLA
@@ -8062,8 +8080,8 @@ function calcularMetricasGerais(solicitacoes) {
     // Calcular médias gerais
     if (contadorValidos > 0) {
         metricas.tmaGeral = Math.round(tempoTotalSoma / contadorValidos);
-        metricas.tmeGeral = Math.round(tempoTrabalhoSoma / contadorValidos);
-        metricas.eficienciaGeral = tempoTotalSoma > 0 ? Math.round((tempoTrabalhoSoma / tempoTotalSoma) * 100) : 0;
+        metricas.tmeGeral = Math.round(tempoEsperaSoma / contadorValidos);
+        metricas.eficienciaGeral = tempoTotalSoma > 0 ? Math.round((((tempoTotalSoma - tempoEsperaSoma) > 0 ? (tempoTotalSoma - tempoEsperaSoma) : 0) / tempoTotalSoma) * 100) : 0;
     }
     
     // Calcular médias por equipe
@@ -8072,7 +8090,9 @@ function calcularMetricasGerais(solicitacoes) {
         if (eq.contadorValidos > 0) {
             eq.tma = Math.round(eq.tempoTotalSoma / eq.contadorValidos);
             eq.tme = Math.round(eq.tempoTrabalhoSoma / eq.contadorValidos);
-            eq.eficiencia = eq.tempoTotalSoma > 0 ? Math.round((eq.tempoTrabalhoSoma / eq.tempoTotalSoma) * 100) : 0;
+            eq.eficiencia = eq.tempoTotalSoma > 0
+                ? Math.round((((eq.tempoTotalSoma - eq.tempoTrabalhoSoma) > 0 ? (eq.tempoTotalSoma - eq.tempoTrabalhoSoma) : 0) / eq.tempoTotalSoma) * 100)
+                : 0;
         }
     });
     

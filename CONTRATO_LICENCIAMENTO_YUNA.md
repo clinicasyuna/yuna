@@ -7,9 +7,9 @@
 **Endereço:** Rua Eugene Carrieri nº17 Bloco C AP 81 CEP: 05541-100  
 **Contato:** ti@yuna.com.br | +55 11 94586-4671  
 
-**LICENCIADO:** [Nome da Clínica/Hospital]  
-**CNPJ:** [CNPJ do Cliente]  
-**Endereço:** [Endereço do Cliente]  
+**LICENCIADO:** NOME DA CLINICA/HOSPITAL (PREENCHER NA ASSINATURA)  
+**CNPJ:** CNPJ DO CLIENTE (PREENCHER NA ASSINATURA)  
+**Endereço:** ENDERECO DO CLIENTE (PREENCHER NA ASSINATURA)  
 
 ---
 
@@ -30,7 +30,7 @@ Este contrato tem por objeto a **licença de uso** do Sistema YUNA - Sistema de 
 - Código-fonte, algoritmos e interfaces são **propriedade intelectual protegida**
 
 ### 2.2 Registro:
-- Software **registrado na Biblioteca Nacional** (Protocolo: [Número])
+- Software com registro autoral **em andamento** (Protocolo: INFORMAR NUMERO QUANDO DISPONIVEL)
 - **Marca YUNA** em processo de registro no INPI
 - **Documentação técnica** protegida por direitos autorais
 
@@ -52,8 +52,8 @@ Este contrato tem por objeto a **licença de uso** do Sistema YUNA - Sistema de 
 ## 4. VALORES E PAGAMENTO
 
 ### 4.1 Licenciamento:
-- **Valor de implementação:** R$ [VALOR]
-- **Mensalidade:** R$ [VALOR]/mês
+- **Valor de implementação:** R$ VALOR A DEFINIR EM PROPOSTA COMERCIAL
+- **Mensalidade:** R$ VALOR A DEFINIR EM PROPOSTA COMERCIAL/mês
 - **Suporte técnico:** Incluído na mensalidade
 
 ### 4.2 Condições:
@@ -148,8 +148,8 @@ CNPJ: 55.004.442 SAMUEL DOS REIS LACERDA JUNIOR
 **LICENCIADO:**
 
 ___________________________________  
-[Nome e cargo do representante legal]  
-[Nome da empresa/clínica]  
+NOME E CARGO DO REPRESENTANTE LEGAL  
+NOME DA EMPRESA/CLINICA  
 
 **Local e Data:** __________________, _____ de _____________ de 2025
 

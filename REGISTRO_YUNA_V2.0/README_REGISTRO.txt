@@ -298,10 +298,10 @@ Criar arquivo `CHANGELOG.md` formatado:
 1. **Abrir:** `1_FORMULARIOS/DECLARACAO_AUTORIA.md`
 2. **Imprimir** (2 vias)
 3. **Preencher:**
-   - CPF: [Seu CPF]
-   - RG: [Seu RG]
-   - Data de Nascimento: [dd/mm/aaaa]
-   - Local e Data: [Cidade, dd/mm/2026]
+   - CPF: INFORMAR NO ATO DE ASSINATURA
+   - RG: INFORMAR NO ATO DE ASSINATURA
+   - Data de Nascimento: INFORMAR NO ATO DE ASSINATURA
+   - Local e Data: CIDADE E DATA DA ASSINATURA (DD/MM/2026)
    - Assinar com caneta azul
 4. **Reconhecer firma** no cartório (R$10-20)
 5. **Escanear** versão reconhecida em alta qualidade

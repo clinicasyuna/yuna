@@ -444,16 +444,14 @@
 
                 <!-- Área Direita: Usuário e Sair -->
                 <div class="nav-right">
+                    <span id="admin-permission-msg" class="msg-permissao-hide">
+                        Acesso restrito: sem permissão para criar/gerenciar usuários.
+                    </span>
                     <span id="user-role-badge" class="priority-badge priority-media">Administrador</span>
                     <button id="logout-btn" class="nav-btn nav-btn-logout" onclick="window.auth.signOut()" title="Sair da aplicação">
                         <i class="fas fa-sign-out-alt"></i> Sair
                     </button>
                 </div>
-
-                <!-- Mensagem de Permissão (oculta por padrão) -->
-                <span id="admin-permission-msg" class="msg-permissao-hide" style="position: absolute; top: 10px; right: 200px; color: #ef4444; font-size: 0.9rem;">
-                    Acesso restrito: sem permissão para criar/gerenciar usuários.
-                </span>
             </nav>
         </header>
         <!-- MÉTRICAS ALINHADAS -->

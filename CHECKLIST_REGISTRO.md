@@ -36,7 +36,7 @@
 
 #### 1. **Adicionar Suas Informações Pessoais**
 Nos documentos criados, substitua:
-- `[Seu Nome/Empresa]` → Seu nome completo ou razão social
+- `NOME/EMPRESA` → Seu nome completo ou razão social
 - Adicione CPF/CNPJ onde necessário
 - Complete dados de contato
 
@@ -98,7 +98,7 @@ powershell Compress-Archive -Path * -DestinationPath "sistema-yuna-codigo-fonte.
 #### **Identificação da Obra:**
 - **Título:** Sistema YUNA - Gerenciamento de Solicitações Hospitalares
 - **Linguagem:** JavaScript, HTML5, CSS3
-- **Data de criação:** [Data do primeiro commit]
+- **Data de criação:** INFORMAR DATA DO PRIMEIRO COMMIT
 - **Data de finalização:** Novembro 2025
 - **Plataforma:** Web (PWA - Progressive Web App)
 

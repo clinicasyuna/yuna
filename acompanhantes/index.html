@@ -2400,9 +2400,6 @@
                                             <h4 style="margin: 0; color: #374151; font-size: 16px; font-weight: 600;">
                                                 ${sol.tipo || sol.equipe || 'Serviço'} - ${sol.prioridade || 'normal'}
                                             </h4>
-                                            <p style="margin: 4px 0 0 0; font-size: 12px; color: #6b7280;">
-                                                ID: ${sol.id.substring(0, 8)}...
-                                            </p>
                                         </div>
                                     </div>
                                     <div style="text-align: right;">
@@ -4653,12 +4650,13 @@ if ('serviceWorker' in navigator) {
     });
 }
 </script>
+    <script src="./yuna-chat-widget.js?v=20260428-2200"></script>
     <!-- Botão Flutuante de Suporte (Acompanhantes) -->
     <style>
         .support-fab-acompanhantes {
             position: fixed;
             bottom: 24px;
-            right: 24px;
+            right: 92px;
             width: 56px;
             height: 56px;
             border-radius: 50%;
