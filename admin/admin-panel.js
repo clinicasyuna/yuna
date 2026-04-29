@@ -6168,18 +6168,9 @@ function atualizarVisibilidadeBotoes() {
     // Mensagem de permissão
     if (msgPermissao) {
         if (isEquipe && usuarioAdmin.equipe) {
-            const nomeEquipe = {
-                'manutencao': 'Manutenção',
-                'nutricao': 'Nutrição',
-                'higienizacao': 'Higienização',
-                'hotelaria': 'Hotelaria'
-            }[usuarioAdmin.equipe] || usuarioAdmin.equipe;
-            
-            msgPermissao.textContent = `Acesso da equipe: Visualização e gerenciamento de solicitações de ${nomeEquipe}`;
-            msgPermissao.classList.remove('msg-permissao-hide');
-            msgPermissao.style.display = 'block';
-            msgPermissao.style.color = '#059669';
-            msgPermissao.style.fontWeight = '500';
+            // Para equipe, não exibimos texto auxiliar no header para evitar sobreposição visual.
+            msgPermissao.classList.add('msg-permissao-hide');
+            msgPermissao.style.display = 'none';
         } else if (isAdmin) {
             // Admin: não mostrar mensagem de permissão (evitar confusão)
             msgPermissao.classList.add('msg-permissao-hide');
