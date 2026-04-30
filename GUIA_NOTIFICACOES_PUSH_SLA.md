@@ -63,6 +63,12 @@ Teste local do script (com service account local):
 node scripts/send-sla-push-alerts.js
 ```
 
+Preflight de prontidao antes de deploy:
+
+```powershell
+powershell -ExecutionPolicy Bypass -File .\scripts\preflight-sla-notificacoes.ps1
+```
+
 Forcar disparo do workflow:
 
 - Actions > SLA Push Alerts > Run workflow
