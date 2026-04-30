@@ -430,6 +430,8 @@ function limparListenersAtivos() {
         window.notificationListenerConfigured = false;
         window.lastNotificationCheck = null;
         window.isInitialLoad = false;
+            window.slaAlertedItems = {};
+            localStorage.removeItem('yuna_sla_alerted_items');
         
         // Parar qualquer carregamento em andamento
         window.carregandoSolicitacoes = false;
@@ -5345,6 +5347,155 @@ function adicionarNovaSolicitacao(novaSolicitacao) {
     }
 }
 
+function obterConfiguracaoSLAEquipe(equipe) {
+    const equipeNormalizada = String(equipe || '').toLowerCase();
+
+    const slaConfig = {
+        'manutencao': { slaMinutos: 240, nome: 'Manutenção' },
+        'manutenção': { slaMinutos: 240, nome: 'Manutenção' },
+        'nutricao': { slaMinutos: 60, nome: 'Nutrição' },
+        'nutrição': { slaMinutos: 60, nome: 'Nutrição' },
+        'higienizacao': { slaMinutos: 120, nome: 'Higienização' },
+        'higienização': { slaMinutos: 120, nome: 'Higienização' },
+        'hotelaria': { slaMinutos: 180, nome: 'Hotelaria' }
+    };
+
+    return slaConfig[equipeNormalizada] || { slaMinutos: 240, nome: equipe || 'Equipe' };
+}
+
+function obterDataCriacaoSolicitacao(solicitacao) {
+    const camposData = ['criadoEm', 'dataAbertura', 'timestamp', 'dataCriacao'];
+
+    for (const campo of camposData) {
+        const valor = solicitacao?.[campo];
+        if (!valor) {
+            continue;
+        }
+
+        if (typeof valor.toDate === 'function') {
+            const data = valor.toDate();
+            if (!isNaN(data.getTime())) {
+                return data;
+            }
+        }
+
+        const data = new Date(valor);
+        if (!isNaN(data.getTime())) {
+            return data;
+        }
+    }
+
+    return null;
+}
+
+function carregarAlertasSLAPersistidos() {
+    if (!window.slaAlertedItems) {
+        try {
+            window.slaAlertedItems = JSON.parse(localStorage.getItem('yuna_sla_alerted_items') || '{}');
+        } catch (error) {
+            console.warn('[SLA-ALERT] Falha ao carregar alertas persistidos:', error);
+            window.slaAlertedItems = {};
+        }
+    }
+
+    return window.slaAlertedItems;
+}
+
+function persistirAlertasSLA() {
+    try {
+        localStorage.setItem('yuna_sla_alerted_items', JSON.stringify(window.slaAlertedItems || {}));
+    } catch (error) {
+        console.warn('[SLA-ALERT] Falha ao persistir alertas:', error);
+    }
+}
+
+function limparAlertasSLAExpirados() {
+    const alertas = carregarAlertasSLAPersistidos();
+    const agora = Date.now();
+    const expiracaoMs = 12 * 60 * 60 * 1000;
+
+    Object.keys(alertas).forEach((chave) => {
+        if (!alertas[chave] || (agora - alertas[chave]) > expiracaoMs) {
+            delete alertas[chave];
+        }
+    });
+
+    persistirAlertasSLA();
+}
+
+function exibirNotificacaoSLAProximo(solicitacao, restanteMinutos, slaMinutos, nomeEquipe) {
+    const restanteFormatado = Math.max(0, Math.ceil(restanteMinutos));
+    const quarto = solicitacao.quarto ? ` | Quarto ${solicitacao.quarto}` : '';
+    const descricao = solicitacao.tipo ? ` (${solicitacao.tipo})` : '';
+
+    showToast(
+        'SLA em risco',
+        `${nomeEquipe}${descricao}${quarto}: restam ${restanteFormatado} min para atingir o SLA de ${slaMinutos} min.`,
+        'warning'
+    );
+}
+
+function verificarAlertaSLAProximo(solicitacao, usuarioAdmin) {
+    try {
+        if (!solicitacao || !solicitacao.id) {
+            return;
+        }
+
+        if (solicitacao.status !== 'pendente' && solicitacao.status !== 'em-andamento') {
+            return;
+        }
+
+        if (!podeVerSolicitacaoJS(usuarioAdmin, solicitacao)) {
+            return;
+        }
+
+        const dataCriacao = obterDataCriacaoSolicitacao(solicitacao);
+        if (!dataCriacao) {
+            return;
+        }
+
+        const { slaMinutos, nome } = obterConfiguracaoSLAEquipe(solicitacao.equipe);
+        const agora = new Date();
+        const minutosConsumidos = typeof window.calcularTempoComHorariosOperacionais === 'function'
+            ? window.calcularTempoComHorariosOperacionais(dataCriacao, agora)
+            : Math.round((agora - dataCriacao) / (1000 * 60));
+
+        const minutosRestantes = slaMinutos - minutosConsumidos;
+        if (minutosRestantes > 30 || minutosRestantes < 0) {
+            return;
+        }
+
+        const alertas = carregarAlertasSLAPersistidos();
+        const chaveAlerta = `${solicitacao.id}:sla30`;
+        if (alertas[chaveAlerta]) {
+            return;
+        }
+
+        alertas[chaveAlerta] = Date.now();
+        persistirAlertasSLA();
+        exibirNotificacaoSLAProximo(solicitacao, minutosRestantes, slaMinutos, nome);
+
+        if (typeof window.registrarAcaoAuditoria === 'function') {
+            window.registrarAcaoAuditoria({
+                action: 'view',
+                resource: 'solicitacoes',
+                resourceId: solicitacao.id,
+                success: true,
+                details: {
+                    tipoNotificacao: 'sla_proximo_30_minutos',
+                    equipe: solicitacao.equipe || nome,
+                    status: solicitacao.status,
+                    slaMinutos,
+                    minutosConsumidos,
+                    minutosRestantes: Math.max(0, minutosRestantes)
+                }
+            });
+        }
+    } catch (error) {
+        console.error('[SLA-ALERT] Erro ao verificar alerta de SLA:', error);
+    }
+}
+
 // === SISTEMA DE NOTIFICAÇÕES EM TEMPO REAL ===
 function configurarListenerNotificacoes() {
     try {
@@ -5361,6 +5512,8 @@ function configurarListenerNotificacoes() {
             console.log('[NOTIFICATION] Usuário não está logado - não configurando notificações');
             return;
         }
+
+        limparAlertasSLAExpirados();
         
         // Armazenar timestamp da última verificação para evitar notificar solicitações existentes
         // AJUSTE: Definir como 1 minuto atrás para permitir notificações de solicitações muito recentes
@@ -5398,9 +5551,12 @@ function configurarListenerNotificacoes() {
                             type: change.type,
                             docId: change.doc.id
                         });
+
+                        const solicitacaoAtual = { id: change.doc.id, ...change.doc.data() };
+                        verificarAlertaSLAProximo(solicitacaoAtual, usuarioAdmin);
                         
                         if (change.type === 'added') {
-                            const novaSolicitacao = { id: change.doc.id, ...change.doc.data() };
+                            const novaSolicitacao = solicitacaoAtual;
                             
                             console.log('[NOTIFICATION] Verificando se é nova:', {
                                 id: novaSolicitacao.id,

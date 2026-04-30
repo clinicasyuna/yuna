@@ -151,5 +151,23 @@ service cloud.firestore {
       allow write: if isSignedIn() && userId == request.auth.uid; // Usuário só atualiza próprio status
       allow delete: if isSignedIn() && userId == request.auth.uid; // Usuário só remove próprio status
     }
+
+    // Tokens de push do painel admin/equipe
+    match /admin_push_tokens/{tokenId} {
+      allow read: if isAdmin();
+      allow create: if (isAdmin() || isEquipe())
+        && request.resource.data.userId == request.auth.uid;
+      allow update: if (isAdmin() || isEquipe())
+        && resource.data.userId == request.auth.uid
+        && request.resource.data.userId == request.auth.uid;
+      allow delete: if (isAdmin() || isEquipe())
+        && resource.data.userId == request.auth.uid;
+    }
+
+    // Locks para evitar notificação duplicada de SLA
+    match /sla_notification_locks/{lockId} {
+      allow read: if isAdmin();
+      allow create, update, delete: if false;
+    }
   }
 }
