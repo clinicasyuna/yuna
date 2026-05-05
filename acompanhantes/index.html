@@ -4639,16 +4639,23 @@ window.selecionarRecomendacao = selecionarRecomendacao;
 window.enviarAvaliacao = enviarAvaliacao;
 
 console.log('✅ Sistema YUNA - Painel de Acompanhantes com Métricas Avançadas');
-// Registrar Service Worker para PWA
+// Limpar Service Workers antigos para evitar cache persistente de HTML/config
 if ('serviceWorker' in navigator) {
     window.addEventListener('load', function() {
-        // Usar caminho relativo correto para GitHub Pages (/yuna/acompanhantes)
-        navigator.serviceWorker.register('./service-worker.js')
-            .then(function(registration) {
-                console.log('✅ Service Worker registrado:', registration.scope);
+        navigator.serviceWorker.getRegistrations()
+            .then(function(registrations) {
+                return Promise.all(registrations.map(function(reg) { return reg.unregister(); }));
+            })
+            .then(function() {
+                return caches.keys().then(function(names) {
+                    return Promise.all(names.map(function(name) { return caches.delete(name); }));
+                });
+            })
+            .then(function() {
+                console.log('✅ Service Workers antigos removidos e cache limpo');
             })
             .catch(function(error) {
-                console.log('❌ Falha ao registrar Service Worker:', error);
+                console.log('❌ Falha ao limpar Service Worker/cache:', error);
             });
     });
 }
