@@ -7962,12 +7962,12 @@ function gerarHTMLDashboardAvancado(metricas, opcoes = {}) {
     const { isSuperAdmin = false, equipeUsuario = null, nomeUsuario = 'Usuário' } = opcoes;
     
     return `
-        <div class="modal-content" style="max-width: 95vw; max-height: 90vh; overflow-y: auto; background: white; border-radius: 12px; padding: 0;">
+        <div class="modal-content" style="max-width: 90vw; max-height: 90vh; overflow-y: auto; background: white; border-radius: 12px; padding: 0;">
             <!-- Header -->
             <div style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 20px; border-radius: 12px 12px 0 0; position: sticky; top: 0; z-index: 10;">
                 <div style="display: flex; justify-content: space-between; align-items: center;">
                     <div>
-                        <h2 style="margin: 0; font-size: 1.5rem;">📊 Dashboard Executivo - Métricas Avançadas</h2>
+                        <h2 style="margin: 0; font-size: 1.1rem;">📊 Dashboard Executivo - Métricas Avançadas</h2>
                         <p style="margin: 5px 0 0 0; opacity: 0.9;">${isSuperAdmin ? 'Visão Completa' : 'Equipe: ' + equipeUsuario} | ${nomeUsuario}</p>
                     </div>
                     <button onclick="fecharDashboardMetricas()" style="background: rgba(255,255,255,0.2); border: none; color: white; width: 40px; height: 40px; border-radius: 50%; font-size: 20px; cursor: pointer;">×</button>
@@ -7975,7 +7975,7 @@ function gerarHTMLDashboardAvancado(metricas, opcoes = {}) {
             </div>
             
             <!-- Alertas Inteligentes -->
-            <div style="padding: 20px; background: #fef3c7; border-left: 4px solid #f59e0b; margin: 20px;">
+            <div style="padding: 10px 16px; background: #fef3c7; border-left: 4px solid #f59e0b; margin: 12px 16px;">
                 <h3 style="margin: 0 0 10px 0; color: #92400e; display: flex; align-items: center;">
                     <i class="fas fa-exclamation-triangle" style="margin-right: 8px;"></i>
                     Alertas Inteligentes
@@ -7987,14 +7987,14 @@ function gerarHTMLDashboardAvancado(metricas, opcoes = {}) {
 
             <!-- KPIs Principais -->
             <div style="padding: 0 20px;">
-                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px; margin-bottom: 20px;">
+                <div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; margin-bottom: 14px;">
                     ${gerarCardsKPI(metricas)}
                 </div>
             </div>
 
             <!-- Gráficos -->
-            <div style="padding: 0 20px;">
-                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-bottom: 20px;">
+            <div style="padding: 0 16px;">
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 14px;">
                     <!-- Gráfico de Status -->
                     <div style="background: white; border: 1px solid #e5e7eb; border-radius: 8px; padding: 20px;">
                         <h3 style="margin: 0 0 15px 0; color: #374151;">Status das Solicitações</h3>
@@ -8008,7 +8008,7 @@ function gerarHTMLDashboardAvancado(metricas, opcoes = {}) {
                     </div>
                 </div>
 
-                <div style="display: grid; grid-template-columns: 2fr 1fr; gap: 20px; margin-bottom: 20px;">
+                <div style="display: grid; grid-template-columns: 2fr 1fr; gap: 12px; margin-bottom: 14px;">
                     <!-- Tendências -->
                     <div style="background: white; border: 1px solid #e5e7eb; border-radius: 8px; padding: 20px;">
                         <h3 style="margin: 0 0 15px 0; color: #374151;">Tendência de Demanda (7 dias)</h3>
@@ -8024,9 +8024,9 @@ function gerarHTMLDashboardAvancado(metricas, opcoes = {}) {
             </div>
 
             <!-- Métricas Detalhadas por Equipe -->
-            <div style="padding: 20px;">
-                <h3 style="margin: 0 0 20px 0; color: #374151;">Análise Detalhada por Equipe</h3>
-                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 15px;">
+            <div style="padding: 12px 16px;">
+                <h3 style="margin: 0 0 12px 0; color: #374151; font-size: 0.95rem;">Análise Detalhada por Equipe</h3>
+                <div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px;">
                     ${gerarCardsEquipes(metricas.porEquipe)}
                 </div>
             </div>
@@ -8064,24 +8064,24 @@ function gerarHTMLAlertas(alertas) {
 
 function gerarCardsKPI(metricas) {
     return `
-        <div style="background: linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%); color: white; padding: 20px; border-radius: 8px; text-align: center;">
-            <div style="font-size: 2rem; font-weight: bold; margin-bottom: 5px;">${metricas.totais.ultimos30dias}</div>
-            <div style="opacity: 0.9;">Total 30 dias</div>
+        <div style="background: linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%); color: white; padding: 12px 16px; border-radius: 8px; text-align: center;">
+            <div style="font-size: 1.5rem; font-weight: bold; margin-bottom: 3px;">${metricas.totais.ultimos30dias}</div>
+            <div style="opacity: 0.9; font-size: 0.8rem;">Total 30 dias</div>
         </div>
         
-        <div style="background: linear-gradient(135deg, #10b981 0%, #047857 100%); color: white; padding: 20px; border-radius: 8px; text-align: center;">
-            <div style="font-size: 2rem; font-weight: bold; margin-bottom: 5px;">${metricas.performance.slaGeral}%</div>
-            <div style="opacity: 0.9;">SLA Compliance</div>
+        <div style="background: linear-gradient(135deg, #10b981 0%, #047857 100%); color: white; padding: 12px 16px; border-radius: 8px; text-align: center;">
+            <div style="font-size: 1.5rem; font-weight: bold; margin-bottom: 3px;">${metricas.performance.slaGeral}%</div>
+            <div style="opacity: 0.9; font-size: 0.8rem;">SLA Compliance</div>
         </div>
         
-        <div style="background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%); color: white; padding: 20px; border-radius: 8px; text-align: center;">
-            <div style="font-size: 2rem; font-weight: bold; margin-bottom: 5px;">${metricas.performance.tmaGeral}min</div>
-            <div style="opacity: 0.9;">TMA Médio</div>
+        <div style="background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%); color: white; padding: 12px 16px; border-radius: 8px; text-align: center;">
+            <div style="font-size: 1.5rem; font-weight: bold; margin-bottom: 3px;">${metricas.performance.tmaGeral}min</div>
+            <div style="opacity: 0.9; font-size: 0.8rem;">TMA Médio</div>
         </div>
         
-        <div style="background: linear-gradient(135deg, #8b5cf6 0%, #7c3aed 100%); color: white; padding: 20px; border-radius: 8px; text-align: center;">
-            <div style="font-size: 2rem; font-weight: bold; margin-bottom: 5px;">${metricas.performance.eficienciaGeral}%</div>
-            <div style="opacity: 0.9;">Eficiência</div>
+        <div style="background: linear-gradient(135deg, #8b5cf6 0%, #7c3aed 100%); color: white; padding: 12px 16px; border-radius: 8px; text-align: center;">
+            <div style="font-size: 1.5rem; font-weight: bold; margin-bottom: 3px;">${metricas.performance.eficienciaGeral}%</div>
+            <div style="opacity: 0.9; font-size: 0.8rem;">Eficiência</div>
         </div>
     `;
 }
