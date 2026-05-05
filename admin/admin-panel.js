@@ -7996,29 +7996,29 @@ function gerarHTMLDashboardAvancado(metricas, opcoes = {}) {
             <div style="padding: 0 16px;">
                 <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 14px;">
                     <!-- Gráfico de Status -->
-                    <div style="background: white; border: 1px solid #e5e7eb; border-radius: 8px; padding: 20px;">
-                        <h3 style="margin: 0 0 15px 0; color: #374151;">Status das Solicitações</h3>
-                        <canvas id="grafico-status" width="300" height="200"></canvas>
+                    <div style="background: white; border: 1px solid #e5e7eb; border-radius: 8px; padding: 10px 12px;">
+                        <h3 style="margin: 0 0 8px 0; color: #374151; font-size: 0.85rem;">Status das Solicitações</h3>
+                        <div style="position: relative; height: 150px;"><canvas id="grafico-status"></canvas></div>
                     </div>
                     
                     <!-- Gráfico de Performance por Equipe -->
-                    <div style="background: white; border: 1px solid #e5e7eb; border-radius: 8px; padding: 20px;">
-                        <h3 style="margin: 0 0 15px 0; color: #374151;">Performance por Equipe</h3>
-                        <canvas id="grafico-equipes" width="300" height="200"></canvas>
+                    <div style="background: white; border: 1px solid #e5e7eb; border-radius: 8px; padding: 10px 12px;">
+                        <h3 style="margin: 0 0 8px 0; color: #374151; font-size: 0.85rem;">Performance por Equipe</h3>
+                        <div style="position: relative; height: 150px;"><canvas id="grafico-equipes"></canvas></div>
                     </div>
                 </div>
 
                 <div style="display: grid; grid-template-columns: 2fr 1fr; gap: 12px; margin-bottom: 14px;">
                     <!-- Tendências -->
-                    <div style="background: white; border: 1px solid #e5e7eb; border-radius: 8px; padding: 20px;">
-                        <h3 style="margin: 0 0 15px 0; color: #374151;">Tendência de Demanda (7 dias)</h3>
-                        <canvas id="grafico-tendencias" width="500" height="200"></canvas>
+                    <div style="background: white; border: 1px solid #e5e7eb; border-radius: 8px; padding: 10px 12px;">
+                        <h3 style="margin: 0 0 8px 0; color: #374151; font-size: 0.85rem;">Tendência de Demanda (7 dias)</h3>
+                        <div style="position: relative; height: 150px;"><canvas id="grafico-tendencias"></canvas></div>
                     </div>
                     
                     <!-- Picos de Demanda -->
-                    <div style="background: white; border: 1px solid #e5e7eb; border-radius: 8px; padding: 20px;">
-                        <h3 style="margin: 0 0 15px 0; color: #374151;">Picos por Hora</h3>
-                        <canvas id="grafico-picos" width="250" height="200"></canvas>
+                    <div style="background: white; border: 1px solid #e5e7eb; border-radius: 8px; padding: 10px 12px;">
+                        <h3 style="margin: 0 0 8px 0; color: #374151; font-size: 0.85rem;">Picos por Hora</h3>
+                        <div style="position: relative; height: 150px;"><canvas id="grafico-picos"></canvas></div>
                     </div>
                 </div>
             </div>
@@ -13382,6 +13382,7 @@ function renderizarGraficoStatus(statusData) {
         data: data,
         options: {
             responsive: true,
+            maintainAspectRatio: false,
             plugins: {
                 legend: {
                     position: 'bottom'
@@ -13439,6 +13440,7 @@ function renderizarGraficoEquipes(equipesData) {
         data: data,
         options: {
             responsive: true,
+            maintainAspectRatio: false,
             scales: {
                 y: {
                     type: 'linear',
@@ -13501,6 +13503,7 @@ function renderizarGraficoTendencias(tendenciasData) {
         data: data,
         options: {
             responsive: true,
+            maintainAspectRatio: false,
             scales: {
                 y: {
                     beginAtZero: true,
@@ -13549,6 +13552,7 @@ function renderizarGraficoPicos(picosData) {
         data: data,
         options: {
             responsive: true,
+            maintainAspectRatio: false,
             scales: {
                 y: {
                     beginAtZero: true,
