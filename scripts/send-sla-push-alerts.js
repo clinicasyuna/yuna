@@ -3,7 +3,7 @@
  * sem depender de Cloud Functions (útil para projeto Firebase no plano Spark).
  */
 
-const admin = require('firebase-admin');
+const { admin, initFirebaseAdmin } = require('./firebase-admin-init');
 
 const PUSH_CONFIG = {
     adminUrl: process.env.YUNA_ADMIN_URL || 'https://clinicasyuna.github.io/yuna/admin/',
@@ -120,28 +120,6 @@ function isInvalidTokenError(errorCode) {
         'messaging/invalid-registration-token',
         'messaging/invalid-argument'
     ].includes(errorCode);
-}
-
-function initFirebaseAdmin() {
-    if (admin.apps.length) {
-        return;
-    }
-
-    const json = process.env.FIREBASE_SERVICE_ACCOUNT_JSON;
-    if (json) {
-        const serviceAccount = JSON.parse(json);
-        admin.initializeApp({
-            credential: admin.credential.cert(serviceAccount)
-        });
-        return;
-    }
-
-    const localServiceAccountPath = process.env.FIREBASE_SERVICE_ACCOUNT_PATH || '../firebase-service-account.json';
-    // eslint-disable-next-line global-require, import/no-dynamic-require
-    const serviceAccount = require(localServiceAccountPath);
-    admin.initializeApp({
-        credential: admin.credential.cert(serviceAccount)
-    });
 }
 
 async function run() {

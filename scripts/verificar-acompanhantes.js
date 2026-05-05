@@ -9,13 +9,10 @@
  * node scripts/verificar-acompanhantes.js
  */
 
-const admin = require('firebase-admin');
-const serviceAccount = require('../firebase-service-account.json');
+const { admin, initFirebaseAdmin } = require('./firebase-admin-init');
 
-// Inicializar Firebase Admin
-admin.initializeApp({
-    credential: admin.credential.cert(serviceAccount)
-});
+// Inicializar Firebase Admin com validacao de projeto
+initFirebaseAdmin();
 
 const auth = admin.auth();
 const db = admin.firestore();

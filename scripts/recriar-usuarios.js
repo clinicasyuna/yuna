@@ -8,30 +8,14 @@
  * Uso: node recriar-usuarios.js
  */
 
-const admin = require('firebase-admin');
-const fs = require('fs');
-const path = require('path');
+const { admin, initFirebaseAdmin } = require('./firebase-admin-init');
 
-// ConfiguraÃ§Ã£o do Firebase Admin SDK
-const serviceAccountPath = path.join(__dirname, '../firebase-service-account.json');
-
-if (!fs.existsSync(serviceAccountPath)) {
-    console.error('âŒ ERRO: Arquivo firebase-service-account.json nÃ£o encontrado!');
-    console.error(`ðŸ“ Esperado em: ${serviceAccountPath}`);
-    console.error('\nðŸ“‹ INSTRUÃ‡Ã•ES:');
-    console.error('1. Acesse: https://console.firebase.google.com');
-    console.error('2. Projeto: app-pedidos-4656c');
-    console.error('3. âš™ï¸ ConfiguraÃ§Ãµes do Projeto â†’ Contas de ServiÃ§o â†’ Firebase Admin SDK');
-    console.error('4. Clique em "Gerar nova chave privada"');
-    console.error('5. Salve o arquivo JSON em: scripts/firebase-service-account.json');
+try {
+    initFirebaseAdmin();
+} catch (error) {
+    console.error(error.message);
     process.exit(1);
 }
-
-const serviceAccount = require(serviceAccountPath);
-
-admin.initializeApp({
-    credential: admin.credential.cert(serviceAccount)
-});
 
 const db = admin.firestore();
 const auth = admin.auth();
