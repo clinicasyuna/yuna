@@ -4,6 +4,7 @@
   // Obtenha em: https://console.anthropic.com/
   // ============================================================
   var ANTHROPIC_API_KEY = 'SUA_CHAVE_AQUI';
+  var HAS_ANTHROPIC_KEY = !!ANTHROPIC_API_KEY && ANTHROPIC_API_KEY !== 'SUA_CHAVE_AQUI';
   // ============================================================
 
   if (document.getElementById("yuna-chat-window")) {
@@ -92,8 +93,33 @@
     }
   }
 
+  function getLocalReply(message) {
+    const msg = (message || "").toLowerCase();
+
+    if (msg.includes("status") || msg.includes("solicit")) {
+      return "Para verificar o status, abra a secao Historico no portal. La voce ve se a solicitacao esta pendente, em andamento ou finalizada.";
+    }
+
+    if (msg.includes("refe") || msg.includes("nutri") || msg.includes("aliment")) {
+      return "Para pedidos de refeicao, use o card de Nutricao na tela principal e descreva a necessidade. Se for urgencia clinica, acione a enfermagem.";
+    }
+
+    if (msg.includes("quarto") || msg.includes("hotel") || msg.includes("higien")) {
+      return "Para demandas do quarto, abra uma solicitacao em Hotelaria, Higienizacao ou Manutencao. Informe o quarto e uma descricao objetiva.";
+    }
+
+    if (msg.includes("urg") || msg.includes("dor") || msg.includes("mal") || msg.includes("emerg")) {
+      return "Em caso de urgencia medica, chame imediatamente a equipe de enfermagem pelo ramal 190.";
+    }
+
+    return "Posso ajudar com status de solicitacoes, abertura de pedidos e orientacoes gerais do portal. Se quiser, descreva sua duvida em uma frase.";
+  }
+
   async function sendToServer(message) {
-    history.push({ role: "user", content: message });
+    if (!HAS_ANTHROPIC_KEY) {
+      return getLocalReply(message);
+    }
+
     const response = await fetch("https://api.anthropic.com/v1/messages", {
       method: "POST",
       headers: {

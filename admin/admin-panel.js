@@ -11821,7 +11821,7 @@ async function cadastrarAcompanhante() {
 
         // Coletar dados do formulário
         const nome = document.getElementById('acomp-nome')?.value?.trim();
-        const email = document.getElementById('acomp-email')?.value?.trim();
+        const email = document.getElementById('acomp-email')?.value?.trim()?.toLowerCase();
         const quarto = document.getElementById('acomp-quarto')?.value?.trim();
         const senha = document.getElementById('acomp-senha')?.value?.trim();
 
@@ -12465,7 +12465,7 @@ async function salvarEdicaoAcompanhante(event) {
     try {
         const acompanhanteId = document.getElementById('edit-acomp-id').value;
         const nome = document.getElementById('edit-acomp-nome').value.trim();
-        const email = document.getElementById('edit-acomp-email').value.trim();
+        const email = document.getElementById('edit-acomp-email').value.trim().toLowerCase();
         const quarto = document.getElementById('edit-acomp-quarto').value.trim();
         const novaSenha = document.getElementById('edit-acomp-senha').value.trim();
         

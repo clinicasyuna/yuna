@@ -2841,8 +2841,8 @@
         // Função de login
         async function handleLogin(event) {
             event.preventDefault();
-            const email = document.getElementById('login-email').value;
-            const password = document.getElementById('login-password').value;
+            const email = document.getElementById('login-email').value.trim().toLowerCase();
+            const password = document.getElementById('login-password').value.trim();
             
             console.log('[DEBUG] handleLogin: iniciando login para email:', email);
             console.log('[DEBUG] handleLogin: senha fornecida tem', password.length, 'caracteres');
@@ -2858,7 +2858,7 @@
                 console.log('[DEBUG] handleLogin: senha limpa (sem espaços):', password.trim() === password);
                 
                 try {
-                    await firebase.auth().signInWithEmailAndPassword(email.trim(), password);
+                    await firebase.auth().signInWithEmailAndPassword(email, password);
                     console.log('[SUCCESS] handleLogin: login direto realizado com sucesso');
                     showToast('Sucesso!', 'Login realizado com sucesso!', 'success');
                     return; // Login bem-sucedido, sair da função
@@ -2885,14 +2885,14 @@
                         console.log('[DEBUG] handleLogin: tentando criar conta para ativação de pré-cadastro...');
                         
                         // Tentar criar conta diretamente (se é pré-cadastro válido, funcionará)
-                        const userCredential = await firebase.auth().createUserWithEmailAndPassword(email.trim(), password);
+                        const userCredential = await firebase.auth().createUserWithEmailAndPassword(email, password);
                         const user = userCredential.user;
                         console.log('[DEBUG] handleLogin: conta criada no Firebase Auth com UID:', user.uid);
                         
                         // Agora que está autenticado, pode buscar e atualizar dados
                         console.log('[DEBUG] handleLogin: buscando dados do pré-cadastro...');
                         const preCadastroQuery = await window.db.collection('usuarios_acompanhantes')
-                            .where('email', '==', email.trim())
+                            .where('email', '==', email)
                             .where('preCadastro', '==', true)
                             .get();
                         
@@ -2909,6 +2909,7 @@
                                 // Atualizar documento removendo pré-cadastro e adicionando UID
                                 await window.db.collection('usuarios_acompanhantes').doc(doc.id).update({
                                     uid: user.uid,
+                                    email: email,
                                     preCadastro: false,
                                     ativadoEm: new Date().toISOString()
                                 });
@@ -4652,62 +4653,6 @@ if ('serviceWorker' in navigator) {
     });
 }
 </script>
-    <script src="./yuna-chat-widget.js?v=20260428-2200"></script>
-    <!-- Botão Flutuante de Suporte (Acompanhantes) -->
-    <style>
-        .support-fab-acompanhantes {
-            position: fixed;
-            bottom: 24px;
-            right: 92px;
-            width: 56px;
-            height: 56px;
-            border-radius: 50%;
-            background: linear-gradient(135deg, #10b981 0%, #059669 100%);
-            color: white;
-            border: none;
-            cursor: pointer;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 24px;
-            box-shadow: 0 4px 12px rgba(16, 185, 129, 0.4);
-            transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
-            z-index: 999999;
-            text-decoration: none;
-        }
-        
-        .support-fab-acompanhantes:hover {
-            transform: scale(1.1);
-            box-shadow: 0 8px 20px rgba(16, 185, 129, 0.6);
-        }
-        
-        .support-fab-acompanhantes:active {
-            transform: scale(0.95);
-        }
-        
-        .support-fab-tooltip-acompanhantes {
-            position: absolute;
-            bottom: 70px;
-            right: 0;
-            background: rgba(17, 24, 39, 0.95);
-            color: white;
-            padding: 8px 12px;
-            border-radius: 6px;
-            font-size: 13px;
-            white-space: nowrap;
-            pointer-events: none;
-            opacity: 0;
-            transition: opacity 0.2s;
-            font-weight: 500;
-        }
-        
-        .support-fab-acompanhantes:hover .support-fab-tooltip-acompanhantes {
-            opacity: 1;
-        }
-    </style>
-    <a href="mailto:ti@yuna.com.br?subject=Suporte%20Yuna%20Solicite" class="support-fab-acompanhantes" title="Enviar e-mail de suporte">
-        <span class="support-fab-tooltip-acompanhantes">Suporte</span>
-        💬
-    </a>
+    <script src="./yuna-chat-widget.js?v=20260505-001"></script>
 </body>
 </html>

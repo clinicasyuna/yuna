@@ -64,9 +64,19 @@ service cloud.firestore {
 
     // ===== Usuários acompanhantes =====
     match /usuarios_acompanhantes/{userId} {
-      allow read: if isAdmin() || (isSignedIn() && request.auth.uid == userId);
+      allow read: if isAdmin()
+        || (isSignedIn() && request.auth.uid == userId)
+        || (isSignedIn() && resource.data.preCadastro == true && resource.data.email == request.auth.token.email);
       allow create: if isSignedIn() && request.auth.uid == userId; // auto-cadastro
-      allow update: if isAdmin() || (isSignedIn() && request.auth.uid == userId);
+      allow update: if isAdmin()
+        || (isSignedIn() && request.auth.uid == userId)
+        || (
+          isSignedIn()
+          && resource.data.preCadastro == true
+          && resource.data.email == request.auth.token.email
+          && request.resource.data.uid == request.auth.uid
+          && request.resource.data.preCadastro == false
+        );
       allow delete: if isSuperAdmin();
     }
 
@@ -119,7 +129,15 @@ service cloud.firestore {
 
       allow update: if isAdmin()
         || isEquipe()
-        || (isAcompanhante() && resource.data.acompanhanteId == request.auth.uid && request.resource.data.acompanhanteId == request.auth.uid);
+        || (isAcompanhante() && resource.data.acompanhanteId == request.auth.uid && request.resource.data.acompanhanteId == request.auth.uid)
+        || (
+          isSignedIn()
+          && request.resource.data.acompanhanteId == request.auth.uid
+          && (
+            (resource.data.acompanhanteEmail != null && resource.data.acompanhanteEmail == request.auth.token.email)
+            || (resource.data.email != null && resource.data.email == request.auth.token.email)
+          )
+        );
 
       allow delete: if isSuperAdmin();
     }
