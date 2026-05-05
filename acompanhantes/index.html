@@ -2867,13 +2867,14 @@
                     console.log('[DEBUG] handleLogin: mensagem do erro:', authError.message);
                     
                     // ESTRATÉGIA 2: Tratar diferentes tipos de erro
-                    if (authError.code === 'auth/user-not-found') {
-                        console.log('[DEBUG] handleLogin: usuário não encontrado no Firebase Auth, tentando ativação de pré-cadastro...');
+                    const codigosPreCadastro = [
+                        'auth/user-not-found',
+                        'auth/invalid-login-credentials',
+                        'auth/invalid-credential' // Firebase SDK moderno usa este código
+                    ];
+                    if (codigosPreCadastro.includes(authError.code)) {
+                        console.log('[DEBUG] handleLogin: credenciais não reconhecidas (código:', authError.code, '), tentando ativação de pré-cadastro...');
                         // Continua para ativação de pré-cadastro
-                    } else if (authError.code === 'auth/invalid-login-credentials') {
-                        console.log('[DEBUG] handleLogin: credenciais inválidas - pode ser pré-cadastro ou senha incorreta');
-                        console.log('[DEBUG] handleLogin: tentando ativação de pré-cadastro como fallback...');
-                        // Também tenta pré-cadastro como fallback
                     } else {
                         // Outros erros (wrong-password, etc.) - não tenta pré-cadastro
                         throw authError;
@@ -2964,6 +2965,7 @@
                     case 'CREDENCIAIS_INCORRETAS':
                     case 'auth/wrong-password':
                     case 'auth/invalid-login-credentials':
+                    case 'auth/invalid-credential':
                         mensagem = 'Email ou senha incorretos. Verifique suas credenciais.';
                         break;
                     case 'SENHA_FRACA':
