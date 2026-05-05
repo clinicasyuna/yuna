@@ -1,9 +1,9 @@
-#!/usr/bin/env node
+﻿#!/usr/bin/env node
 
 /**
- * Script para Deletar e Recriar Usuários com Novas Senhas
+ * Script para Deletar e Recriar UsuÃ¡rios com Novas Senhas
  * 
- * IMPORTANTE: Execute este script apenas com permissões de super_admin
+ * IMPORTANTE: Execute este script apenas com permissÃµes de super_admin
  * 
  * Uso: node recriar-usuarios.js
  */
@@ -12,16 +12,16 @@ const admin = require('firebase-admin');
 const fs = require('fs');
 const path = require('path');
 
-// Configuração do Firebase Admin SDK
+// ConfiguraÃ§Ã£o do Firebase Admin SDK
 const serviceAccountPath = path.join(__dirname, '../firebase-service-account.json');
 
 if (!fs.existsSync(serviceAccountPath)) {
-    console.error('❌ ERRO: Arquivo firebase-service-account.json não encontrado!');
-    console.error(`📍 Esperado em: ${serviceAccountPath}`);
-    console.error('\n📋 INSTRUÇÕES:');
+    console.error('âŒ ERRO: Arquivo firebase-service-account.json nÃ£o encontrado!');
+    console.error(`ðŸ“ Esperado em: ${serviceAccountPath}`);
+    console.error('\nðŸ“‹ INSTRUÃ‡Ã•ES:');
     console.error('1. Acesse: https://console.firebase.google.com');
-    console.error('2. Projeto: studio-5526632052-23813');
-    console.error('3. ⚙️ Configurações do Projeto → Contas de Serviço → Firebase Admin SDK');
+    console.error('2. Projeto: app-pedidos-4656c');
+    console.error('3. âš™ï¸ ConfiguraÃ§Ãµes do Projeto â†’ Contas de ServiÃ§o â†’ Firebase Admin SDK');
     console.error('4. Clique em "Gerar nova chave privada"');
     console.error('5. Salve o arquivo JSON em: scripts/firebase-service-account.json');
     process.exit(1);
@@ -37,7 +37,7 @@ const db = admin.firestore();
 const auth = admin.auth();
 
 // ============================================
-// DADOS DOS USUÁRIOS
+// DADOS DOS USUÃRIOS
 // ============================================
 
 const USUARIOS_EQUIPES = [
@@ -51,7 +51,7 @@ const USUARIOS_EQUIPES = [
     {
         email: 'manutencao.jardins@yuna.com.br',
         senha: 'Manu@123456',
-        nome: 'Manutenção Jardins',
+        nome: 'ManutenÃ§Ã£o Jardins',
         departamento: 'manutencao',
         equipe: 'manutencao'
     },
@@ -65,7 +65,7 @@ const USUARIOS_EQUIPES = [
     {
         email: 'recepcao.jardins@yuna.com.br',
         senha: 'Recep@123456',
-        nome: 'Recepção Jardins',
+        nome: 'RecepÃ§Ã£o Jardins',
         departamento: 'higienizacao',
         equipe: 'higienizacao'
     }
@@ -75,7 +75,7 @@ const USUARIOS_ADMIN = [
     {
         email: 'edinar.leao@yuna.com.br',
         senha: 'Edi@123456',
-        nome: 'Edinar Leão',
+        nome: 'Edinar LeÃ£o',
         role: 'admin'
     },
     {
@@ -93,18 +93,18 @@ const USUARIOS_ADMIN = [
 ];
 
 // ============================================
-// FUNÇÕES AUXILIARES
+// FUNÃ‡Ã•ES AUXILIARES
 // ============================================
 
 async function deletarUsuarioAuth(email) {
     try {
         const user = await auth.getUserByEmail(email);
         await auth.deleteUser(user.uid);
-        console.log(`   ✅ Deletado do Firebase Auth: ${email}`);
+        console.log(`   âœ… Deletado do Firebase Auth: ${email}`);
         return user.uid;
     } catch (error) {
         if (error.code === 'auth/user-not-found') {
-            console.log(`   ℹ️  Usuário não existe no Auth: ${email}`);
+            console.log(`   â„¹ï¸  UsuÃ¡rio nÃ£o existe no Auth: ${email}`);
             return null;
         }
         throw error;
@@ -114,10 +114,10 @@ async function deletarUsuarioAuth(email) {
 async function deletarUsuarioFirestore(colecao, uid) {
     try {
         await db.collection(colecao).doc(uid).delete();
-        console.log(`   ✅ Deletado do Firestore (${colecao}): ${uid}`);
+        console.log(`   âœ… Deletado do Firestore (${colecao}): ${uid}`);
     } catch (error) {
         if (error.code === 'not-found') {
-            console.log(`   ℹ️  Documento não existe no Firestore: ${uid}`);
+            console.log(`   â„¹ï¸  Documento nÃ£o existe no Firestore: ${uid}`);
         } else {
             throw error;
         }
@@ -131,11 +131,11 @@ async function criarUsuarioAuth(email, senha) {
             password: senha,
             emailVerified: true
         });
-        console.log(`   ✅ Criado no Firebase Auth: ${email} (UID: ${user.uid})`);
+        console.log(`   âœ… Criado no Firebase Auth: ${email} (UID: ${user.uid})`);
         return user.uid;
     } catch (error) {
         if (error.code === 'auth/email-already-exists') {
-            console.log(`   ⚠️  Email já existe: ${email}`);
+            console.log(`   âš ï¸  Email jÃ¡ existe: ${email}`);
             const user = await auth.getUserByEmail(email);
             return user.uid;
         }
@@ -163,7 +163,7 @@ async function criarUsuarioEquipe(uid, data) {
     };
     
     await db.collection('usuarios_equipe').doc(uid).set(usuarioData);
-    console.log(`   ✅ Criado no Firestore (usuarios_equipe): ${uid}`);
+    console.log(`   âœ… Criado no Firestore (usuarios_equipe): ${uid}`);
 }
 
 async function criarUsuarioAdmin(uid, data) {
@@ -188,7 +188,7 @@ async function criarUsuarioAdmin(uid, data) {
     };
     
     await db.collection('usuarios_admin').doc(uid).set(usuarioData);
-    console.log(`   ✅ Criado no Firestore (usuarios_admin): ${uid}`);
+    console.log(`   âœ… Criado no Firestore (usuarios_admin): ${uid}`);
 }
 
 // ============================================
@@ -196,12 +196,12 @@ async function criarUsuarioAdmin(uid, data) {
 // ============================================
 
 async function procesarUsuarios() {
-    console.log('\n╔══════════════════════════════════════════════════════════╗');
-    console.log('║  🔄 SCRIPT DE RECREAÇÃO DE USUÁRIOS COM NOVAS SENHAS     ║');
-    console.log('╚══════════════════════════════════════════════════════════╝\n');
+    console.log('\nâ•”â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•—');
+    console.log('â•‘  ðŸ”„ SCRIPT DE RECREAÃ‡ÃƒO DE USUÃRIOS COM NOVAS SENHAS     â•‘');
+    console.log('â•šâ•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•\n');
 
     const confirmacao = await new Promise(resolve => {
-        process.stdout.write('⚠️  ATENÇÃO: Este script irá deletar e recriar todos os usuários.\n');
+        process.stdout.write('âš ï¸  ATENÃ‡ÃƒO: Este script irÃ¡ deletar e recriar todos os usuÃ¡rios.\n');
         process.stdout.write('Digite "confirmo" para prosseguir: ');
         
         process.stdin.on('data', (data) => {
@@ -210,7 +210,7 @@ async function procesarUsuarios() {
                 resolve(true);
                 process.stdin.removeAllListeners();
             } else {
-                process.stdout.write('\n❌ Operação cancelada.\n');
+                process.stdout.write('\nâŒ OperaÃ§Ã£o cancelada.\n');
                 resolve(false);
                 process.stdin.removeAllListeners();
             }
@@ -225,10 +225,10 @@ async function procesarUsuarios() {
         // ====================================
         // EQUIPES
         // ====================================
-        console.log('\n📌 PROCESSANDO EQUIPES...\n');
+        console.log('\nðŸ“Œ PROCESSANDO EQUIPES...\n');
 
         for (const equipe of USUARIOS_EQUIPES) {
-            console.log(`🔄 ${equipe.nome} (${equipe.email})`);
+            console.log(`ðŸ”„ ${equipe.nome} (${equipe.email})`);
             
             // 1. Deletar do Auth
             await deletarUsuarioAuth(equipe.email);
@@ -243,7 +243,7 @@ async function procesarUsuarios() {
                     await deletarUsuarioFirestore('usuarios_equipe', doc.id);
                 }
             } catch (error) {
-                console.log(`   ℹ️  Nenhum documento encontrado no Firestore`);
+                console.log(`   â„¹ï¸  Nenhum documento encontrado no Firestore`);
             }
             
             // 3. Recriar no Auth
@@ -252,16 +252,16 @@ async function procesarUsuarios() {
             // 4. Recriar no Firestore
             await criarUsuarioEquipe(uid, equipe);
             
-            console.log(`   ✨ ${equipe.nome} recriado com sucesso!\n`);
+            console.log(`   âœ¨ ${equipe.nome} recriado com sucesso!\n`);
         }
 
         // ====================================
         // ADMINISTRADORES
         // ====================================
-        console.log('\n📌 PROCESSANDO ADMINISTRADORES...\n');
+        console.log('\nðŸ“Œ PROCESSANDO ADMINISTRADORES...\n');
 
         for (const admin_user of USUARIOS_ADMIN) {
-            console.log(`🔄 ${admin_user.nome} (${admin_user.email})`);
+            console.log(`ðŸ”„ ${admin_user.nome} (${admin_user.email})`);
             
             // 1. Deletar do Auth
             await deletarUsuarioAuth(admin_user.email);
@@ -276,7 +276,7 @@ async function procesarUsuarios() {
                     await deletarUsuarioFirestore('usuarios_admin', doc.id);
                 }
             } catch (error) {
-                console.log(`   ℹ️  Nenhum documento encontrado no Firestore`);
+                console.log(`   â„¹ï¸  Nenhum documento encontrado no Firestore`);
             }
             
             // 3. Recriar no Auth
@@ -285,28 +285,28 @@ async function procesarUsuarios() {
             // 4. Recriar no Firestore
             await criarUsuarioAdmin(uid, admin_user);
             
-            console.log(`   ✨ ${admin_user.nome} recriado com sucesso!\n`);
+            console.log(`   âœ¨ ${admin_user.nome} recriado com sucesso!\n`);
         }
 
-        console.log('\n╔══════════════════════════════════════════════════════════╗');
-        console.log('║  ✅ TODOS OS USUÁRIOS FORAM RECRIADOS COM SUCESSO!        ║');
-        console.log('╚══════════════════════════════════════════════════════════╝\n');
+        console.log('\nâ•”â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•—');
+        console.log('â•‘  âœ… TODOS OS USUÃRIOS FORAM RECRIADOS COM SUCESSO!        â•‘');
+        console.log('â•šâ•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•\n');
         
-        console.log('📋 RESUMO DOS LOGINS:');
-        console.log('\n🏢 EQUIPES:');
+        console.log('ðŸ“‹ RESUMO DOS LOGINS:');
+        console.log('\nðŸ¢ EQUIPES:');
         USUARIOS_EQUIPES.forEach(u => {
-            console.log(`   • ${u.nome}: ${u.email} / ${u.senha}`);
+            console.log(`   â€¢ ${u.nome}: ${u.email} / ${u.senha}`);
         });
         
-        console.log('\n👤 ADMINISTRADORES:');
+        console.log('\nðŸ‘¤ ADMINISTRADORES:');
         USUARIOS_ADMIN.forEach(u => {
-            console.log(`   • ${u.nome}: ${u.email} / ${u.senha}`);
+            console.log(`   â€¢ ${u.nome}: ${u.email} / ${u.senha}`);
         });
         
-        console.log('\n✨ Os usuários já podem fazer login com as novas senhas!\n');
+        console.log('\nâœ¨ Os usuÃ¡rios jÃ¡ podem fazer login com as novas senhas!\n');
 
     } catch (error) {
-        console.error('\n❌ ERRO DURANTE PROCESSAMENTO:');
+        console.error('\nâŒ ERRO DURANTE PROCESSAMENTO:');
         console.error(error);
         process.exit(1);
     } finally {
@@ -317,6 +317,7 @@ async function procesarUsuarios() {
 
 // Iniciar o processo
 procesarUsuarios().catch(error => {
-    console.error('❌ ERRO FATAL:', error);
+    console.error('âŒ ERRO FATAL:', error);
     process.exit(1);
 });
+

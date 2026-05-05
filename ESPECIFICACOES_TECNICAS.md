@@ -1,46 +1,46 @@
-# ESPECIFICAÇÕES TÉCNICAS - SISTEMA YUNA
+﻿# ESPECIFICAÃ‡Ã•ES TÃ‰CNICAS - SISTEMA YUNA
 
-## 🔧 ARQUITETURA DE SOFTWARE
+## ðŸ”§ ARQUITETURA DE SOFTWARE
 
-### Padrão Arquitetural
+### PadrÃ£o Arquitetural
 **Multi-SPA (Multiple Single Page Applications)**
-- Cada diretório funciona como uma SPA independente
+- Cada diretÃ³rio funciona como uma SPA independente
 - Compartilhamento de recursos via arquivos na raiz
 - Deploy otimizado com cache granular
-- Manutenção modular facilitada
+- ManutenÃ§Ã£o modular facilitada
 
-### Stack Tecnológico Detalhado
+### Stack TecnolÃ³gico Detalhado
 
 #### Frontend:
 ```javascript
 // Tecnologias Core
-HTML5: Estrutura semântica
-CSS3: Estilização responsiva + Grid/Flexbox
-JavaScript ES6+: Lógica de negócio vanilla
+HTML5: Estrutura semÃ¢ntica
+CSS3: EstilizaÃ§Ã£o responsiva + Grid/Flexbox
+JavaScript ES6+: LÃ³gica de negÃ³cio vanilla
 
 // Bibliotecas Externas
 Firebase SDK 9.23.0: Backend-as-a-Service
 Font Awesome 6.4.0: Iconografia
-XLSX.js: Exportação de dados
-EmailJS: Sistema de notificações
+XLSX.js: ExportaÃ§Ã£o de dados
+EmailJS: Sistema de notificaÃ§Ãµes
 ```
 
 #### Backend (Serverless):
 ```javascript
 // Firebase Services
-Authentication: Gerenciamento de usuários
+Authentication: Gerenciamento de usuÃ¡rios
 Firestore: Banco NoSQL em tempo real
 Hosting: Deploy e CDN global
 Functions: Processamento serverless (futuro)
 
-// Configuração de Segurança
-Rules: Validação server-side
-Indexes: Otimização de queries
+// ConfiguraÃ§Ã£o de SeguranÃ§a
+Rules: ValidaÃ§Ã£o server-side
+Indexes: OtimizaÃ§Ã£o de queries
 ```
 
 ### Estrutura de Dados (Firestore)
 
-#### Coleções Principais:
+#### ColeÃ§Ãµes Principais:
 ```javascript
 // usuarios_admin
 {
@@ -110,23 +110,23 @@ Indexes: Otimização de queries
 }
 ```
 
-## 🔐 SISTEMA DE SEGURANÇA
+## ðŸ” SISTEMA DE SEGURANÃ‡A
 
-### Autenticação
+### AutenticaÃ§Ã£o
 ```javascript
 // Firebase Authentication
 - OAuth2 + JWT tokens
-- Session management automático
-- Password policies configuráveis
+- Session management automÃ¡tico
+- Password policies configurÃ¡veis
 - Rate limiting integrado
 ```
 
-### Autorização (RBAC)
+### AutorizaÃ§Ã£o (RBAC)
 ```javascript
 // Role-Based Access Control
 function verificarPermissoes(usuario, acao) {
   const permissoes = {
-    super_admin: ['*'], // Todas as permissões
+    super_admin: ['*'], // Todas as permissÃµes
     admin: ['view_all', 'export_reports', 'view_satisfaction'],
     equipe: ['view_own_team', 'update_requests'],
     acompanhante: ['create_request', 'view_own_requests']
@@ -139,11 +139,11 @@ function verificarPermissoes(usuario, acao) {
 
 ### Firestore Security Rules
 ```javascript
-// Regras de segurança no servidor
+// Regras de seguranÃ§a no servidor
 rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
-    // Solicitações - filtro por equipe
+    // SolicitaÃ§Ãµes - filtro por equipe
     match /solicitacoes/{document} {
       allow read: if isAuthenticated() && 
         (isSuperAdmin() || isAdmin() || 
@@ -159,7 +159,7 @@ service cloud.firestore {
 }
 ```
 
-## ⚡ PERFORMANCE E OTIMIZAÇÃO
+## âš¡ PERFORMANCE E OTIMIZAÃ‡ÃƒO
 
 ### PWA (Progressive Web App)
 ```javascript
@@ -172,19 +172,19 @@ const urlsToCache = [
   '/manifest.json'
 ];
 
-// Cache Strategy: Network First para dados dinâmicos
-// Cache Strategy: Cache First para assets estáticos
+// Cache Strategy: Network First para dados dinÃ¢micos
+// Cache Strategy: Cache First para assets estÃ¡ticos
 ```
 
-### Otimizações Implementadas:
+### OtimizaÃ§Ãµes Implementadas:
 - **Lazy Loading:** Carregamento sob demanda
-- **Code Splitting:** Divisão de código por módulos  
-- **Minificação:** Compressão CSS/JS automática
-- **CDN:** Distribuição global via Netlify
-- **Gzip:** Compressão de transferência
+- **Code Splitting:** DivisÃ£o de cÃ³digo por mÃ³dulos  
+- **MinificaÃ§Ã£o:** CompressÃ£o CSS/JS automÃ¡tica
+- **CDN:** DistribuiÃ§Ã£o global via Netlify
+- **Gzip:** CompressÃ£o de transferÃªncia
 - **Critical CSS:** CSS inline para above-the-fold
 
-### Métricas de Performance:
+### MÃ©tricas de Performance:
 ```javascript
 // Core Web Vitals Targets
 LCP (Largest Contentful Paint): < 2.5s
@@ -197,7 +197,7 @@ Speed Index: < 3.0s
 Total Blocking Time: < 200ms
 ```
 
-## 📱 RESPONSIVIDADE E UX
+## ðŸ“± RESPONSIVIDADE E UX
 
 ### Breakpoints CSS:
 ```css
@@ -213,7 +213,7 @@ Total Blocking Time: < 200ms
 ### Design System:
 ```css
 :root {
-  /* Cores Primárias */
+  /* Cores PrimÃ¡rias */
   --primary-blue: #3b82f6;
   --primary-green: #10b981;
   --primary-orange: #f59e0b;
@@ -238,16 +238,16 @@ Total Blocking Time: < 200ms
 }
 ```
 
-## 🔄 INTEGRAÇÃO E APIs
+## ðŸ”„ INTEGRAÃ‡ÃƒO E APIs
 
 ### Firebase Integration:
 ```javascript
-// Configuração Firebase
+// ConfiguraÃ§Ã£o Firebase
 const firebaseConfig = {
   apiKey: process.env.FIREBASE_API_KEY,
-  authDomain: "studio-5526632052-23813.firebaseapp.com",
-  projectId: "studio-5526632052-23813",
-  storageBucket: "studio-5526632052-23813.appspot.com",
+  authDomain: "app-pedidos-4656c.firebaseapp.com",
+  projectId: "app-pedidos-4656c",
+  storageBucket: "app-pedidos-4656c.appspot.com",
   messagingSenderId: process.env.FIREBASE_MESSAGING_SENDER_ID,
   appId: process.env.FIREBASE_APP_ID
 };
@@ -269,18 +269,18 @@ const unsubscribe = db.collection('solicitacoes')
 
 ### EmailJS Integration:
 ```javascript
-// Sistema de Notificações
+// Sistema de NotificaÃ§Ãµes
 const emailParams = {
   to_email: userEmail,
   from_name: 'Sistema YUNA',
-  subject: 'Nova Solicitação de Serviço',
-  message: `Solicitação #${requestId} foi ${status}`
+  subject: 'Nova SolicitaÃ§Ã£o de ServiÃ§o',
+  message: `SolicitaÃ§Ã£o #${requestId} foi ${status}`
 };
 
 emailjs.send(SERVICE_ID, TEMPLATE_ID, emailParams, PUBLIC_KEY);
 ```
 
-## 🚀 DEPLOYMENT E CI/CD
+## ðŸš€ DEPLOYMENT E CI/CD
 
 ### Environment Configuration:
 ```javascript
@@ -325,7 +325,7 @@ jobs:
         NETLIFY_SITE_ID: ${{ secrets.NETLIFY_SITE_ID }}
 ```
 
-## 📊 MONITORING E ANALYTICS
+## ðŸ“Š MONITORING E ANALYTICS
 
 ### Error Tracking:
 ```javascript
@@ -359,26 +359,27 @@ getLCP(sendToAnalytics);
 getTTFB(sendToAnalytics);
 ```
 
-## 🔮 ESCALABILIDADE E FUTURO
+## ðŸ”® ESCALABILIDADE E FUTURO
 
 ### Arquitetura Preparada Para:
-- **Microservices:** Migração gradual para arquitetura distribuída
-- **Multi-tenant:** Suporte a múltiplas clínicas/hospitais
+- **Microservices:** MigraÃ§Ã£o gradual para arquitetura distribuÃ­da
+- **Multi-tenant:** Suporte a mÃºltiplas clÃ­nicas/hospitais
 - **Mobile Apps:** Base PWA facilita desenvolvimento nativo
-- **AI/ML:** APIs preparadas para integração de IA
-- **IoT:** Integração com dispositivos hospitalares
+- **AI/ML:** APIs preparadas para integraÃ§Ã£o de IA
+- **IoT:** IntegraÃ§Ã£o com dispositivos hospitalares
 
-### Roadmap Técnico:
+### Roadmap TÃ©cnico:
 1. **v1.1:** Mobile apps nativas (React Native)
-2. **v1.2:** Sistema de relatórios avançado (BI)
+2. **v1.2:** Sistema de relatÃ³rios avanÃ§ado (BI)
 3. **v2.0:** Multi-tenant completo
-4. **v2.1:** Integração HL7/FHIR
-5. **v3.0:** AI para predição de demandas
+4. **v2.1:** IntegraÃ§Ã£o HL7/FHIR
+5. **v3.0:** AI para prediÃ§Ã£o de demandas
 
 ---
 
-**© 2024-2025 Samuel dos Reis Lacerda Junior - Todos os direitos reservados**  
-**Sistema YUNA - Especificações Técnicas Proprietárias**  
+**Â© 2024-2025 Samuel dos Reis Lacerda Junior - Todos os direitos reservados**  
+**Sistema YUNA - EspecificaÃ§Ãµes TÃ©cnicas ProprietÃ¡rias**  
 **Desenvolvido por:** Samuel dos Reis Lacerda Junior  
 **CNPJ:** 55.004.442 SAMUEL DOS REIS LACERDA JUNIOR  
 **Contato:** ti@yuna.com.br | +55 11 94586-4671
+

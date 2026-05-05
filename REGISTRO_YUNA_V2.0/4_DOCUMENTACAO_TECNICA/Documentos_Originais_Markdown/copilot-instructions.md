@@ -1,89 +1,89 @@
-# Sistema de Gerenciamento de Solicitações YUNA - Guia de Programação para IA
+﻿# Sistema de Gerenciamento de SolicitaÃ§Ãµes YUNA - Guia de ProgramaÃ§Ã£o para IA
 
-## Visão Geral do Sistema
-Sistema de gerenciamento de solicitações de serviços de saúde para clínicas YUNA com duas SPAs independentes:
-- **Painel Administrativo** (`/admin/`) - Dashboard 13k+ linhas para gestão completa de solicitações, usuários e analytics
-- **Portal dos Acompanhantes** (`/acompanhantes/`) - Interface 4.5k+ linhas auto-contida em single-file HTML para submissão de solicitações
+## VisÃ£o Geral do Sistema
+Sistema de gerenciamento de solicitaÃ§Ãµes de serviÃ§os de saÃºde para clÃ­nicas YUNA com duas SPAs independentes:
+- **Painel Administrativo** (`/admin/`) - Dashboard 13k+ linhas para gestÃ£o completa de solicitaÃ§Ãµes, usuÃ¡rios e analytics
+- **Portal dos Acompanhantes** (`/acompanhantes/`) - Interface 4.5k+ linhas auto-contida em single-file HTML para submissÃ£o de solicitaÃ§Ãµes
 
-**Características Chave:**
-- PWA instalável (offline-capable) via service worker
+**CaracterÃ­sticas Chave:**
+- PWA instalÃ¡vel (offline-capable) via service worker
 - Real-time sync com Firestore listeners
 - Session timeout (10min inatividade) implementado em ambas SPAs
-- Sistema de avaliação de satisfação automático (janela 7 dias pós-finalização)
+- Sistema de avaliaÃ§Ã£o de satisfaÃ§Ã£o automÃ¡tico (janela 7 dias pÃ³s-finalizaÃ§Ã£o)
 
-## Arquitetura e Stack Tecnológico
+## Arquitetura e Stack TecnolÃ³gico
 
 ### Arquitetura Frontend
-- **JavaScript Vanilla puro** - Sem frameworks, manipulação DOM direta
-- **Firebase SDK 9.23.0 (modo compat)** - Para compatibilidade com código legado
-- **Arquitetura multi-SPA**: Cada diretório é uma aplicação isolada com próprio `index.html`
-- **State management**: Variáveis globais via `window.X` + cache in-memory (`window.cachedSolicitacoes`, `window.cachedUsuarios`)
-- **Deploy multi-plataforma**: Netlify (produção), GitHub Pages (alternativo), Vercel (suportado)
+- **JavaScript Vanilla puro** - Sem frameworks, manipulaÃ§Ã£o DOM direta
+- **Firebase SDK 9.23.0 (modo compat)** - Para compatibilidade com cÃ³digo legado
+- **Arquitetura multi-SPA**: Cada diretÃ³rio Ã© uma aplicaÃ§Ã£o isolada com prÃ³prio `index.html`
+- **State management**: VariÃ¡veis globais via `window.X` + cache in-memory (`window.cachedSolicitacoes`, `window.cachedUsuarios`)
+- **Deploy multi-plataforma**: Netlify (produÃ§Ã£o), GitHub Pages (alternativo), Vercel (suportado)
 
 ### Backend e Dados (Firebase)
-**Coleções Firestore Principais:**
+**ColeÃ§Ãµes Firestore Principais:**
 ```
-usuarios_admin/        → {uid, email, role: 'super_admin'|'admin', permissoes, ativo}
-usuarios_equipe/       → {uid, email, equipe/departamento, ativo}
-usuarios_acompanhantes/ → {uid, email, quarto, preCadastro?, ativo}
-solicitacoes/          → {usuarioId, tipo, status, equipe, avaliada?, satisfacao?, criadoEm, finalizadoEm}
-quartos_ocupados/      → {quarto (ID), acompanhanteId, ativo} - Controle de unicidade
+usuarios_admin/        â†’ {uid, email, role: 'super_admin'|'admin', permissoes, ativo}
+usuarios_equipe/       â†’ {uid, email, equipe/departamento, ativo}
+usuarios_acompanhantes/ â†’ {uid, email, quarto, preCadastro?, ativo}
+solicitacoes/          â†’ {usuarioId, tipo, status, equipe, avaliada?, satisfacao?, criadoEm, finalizadoEm}
+quartos_ocupados/      â†’ {quarto (ID), acompanhanteId, ativo} - Controle de unicidade
 ```
 
-**Regras de Segurança Firestore (`firestore.rules`):**
-- Admins: full read/write em usuários e solicitações
-- Equipes: read/write apenas solicitações do seu departamento (`equipe == userEquipe()`)
-- Acompanhantes: CRUD apenas nas próprias solicitações (`usuarioId == request.auth.uid`)
+**Regras de SeguranÃ§a Firestore (`firestore.rules`):**
+- Admins: full read/write em usuÃ¡rios e solicitaÃ§Ãµes
+- Equipes: read/write apenas solicitaÃ§Ãµes do seu departamento (`equipe == userEquipe()`)
+- Acompanhantes: CRUD apenas nas prÃ³prias solicitaÃ§Ãµes (`usuarioId == request.auth.uid`)
 
 ### PWA e Deploy
-- **`manifest.json`**: Nome, ícones, cores tema, standalone mode
-- **`service-worker.js`**: Cache assets estáticos (offline-first)
-- **`netlify.toml`**: Redirecionamentos SPA + proxy `/api/*` → `https://api.yuna.com.br`
-- **`_redirects`**: Fallback para SPAs (404 → index.html)
+- **`manifest.json`**: Nome, Ã­cones, cores tema, standalone mode
+- **`service-worker.js`**: Cache assets estÃ¡ticos (offline-first)
+- **`netlify.toml`**: Redirecionamentos SPA + proxy `/api/*` â†’ `https://api.yuna.com.br`
+- **`_redirects`**: Fallback para SPAs (404 â†’ index.html)
 
-## Padrões Críticos de Lógica de Negócio
+## PadrÃµes CrÃ­ticos de LÃ³gica de NegÃ³cio
 
 ### Sistema RBAC (Role-Based Access Control)
 **Arquivo:** `admin/admin-permissions.js` (165 linhas)
 
 ```javascript
 // Hierarquia: super_admin > admin > equipe
-await verificarUsuarioAdminJS(user); // Retorna null se inativo ou não encontrado
+await verificarUsuarioAdminJS(user); // Retorna null se inativo ou nÃ£o encontrado
 
-// Verificação de permissão específica
-if (!temPermissaoJS(currentUser, 'create_users')) { /* bloquear ação */ }
+// VerificaÃ§Ã£o de permissÃ£o especÃ­fica
+if (!temPermissaoJS(currentUser, 'create_users')) { /* bloquear aÃ§Ã£o */ }
 
-// Filtragem por departamento (equipes veem só suas solicitações)
+// Filtragem por departamento (equipes veem sÃ³ suas solicitaÃ§Ãµes)
 if (!podeVerSolicitacaoJS(currentUser, solicitacao)) { /* ocultar */ }
 ```
 
-**Permissões por Role:**
-- `super_admin`: Tudo + criação/exclusão de admins
-- `admin`: Gerenciar equipes, acompanhantes, ver todas solicitações
-- `equipe`: Ver/atualizar apenas solicitações do próprio departamento
+**PermissÃµes por Role:**
+- `super_admin`: Tudo + criaÃ§Ã£o/exclusÃ£o de admins
+- `admin`: Gerenciar equipes, acompanhantes, ver todas solicitaÃ§Ãµes
+- `equipe`: Ver/atualizar apenas solicitaÃ§Ãµes do prÃ³prio departamento
 
-### Fluxo de Trabalho de Solicitações
-1. **Criação** (Acompanhantes):
-   - UI: 4 cards de serviço (🔧 Manutenção, 🍽️ Nutrição, 🧽 Higienização, 🏨 Hotelaria)
-   - Campos: tipo, prioridade (baixa/media/alta/urgente), descrição, horário preferencial
-   - Auto-atribuição de `equipe` baseada em `tipo` de serviço
+### Fluxo de Trabalho de SolicitaÃ§Ãµes
+1. **CriaÃ§Ã£o** (Acompanhantes):
+   - UI: 4 cards de serviÃ§o (ðŸ”§ ManutenÃ§Ã£o, ðŸ½ï¸ NutriÃ§Ã£o, ðŸ§½ HigienizaÃ§Ã£o, ðŸ¨ Hotelaria)
+   - Campos: tipo, prioridade (baixa/media/alta/urgente), descriÃ§Ã£o, horÃ¡rio preferencial
+   - Auto-atribuiÃ§Ã£o de `equipe` baseada em `tipo` de serviÃ§o
 
 2. **Processamento** (Admin/Equipe):
-   - Status flow: `pendente` → `em-andamento` → `finalizada` (ou `cancelada`)
-   - Modal arrastável (`window.tornarModalArrastavel(modalId)`) para visualização
-   - Cronômetros em tempo real via `setInterval` em cards
+   - Status flow: `pendente` â†’ `em-andamento` â†’ `finalizada` (ou `cancelada`)
+   - Modal arrastÃ¡vel (`window.tornarModalArrastavel(modalId)`) para visualizaÃ§Ã£o
+   - CronÃ´metros em tempo real via `setInterval` em cards
 
-3. **Avaliação** (Acompanhantes):
-   - Trigger automático: solicitação finalizada + `avaliada: false` + < 7 dias
-   - Modal com 5 estrelas + aspectos (rapidez, qualidade, atendimento) + recomendação
-   - Persistência: `satisfacao: {nota, aspectos, comentarios, recomendaria}`
+3. **AvaliaÃ§Ã£o** (Acompanhantes):
+   - Trigger automÃ¡tico: solicitaÃ§Ã£o finalizada + `avaliada: false` + < 7 dias
+   - Modal com 5 estrelas + aspectos (rapidez, qualidade, atendimento) + recomendaÃ§Ã£o
+   - PersistÃªncia: `satisfacao: {nota, aspectos, comentarios, recomendaria}`
 
-### Sistema de Quartos (Locking Atômico)
-**Problema:** Prevenir múltiplos acompanhantes no mesmo quarto
+### Sistema de Quartos (Locking AtÃ´mico)
+**Problema:** Prevenir mÃºltiplos acompanhantes no mesmo quarto
 
-**Solução:** Transação Firestore + coleção `quartos_ocupados`
+**SoluÃ§Ã£o:** TransaÃ§Ã£o Firestore + coleÃ§Ã£o `quartos_ocupados`
 ```javascript
-// Durante cadastro/atualização de acompanhante
+// Durante cadastro/atualizaÃ§Ã£o de acompanhante
 await db.runTransaction(async (transaction) => {
   const quartoDoc = await transaction.get(db.collection('quartos_ocupados').doc(quarto));
   if (quartoDoc.exists && quartoDoc.data().ativo) throw new Error('QUARTO_OCUPADO');
@@ -94,28 +94,28 @@ await db.runTransaction(async (transaction) => {
 });
 ```
 
-**Auto-limpeza:** Se há `quartos_ocupados` ativo mas nenhum `usuarios_acompanhantes` ativo com esse quarto, marca como liberado.
+**Auto-limpeza:** Se hÃ¡ `quartos_ocupados` ativo mas nenhum `usuarios_acompanhantes` ativo com esse quarto, marca como liberado.
 
-### Sistema de Pré-Cadastro (Admin cria, Acompanhante ativa)
-1. **Admin cria:** `usuarios_acompanhantes` com `preCadastro: true` + senha temporária
+### Sistema de PrÃ©-Cadastro (Admin cria, Acompanhante ativa)
+1. **Admin cria:** `usuarios_acompanhantes` com `preCadastro: true` + senha temporÃ¡ria
 2. **Acompanhante ativa:** 
-   - Login tenta `signInWithEmailAndPassword` → falha (`auth/user-not-found`)
+   - Login tenta `signInWithEmailAndPassword` â†’ falha (`auth/user-not-found`)
    - Fallback: `createUserWithEmailAndPassword` + remove flag `preCadastro`
-   - Veja implementação em `acompanhantes/index.html` função `handleLogin()`
+   - Veja implementaÃ§Ã£o em `acompanhantes/index.html` funÃ§Ã£o `handleLogin()`
 
-## Padrões de Desenvolvimento
+## PadrÃµes de Desenvolvimento
 
 ### Gerenciamento de Estado Global
 ```javascript
 // Cache in-memory para evitar re-fetches
-window.cachedSolicitacoes = []; // Array de objetos solicitação
-window.cachedUsuarios = [];     // Array de objetos usuário
+window.cachedSolicitacoes = []; // Array de objetos solicitaÃ§Ã£o
+window.cachedUsuarios = [];     // Array de objetos usuÃ¡rio
 
 // Inicializado no topo de admin/admin-panel.js (linha 17-19)
-// Atualizado após cada carregamento de dados
+// Atualizado apÃ³s cada carregamento de dados
 ```
 
-### Padrão de Modal/UI
+### PadrÃ£o de Modal/UI
 ```javascript
 // Show modal
 document.getElementById('modal-id').classList.remove('hidden');
@@ -130,9 +130,9 @@ function fecharModal() {
 window.fecharModal = fecharModal;
 ```
 
-**Modal Arrastável:** Chame `window.tornarModalArrastavel('modal-id')` após abrir modal.
+**Modal ArrastÃ¡vel:** Chame `window.tornarModalArrastavel('modal-id')` apÃ³s abrir modal.
 
-### Notificações Toast
+### NotificaÃ§Ãµes Toast
 ```javascript
 // Ambas SPAs implementam:
 showToast(titulo, mensagem, tipo, duracao = 5000);
@@ -141,13 +141,13 @@ showToast(titulo, mensagem, tipo, duracao = 5000);
 
 ### Real-time Listeners
 ```javascript
-// Padrão em ambas SPAs
+// PadrÃ£o em ambas SPAs
 let unsubscribe = db.collection('solicitacoes')
   .where('usuarioId', '==', userId)
   .onSnapshot(snapshot => {
     snapshot.docChanges().forEach(change => {
-      if (change.type === 'added') { /* nova solicitação */ }
-      if (change.type === 'modified') { /* atualização */ }
+      if (change.type === 'added') { /* nova solicitaÃ§Ã£o */ }
+      if (change.type === 'modified') { /* atualizaÃ§Ã£o */ }
     });
   });
 
@@ -159,65 +159,65 @@ function cleanup() {
 
 ### Tratamento de Erros Firestore
 ```javascript
-// CRÍTICO: Queries com múltiplos where + orderBy requerem índice composto
+// CRÃTICO: Queries com mÃºltiplos where + orderBy requerem Ã­ndice composto
 // Evitar: .where('userId', '==', X).where('status', '==', Y).orderBy('createdAt')
-// Preferir: ordenação client-side via Array.sort() pós-fetch
+// Preferir: ordenaÃ§Ã£o client-side via Array.sort() pÃ³s-fetch
 
 try {
   const snapshot = await db.collection('X').where('Y', '==', Z).get();
   // processar
 } catch (error) {
   console.error('[ERRO] Contexto:', error);
-  showToast('Erro', 'Mensagem amigável para usuário', 'error');
-  // Nunca expor error.message diretamente ao usuário
+  showToast('Erro', 'Mensagem amigÃ¡vel para usuÃ¡rio', 'error');
+  // Nunca expor error.message diretamente ao usuÃ¡rio
 }
 ```
 
-## Estrutura de Arquivos Crítica
+## Estrutura de Arquivos CrÃ­tica
 
-### Arquivos de Lógica Principal
+### Arquivos de LÃ³gica Principal
 ```
 admin/
-├── admin-panel.js (13k+ linhas)  → Core admin: CRUD usuários, solicitações, dashboard
-├── admin-permissions.js          → RBAC helper functions
-└── admin-panel-styles.css        → Estilos específicos admin
+â”œâ”€â”€ admin-panel.js (13k+ linhas)  â†’ Core admin: CRUD usuÃ¡rios, solicitaÃ§Ãµes, dashboard
+â”œâ”€â”€ admin-permissions.js          â†’ RBAC helper functions
+â””â”€â”€ admin-panel-styles.css        â†’ Estilos especÃ­ficos admin
 
 acompanhantes/
-└── index.html (4.5k+ linhas)     → Single-file SPA (HTML + CSS + JS inline)
+â””â”€â”€ index.html (4.5k+ linhas)     â†’ Single-file SPA (HTML + CSS + JS inline)
 
 root/
-├── firebase-config-secure.js     → Shared config (importado via script tag)
-├── firestore.rules               → Security rules (deploy via Firebase CLI)
-├── manifest.json                 → PWA manifest
-├── service-worker.js             → Cache strategy
-└── netlify.toml / _redirects     → Deploy routing
+â”œâ”€â”€ firebase-config-secure.js     â†’ Shared config (importado via script tag)
+â”œâ”€â”€ firestore.rules               â†’ Security rules (deploy via Firebase CLI)
+â”œâ”€â”€ manifest.json                 â†’ PWA manifest
+â”œâ”€â”€ service-worker.js             â†’ Cache strategy
+â””â”€â”€ netlify.toml / _redirects     â†’ Deploy routing
 ```
 
-### Scripts de Manutenção (`/scripts/`)
+### Scripts de ManutenÃ§Ã£o (`/scripts/`)
 - `enviar-emails-reset.js` - Envia reset de senha para lista de emails
-- `recriar-usuarios.js` - Recria usuários com Firebase Admin SDK
+- `recriar-usuarios.js` - Recria usuÃ¡rios com Firebase Admin SDK
 - `atualizar-senhas-direto.js` - Atualiza senhas via Admin SDK
 
 **Executar via:** `node scripts/nome-do-script.js` (requer `firebase-service-account.json` na raiz)
 
 ## Fluxos de Trabalho Comuns
 
-### Adicionar Novo Tipo de Solicitação
-1. **Admin:** Adicionar card em `acompanhantes/index.html` (seção `.services-grid`):
+### Adicionar Novo Tipo de SolicitaÃ§Ã£o
+1. **Admin:** Adicionar card em `acompanhantes/index.html` (seÃ§Ã£o `.services-grid`):
    ```html
    <div class="service-card [classe-tema]" onclick="abrirSolicitacao('novo-tipo')">
-     <div class="icon">🆕</div>
-     <h3>Novo Serviço</h3>
+     <div class="icon">ðŸ†•</div>
+     <h3>Novo ServiÃ§o</h3>
    </div>
    ```
 
-2. **Atualizar lógica:** Adicionar case em `abrirSolicitacao()` e `enviarSolicitacao()`
+2. **Atualizar lÃ³gica:** Adicionar case em `abrirSolicitacao()` e `enviarSolicitacao()`
 
-3. **Mapear equipe:** Atualizar mapeamento `tipo` → `equipe` em função de criação
+3. **Mapear equipe:** Atualizar mapeamento `tipo` â†’ `equipe` em funÃ§Ã£o de criaÃ§Ã£o
 
 4. **Firestore rules:** Verificar se regras permitem novo campo `tipo`
 
-### Criar Nova Permissão Admin
+### Criar Nova PermissÃ£o Admin
 1. **Adicionar em `admin/admin-permissions.js`:**
    ```javascript
    const PERMISSOES = {
@@ -232,17 +232,17 @@ root/
 2. **Usar em `admin/admin-panel.js`:**
    ```javascript
    if (!temPermissaoJS(currentUser, 'nova_permissao')) {
-     showToast('Erro', 'Sem permissão', 'error');
+     showToast('Erro', 'Sem permissÃ£o', 'error');
      return;
    }
    ```
 
-### Deploy para Produção
+### Deploy para ProduÃ§Ã£o
 ```bash
-# GitHub Pages (automático em push para main)
+# GitHub Pages (automÃ¡tico em push para main)
 git add . && git commit -m "feat: nova funcionalidade" && git push origin main
 
-# Netlify (link repositório GitHub no dashboard ou CLI)
+# Netlify (link repositÃ³rio GitHub no dashboard ou CLI)
 netlify deploy --prod
 
 # Verificar
@@ -250,53 +250,53 @@ netlify deploy --prod
 # Acompanhantes: https://clinicasyuna.github.io/yuna/acompanhantes/
 ```
 
-**Lembrete:** Adicionar domínio em Firebase Console → Authentication → Authorized domains
+**Lembrete:** Adicionar domÃ­nio em Firebase Console â†’ Authentication â†’ Authorized domains
 
 ## Debugging e Troubleshooting
 
 ### Logs Estruturados
-**Padrão usado no projeto:**
+**PadrÃ£o usado no projeto:**
 ```javascript
 console.log('[DEBUG] Contexto:', dados);
-console.log('[SUCCESS] Operação:', resultado);
+console.log('[SUCCESS] OperaÃ§Ã£o:', resultado);
 console.error('[ERRO] Falha em:', error);
-console.log('🎯🎯🎯 [TAG] Debug específico:', valor); // Tags visuais para busca rápida
+console.log('ðŸŽ¯ðŸŽ¯ðŸŽ¯ [TAG] Debug especÃ­fico:', valor); // Tags visuais para busca rÃ¡pida
 ```
 
 ### Issues Comuns
 1. **"Permission denied" em queries:**
-   - Verificar `firestore.rules` → Usuário tem role correto?
-   - Usuario está `ativo: true`?
+   - Verificar `firestore.rules` â†’ UsuÃ¡rio tem role correto?
+   - Usuario estÃ¡ `ativo: true`?
 
-2. **Modal não fecha:**
-   - Verificar se função está em `window.X = X`
-   - Classe `.hidden` está aplicada?
+2. **Modal nÃ£o fecha:**
+   - Verificar se funÃ§Ã£o estÃ¡ em `window.X = X`
+   - Classe `.hidden` estÃ¡ aplicada?
 
 3. **Cache desatualizado:**
    - Limpar: `window.cachedSolicitacoes = []` e recarregar dados
    - Service worker: Limpar cache do navegador (Ctrl+Shift+Del)
 
-4. **Timeout de sessão não funciona:**
-   - Verificar se `initializeSessionTimeout()` foi chamado após login
-   - Events listeners de atividade (`mousedown`, `keypress`, etc.) estão ativos?
+4. **Timeout de sessÃ£o nÃ£o funciona:**
+   - Verificar se `initializeSessionTimeout()` foi chamado apÃ³s login
+   - Events listeners de atividade (`mousedown`, `keypress`, etc.) estÃ£o ativos?
 
-## Considerações de Performance
+## ConsideraÃ§Ãµes de Performance
 
-### Otimizações Implementadas
-- **Paginação:** Listas de usuários/solicitações carregam 50 itens por vez
-- **Filtragem client-side:** Evita índices compostos Firestore (caros e lentos de criar)
-- **Cache in-memory:** `window.cachedX` evita re-fetches desnecessários
-- **Listeners limitados:** Desinscrever (`unsubscribe()`) ao logout/navegação
+### OtimizaÃ§Ãµes Implementadas
+- **PaginaÃ§Ã£o:** Listas de usuÃ¡rios/solicitaÃ§Ãµes carregam 50 itens por vez
+- **Filtragem client-side:** Evita Ã­ndices compostos Firestore (caros e lentos de criar)
+- **Cache in-memory:** `window.cachedX` evita re-fetches desnecessÃ¡rios
+- **Listeners limitados:** Desinscrever (`unsubscribe()`) ao logout/navegaÃ§Ã£o
 
 ### Anti-Patterns a Evitar
-- ❌ `orderBy()` + múltiplos `where()` sem índice composto → Usar `.sort()` pós-fetch
-- ❌ Listeners sem cleanup → Memory leak ao navegar entre páginas
-- ❌ `get()` em loop → Preferir `in` queries ou `getAll()`
-- ❌ Atualizar Firestore em cada keystroke → Debounce ou salvar só ao blur
+- âŒ `orderBy()` + mÃºltiplos `where()` sem Ã­ndice composto â†’ Usar `.sort()` pÃ³s-fetch
+- âŒ Listeners sem cleanup â†’ Memory leak ao navegar entre pÃ¡ginas
+- âŒ `get()` em loop â†’ Preferir `in` queries ou `getAll()`
+- âŒ Atualizar Firestore em cada keystroke â†’ Debounce ou salvar sÃ³ ao blur
 
-## Integrações Externas
+## IntegraÃ§Ãµes Externas
 
-### Dependências (Carregadas via CDN)
+### DependÃªncias (Carregadas via CDN)
 ```html
 <!-- Firebase 9.23.0 (modo compat) -->
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
@@ -306,17 +306,17 @@ console.log('🎯🎯🎯 [TAG] Debug específico:', valor); // Tags visuais par
 <!-- Font Awesome 6.4.0 -->
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 
-<!-- XLSX.js (só admin) -->
+<!-- XLSX.js (sÃ³ admin) -->
 <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
 ```
 
-### EmailJS (Notificações)
-- Configurado em admin para envio de notificações
-- Template IDs e chaves API em variáveis globais no topo de `admin-panel.js`
+### EmailJS (NotificaÃ§Ãµes)
+- Configurado em admin para envio de notificaÃ§Ãµes
+- Template IDs e chaves API em variÃ¡veis globais no topo de `admin-panel.js`
 
-## Recursos de Referência
-- **Firebase Console:** https://console.firebase.google.com (projeto: studio-5526632052-23813)
+## Recursos de ReferÃªncia
+- **Firebase Console:** https://console.firebase.google.com (projeto: app-pedidos-4656c)
 - **GitHub Repo:** https://github.com/clinicasyuna/yuna
 - **Deploy Prod:** https://clinicasyuna.github.io/yuna/
-- **Documentação Firebase:** https://firebase.google.com/docs/firestore
+- **DocumentaÃ§Ã£o Firebase:** https://firebase.google.com/docs/firestore
 - **PWA Checklist:** https://web.dev/pwa-checklist/

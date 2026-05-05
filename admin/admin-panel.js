@@ -1119,7 +1119,7 @@ window.verificarUsuariosOrfaos = async function() {
         // NOTA: Não é possível listar todos os usuários do Auth no frontend
         // Esta função apenas mostra como identificar o problema
         console.log('⚠️ IMPORTANTE: Para limpar usuários órfãos do Firebase Auth, use o Firebase Console ou Firebase Admin SDK no backend.');
-        console.log('🔗 Link: https://console.firebase.google.com/project/studio-5526632052-23813/authentication/users');
+        console.log('🔗 Link: https://console.firebase.google.com/project/app-pedidos-4656c/authentication/users');
         
         // Se você tem o email específico que está dando erro, pode tentar criar novamente
         const emailProblematico = prompt('Digite o email que está dando erro para tentar recriar:');
@@ -1395,12 +1395,12 @@ async function initFirebaseApp() {
     try {
         if (!firebase.apps.length) {
             const firebaseConfig = {
-                apiKey: "AIzaSyAogGkN5N24Puss4-kF9Z6npPYyEzVei3M",
-                authDomain: "studio-5526632052-23813.firebaseapp.com",
-                projectId: "studio-5526632052-23813",
-                storageBucket: "studio-5526632052-23813.firebasestorage.app",
-                messagingSenderId: "251931417472",
-                appId: "1:251931417472:web:4b955052a184d114f57f65"
+                apiKey: "AIzaSyB8vh5TxODwXXQIq49vkhtfCK6VLk9bMRs",
+                authDomain: "app-pedidos-4656c.firebaseapp.com",
+                projectId: "app-pedidos-4656c",
+                storageBucket: "app-pedidos-4656c.firebasestorage.app",
+                messagingSenderId: "979848418674",
+                appId: "1:979848418674:web:c591005f8f262702cdb9eb"
             };
             
             debugLog('[DEBUG] Inicializando Firebase com config:', firebaseConfig.projectId);

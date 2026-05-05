@@ -1,94 +1,94 @@
-# 🔒 Configuração de Segurança YUNA
+﻿# ðŸ”’ ConfiguraÃ§Ã£o de SeguranÃ§a YUNA
 
-## 📋 Instruções de Implementação
+## ðŸ“‹ InstruÃ§Ãµes de ImplementaÃ§Ã£o
 
 ### 1. Configurar Firestore Security Rules
 
-**Arquivo:** `firestore.rules` (já criado)
+**Arquivo:** `firestore.rules` (jÃ¡ criado)
 
 **Como aplicar:**
 1. Acesse o [Firebase Console](https://console.firebase.google.com/)
-2. Selecione seu projeto: `studio-5526632052-23813`
-3. Vá para **Firestore Database**
+2. Selecione seu projeto: `app-pedidos-4656c`
+3. VÃ¡ para **Firestore Database**
 4. Clique na aba **Rules**
-5. Cole o conteúdo do arquivo `firestore.rules`
+5. Cole o conteÃºdo do arquivo `firestore.rules`
 6. Clique em **Publish**
 
 ### 2. Configurar Firebase Authentication
 
-**Configurações recomendadas:**
+**ConfiguraÃ§Ãµes recomendadas:**
 - Ativar **Email/Password**
-- Configurar **Password Policy**: mínimo 8 caracteres
-- Ativar **Account Protection**: bloqueio após 5 tentativas
-- Configurar **Authorized domains**: adicionar seu domínio personalizado
+- Configurar **Password Policy**: mÃ­nimo 8 caracteres
+- Ativar **Account Protection**: bloqueio apÃ³s 5 tentativas
+- Configurar **Authorized domains**: adicionar seu domÃ­nio personalizado
 
-### 3. Configurar Domínio Personalizado
+### 3. Configurar DomÃ­nio Personalizado
 
 **Recomendado:** `app.clinicasyuna.com.br`
 
 **Passos:**
-1. Registrar domínio se ainda não tiver
+1. Registrar domÃ­nio se ainda nÃ£o tiver
 2. Configurar DNS apontando para GitHub Pages
-3. Adicionar domínio nas configurações do repositório
-4. Configurar HTTPS automático
+3. Adicionar domÃ­nio nas configuraÃ§Ãµes do repositÃ³rio
+4. Configurar HTTPS automÃ¡tico
 
 ### 4. Backup e Monitoramento
 
-**Backup Automático:**
+**Backup AutomÃ¡tico:**
 - Configurar no Firebase Console
-- Frequency: Diário
+- Frequency: DiÃ¡rio
 - Retention: 30 dias
 
 **Monitoramento:**
-- Ativar alertas de segurança
+- Ativar alertas de seguranÃ§a
 - Configurar logs de auditoria
 - Monitorar tentativas de login
 
-## 🚨 Configurações Críticas de Segurança
+## ðŸš¨ ConfiguraÃ§Ãµes CrÃ­ticas de SeguranÃ§a
 
 ### Firebase Security Rules (IMPLEMENTADO)
-✅ Controle de acesso baseado em roles
-✅ Proteção contra acesso não autorizado
-✅ Logs de auditoria automáticos
-✅ Validação de permissões granulares
+âœ… Controle de acesso baseado em roles
+âœ… ProteÃ§Ã£o contra acesso nÃ£o autorizado
+âœ… Logs de auditoria automÃ¡ticos
+âœ… ValidaÃ§Ã£o de permissÃµes granulares
 
 ### Rate Limiting (IMPLEMENTADO)
-✅ Bloqueio após 5 tentativas de login
-✅ Tempo de bloqueio: 15 minutos
-✅ Reset automático após timeout
+âœ… Bloqueio apÃ³s 5 tentativas de login
+âœ… Tempo de bloqueio: 15 minutos
+âœ… Reset automÃ¡tico apÃ³s timeout
 
 ### Auditoria (IMPLEMENTADO)
-✅ Log de todas as ações críticas
-✅ Detecção de atividade suspeita
-✅ Rastreamento de IP e User Agent
-✅ Logs imutáveis de auditoria
+âœ… Log de todas as aÃ§Ãµes crÃ­ticas
+âœ… DetecÃ§Ã£o de atividade suspeita
+âœ… Rastreamento de IP e User Agent
+âœ… Logs imutÃ¡veis de auditoria
 
-### Proteção de Sessão (IMPLEMENTADO)
-✅ Verificação de integridade da sessão
-✅ Detecção de mudança de dispositivo
-✅ Limpeza automática de dados sensíveis
+### ProteÃ§Ã£o de SessÃ£o (IMPLEMENTADO)
+âœ… VerificaÃ§Ã£o de integridade da sessÃ£o
+âœ… DetecÃ§Ã£o de mudanÃ§a de dispositivo
+âœ… Limpeza automÃ¡tica de dados sensÃ­veis
 
-## 📞 Suporte para Implementação
+## ðŸ“ž Suporte para ImplementaÃ§Ã£o
 
 **Precisa de ajuda com:**
-1. **Configuração do Firebase:** Posso guiar passo a passo
-2. **DNS e domínio:** Preciso dos dados do seu provedor
+1. **ConfiguraÃ§Ã£o do Firebase:** Posso guiar passo a passo
+2. **DNS e domÃ­nio:** Preciso dos dados do seu provedor
 3. **Certificados SSL:** GitHub Pages faz automaticamente
 4. **Monitoramento:** Posso configurar alertas
 
-## 🎯 Status de Implementação
+## ðŸŽ¯ Status de ImplementaÃ§Ã£o
 
-- ✅ **Firestore Rules**: Criadas e prontas para deploy
-- ✅ **Sistema de Auditoria**: Implementado no código
-- ✅ **Rate Limiting**: Implementado
-- ✅ **Proteção de Sessão**: Implementada
-- ⏳ **Deploy no Firebase**: Aguardando sua ação
-- ⏳ **Domínio Personalizado**: Aguardando configuração
-- ⏳ **Monitoramento**: Aguardando configuração Firebase
+- âœ… **Firestore Rules**: Criadas e prontas para deploy
+- âœ… **Sistema de Auditoria**: Implementado no cÃ³digo
+- âœ… **Rate Limiting**: Implementado
+- âœ… **ProteÃ§Ã£o de SessÃ£o**: Implementada
+- â³ **Deploy no Firebase**: Aguardando sua aÃ§Ã£o
+- â³ **DomÃ­nio Personalizado**: Aguardando configuraÃ§Ã£o
+- â³ **Monitoramento**: Aguardando configuraÃ§Ã£o Firebase
 
-## 🔐 Próximos Passos
+## ðŸ” PrÃ³ximos Passos
 
 1. **IMEDIATO**: Aplicar Firestore Rules no console
-2. **1-2 dias**: Configurar domínio personalizado
+2. **1-2 dias**: Configurar domÃ­nio personalizado
 3. **1 semana**: Configurar monitoramento completo
-4. **Contínuo**: Monitorar logs de segurança
+4. **ContÃ­nuo**: Monitorar logs de seguranÃ§a

@@ -1,38 +1,38 @@
-<h1 id="especificações-técnicas---sistema-yuna">ESPECIFICAÇÕES TÉCNICAS
+﻿<h1 id="especificaÃ§Ãµes-tÃ©cnicas---sistema-yuna">ESPECIFICAÃ‡Ã•ES TÃ‰CNICAS
 - SISTEMA YUNA</h1>
-<h2 id="arquitetura-de-software">🔧 ARQUITETURA DE SOFTWARE</h2>
-<h3 id="padrão-arquitetural">Padrão Arquitetural</h3>
+<h2 id="arquitetura-de-software">ðŸ”§ ARQUITETURA DE SOFTWARE</h2>
+<h3 id="padrÃ£o-arquitetural">PadrÃ£o Arquitetural</h3>
 <p><strong>Multi-SPA (Multiple Single Page Applications)</strong> - Cada
-diretório funciona como uma SPA independente - Compartilhamento de
+diretÃ³rio funciona como uma SPA independente - Compartilhamento de
 recursos via arquivos na raiz - Deploy otimizado com cache granular -
-Manutenção modular facilitada</p>
-<h3 id="stack-tecnológico-detalhado">Stack Tecnológico Detalhado</h3>
+ManutenÃ§Ã£o modular facilitada</p>
+<h3 id="stack-tecnolÃ³gico-detalhado">Stack TecnolÃ³gico Detalhado</h3>
 <h4 id="frontend">Frontend:</h4>
 <div class="sourceCode" id="cb1"><pre
 class="sourceCode javascript"><code class="sourceCode javascript"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="co">// Tecnologias Core</span></span>
-<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a>HTML5<span class="op">:</span> Estrutura semântica</span>
-<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a>CSS3<span class="op">:</span> Estilização responsiva <span class="op">+</span> Grid<span class="op">/</span>Flexbox</span>
-<span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a>JavaScript ES6<span class="op">+:</span> Lógica de negócio vanilla</span>
+<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a>HTML5<span class="op">:</span> Estrutura semÃ¢ntica</span>
+<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a>CSS3<span class="op">:</span> EstilizaÃ§Ã£o responsiva <span class="op">+</span> Grid<span class="op">/</span>Flexbox</span>
+<span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a>JavaScript ES6<span class="op">+:</span> LÃ³gica de negÃ³cio vanilla</span>
 <span id="cb1-5"><a href="#cb1-5" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb1-6"><a href="#cb1-6" aria-hidden="true" tabindex="-1"></a><span class="co">// Bibliotecas Externas</span></span>
 <span id="cb1-7"><a href="#cb1-7" aria-hidden="true" tabindex="-1"></a>Firebase SDK <span class="fl">9.23.0</span><span class="op">:</span> Backend<span class="op">-</span><span class="im">as</span><span class="op">-</span>a<span class="op">-</span>Service</span>
 <span id="cb1-8"><a href="#cb1-8" aria-hidden="true" tabindex="-1"></a>Font Awesome <span class="fl">6.4.0</span><span class="op">:</span> Iconografia</span>
-<span id="cb1-9"><a href="#cb1-9" aria-hidden="true" tabindex="-1"></a>XLSX<span class="op">.</span><span class="at">js</span><span class="op">:</span> Exportação de dados</span>
-<span id="cb1-10"><a href="#cb1-10" aria-hidden="true" tabindex="-1"></a>EmailJS<span class="op">:</span> Sistema de notificações</span></code></pre></div>
+<span id="cb1-9"><a href="#cb1-9" aria-hidden="true" tabindex="-1"></a>XLSX<span class="op">.</span><span class="at">js</span><span class="op">:</span> ExportaÃ§Ã£o de dados</span>
+<span id="cb1-10"><a href="#cb1-10" aria-hidden="true" tabindex="-1"></a>EmailJS<span class="op">:</span> Sistema de notificaÃ§Ãµes</span></code></pre></div>
 <h4 id="backend-serverless">Backend (Serverless):</h4>
 <div class="sourceCode" id="cb2"><pre
 class="sourceCode javascript"><code class="sourceCode javascript"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="co">// Firebase Services</span></span>
-<span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a>Authentication<span class="op">:</span> Gerenciamento de usuários</span>
+<span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a>Authentication<span class="op">:</span> Gerenciamento de usuÃ¡rios</span>
 <span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a>Firestore<span class="op">:</span> Banco NoSQL em tempo real</span>
 <span id="cb2-4"><a href="#cb2-4" aria-hidden="true" tabindex="-1"></a>Hosting<span class="op">:</span> Deploy e CDN <span class="bu">global</span></span>
 <span id="cb2-5"><a href="#cb2-5" aria-hidden="true" tabindex="-1"></a>Functions<span class="op">:</span> Processamento <span class="fu">serverless</span> (futuro)</span>
 <span id="cb2-6"><a href="#cb2-6" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb2-7"><a href="#cb2-7" aria-hidden="true" tabindex="-1"></a><span class="co">// Configuração de Segurança</span></span>
-<span id="cb2-8"><a href="#cb2-8" aria-hidden="true" tabindex="-1"></a>Rules<span class="op">:</span> Validação server<span class="op">-</span>side</span>
-<span id="cb2-9"><a href="#cb2-9" aria-hidden="true" tabindex="-1"></a>Indexes<span class="op">:</span> Otimização de queries</span></code></pre></div>
+<span id="cb2-7"><a href="#cb2-7" aria-hidden="true" tabindex="-1"></a><span class="co">// ConfiguraÃ§Ã£o de SeguranÃ§a</span></span>
+<span id="cb2-8"><a href="#cb2-8" aria-hidden="true" tabindex="-1"></a>Rules<span class="op">:</span> ValidaÃ§Ã£o server<span class="op">-</span>side</span>
+<span id="cb2-9"><a href="#cb2-9" aria-hidden="true" tabindex="-1"></a>Indexes<span class="op">:</span> OtimizaÃ§Ã£o de queries</span></code></pre></div>
 <h3 id="estrutura-de-dados-firestore">Estrutura de Dados
 (Firestore)</h3>
-<h4 id="coleções-principais">Coleções Principais:</h4>
+<h4 id="coleÃ§Ãµes-principais">ColeÃ§Ãµes Principais:</h4>
 <div class="sourceCode" id="cb3"><pre
 class="sourceCode javascript"><code class="sourceCode javascript"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a><span class="co">// usuarios_admin</span></span>
 <span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a>{</span>
@@ -100,20 +100,20 @@ class="sourceCode javascript"><code class="sourceCode javascript"><span id="cb3-
 <span id="cb3-64"><a href="#cb3-64" aria-hidden="true" tabindex="-1"></a>  <span class="dt">dataAvaliacao</span><span class="op">:</span> timestamp<span class="op">,</span></span>
 <span id="cb3-65"><a href="#cb3-65" aria-hidden="true" tabindex="-1"></a>  <span class="dt">usuarioUid</span><span class="op">:</span> string</span>
 <span id="cb3-66"><a href="#cb3-66" aria-hidden="true" tabindex="-1"></a>}</span></code></pre></div>
-<h2 id="sistema-de-segurança">🔐 SISTEMA DE SEGURANÇA</h2>
-<h3 id="autenticação">Autenticação</h3>
+<h2 id="sistema-de-seguranÃ§a">ðŸ” SISTEMA DE SEGURANÃ‡A</h2>
+<h3 id="autenticaÃ§Ã£o">AutenticaÃ§Ã£o</h3>
 <div class="sourceCode" id="cb4"><pre
 class="sourceCode javascript"><code class="sourceCode javascript"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a><span class="co">// Firebase Authentication</span></span>
 <span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a><span class="op">-</span> OAuth2 <span class="op">+</span> JWT tokens</span>
-<span id="cb4-3"><a href="#cb4-3" aria-hidden="true" tabindex="-1"></a><span class="op">-</span> Session management automático</span>
-<span id="cb4-4"><a href="#cb4-4" aria-hidden="true" tabindex="-1"></a><span class="op">-</span> Password policies configuráveis</span>
+<span id="cb4-3"><a href="#cb4-3" aria-hidden="true" tabindex="-1"></a><span class="op">-</span> Session management automÃ¡tico</span>
+<span id="cb4-4"><a href="#cb4-4" aria-hidden="true" tabindex="-1"></a><span class="op">-</span> Password policies configurÃ¡veis</span>
 <span id="cb4-5"><a href="#cb4-5" aria-hidden="true" tabindex="-1"></a><span class="op">-</span> Rate limiting integrado</span></code></pre></div>
-<h3 id="autorização-rbac">Autorização (RBAC)</h3>
+<h3 id="autorizaÃ§Ã£o-rbac">AutorizaÃ§Ã£o (RBAC)</h3>
 <div class="sourceCode" id="cb5"><pre
 class="sourceCode javascript"><code class="sourceCode javascript"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a><span class="co">// Role-Based Access Control</span></span>
 <span id="cb5-2"><a href="#cb5-2" aria-hidden="true" tabindex="-1"></a><span class="kw">function</span> <span class="fu">verificarPermissoes</span>(usuario<span class="op">,</span> acao) {</span>
 <span id="cb5-3"><a href="#cb5-3" aria-hidden="true" tabindex="-1"></a>  <span class="kw">const</span> permissoes <span class="op">=</span> {</span>
-<span id="cb5-4"><a href="#cb5-4" aria-hidden="true" tabindex="-1"></a>    <span class="dt">super_admin</span><span class="op">:</span> [<span class="st">&#39;*&#39;</span>]<span class="op">,</span> <span class="co">// Todas as permissões</span></span>
+<span id="cb5-4"><a href="#cb5-4" aria-hidden="true" tabindex="-1"></a>    <span class="dt">super_admin</span><span class="op">:</span> [<span class="st">&#39;*&#39;</span>]<span class="op">,</span> <span class="co">// Todas as permissÃµes</span></span>
 <span id="cb5-5"><a href="#cb5-5" aria-hidden="true" tabindex="-1"></a>    <span class="dt">admin</span><span class="op">:</span> [<span class="st">&#39;view_all&#39;</span><span class="op">,</span> <span class="st">&#39;export_reports&#39;</span><span class="op">,</span> <span class="st">&#39;view_satisfaction&#39;</span>]<span class="op">,</span></span>
 <span id="cb5-6"><a href="#cb5-6" aria-hidden="true" tabindex="-1"></a>    <span class="dt">equipe</span><span class="op">:</span> [<span class="st">&#39;view_own_team&#39;</span><span class="op">,</span> <span class="st">&#39;update_requests&#39;</span>]<span class="op">,</span></span>
 <span id="cb5-7"><a href="#cb5-7" aria-hidden="true" tabindex="-1"></a>    <span class="dt">acompanhante</span><span class="op">:</span> [<span class="st">&#39;create_request&#39;</span><span class="op">,</span> <span class="st">&#39;view_own_requests&#39;</span>]</span>
@@ -124,11 +124,11 @@ class="sourceCode javascript"><code class="sourceCode javascript"><span id="cb5-
 <span id="cb5-12"><a href="#cb5-12" aria-hidden="true" tabindex="-1"></a>}</span></code></pre></div>
 <h3 id="firestore-security-rules">Firestore Security Rules</h3>
 <div class="sourceCode" id="cb6"><pre
-class="sourceCode javascript"><code class="sourceCode javascript"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a><span class="co">// Regras de segurança no servidor</span></span>
+class="sourceCode javascript"><code class="sourceCode javascript"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a><span class="co">// Regras de seguranÃ§a no servidor</span></span>
 <span id="cb6-2"><a href="#cb6-2" aria-hidden="true" tabindex="-1"></a>rules_version <span class="op">=</span> <span class="st">&#39;2&#39;</span><span class="op">;</span></span>
 <span id="cb6-3"><a href="#cb6-3" aria-hidden="true" tabindex="-1"></a>service cloud<span class="op">.</span><span class="at">firestore</span> {</span>
 <span id="cb6-4"><a href="#cb6-4" aria-hidden="true" tabindex="-1"></a>  match <span class="op">/</span>databases<span class="op">/</span>{database}<span class="ss">/documents {</span></span>
-<span id="cb6-5"><a href="#cb6-5" aria-hidden="true" tabindex="-1"></a><span class="ss">    // Solicitações - filtro por equipe</span></span>
+<span id="cb6-5"><a href="#cb6-5" aria-hidden="true" tabindex="-1"></a><span class="ss">    // SolicitaÃ§Ãµes - filtro por equipe</span></span>
 <span id="cb6-6"><a href="#cb6-6" aria-hidden="true" tabindex="-1"></a><span class="ss">    match /solicitacoes/{document} {</span></span>
 <span id="cb6-7"><a href="#cb6-7" aria-hidden="true" tabindex="-1"></a><span class="ss">      allow read: if isAuthenticated</span><span class="sc">()</span><span class="ss"> &amp;&amp; </span></span>
 <span id="cb6-8"><a href="#cb6-8" aria-hidden="true" tabindex="-1"></a><span class="ss">        </span><span class="sc">(</span><span class="ss">isSuperAdmin</span><span class="sc">()</span><span class="ss"> </span><span class="sc">||</span><span class="ss"> isAdmin</span><span class="sc">()</span><span class="ss"> </span><span class="sc">||</span><span class="ss"> </span></span>
@@ -142,7 +142,7 @@ class="sourceCode javascript"><code class="sourceCode javascript"><span id="cb6-
 <span id="cb6-16"><a href="#cb6-16" aria-hidden="true" tabindex="-1"></a><span class="ss">    }</span></span>
 <span id="cb6-17"><a href="#cb6-17" aria-hidden="true" tabindex="-1"></a><span class="ss">  }</span></span>
 <span id="cb6-18"><a href="#cb6-18" aria-hidden="true" tabindex="-1"></a><span class="ss">}</span></span></code></pre></div>
-<h2 id="performance-e-otimização">⚡ PERFORMANCE E OTIMIZAÇÃO</h2>
+<h2 id="performance-e-otimizaÃ§Ã£o">âš¡ PERFORMANCE E OTIMIZAÃ‡ÃƒO</h2>
 <h3 id="pwa-progressive-web-app">PWA (Progressive Web App)</h3>
 <div class="sourceCode" id="cb7"><pre
 class="sourceCode javascript"><code class="sourceCode javascript"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a><span class="co">// Service Worker Strategy</span></span>
@@ -154,19 +154,19 @@ class="sourceCode javascript"><code class="sourceCode javascript"><span id="cb7-
 <span id="cb7-7"><a href="#cb7-7" aria-hidden="true" tabindex="-1"></a>  <span class="st">&#39;/manifest.json&#39;</span></span>
 <span id="cb7-8"><a href="#cb7-8" aria-hidden="true" tabindex="-1"></a>]<span class="op">;</span></span>
 <span id="cb7-9"><a href="#cb7-9" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb7-10"><a href="#cb7-10" aria-hidden="true" tabindex="-1"></a><span class="co">// Cache Strategy: Network First para dados dinâmicos</span></span>
-<span id="cb7-11"><a href="#cb7-11" aria-hidden="true" tabindex="-1"></a><span class="co">// Cache Strategy: Cache First para assets estáticos</span></span></code></pre></div>
-<h3 id="otimizações-implementadas">Otimizações Implementadas:</h3>
+<span id="cb7-10"><a href="#cb7-10" aria-hidden="true" tabindex="-1"></a><span class="co">// Cache Strategy: Network First para dados dinÃ¢micos</span></span>
+<span id="cb7-11"><a href="#cb7-11" aria-hidden="true" tabindex="-1"></a><span class="co">// Cache Strategy: Cache First para assets estÃ¡ticos</span></span></code></pre></div>
+<h3 id="otimizaÃ§Ãµes-implementadas">OtimizaÃ§Ãµes Implementadas:</h3>
 <ul>
 <li><strong>Lazy Loading:</strong> Carregamento sob demanda</li>
-<li><strong>Code Splitting:</strong> Divisão de código por módulos<br />
+<li><strong>Code Splitting:</strong> DivisÃ£o de cÃ³digo por mÃ³dulos<br />
 </li>
-<li><strong>Minificação:</strong> Compressão CSS/JS automática</li>
-<li><strong>CDN:</strong> Distribuição global via Netlify</li>
-<li><strong>Gzip:</strong> Compressão de transferência</li>
+<li><strong>MinificaÃ§Ã£o:</strong> CompressÃ£o CSS/JS automÃ¡tica</li>
+<li><strong>CDN:</strong> DistribuiÃ§Ã£o global via Netlify</li>
+<li><strong>Gzip:</strong> CompressÃ£o de transferÃªncia</li>
 <li><strong>Critical CSS:</strong> CSS inline para above-the-fold</li>
 </ul>
-<h3 id="métricas-de-performance">Métricas de Performance:</h3>
+<h3 id="mÃ©tricas-de-performance">MÃ©tricas de Performance:</h3>
 <div class="sourceCode" id="cb8"><pre
 class="sourceCode javascript"><code class="sourceCode javascript"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true" tabindex="-1"></a><span class="co">// Core Web Vitals Targets</span></span>
 <span id="cb8-2"><a href="#cb8-2" aria-hidden="true" tabindex="-1"></a><span class="fu">LCP</span> (Largest Contentful Paint)<span class="op">:</span> <span class="op">&lt;</span> <span class="fl">2.5</span>s</span>
@@ -177,7 +177,7 @@ class="sourceCode javascript"><code class="sourceCode javascript"><span id="cb8-
 <span id="cb8-7"><a href="#cb8-7" aria-hidden="true" tabindex="-1"></a><span class="fu">TTFB</span> (Time to First Byte)<span class="op">:</span> <span class="op">&lt;</span> <span class="dv">200</span><span class="er">ms</span></span>
 <span id="cb8-8"><a href="#cb8-8" aria-hidden="true" tabindex="-1"></a>Speed <span class="bu">Index</span><span class="op">:</span> <span class="op">&lt;</span> <span class="fl">3.0</span>s</span>
 <span id="cb8-9"><a href="#cb8-9" aria-hidden="true" tabindex="-1"></a>Total Blocking Time<span class="op">:</span> <span class="op">&lt;</span> <span class="dv">200</span><span class="er">ms</span></span></code></pre></div>
-<h2 id="responsividade-e-ux">📱 RESPONSIVIDADE E UX</h2>
+<h2 id="responsividade-e-ux">ðŸ“± RESPONSIVIDADE E UX</h2>
 <h3 id="breakpoints-css">Breakpoints CSS:</h3>
 <div class="sourceCode" id="cb9"><pre
 class="sourceCode css"><code class="sourceCode css"><span id="cb9-1"><a href="#cb9-1" aria-hidden="true" tabindex="-1"></a><span class="co">/* Mobile First Approach */</span></span>
@@ -190,7 +190,7 @@ class="sourceCode css"><code class="sourceCode css"><span id="cb9-1"><a href="#c
 <h3 id="design-system">Design System:</h3>
 <div class="sourceCode" id="cb10"><pre
 class="sourceCode css"><code class="sourceCode css"><span id="cb10-1"><a href="#cb10-1" aria-hidden="true" tabindex="-1"></a><span class="in">:root</span> {</span>
-<span id="cb10-2"><a href="#cb10-2" aria-hidden="true" tabindex="-1"></a>  <span class="co">/* Cores Primárias */</span></span>
+<span id="cb10-2"><a href="#cb10-2" aria-hidden="true" tabindex="-1"></a>  <span class="co">/* Cores PrimÃ¡rias */</span></span>
 <span id="cb10-3"><a href="#cb10-3" aria-hidden="true" tabindex="-1"></a>  <span class="va">--primary-blue</span><span class="ch">:</span> <span class="cn">#3b82f6</span><span class="op">;</span></span>
 <span id="cb10-4"><a href="#cb10-4" aria-hidden="true" tabindex="-1"></a>  <span class="va">--primary-green</span><span class="ch">:</span> <span class="cn">#10b981</span><span class="op">;</span></span>
 <span id="cb10-5"><a href="#cb10-5" aria-hidden="true" tabindex="-1"></a>  <span class="va">--primary-orange</span><span class="ch">:</span> <span class="cn">#f59e0b</span><span class="op">;</span></span>
@@ -213,15 +213,15 @@ class="sourceCode css"><code class="sourceCode css"><span id="cb10-1"><a href="#
 <span id="cb10-22"><a href="#cb10-22" aria-hidden="true" tabindex="-1"></a>  <span class="va">--spacing-lg</span><span class="ch">:</span> <span class="dv">1.5</span><span class="dt">rem</span><span class="op">;</span></span>
 <span id="cb10-23"><a href="#cb10-23" aria-hidden="true" tabindex="-1"></a>  <span class="va">--spacing-xl</span><span class="ch">:</span> <span class="dv">2</span><span class="dt">rem</span><span class="op">;</span></span>
 <span id="cb10-24"><a href="#cb10-24" aria-hidden="true" tabindex="-1"></a>}</span></code></pre></div>
-<h2 id="integração-e-apis">🔄 INTEGRAÇÃO E APIs</h2>
+<h2 id="integraÃ§Ã£o-e-apis">ðŸ”„ INTEGRAÃ‡ÃƒO E APIs</h2>
 <h3 id="firebase-integration">Firebase Integration:</h3>
 <div class="sourceCode" id="cb11"><pre
-class="sourceCode javascript"><code class="sourceCode javascript"><span id="cb11-1"><a href="#cb11-1" aria-hidden="true" tabindex="-1"></a><span class="co">// Configuração Firebase</span></span>
+class="sourceCode javascript"><code class="sourceCode javascript"><span id="cb11-1"><a href="#cb11-1" aria-hidden="true" tabindex="-1"></a><span class="co">// ConfiguraÃ§Ã£o Firebase</span></span>
 <span id="cb11-2"><a href="#cb11-2" aria-hidden="true" tabindex="-1"></a><span class="kw">const</span> firebaseConfig <span class="op">=</span> {</span>
 <span id="cb11-3"><a href="#cb11-3" aria-hidden="true" tabindex="-1"></a>  <span class="dt">apiKey</span><span class="op">:</span> <span class="bu">process</span><span class="op">.</span><span class="at">env</span><span class="op">.</span><span class="at">FIREBASE_API_KEY</span><span class="op">,</span></span>
-<span id="cb11-4"><a href="#cb11-4" aria-hidden="true" tabindex="-1"></a>  <span class="dt">authDomain</span><span class="op">:</span> <span class="st">&quot;studio-5526632052-23813.firebaseapp.com&quot;</span><span class="op">,</span></span>
-<span id="cb11-5"><a href="#cb11-5" aria-hidden="true" tabindex="-1"></a>  <span class="dt">projectId</span><span class="op">:</span> <span class="st">&quot;studio-5526632052-23813&quot;</span><span class="op">,</span></span>
-<span id="cb11-6"><a href="#cb11-6" aria-hidden="true" tabindex="-1"></a>  <span class="dt">storageBucket</span><span class="op">:</span> <span class="st">&quot;studio-5526632052-23813.appspot.com&quot;</span><span class="op">,</span></span>
+<span id="cb11-4"><a href="#cb11-4" aria-hidden="true" tabindex="-1"></a>  <span class="dt">authDomain</span><span class="op">:</span> <span class="st">&quot;app-pedidos-4656c.firebaseapp.com&quot;</span><span class="op">,</span></span>
+<span id="cb11-5"><a href="#cb11-5" aria-hidden="true" tabindex="-1"></a>  <span class="dt">projectId</span><span class="op">:</span> <span class="st">&quot;app-pedidos-4656c&quot;</span><span class="op">,</span></span>
+<span id="cb11-6"><a href="#cb11-6" aria-hidden="true" tabindex="-1"></a>  <span class="dt">storageBucket</span><span class="op">:</span> <span class="st">&quot;app-pedidos-4656c.appspot.com&quot;</span><span class="op">,</span></span>
 <span id="cb11-7"><a href="#cb11-7" aria-hidden="true" tabindex="-1"></a>  <span class="dt">messagingSenderId</span><span class="op">:</span> <span class="bu">process</span><span class="op">.</span><span class="at">env</span><span class="op">.</span><span class="at">FIREBASE_MESSAGING_SENDER_ID</span><span class="op">,</span></span>
 <span id="cb11-8"><a href="#cb11-8" aria-hidden="true" tabindex="-1"></a>  <span class="dt">appId</span><span class="op">:</span> <span class="bu">process</span><span class="op">.</span><span class="at">env</span><span class="op">.</span><span class="at">FIREBASE_APP_ID</span></span>
 <span id="cb11-9"><a href="#cb11-9" aria-hidden="true" tabindex="-1"></a>}<span class="op">;</span></span>
@@ -241,16 +241,16 @@ class="sourceCode javascript"><code class="sourceCode javascript"><span id="cb11
 <span id="cb11-23"><a href="#cb11-23" aria-hidden="true" tabindex="-1"></a>  })<span class="op">;</span></span></code></pre></div>
 <h3 id="emailjs-integration">EmailJS Integration:</h3>
 <div class="sourceCode" id="cb12"><pre
-class="sourceCode javascript"><code class="sourceCode javascript"><span id="cb12-1"><a href="#cb12-1" aria-hidden="true" tabindex="-1"></a><span class="co">// Sistema de Notificações</span></span>
+class="sourceCode javascript"><code class="sourceCode javascript"><span id="cb12-1"><a href="#cb12-1" aria-hidden="true" tabindex="-1"></a><span class="co">// Sistema de NotificaÃ§Ãµes</span></span>
 <span id="cb12-2"><a href="#cb12-2" aria-hidden="true" tabindex="-1"></a><span class="kw">const</span> emailParams <span class="op">=</span> {</span>
 <span id="cb12-3"><a href="#cb12-3" aria-hidden="true" tabindex="-1"></a>  <span class="dt">to_email</span><span class="op">:</span> userEmail<span class="op">,</span></span>
 <span id="cb12-4"><a href="#cb12-4" aria-hidden="true" tabindex="-1"></a>  <span class="dt">from_name</span><span class="op">:</span> <span class="st">&#39;Sistema YUNA&#39;</span><span class="op">,</span></span>
-<span id="cb12-5"><a href="#cb12-5" aria-hidden="true" tabindex="-1"></a>  <span class="dt">subject</span><span class="op">:</span> <span class="st">&#39;Nova Solicitação de Serviço&#39;</span><span class="op">,</span></span>
-<span id="cb12-6"><a href="#cb12-6" aria-hidden="true" tabindex="-1"></a>  <span class="dt">message</span><span class="op">:</span> <span class="vs">`Solicitação #</span><span class="sc">${</span>requestId<span class="sc">}</span><span class="vs"> foi </span><span class="sc">${</span>status<span class="sc">}</span><span class="vs">`</span></span>
+<span id="cb12-5"><a href="#cb12-5" aria-hidden="true" tabindex="-1"></a>  <span class="dt">subject</span><span class="op">:</span> <span class="st">&#39;Nova SolicitaÃ§Ã£o de ServiÃ§o&#39;</span><span class="op">,</span></span>
+<span id="cb12-6"><a href="#cb12-6" aria-hidden="true" tabindex="-1"></a>  <span class="dt">message</span><span class="op">:</span> <span class="vs">`SolicitaÃ§Ã£o #</span><span class="sc">${</span>requestId<span class="sc">}</span><span class="vs"> foi </span><span class="sc">${</span>status<span class="sc">}</span><span class="vs">`</span></span>
 <span id="cb12-7"><a href="#cb12-7" aria-hidden="true" tabindex="-1"></a>}<span class="op">;</span></span>
 <span id="cb12-8"><a href="#cb12-8" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb12-9"><a href="#cb12-9" aria-hidden="true" tabindex="-1"></a>emailjs<span class="op">.</span><span class="fu">send</span>(SERVICE_ID<span class="op">,</span> TEMPLATE_ID<span class="op">,</span> emailParams<span class="op">,</span> PUBLIC_KEY)<span class="op">;</span></span></code></pre></div>
-<h2 id="deployment-e-cicd">🚀 DEPLOYMENT E CI/CD</h2>
+<h2 id="deployment-e-cicd">ðŸš€ DEPLOYMENT E CI/CD</h2>
 <h3 id="environment-configuration">Environment Configuration:</h3>
 <div class="sourceCode" id="cb13"><pre
 class="sourceCode javascript"><code class="sourceCode javascript"><span id="cb13-1"><a href="#cb13-1" aria-hidden="true" tabindex="-1"></a><span class="co">// Netlify Deploy Settings</span></span>
@@ -290,7 +290,7 @@ class="sourceCode yaml"><code class="sourceCode yaml"><span id="cb14-1"><a href=
 <span id="cb14-13"><a href="#cb14-13" aria-hidden="true" tabindex="-1"></a><span class="at">      </span><span class="fu">env</span><span class="kw">:</span></span>
 <span id="cb14-14"><a href="#cb14-14" aria-hidden="true" tabindex="-1"></a><span class="at">        </span><span class="fu">NETLIFY_AUTH_TOKEN</span><span class="kw">:</span><span class="at"> ${{ secrets.NETLIFY_AUTH_TOKEN }}</span></span>
 <span id="cb14-15"><a href="#cb14-15" aria-hidden="true" tabindex="-1"></a><span class="at">        </span><span class="fu">NETLIFY_SITE_ID</span><span class="kw">:</span><span class="at"> ${{ secrets.NETLIFY_SITE_ID }}</span></span></code></pre></div>
-<h2 id="monitoring-e-analytics">📊 MONITORING E ANALYTICS</h2>
+<h2 id="monitoring-e-analytics">ðŸ“Š MONITORING E ANALYTICS</h2>
 <h3 id="error-tracking">Error Tracking:</h3>
 <div class="sourceCode" id="cb15"><pre
 class="sourceCode javascript"><code class="sourceCode javascript"><span id="cb15-1"><a href="#cb15-1" aria-hidden="true" tabindex="-1"></a><span class="co">// Custom Error Handler</span></span>
@@ -319,31 +319,32 @@ class="sourceCode javascript"><code class="sourceCode javascript"><span id="cb16
 <span id="cb16-6"><a href="#cb16-6" aria-hidden="true" tabindex="-1"></a><span class="fu">getFCP</span>(sendToAnalytics)<span class="op">;</span></span>
 <span id="cb16-7"><a href="#cb16-7" aria-hidden="true" tabindex="-1"></a><span class="fu">getLCP</span>(sendToAnalytics)<span class="op">;</span></span>
 <span id="cb16-8"><a href="#cb16-8" aria-hidden="true" tabindex="-1"></a><span class="fu">getTTFB</span>(sendToAnalytics)<span class="op">;</span></span></code></pre></div>
-<h2 id="escalabilidade-e-futuro">🔮 ESCALABILIDADE E FUTURO</h2>
+<h2 id="escalabilidade-e-futuro">ðŸ”® ESCALABILIDADE E FUTURO</h2>
 <h3 id="arquitetura-preparada-para">Arquitetura Preparada Para:</h3>
 <ul>
-<li><strong>Microservices:</strong> Migração gradual para arquitetura
-distribuída</li>
-<li><strong>Multi-tenant:</strong> Suporte a múltiplas
-clínicas/hospitais</li>
+<li><strong>Microservices:</strong> MigraÃ§Ã£o gradual para arquitetura
+distribuÃ­da</li>
+<li><strong>Multi-tenant:</strong> Suporte a mÃºltiplas
+clÃ­nicas/hospitais</li>
 <li><strong>Mobile Apps:</strong> Base PWA facilita desenvolvimento
 nativo</li>
-<li><strong>AI/ML:</strong> APIs preparadas para integração de IA</li>
-<li><strong>IoT:</strong> Integração com dispositivos hospitalares</li>
+<li><strong>AI/ML:</strong> APIs preparadas para integraÃ§Ã£o de IA</li>
+<li><strong>IoT:</strong> IntegraÃ§Ã£o com dispositivos hospitalares</li>
 </ul>
-<h3 id="roadmap-técnico">Roadmap Técnico:</h3>
+<h3 id="roadmap-tÃ©cnico">Roadmap TÃ©cnico:</h3>
 <ol type="1">
 <li><strong>v1.1:</strong> Mobile apps nativas (React Native)</li>
-<li><strong>v1.2:</strong> Sistema de relatórios avançado (BI)</li>
+<li><strong>v1.2:</strong> Sistema de relatÃ³rios avanÃ§ado (BI)</li>
 <li><strong>v2.0:</strong> Multi-tenant completo</li>
-<li><strong>v2.1:</strong> Integração HL7/FHIR</li>
-<li><strong>v3.0:</strong> AI para predição de demandas</li>
+<li><strong>v2.1:</strong> IntegraÃ§Ã£o HL7/FHIR</li>
+<li><strong>v3.0:</strong> AI para prediÃ§Ã£o de demandas</li>
 </ol>
 <hr />
-<p><strong>© 2024-2025 Samuel dos Reis Lacerda Junior - Todos os
+<p><strong>Â© 2024-2025 Samuel dos Reis Lacerda Junior - Todos os
 direitos reservados</strong><br />
-<strong>Sistema YUNA - Especificações Técnicas
-Proprietárias</strong><br />
+<strong>Sistema YUNA - EspecificaÃ§Ãµes TÃ©cnicas
+ProprietÃ¡rias</strong><br />
 <strong>Desenvolvido por:</strong> Samuel dos Reis Lacerda Junior<br />
 <strong>CNPJ:</strong> 55.004.442 SAMUEL DOS REIS LACERDA JUNIOR<br />
 <strong>Contato:</strong> ti@yuna.com.br | +55 11 94586-4671</p>
+

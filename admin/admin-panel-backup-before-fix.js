@@ -1,55 +1,55 @@
-/**
+﻿/**
  * Sistema YUNA - Painel Administrativo
- * Copyright © 2025 Samuel dos Reis Lacerda Junior. Todos os direitos reservados.
+ * Copyright Â© 2025 Samuel dos Reis Lacerda Junior. Todos os direitos reservados.
  * 
- * Este software é propriedade intelectual protegida por direitos autorais.
- * Uso não autorizado é estritamente proibido.
+ * Este software Ã© propriedade intelectual protegida por direitos autorais.
+ * Uso nÃ£o autorizado Ã© estritamente proibido.
  * 
- * Versão: 2.0.0
- * Data de Criação: 14 de novembro de 2025
- * Última atualização: 14/11/2025
+ * VersÃ£o: 2.0.0
+ * Data de CriaÃ§Ã£o: 14 de novembro de 2025
+ * Ãšltima atualizaÃ§Ã£o: 14/11/2025
  */
 
 // admin-panel.js - Painel Administrativo YUNA
 
-// === CONFIGURAÇÃO DE MODO DE PRODUÇÃO ===
+// === CONFIGURAÃ‡ÃƒO DE MODO DE PRODUÃ‡ÃƒO ===
 const MODO_PRODUCAO = window.location.hostname !== 'localhost' && 
                       window.location.hostname !== '127.0.0.1' && 
                       window.location.hostname !== 'file://';
 
-// Função de log condicional - só mostra logs em desenvolvimento
+// FunÃ§Ã£o de log condicional - sÃ³ mostra logs em desenvolvimento
 function debugLog(message, ...args) {
     if (!MODO_PRODUCAO) {
         console.log(message, ...args);
     }
 }
 
-// === DECLARAÇÕES ANTECIPADAS DE FUNÇÕES CRÍTICAS ===
-// Declarações para evitar problemas de ordem de carregamento
+// === DECLARAÃ‡Ã•ES ANTECIPADAS DE FUNÃ‡Ã•ES CRÃTICAS ===
+// DeclaraÃ§Ãµes para evitar problemas de ordem de carregamento
 let limparDadosTeste, verificarEstatisticas, adicionarPainelManutencao;
 
 // === LIMPEZA IMEDIATA DE CACHE AGRESSIVA ===
 (function forceCleanupDebugElements() {
     
-    // Função de limpeza extremamente agressiva
+    // FunÃ§Ã£o de limpeza extremamente agressiva
     function removeUnwantedButtons() {
-        // Verificar se o DOM está carregado
+        // Verificar se o DOM estÃ¡ carregado
         if (!document.body) {
             setTimeout(removeUnwantedButtons, 100);
             return;
         }
         
-        const debugTexts = ['usuários direto', 'debug', 'relatórios direto', 'usuario direto', 'relatorio direto'];
+        const debugTexts = ['usuÃ¡rios direto', 'debug', 'relatÃ³rios direto', 'usuario direto', 'relatorio direto'];
         let removed = 0;
         
-        // Buscar todos os botões
+        // Buscar todos os botÃµes
         const allButtons = document.querySelectorAll('button');
         allButtons.forEach(btn => {
             const text = (btn.textContent || '').trim().toLowerCase();
             if (debugTexts.some(debugText => text.includes(debugText))) {
-                // Só loggar em desenvolvimento
+                // SÃ³ loggar em desenvolvimento
                 if (typeof debugLog === 'function') {
-                    debugLog(`[FORCE-CLEANUP] Removendo botão: "${btn.textContent}"`);
+                    debugLog(`[FORCE-CLEANUP] Removendo botÃ£o: "${btn.textContent}"`);
                 }
                 btn.style.display = 'none !important';
                 btn.style.visibility = 'hidden !important';
@@ -60,7 +60,7 @@ let limparDadosTeste, verificarEstatisticas, adicionarPainelManutencao;
             }
         });
         
-        // Buscar por onclick específicos
+        // Buscar por onclick especÃ­ficos
         const specificSelectors = [
             'button[onclick*="showUsersDireto"]',
             'button[onclick*="debugFuncs"]', 
@@ -84,7 +84,7 @@ let limparDadosTeste, verificarEstatisticas, adicionarPainelManutencao;
             });
         });
 
-        // Buscar por classes CSS específicas
+        // Buscar por classes CSS especÃ­ficas
         const unwantedClasses = ['.debug-button', '.btn-debug', '.direct-button'];
         unwantedClasses.forEach(className => {
             const elements = document.querySelectorAll(className);
@@ -98,10 +98,10 @@ let limparDadosTeste, verificarEstatisticas, adicionarPainelManutencao;
         });
         
         if (removed > 0 && typeof debugLog === 'function') {
-            debugLog(`[FORCE-CLEANUP] Total removido nesta iteração: ${removed}`);
+            debugLog(`[FORCE-CLEANUP] Total removido nesta iteraÃ§Ã£o: ${removed}`);
         }
         
-        // Forçar visibilidade do botão limpeza se for super admin
+        // ForÃ§ar visibilidade do botÃ£o limpeza se for super admin
         const limpezaBtn = document.getElementById('limpeza-btn');
         if (limpezaBtn && window.usuarioAdmin && window.usuarioAdmin.role === 'super_admin') {
             limpezaBtn.classList.remove('btn-hide');
@@ -117,7 +117,7 @@ let limparDadosTeste, verificarEstatisticas, adicionarPainelManutencao;
         removeUnwantedButtons();
     }, 50); // Muito frequente: a cada 50ms
     
-    // Parar limpeza após 20 segundos
+    // Parar limpeza apÃ³s 20 segundos
     setTimeout(() => {
         clearInterval(cleanupInterval);
         if (typeof debugLog === 'function') {
@@ -125,11 +125,11 @@ let limparDadosTeste, verificarEstatisticas, adicionarPainelManutencao;
         }
     }, 20000);
     
-    // Executar também em eventos específicos
+    // Executar tambÃ©m em eventos especÃ­ficos
     document.addEventListener('DOMContentLoaded', removeUnwantedButtons);
     window.addEventListener('load', removeUnwantedButtons);
     
-    // Observar mudanças no DOM e reagir imediatamente
+    // Observar mudanÃ§as no DOM e reagir imediatamente
     if (window.MutationObserver) {
         const observer = new MutationObserver(function(mutations) {
             mutations.forEach(function(mutation) {
@@ -137,8 +137,8 @@ let limparDadosTeste, verificarEstatisticas, adicionarPainelManutencao;
                     mutation.addedNodes.forEach(function(node) {
                         if (node.nodeType === 1 && node.tagName === 'BUTTON') {
                             const text = (node.textContent || '').toLowerCase();
-                            if (text.includes('debug') || text.includes('direto') || text.includes('usuários direto')) {
-                                console.log('[FORCE-CLEANUP] Interceptando botão adicionado:', node.textContent);
+                            if (text.includes('debug') || text.includes('direto') || text.includes('usuÃ¡rios direto')) {
+                                console.log('[FORCE-CLEANUP] Interceptando botÃ£o adicionado:', node.textContent);
                                 node.remove();
                             }
                         }
@@ -152,7 +152,7 @@ let limparDadosTeste, verificarEstatisticas, adicionarPainelManutencao;
             subtree: true
         });
         
-        // Parar observação após 30 segundos
+        // Parar observaÃ§Ã£o apÃ³s 30 segundos
         setTimeout(() => {
             observer.disconnect();
             console.log('[FORCE-CLEANUP] Observador DOM desconectado');
@@ -163,7 +163,7 @@ let limparDadosTeste, verificarEstatisticas, adicionarPainelManutencao;
 
 // === LIMPEZA DE CACHE E ELEMENTOS INDESEJADOS ===
 window.addEventListener('DOMContentLoaded', function() {
-    // Remover botões debug que possam estar no cache
+    // Remover botÃµes debug que possam estar no cache
     setTimeout(() => {
         const elementosIndesejados = [
             'button[onclick*="showUsersDireto"]',
@@ -183,23 +183,23 @@ window.addEventListener('DOMContentLoaded', function() {
             });
         });
         
-        // Verificar se botões com textos específicos existem
+        // Verificar se botÃµes com textos especÃ­ficos existem
         const todosBotoes = document.querySelectorAll('button');
         todosBotoes.forEach(btn => {
             const texto = btn.textContent || '';
-            if (texto.includes('Usuários Direto') || 
+            if (texto.includes('UsuÃ¡rios Direto') || 
                 texto.includes('Debug') || 
-                texto.includes('Relatórios Direto')) {
-                console.log(`[CLEANUP] Removendo botão por texto:`, btn);
+                texto.includes('RelatÃ³rios Direto')) {
+                console.log(`[CLEANUP] Removendo botÃ£o por texto:`, btn);
                 btn.remove();
             }
         });
         
-        console.log('[CLEANUP] Limpeza de elementos indesejados concluída');
+        console.log('[CLEANUP] Limpeza de elementos indesejados concluÃ­da');
     }, 100);
 });
 
-// === PROTEÇÃO CONTRA ERROS DE EXTENSÕES ===
+// === PROTEÃ‡ÃƒO CONTRA ERROS DE EXTENSÃ•ES ===
 (function() {
     'use strict';
     
@@ -220,7 +220,7 @@ window.addEventListener('DOMContentLoaded', function() {
             (message && message.includes(pattern)) ||
             (source && source.includes(pattern))
         )) {
-            return true; // Silenciar erro de extensão
+            return true; // Silenciar erro de extensÃ£o
         }
         return originalErrorHandler ? originalErrorHandler.apply(this, arguments) : false;
     };
@@ -233,11 +233,11 @@ window.addEventListener('DOMContentLoaded', function() {
     });
 })();
 
-// === FUNÇÕES PRINCIPAIS ===
+// === FUNÃ‡Ã•ES PRINCIPAIS ===
 
-// Função para alternar tipo de acesso (definida cedo para HTML poder chamar)
+// FunÃ§Ã£o para alternar tipo de acesso (definida cedo para HTML poder chamar)
 window.alterarTipoAcesso = function() {
-    console.log('[DEBUG] alterarTipoAcesso: função chamada');
+    console.log('[DEBUG] alterarTipoAcesso: funÃ§Ã£o chamada');
     
     const tipoSelect = document.getElementById('tipo-acesso');
     const departamentoSection = document.getElementById('departamento-section');
@@ -250,7 +250,7 @@ window.alterarTipoAcesso = function() {
     });
     
     if (!tipoSelect || !departamentoSection) {
-        console.error('[ERRO] alterarTipoAcesso: elementos não encontrados');
+        console.error('[ERRO] alterarTipoAcesso: elementos nÃ£o encontrados');
         return;
     }
     
@@ -258,33 +258,33 @@ window.alterarTipoAcesso = function() {
     console.log('[DEBUG] alterarTipoAcesso: tipo selecionado =', tipo);
     
     if (tipo === 'equipe') {
-        // Mostrar seção de departamento para equipe
+        // Mostrar seÃ§Ã£o de departamento para equipe
         departamentoSection.classList.remove('hidden');
         departamentoSection.style.display = 'block'; // Force show
         console.log('[DEBUG] alterarTipoAcesso: mostrando departamento-section');
-        console.log('[DEBUG] Classes após remoção:', departamentoSection.className);
-        console.log('[DEBUG] Style display após mudança:', departamentoSection.style.display);
+        console.log('[DEBUG] Classes apÃ³s remoÃ§Ã£o:', departamentoSection.className);
+        console.log('[DEBUG] Style display apÃ³s mudanÃ§a:', departamentoSection.style.display);
     } else {
-        // Ocultar seção de departamento para admin
+        // Ocultar seÃ§Ã£o de departamento para admin
         departamentoSection.classList.add('hidden');
         departamentoSection.style.display = 'none'; // Force hide
         if (departamentoSelect) {
-            departamentoSelect.value = ''; // Limpar seleção
+            departamentoSelect.value = ''; // Limpar seleÃ§Ã£o
         }
         console.log('[DEBUG] alterarTipoAcesso: ocultando departamento-section');
     }
 };
 
-// Função para alternar tipo de usuário no modal de criação (também definida cedo)
+// FunÃ§Ã£o para alternar tipo de usuÃ¡rio no modal de criaÃ§Ã£o (tambÃ©m definida cedo)
 window.alterarTipoUsuario = function() {
-    debugLog('[DEBUG] alterarTipoUsuario: função chamada');
+    debugLog('[DEBUG] alterarTipoUsuario: funÃ§Ã£o chamada');
     
     const tipoSelect = document.getElementById('usuario-tipo');
     const campoEquipe = document.getElementById('campo-equipe');
     const usuarioEquipeSelect = document.getElementById('usuario-equipe');
     
     if (!tipoSelect || !campoEquipe) {
-        console.error('[ERRO] alterarTipoUsuario: elementos não encontrados');
+        console.error('[ERRO] alterarTipoUsuario: elementos nÃ£o encontrados');
         return;
     }
     
@@ -292,7 +292,7 @@ window.alterarTipoUsuario = function() {
     debugLog('[DEBUG] alterarTipoUsuario: tipo selecionado =', tipo);
     
     if (tipo === 'equipe') {
-        // Mostrar campo de equipe e torná-lo obrigatório
+        // Mostrar campo de equipe e tornÃ¡-lo obrigatÃ³rio
         campoEquipe.style.display = 'block';
         if (usuarioEquipeSelect) {
             usuarioEquipeSelect.required = true;
@@ -303,13 +303,13 @@ window.alterarTipoUsuario = function() {
         campoEquipe.style.display = 'none';
         if (usuarioEquipeSelect) {
             usuarioEquipeSelect.required = false;
-            usuarioEquipeSelect.value = ''; // Limpar seleção
+            usuarioEquipeSelect.value = ''; // Limpar seleÃ§Ã£o
         }
         debugLog('[DEBUG] alterarTipoUsuario: ocultando campo equipe');
     }
 };
 
-// Função para limpar completamente a interface
+// FunÃ§Ã£o para limpar completamente a interface
 function limparInterfaceCompleta() {
     try {
         debugLog('[DEBUG] Iniciando limpeza completa da interface...');
@@ -333,7 +333,7 @@ function limparInterfaceCompleta() {
             }
         });
         
-        // Remover estilos específicos do painel logado que podem interferir
+        // Remover estilos especÃ­ficos do painel logado que podem interferir
         const adminPanel = document.getElementById('admin-panel');
         if (adminPanel) {
             adminPanel.style.display = 'none';
@@ -346,7 +346,7 @@ function limparInterfaceCompleta() {
             container.style.display = 'none';
         }
         
-        // Resetar estilo da página principal
+        // Resetar estilo da pÃ¡gina principal
         const main = document.querySelector('main');
         if (main) {
             main.style.display = 'none';
@@ -360,7 +360,7 @@ function limparInterfaceCompleta() {
             authSection.style.visibility = 'visible';
         }
         
-        // Restaurar estilo do body para centralização
+        // Restaurar estilo do body para centralizaÃ§Ã£o
         document.body.style.margin = '0';
         document.body.style.padding = '0';
         document.body.style.minHeight = '100vh';
@@ -370,7 +370,7 @@ function limparInterfaceCompleta() {
         document.body.style.justifyContent = 'center';
         document.body.style.background = '#f1f5f9';
         
-        // Garantir que o html também tenha altura total
+        // Garantir que o html tambÃ©m tenha altura total
         document.documentElement.style.height = '100%';
         document.documentElement.style.margin = '0';
         document.documentElement.style.padding = '0';
@@ -382,9 +382,9 @@ function limparInterfaceCompleta() {
     }
 };
 
-// Função de emergência para resetar o sistema
+// FunÃ§Ã£o de emergÃªncia para resetar o sistema
 window.emergencyReset = function() {
-    console.log('🚨 EMERGENCY RESET INICIADO');
+    console.log('ðŸš¨ EMERGENCY RESET INICIADO');
     
     // Limpar localStorage
     localStorage.clear();
@@ -392,10 +392,10 @@ window.emergencyReset = function() {
     // Limpar interface
     limparInterfaceCompleta();
     
-    // Forçar logout
+    // ForÃ§ar logout
     if (window.auth) {
         window.auth.signOut().then(() => {
-            console.log('✅ Logout forçado realizado');
+            console.log('âœ… Logout forÃ§ado realizado');
             window.location.reload();
         }).catch(error => {
             console.error('Erro no logout:', error);
@@ -406,10 +406,10 @@ window.emergencyReset = function() {
     }
 };
 
-// Referência antecipada para função de limpeza (definida no final do arquivo)
+// ReferÃªncia antecipada para funÃ§Ã£o de limpeza (definida no final do arquivo)
 window.limparDadosTeste = function() {
-    // Função será redefinida completamente no final do arquivo
-    debugLog('[DEBUG] limparDadosTeste chamada prematuramente - aguardando definição completa');
+    // FunÃ§Ã£o serÃ¡ redefinida completamente no final do arquivo
+    debugLog('[DEBUG] limparDadosTeste chamada prematuramente - aguardando definiÃ§Ã£o completa');
     setTimeout(() => {
         if (window.limparDadosTeste && typeof window.limparDadosTeste === 'function') {
             window.limparDadosTeste();
@@ -417,19 +417,19 @@ window.limparDadosTeste = function() {
     }, 500);
 };
 
-// Função para criação rápida de super admin (desenvolvimento)
+// FunÃ§Ã£o para criaÃ§Ã£o rÃ¡pida de super admin (desenvolvimento)
 window.criarSuperAdminDev = async function(email, senha) {
     if (!window.auth || !window.db) {
-        console.error('Firebase não inicializado');
+        console.error('Firebase nÃ£o inicializado');
         return;
     }
     
     try {
-        // Criar usuário no Firebase Auth
+        // Criar usuÃ¡rio no Firebase Auth
         const userCredential = await window.auth.createUserWithEmailAndPassword(email, senha);
         const user = userCredential.user;
         
-        // Criar documento na coleção usuarios_admin
+        // Criar documento na coleÃ§Ã£o usuarios_admin
         await window.db.collection('usuarios_admin').doc(user.uid).set({
             nome: 'Super Admin Dev',
             email: email,
@@ -444,8 +444,8 @@ window.criarSuperAdminDev = async function(email, senha) {
             }
         });
         
-        console.log('✅ Super admin criado:', email);
-        alert('Super admin criado com sucesso! Faça login agora.');
+        console.log('âœ… Super admin criado:', email);
+        alert('Super admin criado com sucesso! FaÃ§a login agora.');
         
     } catch (error) {
         console.error('Erro ao criar super admin:', error);
@@ -460,8 +460,8 @@ function firebaseReady() {
 
 async function initFirebaseApp() {
     if (!firebaseReady()) {
-        console.error('[ERRO] Firebase SDK não carregado');
-        alert('Erro: Firebase SDK não carregado. Verifique a conexão ou o script.');
+        console.error('[ERRO] Firebase SDK nÃ£o carregado');
+        alert('Erro: Firebase SDK nÃ£o carregado. Verifique a conexÃ£o ou o script.');
         return false;
     }
     
@@ -469,30 +469,30 @@ async function initFirebaseApp() {
         if (!firebase.apps.length) {
             const firebaseConfig = {
                 apiKey: "AIzaSyAogGkN5N24Puss4-kF9Z6npPYyEzVei3M",
-                authDomain: "studio-5526632052-23813.firebaseapp.com",
-                projectId: "studio-5526632052-23813",
-                storageBucket: "studio-5526632052-23813.firebasestorage.app",
+                authDomain: "app-pedidos-4656c.firebaseapp.com",
+                projectId: "app-pedidos-4656c",
+                storageBucket: "app-pedidos-4656c.firebasestorage.app",
                 messagingSenderId: "251931417472",
                 appId: "1:251931417472:web:4b955052a184d114f57f65"
             };
             
             debugLog('[DEBUG] Inicializando Firebase com config:', firebaseConfig.projectId);
             firebase.initializeApp(firebaseConfig);
-            console.log('✅ Firebase inicializado com sucesso');
+            console.log('âœ… Firebase inicializado com sucesso');
         }
         
         window.auth = firebase.auth();
         window.db = firebase.firestore();
         
-        // Configurar settings do Firestore apenas se necessário
-        // Verificar se ainda não foi configurado
+        // Configurar settings do Firestore apenas se necessÃ¡rio
+        // Verificar se ainda nÃ£o foi configurado
         let settingsConfigured = false;
         try {
-            // Tentar uma operação simples para verificar se já foi configurado
+            // Tentar uma operaÃ§Ã£o simples para verificar se jÃ¡ foi configurado
             const testQuery = window.db.collection('_test').limit(1);
-            settingsConfigured = true; // Se chegou aqui, Firestore já está ativo
+            settingsConfigured = true; // Se chegou aqui, Firestore jÃ¡ estÃ¡ ativo
         } catch (e) {
-            // Firestore ainda não foi usado, podemos configurar settings
+            // Firestore ainda nÃ£o foi usado, podemos configurar settings
             settingsConfigured = false;
         }
         
@@ -501,16 +501,16 @@ async function initFirebaseApp() {
                 window.db.settings({
                     ignoreUndefinedProperties: true
                 });
-                console.log('✅ Settings do Firestore configuradas');
+                console.log('âœ… Settings do Firestore configuradas');
             } catch (settingsError) {
-                // Ignorar erro silenciosamente se já foi configurado
+                // Ignorar erro silenciosamente se jÃ¡ foi configurado
                 if (settingsError.code !== 'failed-precondition') {
-                    console.warn('⚠️ Aviso settings:', settingsError.code);
+                    console.warn('âš ï¸ Aviso settings:', settingsError.code);
                 }
             }
         }
         
-        // Configurar persistência offline usando nova API
+        // Configurar persistÃªncia offline usando nova API
         try {
             // Suprimir warning da API deprecated do Firebase
             const originalWarn = console.warn;
@@ -523,27 +523,27 @@ async function initFirebaseApp() {
                 originalWarn.apply(console, [message, ...args]);
             };
             
-            console.log('ℹ️ Cache offline configurado (warnings de API deprecated suprimidos)');
+            console.log('â„¹ï¸ Cache offline configurado (warnings de API deprecated suprimidos)');
         } catch (err) {
-            // Apenas avisar, não é erro crítico
+            // Apenas avisar, nÃ£o Ã© erro crÃ­tico
             if (err.code === 'failed-precondition') {
-                console.log('ℹ️ Persistência não ativada: múltiplas abas abertas');
+                console.log('â„¹ï¸ PersistÃªncia nÃ£o ativada: mÃºltiplas abas abertas');
             } else if (err.code === 'unimplemented') {
-                console.log('ℹ️ Persistência não suportada neste navegador');
+                console.log('â„¹ï¸ PersistÃªncia nÃ£o suportada neste navegador');
             }
         }
         
         return true;
         
     } catch (error) {
-        console.error('[ERRO] Falha na inicialização do Firebase:', error);
-        showToast('Erro', 'Falha na conexão com Firebase. Modo offline ativado.', 'error');
+        console.error('[ERRO] Falha na inicializaÃ§Ã£o do Firebase:', error);
+        showToast('Erro', 'Falha na conexÃ£o com Firebase. Modo offline ativado.', 'error');
         return false;
     }
 }
 
-// --- Permissões centralizadas ---
-// Funções importadas do admin-permissions.js
+// --- PermissÃµes centralizadas ---
+// FunÃ§Ãµes importadas do admin-permissions.js
 // window.verificarUsuarioAdminJS, window.temPermissaoJS, window.podeVerSolicitacaoJS
 function showToast(titulo, mensagem, tipo) {
     console.log(`[DEBUG] showToast chamado: ${titulo} - ${mensagem} (${tipo})`);
@@ -574,7 +574,7 @@ function ocultarSecoesPrincipais() {
             el.classList.add('hidden');
             console.log(`[DEBUG] ocultarSecoesPrincipais: ocultando ${id}`);
         } else {
-            console.warn(`[AVISO] ocultarSecoesPrincipais: elemento não encontrado: ${id}`);
+            console.warn(`[AVISO] ocultarSecoesPrincipais: elemento nÃ£o encontrado: ${id}`);
         }
     });
     if (document.querySelector('.teams-grid')) {
@@ -587,8 +587,8 @@ function ocultarSecoesPrincipais() {
 
 async function mostrarSecaoPainel(secao) {
     try {
-        console.log(`[DEBUG] mostrarSecaoPainel: navegação para '${secao}'`);
-        // Oculta todas as seções principais
+        console.log(`[DEBUG] mostrarSecaoPainel: navegaÃ§Ã£o para '${secao}'`);
+        // Oculta todas as seÃ§Ãµes principais
         const secoes = [
             'admin-panel',
             'acompanhantes-section',
@@ -602,21 +602,21 @@ async function mostrarSecaoPainel(secao) {
             const el = document.getElementById(id) || document.querySelector('.' + id);
             if (el) el.classList.add('hidden');
         });
-        // Exibe apenas a seção desejada
+        // Exibe apenas a seÃ§Ã£o desejada
         if (secao === 'painel') {
             document.getElementById('admin-panel')?.classList.remove('hidden');
             document.getElementById('metricas-gerais')?.classList.remove('hidden');
             document.querySelector('.teams-grid')?.classList.remove('hidden');
             debugLog('[DEBUG] mostrarSecaoPainel: exibindo painel principal');
             
-            // Garantir que o botão "Minha Senha" esteja sempre visível
+            // Garantir que o botÃ£o "Minha Senha" esteja sempre visÃ­vel
             setTimeout(() => {
                 forcarVisibilidadeBotaoMinhaSenha();
             }, 100);
             
-            // Recarregar solicitações de forma simplificada
+            // Recarregar solicitaÃ§Ãµes de forma simplificada
             if (typeof carregarSolicitacoes === 'function') {
-                debugLog('[DEBUG] mostrarSecaoPainel: carregando solicitações...');
+                debugLog('[DEBUG] mostrarSecaoPainel: carregando solicitaÃ§Ãµes...');
                 carregarSolicitacoes();
             }
         } else if (secao === 'acompanhantes') {
@@ -630,20 +630,20 @@ async function mostrarSecaoPainel(secao) {
                 await configurarListenerAcompanhantes();
             }
         } else if (secao === 'relatorios') {
-            // Para relatórios, chamar a função específica
-            debugLog('[DEBUG] mostrarSecaoPainel: chamando função mostrarRelatorios...');
+            // Para relatÃ³rios, chamar a funÃ§Ã£o especÃ­fica
+            debugLog('[DEBUG] mostrarSecaoPainel: chamando funÃ§Ã£o mostrarRelatorios...');
             
             if (typeof window.mostrarRelatorios === 'function') {
                 try {
                     window.mostrarRelatorios();
-                    debugLog('[DEBUG] mostrarSecaoPainel: função mostrarRelatorios executada com sucesso');
+                    debugLog('[DEBUG] mostrarSecaoPainel: funÃ§Ã£o mostrarRelatorios executada com sucesso');
                 } catch (error) {
                     console.error('[ERRO] mostrarSecaoPainel: erro ao executar mostrarRelatorios:', error);
-                    showToast('Erro', 'Falha ao carregar relatórios: ' + error.message, 'error');
+                    showToast('Erro', 'Falha ao carregar relatÃ³rios: ' + error.message, 'error');
                 }
             } else {
-                console.error('[ERRO] mostrarSecaoPainel: função mostrarRelatorios não encontrada!');
-                showToast('Erro', 'Função de relatórios não disponível', 'error');
+                console.error('[ERRO] mostrarSecaoPainel: funÃ§Ã£o mostrarRelatorios nÃ£o encontrada!');
+                showToast('Erro', 'FunÃ§Ã£o de relatÃ³rios nÃ£o disponÃ­vel', 'error');
             }
         } else if (secao === 'create-user') {
             const modal = document.getElementById('modal-novo-usuario');
@@ -651,7 +651,7 @@ async function mostrarSecaoPainel(secao) {
             if (modal) {
                 // Garantir que o modal esteja anexado ao body
                 if (modal.parentElement !== document.body) {
-                    debugLog('[DEBUG] Modal criar usuário não está no body, movendo...');
+                    debugLog('[DEBUG] Modal criar usuÃ¡rio nÃ£o estÃ¡ no body, movendo...');
                     document.body.appendChild(modal);
                 }
                 
@@ -674,7 +674,7 @@ async function mostrarSecaoPainel(secao) {
             if (modal) {
                 // Garantir que o modal esteja anexado ao body
                 if (modal.parentElement !== document.body) {
-                    debugLog('[DEBUG] Modal gerenciar usuários não está no body, movendo...');
+                    debugLog('[DEBUG] Modal gerenciar usuÃ¡rios nÃ£o estÃ¡ no body, movendo...');
                     document.body.appendChild(modal);
                 }
                 
@@ -689,66 +689,66 @@ async function mostrarSecaoPainel(secao) {
                 modal.style.width = '100vw';
                 modal.style.height = '100vh';
                 
-                // CORREÇÃO: Carregar usuários quando modal é exibido
-                debugLog('[DEBUG] Carregando usuários para o modal...');
-                console.log('[MANAGE-USERS] Iniciando carregamento de usuários...');
+                // CORREÃ‡ÃƒO: Carregar usuÃ¡rios quando modal Ã© exibido
+                debugLog('[DEBUG] Carregando usuÃ¡rios para o modal...');
+                console.log('[MANAGE-USERS] Iniciando carregamento de usuÃ¡rios...');
                 
                 if (typeof window.carregarUsuarios === 'function') {
                     try {
                         console.log('[MANAGE-USERS] Executando window.carregarUsuarios()...');
                         await window.carregarUsuarios();
-                        console.log('[MANAGE-USERS] ✅ Usuários carregados com sucesso no modal');
-                        debugLog('[DEBUG] ✅ Usuários carregados com sucesso no modal');
+                        console.log('[MANAGE-USERS] âœ… UsuÃ¡rios carregados com sucesso no modal');
+                        debugLog('[DEBUG] âœ… UsuÃ¡rios carregados com sucesso no modal');
                     } catch (error) {
-                        console.error('[MANAGE-USERS] ❌ Falha ao carregar usuários:', error);
+                        console.error('[MANAGE-USERS] âŒ Falha ao carregar usuÃ¡rios:', error);
                         console.error('[MANAGE-USERS] Stack trace:', error.stack);
-                        showToast('Erro', 'Falha ao carregar usuários: ' + error.message, 'error');
+                        showToast('Erro', 'Falha ao carregar usuÃ¡rios: ' + error.message, 'error');
                     }
                 } else {
-                    console.error('[MANAGE-USERS] ❌ Função carregarUsuarios não está disponível!');
-                    console.error('[MANAGE-USERS] Disponível:', typeof window.carregarUsuarios);
+                    console.error('[MANAGE-USERS] âŒ FunÃ§Ã£o carregarUsuarios nÃ£o estÃ¡ disponÃ­vel!');
+                    console.error('[MANAGE-USERS] DisponÃ­vel:', typeof window.carregarUsuarios);
                     console.error('[MANAGE-USERS] Window object:', Object.keys(window).filter(k => k.includes('carrega')));
                 }
             }
             debugLog('[DEBUG] mostrarSecaoPainel: exibindo manage-users-modal');
         } else {
-            console.warn(`[AVISO] mostrarSecaoPainel: seção desconhecida: ${secao}`);
+            console.warn(`[AVISO] mostrarSecaoPainel: seÃ§Ã£o desconhecida: ${secao}`);
         }
         
-        // Garantir que os botões estejam sempre configurados após mudança de seção
-        // Removido para evitar chamadas desnecessárias - configuração feita no login
-        debugLog('[DEBUG] mostrarSecaoPainel: seção alterada para:', secao);
+        // Garantir que os botÃµes estejam sempre configurados apÃ³s mudanÃ§a de seÃ§Ã£o
+        // Removido para evitar chamadas desnecessÃ¡rias - configuraÃ§Ã£o feita no login
+        debugLog('[DEBUG] mostrarSecaoPainel: seÃ§Ã£o alterada para:', secao);
         
     } catch (err) {
-        console.error('[ERRO] mostrarSecaoPainel: falha ao exibir seção:', err);
+        console.error('[ERRO] mostrarSecaoPainel: falha ao exibir seÃ§Ã£o:', err);
     }
 }
 
-// --- Autenticação e Acesso ---
-// Oculta campo departamento corretamente na inicialização
+// --- AutenticaÃ§Ã£o e Acesso ---
+// Oculta campo departamento corretamente na inicializaÃ§Ã£o
 window.addEventListener('DOMContentLoaded', async function() {
-    debugLog('[DEBUG] DOMContentLoaded: iniciando configuração...');
+    debugLog('[DEBUG] DOMContentLoaded: iniciando configuraÃ§Ã£o...');
     
-    // Primeiro, configurar os botões ANTES de qualquer coisa relacionada ao Firebase
-    debugLog('[DEBUG] DOMContentLoaded: configurando eventos dos botões ANTES do Firebase...');
+    // Primeiro, configurar os botÃµes ANTES de qualquer coisa relacionada ao Firebase
+    debugLog('[DEBUG] DOMContentLoaded: configurando eventos dos botÃµes ANTES do Firebase...');
     
-    // Garantir que as funções dos modais estão disponíveis
+    // Garantir que as funÃ§Ãµes dos modais estÃ£o disponÃ­veis
     if (typeof window.showCreateUserModal !== 'function') {
-        console.error('[ERRO] showCreateUserModal não definida durante DOMContentLoaded!');
+        console.error('[ERRO] showCreateUserModal nÃ£o definida durante DOMContentLoaded!');
     }
     if (typeof window.showManageUsersModal !== 'function') {
-        console.error('[ERRO] showManageUsersModal não definida durante DOMContentLoaded!');
+        console.error('[ERRO] showManageUsersModal nÃ£o definida durante DOMContentLoaded!');
     }
     
     // Configurar eventos imediatamente
     configurarEventosBotoes();
     
-    // Forçar visibilidade do botão "Minha Senha" desde o início
+    // ForÃ§ar visibilidade do botÃ£o "Minha Senha" desde o inÃ­cio
     setTimeout(() => {
         forcarVisibilidadeBotaoMinhaSenha();
-        // Iniciar watchdog para manter o botão sempre visível
+        // Iniciar watchdog para manter o botÃ£o sempre visÃ­vel
         iniciarWatchdogBotaoMinhaSenha();
-        // Iniciar observer para detectar remoções do botão
+        // Iniciar observer para detectar remoÃ§Ãµes do botÃ£o
         iniciarObserverBotaoMinhaSenha();
     }, 100);
     
@@ -757,8 +757,8 @@ window.addEventListener('DOMContentLoaded', async function() {
         const firebaseOk = await initFirebaseApp();
         
         if (!firebaseOk) {
-            console.warn('[AVISO] Firebase falhou na inicialização - continuando em modo offline');
-            // Em caso de falha do Firebase, ativar modo offline básico
+            console.warn('[AVISO] Firebase falhou na inicializaÃ§Ã£o - continuando em modo offline');
+            // Em caso de falha do Firebase, ativar modo offline bÃ¡sico
             setTimeout(() => {
                 // Simular login offline para admins
                 window.userRole = 'admin';
@@ -777,27 +777,27 @@ window.addEventListener('DOMContentLoaded', async function() {
             return;
         }
     } catch (error) {
-        console.error('[ERRO] Erro crítico na inicialização do Firebase:', error);
+        console.error('[ERRO] Erro crÃ­tico na inicializaÃ§Ã£o do Firebase:', error);
     }
     
-    // FORÇAR ocultação de todos os painéis administrativos na inicialização
+    // FORÃ‡AR ocultaÃ§Ã£o de todos os painÃ©is administrativos na inicializaÃ§Ã£o
     const adminPanel = document.getElementById('admin-panel');
     if (adminPanel) adminPanel.classList.add('hidden');
     
     const teamsGrid = document.querySelector('.teams-grid');
     if (teamsGrid) teamsGrid.classList.add('hidden');
     
-    // Ocultar TODOS os painéis administrativos na inicialização
+    // Ocultar TODOS os painÃ©is administrativos na inicializaÃ§Ã£o
     const allPanels = document.querySelectorAll('.team-panel, .department-card, [class*="card"]');
     allPanels.forEach(panel => {
         if (panel.classList) panel.classList.add('hidden');
     });
     
-    // Garantir que a seção de autenticação esteja visível
+    // Garantir que a seÃ§Ã£o de autenticaÃ§Ã£o esteja visÃ­vel
     const authSection = document.getElementById('auth-section');
     if (authSection) authSection.classList.remove('hidden');
     
-    // Ocultar campo departamento corretamente na inicialização
+    // Ocultar campo departamento corretamente na inicializaÃ§Ã£o
     var tipoSelect = document.getElementById('tipo-acesso');
     var tipo = tipoSelect ? tipoSelect.value : null;
     var departamentoSection = document.getElementById('departamento-section');
@@ -805,19 +805,19 @@ window.addEventListener('DOMContentLoaded', async function() {
         departamentoSection.classList.add('hidden');
         var departamentoSelect = document.getElementById('departamento');
         if (departamentoSelect) departamentoSelect.value = '';
-        debugLog('[DEBUG] Inicialização: ocultando departamento-section');
+        debugLog('[DEBUG] InicializaÃ§Ã£o: ocultando departamento-section');
     }
     
-    // Listener de autenticação persistente (apenas se Firebase OK)
+    // Listener de autenticaÃ§Ã£o persistente (apenas se Firebase OK)
     if (window.auth) {
         window.auth.onAuthStateChanged(async function(user) {
             try {
                 if (user) {
-                    debugLog('[DEBUG] Usuário autenticado:', user.email);
-                    debugLog('[DEBUG] UID do usuário:', user.uid);
+                    debugLog('[DEBUG] UsuÃ¡rio autenticado:', user.email);
+                    debugLog('[DEBUG] UID do usuÃ¡rio:', user.uid);
                     
                     // Verifica admin via Firestore
-                    debugLog('[DEBUG] Verificando permissões do usuário...');
+                    debugLog('[DEBUG] Verificando permissÃµes do usuÃ¡rio...');
                     const dadosAdmin = await window.verificarUsuarioAdminJS(user);
                     
                     if (dadosAdmin) {
@@ -836,9 +836,9 @@ window.addEventListener('DOMContentLoaded', async function() {
                             equipe: dadosAdmin.equipe
                         });
                         
-                        // Configurar interface baseada no tipo de usuário
+                        // Configurar interface baseada no tipo de usuÃ¡rio
                         if (dadosAdmin.role === 'super_admin' || dadosAdmin.isSuperAdmin) {
-                            debugLog('[DEBUG] Usuário SUPER ADMIN - mostrando painel completo');
+                            debugLog('[DEBUG] UsuÃ¡rio SUPER ADMIN - mostrando painel completo');
                             
                             // Esconder login e mostrar painel
                             const authSection = document.getElementById('auth-section');
@@ -862,14 +862,14 @@ window.addEventListener('DOMContentLoaded', async function() {
                                 teamsGrid.style.display = 'grid';
                             }
                             
-                            // Garantir que elementos críticos estão visíveis
+                            // Garantir que elementos crÃ­ticos estÃ£o visÃ­veis
                             document.body.style.display = 'block';
                             document.body.style.visibility = 'visible';
                             
                             debugLog('[DEBUG] Interface configurada para super admin');
                             
                         } else if (dadosAdmin.role === 'admin') {
-                            debugLog('[DEBUG] Usuário ADMIN - mostrando painel completo com permissões restritas');
+                            debugLog('[DEBUG] UsuÃ¡rio ADMIN - mostrando painel completo com permissÃµes restritas');
                             
                             // Esconder login e mostrar painel (mesmo comportamento do super_admin)
                             const authSection = document.getElementById('auth-section');
@@ -893,87 +893,87 @@ window.addEventListener('DOMContentLoaded', async function() {
                                 teamsGrid.style.display = 'grid';
                             }
                             
-                            // Garantir que elementos críticos estão visíveis
+                            // Garantir que elementos crÃ­ticos estÃ£o visÃ­veis
                             document.body.style.display = 'block';
                             document.body.style.visibility = 'visible';
                             
                             debugLog('[DEBUG] Interface configurada para admin');
                             
                         } else if (dadosAdmin.isEquipe && dadosAdmin.equipe) {
-                            debugLog('[DEBUG] Usuário EQUIPE - mostrando apenas cards do departamento:', dadosAdmin.equipe);
-                            // Usuário de equipe vê apenas seu departamento
+                            debugLog('[DEBUG] UsuÃ¡rio EQUIPE - mostrando apenas cards do departamento:', dadosAdmin.equipe);
+                            // UsuÃ¡rio de equipe vÃª apenas seu departamento
                             document.getElementById('auth-section')?.classList.add('hidden');
                             document.getElementById('admin-panel')?.classList.remove('hidden');
                             
-                            // Mostrar apenas cards do departamento específico
+                            // Mostrar apenas cards do departamento especÃ­fico
                             const teamsGrid = document.querySelector('.teams-grid');
                             if (teamsGrid) teamsGrid.classList.remove('hidden');
                             
-                            // Ocultar todos os painéis primeiro
+                            // Ocultar todos os painÃ©is primeiro
                             const allPanels = document.querySelectorAll('.team-panel, .department-card, [class*="card"]');
                             allPanels.forEach(panel => {
                                 if (panel.classList) panel.classList.add('hidden');
                             });
                             
-                            // Mostrar apenas o painel do departamento do usuário
+                            // Mostrar apenas o painel do departamento do usuÃ¡rio
                             const departmentPanel = document.querySelector(`[data-department="${dadosAdmin.equipe}"]`);
                             if (departmentPanel) {
                                 departmentPanel.classList.remove('hidden');
                                 debugLog('[DEBUG] Mostrando painel do departamento:', dadosAdmin.equipe);
                             } else {
-                                console.warn('[AVISO] Painel não encontrado para departamento:', dadosAdmin.equipe);
+                                console.warn('[AVISO] Painel nÃ£o encontrado para departamento:', dadosAdmin.equipe);
                             }
                             
                         } else {
-                            debugLog('[DEBUG] Usuário sem permissões específicas - mantendo na tela de login');
+                            debugLog('[DEBUG] UsuÃ¡rio sem permissÃµes especÃ­ficas - mantendo na tela de login');
                             document.getElementById('auth-section')?.classList.remove('hidden');
                             document.getElementById('admin-panel')?.classList.add('hidden');
-                            showToast('Erro', 'Usuário sem permissões definidas', 'error');
+                            showToast('Erro', 'UsuÃ¡rio sem permissÃµes definidas', 'error');
                             setTimeout(() => window.auth.signOut(), 2000);
                             return;
                         }
                         
-                        // Atualizar botões imediatamente após login (sem timeout)
-                        debugLog('[DEBUG] Inicializando botões após login...');
+                        // Atualizar botÃµes imediatamente apÃ³s login (sem timeout)
+                        debugLog('[DEBUG] Inicializando botÃµes apÃ³s login...');
                         atualizarVisibilidadeBotoes();
                         configurarEventosBotoes();
                         
-                        // Forçar visibilidade do botão "Minha Senha" imediatamente
+                        // ForÃ§ar visibilidade do botÃ£o "Minha Senha" imediatamente
                         forcarVisibilidadeBotaoMinhaSenha();
                         
-                        // Configuração adicional após um pequeno delay para garantir DOM estável
+                        // ConfiguraÃ§Ã£o adicional apÃ³s um pequeno delay para garantir DOM estÃ¡vel
                         setTimeout(() => {
-                            debugLog('[DEBUG] Reconfiguração de segurança dos botões...');
+                            debugLog('[DEBUG] ReconfiguraÃ§Ã£o de seguranÃ§a dos botÃµes...');
                             atualizarVisibilidadeBotoes();
                             configurarEventosBotoes();
                             
-                            // Forçar novamente o botão "Minha Senha"
+                            // ForÃ§ar novamente o botÃ£o "Minha Senha"
                             forcarVisibilidadeBotaoMinhaSenha();
                             
-                            // Forçar exibição do botão de limpeza para super_admin
+                            // ForÃ§ar exibiÃ§Ã£o do botÃ£o de limpeza para super_admin
                             if (window.usuarioAdmin && window.usuarioAdmin.role === 'super_admin') {
                                 const btnLimpeza = document.getElementById('limpeza-btn');
                                 if (btnLimpeza) {
                                     btnLimpeza.classList.remove('btn-hide');
                                     btnLimpeza.style.display = 'inline-flex';
-                                    debugLog('[DEBUG] Botão limpeza forçado para super_admin');
+                                    debugLog('[DEBUG] BotÃ£o limpeza forÃ§ado para super_admin');
                                 } else {
-                                    console.warn('[AVISO] Botão limpeza não encontrado no DOM');
+                                    console.warn('[AVISO] BotÃ£o limpeza nÃ£o encontrado no DOM');
                                 }
                             }
                             
-                            // Garantir que as funções estão disponíveis globalmente
+                            // Garantir que as funÃ§Ãµes estÃ£o disponÃ­veis globalmente
                             if (typeof window.showCreateUserModal !== 'function') {
-                                console.error('[ERRO] showCreateUserModal não está definida!');
+                                console.error('[ERRO] showCreateUserModal nÃ£o estÃ¡ definida!');
                             }
                             if (typeof window.showManageUsersModal !== 'function') {
-                                console.error('[ERRO] showManageUsersModal não está definida!');
+                                console.error('[ERRO] showManageUsersModal nÃ£o estÃ¡ definida!');
                             }
                             if (typeof window.limparDadosTeste !== 'function') {
-                                console.error('[ERRO] limparDadosTeste não está definida!');
+                                console.error('[ERRO] limparDadosTeste nÃ£o estÃ¡ definida!');
                             }
                             
-                            debugLog('[DEBUG] Estado dos botões após login:', {
+                            debugLog('[DEBUG] Estado dos botÃµes apÃ³s login:', {
                                 userRole: window.userRole,
                                 usuarioAdmin: window.usuarioAdmin,
                                 showCreateUserModal: typeof window.showCreateUserModal,
@@ -981,57 +981,57 @@ window.addEventListener('DOMContentLoaded', async function() {
                                 limparDadosTeste: typeof window.limparDadosTeste
                             });
                             
-                            // Chamar função de teste para debug
+                            // Chamar funÃ§Ã£o de teste para debug
                             if (typeof window.testarBotoes === 'function') {
                                 window.testarBotoes();
                             }
                             
                         }, 300);
                         
-                        // Segunda verificação para garantir configuração
+                        // Segunda verificaÃ§Ã£o para garantir configuraÃ§Ã£o
                         setTimeout(() => {
-                            debugLog('[DEBUG] Segunda verificação dos botões...');
+                            debugLog('[DEBUG] Segunda verificaÃ§Ã£o dos botÃµes...');
                             if (window.reconfigurarBotoes) {
                                 window.reconfigurarBotoes();
                             }
                         }, 1000);
                         
-                        // Carregar dados da aplicação com timeout aumentado
-                        debugLog('[DEBUG] Iniciando carregamento de solicitações...');
+                        // Carregar dados da aplicaÃ§Ã£o com timeout aumentado
+                        debugLog('[DEBUG] Iniciando carregamento de solicitaÃ§Ãµes...');
                         setTimeout(async () => {
                             try {
                                 await carregarSolicitacoes();
-                                debugLog('[DEBUG] Solicitações carregadas com sucesso');
+                                debugLog('[DEBUG] SolicitaÃ§Ãµes carregadas com sucesso');
                             } catch (error) {
-                                console.error('[ERRO] Falha no carregamento de solicitações:', error);
-                                showToast('Erro', 'Falha ao carregar dados. Recarregue a página.', 'error');
+                                console.error('[ERRO] Falha no carregamento de solicitaÃ§Ãµes:', error);
+                                showToast('Erro', 'Falha ao carregar dados. Recarregue a pÃ¡gina.', 'error');
                             }
                         }, 500);
                         
                     } else {
-                        debugLog('[DEBUG] Usuário sem permissões - mantendo na tela de login');
-                        // Usuário autenticado mas sem permissões - manter na tela de login
+                        debugLog('[DEBUG] UsuÃ¡rio sem permissÃµes - mantendo na tela de login');
+                        // UsuÃ¡rio autenticado mas sem permissÃµes - manter na tela de login
                         const authSection = document.getElementById('auth-section');
                         const adminPanel = document.getElementById('admin-panel');
                         if (authSection) authSection.classList.remove('hidden');
                         if (adminPanel) adminPanel.classList.add('hidden');
                         
-                        // Fazer logout automático do usuário não autorizado
+                        // Fazer logout automÃ¡tico do usuÃ¡rio nÃ£o autorizado
                         setTimeout(() => {
                             window.auth.signOut();
                         }, 2000);
                     }
                 } else {
-                    debugLog('[DEBUG] Usuário não autenticado - resetando interface completa');
-                    // Usuário não autenticado - resetar interface completamente
+                    debugLog('[DEBUG] UsuÃ¡rio nÃ£o autenticado - resetando interface completa');
+                    // UsuÃ¡rio nÃ£o autenticado - resetar interface completamente
                     
-                    // Ocultar painéis administrativos
+                    // Ocultar painÃ©is administrativos
                     const authSection2 = document.getElementById('auth-section');
                     const adminPanel2 = document.getElementById('admin-panel');
                     if (authSection2) authSection2.classList.remove('hidden');
                     if (adminPanel2) adminPanel2.classList.add('hidden');
                     
-                    // Ocultar TODOS os painéis de departamento
+                    // Ocultar TODOS os painÃ©is de departamento
                     const teamsGrid = document.querySelector('.teams-grid');
                     if (teamsGrid) teamsGrid.classList.add('hidden');
                     
@@ -1040,23 +1040,23 @@ window.addEventListener('DOMContentLoaded', async function() {
                         if (panel.classList) panel.classList.add('hidden');
                     });
                     
-                    // Limpar dados do usuário
+                    // Limpar dados do usuÃ¡rio
                     window.usuarioAdmin = null;
                     window.userRole = null;
                     window.userEmail = null;
                     localStorage.removeItem('usuarioAdmin');
                     
-                    // Resetar formulário de login
+                    // Resetar formulÃ¡rio de login
                     const loginForm = document.getElementById('login-form');
                     if (loginForm) loginForm.reset();
                 }
             } catch (authError) {
-                console.error('[ERRO] Erro no listener de autenticação:', authError);
-                showToast('Erro', 'Erro na autenticação. Tentando modo offline...', 'error');
+                console.error('[ERRO] Erro no listener de autenticaÃ§Ã£o:', authError);
+                showToast('Erro', 'Erro na autenticaÃ§Ã£o. Tentando modo offline...', 'error');
             }
         });
     }
-    // Corrige botão de logout
+    // Corrige botÃ£o de logout
     const logoutBtn = document.getElementById('logout-btn');
     if (logoutBtn) {
         logoutBtn.onclick = async function() {
@@ -1074,7 +1074,7 @@ window.addEventListener('DOMContentLoaded', async function() {
                 // Fazer logout do Firebase
                 await window.auth.signOut();
                 
-                // Usar função de limpeza completa
+                // Usar funÃ§Ã£o de limpeza completa
                 limparInterfaceCompleta();
                 
                 // Limpar campos de login
@@ -1095,7 +1095,7 @@ window.addEventListener('DOMContentLoaded', async function() {
                 console.error('[ERRO] Falha no logout:', err);
                 showToast('Erro', 'Erro ao fazer logout: ' + err.message, 'error');
                 
-                // Em caso de erro, forçar reload da página
+                // Em caso de erro, forÃ§ar reload da pÃ¡gina
                 setTimeout(() => {
                     window.location.reload();
                 }, 2000);
@@ -1109,8 +1109,8 @@ window.addEventListener('DOMContentLoaded', async function() {
 // Detectar erros de QUIC Protocol e outros problemas de rede
 window.addEventListener('error', function(event) {
     if (event.message && event.message.includes('ERR_QUIC_PROTOCOL_ERROR')) {
-        console.warn('[AVISO] Erro de protocolo QUIC detectado - possível problema de conectividade');
-        // Não fazer logout automático, apenas registrar
+        console.warn('[AVISO] Erro de protocolo QUIC detectado - possÃ­vel problema de conectividade');
+        // NÃ£o fazer logout automÃ¡tico, apenas registrar
         if (window.registrarLogAuditoria) {
             window.registrarLogAuditoria('CONNECTIVITY_ERROR', {
                 error: 'ERR_QUIC_PROTOCOL_ERROR',
@@ -1138,7 +1138,7 @@ window.handleLogin = async function(event) {
         
         if (!email || !senha) {
             showToast('Erro', 'Preencha email e senha.', 'error');
-            console.warn('[AVISO] handleLogin: email ou senha não preenchidos!');
+            console.warn('[AVISO] handleLogin: email ou senha nÃ£o preenchidos!');
             if (window.registrarLogAuditoria) {
                 window.registrarLogAuditoria('LOGIN_ATTEMPT_INVALID', { email, motivo: 'Campos vazios' });
             }
@@ -1152,10 +1152,10 @@ window.handleLogin = async function(event) {
         
         debugLog('[DEBUG] Tentando login com email:', email);
         
-        // Verificar se Firebase está disponível
+        // Verificar se Firebase estÃ¡ disponÃ­vel
         if (!window.auth) {
-            console.error('[ERRO] Firebase Auth não disponível');
-            showToast('Erro', 'Sistema de autenticação não disponível. Ativando modo desenvolvimento...', 'warning');
+            console.error('[ERRO] Firebase Auth nÃ£o disponÃ­vel');
+            showToast('Erro', 'Sistema de autenticaÃ§Ã£o nÃ£o disponÃ­vel. Ativando modo desenvolvimento...', 'warning');
             if (window.registrarLogAuditoria) {
                 window.registrarLogAuditoria('FIREBASE_AUTH_ERROR', { email });
             }
@@ -1181,7 +1181,7 @@ window.handleLogin = async function(event) {
         // Atualiza badge do menu imediatamente
         const badge = document.getElementById('user-role-badge');
         if (badge) {
-            // Exibe o papel correto do usuário
+            // Exibe o papel correto do usuÃ¡rio
             if (window.usuarioAdmin && window.usuarioAdmin.role === 'super_admin') {
                 badge.textContent = 'Super Administrador';
             } else if (window.usuarioAdmin && window.usuarioAdmin.role === 'admin') {
@@ -1199,8 +1199,8 @@ window.handleLogin = async function(event) {
         painel.appendChild(loader);
         window._mainLoader = loader;
         
-        // NÃO chamar mostrarSecaoPainel aqui - será chamado pelo onAuthStateChanged
-        debugLog('[DEBUG] Login concluído, aguardando onAuthStateChanged carregar dados do usuário...');
+        // NÃƒO chamar mostrarSecaoPainel aqui - serÃ¡ chamado pelo onAuthStateChanged
+        debugLog('[DEBUG] Login concluÃ­do, aguardando onAuthStateChanged carregar dados do usuÃ¡rio...');
         
     } catch (error) {
         console.error('[ERRO] handleLogin: falha no login:', error);
@@ -1220,7 +1220,7 @@ window.handleLogin = async function(event) {
             });
         }
         
-        // Tratamento específico de diferentes tipos de erro
+        // Tratamento especÃ­fico de diferentes tipos de erro
         let mensagemErro = 'Erro desconhecido no login';
         
         if (error.code === 'auth/invalid-login-credentials' || 
@@ -1230,9 +1230,9 @@ window.handleLogin = async function(event) {
         } else if (error.code === 'auth/too-many-requests') {
             mensagemErro = 'Muitas tentativas. Tente novamente mais tarde';
         } else if (error.code === 'auth/network-request-failed') {
-            mensagemErro = 'Erro de conexão. Verifique sua internet';
+            mensagemErro = 'Erro de conexÃ£o. Verifique sua internet';
         } else if (error.code === 'auth/invalid-email') {
-            mensagemErro = 'Email inválido';
+            mensagemErro = 'Email invÃ¡lido';
         }
         
         showToast('Erro de Login', mensagemErro, 'error');
@@ -1250,14 +1250,14 @@ window.handleLogin = async function(event) {
                     mostrarModoDesenvolvimento = true;
                     break;
                 case 'auth/user-not-found':
-                    mensagemErro = 'Usuário não encontrado. Verifique o email.';
+                    mensagemErro = 'UsuÃ¡rio nÃ£o encontrado. Verifique o email.';
                     mostrarModoDesenvolvimento = true;
                     break;
                 case 'auth/wrong-password':
                     mensagemErro = 'Senha incorreta.';
                     break;
                 case 'auth/invalid-email':
-                    mensagemErro = 'Email inválido.';
+                    mensagemErro = 'Email invÃ¡lido.';
                     break;
                 case 'auth/user-disabled':
                     mensagemErro = 'Conta desabilitada. Entre em contato com o administrador.';
@@ -1266,11 +1266,11 @@ window.handleLogin = async function(event) {
                     mensagemErro = 'Muitas tentativas de login. Tente novamente mais tarde.';
                     break;
                 case 'auth/network-request-failed':
-                    mensagemErro = 'Erro de rede. Verifique sua conexão.';
+                    mensagemErro = 'Erro de rede. Verifique sua conexÃ£o.';
                     mostrarModoDesenvolvimento = true;
                     break;
                 default:
-                    mensagemErro = `Erro de autenticação: ${error.code}`;
+                    mensagemErro = `Erro de autenticaÃ§Ã£o: ${error.code}`;
                     mostrarModoDesenvolvimento = true;
             }
         } else if (error.message) {
@@ -1280,11 +1280,11 @@ window.handleLogin = async function(event) {
         
         showToast('Erro', mensagemErro, 'error');
         
-        // Se há problemas de conectividade ou credenciais, oferecer modo desenvolvimento
+        // Se hÃ¡ problemas de conectividade ou credenciais, oferecer modo desenvolvimento
         if (mostrarModoDesenvolvimento) {
             setTimeout(() => {
                 const email = document.getElementById('login-email').value;
-                if (email && confirm('Erro de autenticação detectado. Deseja ativar o modo desenvolvimento? (Funcionalidade limitada)')) {
+                if (email && confirm('Erro de autenticaÃ§Ã£o detectado. Deseja ativar o modo desenvolvimento? (Funcionalidade limitada)')) {
                     window.loginDesenvolvimento(email);
                 }
             }, 2000);
@@ -1292,14 +1292,14 @@ window.handleLogin = async function(event) {
     }
 }
 window.carregarSolicitacoesAgrupadas = async function() {
-    // Verificar se usuário está logado e dados carregados antes de prosseguir
+    // Verificar se usuÃ¡rio estÃ¡ logado e dados carregados antes de prosseguir
     const usuarioAdmin = window.usuarioAdmin || JSON.parse(localStorage.getItem('usuarioAdmin') || '{}');
     if (!usuarioAdmin || !usuarioAdmin.uid || !usuarioAdmin.email) {
-        console.warn('[AVISO] carregarSolicitacoesAgrupadas: usuário não completamente logado, ignorando chamada...');
+        console.warn('[AVISO] carregarSolicitacoesAgrupadas: usuÃ¡rio nÃ£o completamente logado, ignorando chamada...');
         return;
     }
 
-    // Chama a função que atualiza os cards de métricas e equipes
+    // Chama a funÃ§Ã£o que atualiza os cards de mÃ©tricas e equipes
     await carregarSolicitacoes();
 }
 
@@ -1309,7 +1309,7 @@ window.showCreateUserModal = function() {
     // Debug completo do estado atual
     window.debugModals();
     
-    // Verifica se o usuário está autenticado e tem permissões
+    // Verifica se o usuÃ¡rio estÃ¡ autenticado e tem permissÃµes
     const usuarioAdmin = window.usuarioAdmin || JSON.parse(localStorage.getItem('usuarioAdmin') || '{}');
     const userRole = window.userRole || usuarioAdmin.role;
     
@@ -1318,7 +1318,7 @@ window.showCreateUserModal = function() {
     
     // Permite APENAS para super_admin
     if (!userRole || userRole !== 'super_admin') {
-        showToast('Erro', 'Acesso negado. Apenas super administradores podem criar usuários.', 'error');
+        showToast('Erro', 'Acesso negado. Apenas super administradores podem criar usuÃ¡rios.', 'error');
         console.warn('[AVISO] showCreateUserModal: acesso negado, role:', userRole);
         return;
     }
@@ -1332,7 +1332,7 @@ window.showCreateUserModal = function() {
         
         // Garantir que o modal esteja anexado ao body
         if (modal.parentElement !== document.body) {
-            debugLog('[DEBUG] showCreateUserModal: modal não está no body, movendo...');
+            debugLog('[DEBUG] showCreateUserModal: modal nÃ£o estÃ¡ no body, movendo...');
             document.body.appendChild(modal);
         }
         
@@ -1354,16 +1354,16 @@ window.showCreateUserModal = function() {
         modal.style.alignItems = 'center';
         modal.style.justifyContent = 'center';
         
-        // Configurar botão cancelar
+        // Configurar botÃ£o cancelar
         const btnCancelar = document.getElementById('btn-cancelar-novo-usuario');
         if (btnCancelar) {
             btnCancelar.onclick = function() {
-                debugLog('[DEBUG] Botão cancelar clicado - fechando modal');
+                debugLog('[DEBUG] BotÃ£o cancelar clicado - fechando modal');
                 window.closeCreateUserModal();
             };
         }
         
-        // Configurar submit do formulário
+        // Configurar submit do formulÃ¡rio
         const form = document.getElementById('form-novo-usuario');
         if (form) {
             form.onsubmit = async function(e) {
@@ -1373,7 +1373,7 @@ window.showCreateUserModal = function() {
             };
         }
         
-        // Focar no primeiro campo após um delay
+        // Focar no primeiro campo apÃ³s um delay
         setTimeout(() => {
             const tipoField = document.getElementById('usuario-tipo');
             if (tipoField) {
@@ -1384,47 +1384,47 @@ window.showCreateUserModal = function() {
         
         debugLog('[DEBUG] showCreateUserModal: modal exibido com sucesso');
     } else {
-        console.error('[ERRO] Modal de criação de usuário não encontrado no DOM!');
-        alert('Erro: Modal de criação de usuário não encontrado!');
+        console.error('[ERRO] Modal de criaÃ§Ã£o de usuÃ¡rio nÃ£o encontrado no DOM!');
+        alert('Erro: Modal de criaÃ§Ã£o de usuÃ¡rio nÃ£o encontrado!');
     }
 };
 
-// Função para criar novo usuário (equipe ou admin)
+// FunÃ§Ã£o para criar novo usuÃ¡rio (equipe ou admin)
 window.criarNovoUsuario = async function() {
     debugLog('[DEBUG] criarNovoUsuario: iniciando...');
     
     try {
-        // Verificar permissões
+        // Verificar permissÃµes
         const usuarioAdmin = window.usuarioAdmin || JSON.parse(localStorage.getItem('usuarioAdmin') || '{}');
         const userRole = window.userRole || usuarioAdmin.role;
         
         if (!userRole || userRole !== 'super_admin') {
-            showToast('Erro', 'Acesso negado. Apenas super administradores podem criar usuários.', 'error');
+            showToast('Erro', 'Acesso negado. Apenas super administradores podem criar usuÃ¡rios.', 'error');
             return;
         }
         
-        // Obter dados do formulário
+        // Obter dados do formulÃ¡rio
         const tipo = document.getElementById('usuario-tipo').value;
         const nome = document.getElementById('usuario-nome').value.trim();
         const email = document.getElementById('usuario-email').value.trim();
         const senha = document.getElementById('usuario-senha').value;
         const equipe = document.getElementById('usuario-equipe').value;
         
-        debugLog('[DEBUG] Dados do formulário:', { tipo, nome, email, senha: senha.length, equipe });
+        debugLog('[DEBUG] Dados do formulÃ¡rio:', { tipo, nome, email, senha: senha.length, equipe });
         
-        // Validações
+        // ValidaÃ§Ãµes
         if (!tipo) {
-            showToast('Erro', 'Selecione o tipo de usuário.', 'error');
+            showToast('Erro', 'Selecione o tipo de usuÃ¡rio.', 'error');
             return;
         }
         
         if (!nome || !email || !senha) {
-            showToast('Erro', 'Preencha todos os campos obrigatórios.', 'error');
+            showToast('Erro', 'Preencha todos os campos obrigatÃ³rios.', 'error');
             return;
         }
         
         if (tipo === 'equipe' && !equipe) {
-            showToast('Erro', 'Selecione a equipe para usuários de equipe.', 'error');
+            showToast('Erro', 'Selecione a equipe para usuÃ¡rios de equipe.', 'error');
             return;
         }
         
@@ -1433,22 +1433,22 @@ window.criarNovoUsuario = async function() {
             return;
         }
         
-        // Desabilitar botão durante criação
+        // Desabilitar botÃ£o durante criaÃ§Ã£o
         const btnSubmit = document.querySelector('#form-novo-usuario button[type="submit"]');
         if (btnSubmit) {
             btnSubmit.disabled = true;
             btnSubmit.textContent = 'Criando...';
         }
         
-        debugLog('[DEBUG] Criando usuário no Firebase Auth...');
+        debugLog('[DEBUG] Criando usuÃ¡rio no Firebase Auth...');
         
-        // Criar usuário no Firebase Auth
+        // Criar usuÃ¡rio no Firebase Auth
         const userCredential = await window.auth.createUserWithEmailAndPassword(email, senha);
         const user = userCredential.user;
         
-        debugLog('[DEBUG] Usuário criado no Auth:', user.uid);
+        debugLog('[DEBUG] UsuÃ¡rio criado no Auth:', user.uid);
         
-        // Preparar dados do usuário baseado no tipo
+        // Preparar dados do usuÃ¡rio baseado no tipo
         let dadosUsuario;
         let colecao;
         
@@ -1465,10 +1465,10 @@ window.criarNovoUsuario = async function() {
                     criarUsuarios: false,              // Apenas super_admin
                     gerenciarDepartamentos: false,     // Apenas super_admin
                     verRelatorios: true,               // Admin pode acessar
-                    gerenciarSolicitacoes: true,       // Admin pode gerenciar solicitações
+                    gerenciarSolicitacoes: true,       // Admin pode gerenciar solicitaÃ§Ãµes
                     gerenciarAcompanhantes: false,     // Apenas super_admin
-                    verMetricas: true,                 // Admin pode ver métricas
-                    verPesquisaSatisfacao: true        // Admin pode ver pesquisa satisfação
+                    verMetricas: true,                 // Admin pode ver mÃ©tricas
+                    verPesquisaSatisfacao: true        // Admin pode ver pesquisa satisfaÃ§Ã£o
                 }
             };
         } else if (tipo === 'equipe') {
@@ -1489,23 +1489,23 @@ window.criarNovoUsuario = async function() {
             };
         }
         
-        debugLog('[DEBUG] Salvando no Firestore - Coleção:', colecao);
+        debugLog('[DEBUG] Salvando no Firestore - ColeÃ§Ã£o:', colecao);
         
         // Salvar no Firestore
         await window.db.collection(colecao).doc(user.uid).set(dadosUsuario);
         
-        debugLog('[DEBUG] Usuário salvo com sucesso');
+        debugLog('[DEBUG] UsuÃ¡rio salvo com sucesso');
         
-        showToast('Sucesso', `${tipo === 'admin' ? 'Administrador' : 'Usuário de equipe'} criado com sucesso!`, 'success');
+        showToast('Sucesso', `${tipo === 'admin' ? 'Administrador' : 'UsuÃ¡rio de equipe'} criado com sucesso!`, 'success');
         
-        // Limpar formulário
+        // Limpar formulÃ¡rio
         document.getElementById('form-novo-usuario').reset();
         document.getElementById('campo-equipe').style.display = 'none';
         
         // Fechar modal
         window.closeCreateUserModal();
         
-        // Recarregar lista de usuários se estiver na tela de gerenciamento
+        // Recarregar lista de usuÃ¡rios se estiver na tela de gerenciamento
         if (typeof window.carregarUsuarios === 'function') {
             setTimeout(() => window.carregarUsuarios(), 500);
         }
@@ -1513,24 +1513,24 @@ window.criarNovoUsuario = async function() {
     } catch (error) {
         console.error('[ERRO] criarNovoUsuario:', error);
         
-        let mensagem = 'Erro ao criar usuário: ' + error.message;
+        let mensagem = 'Erro ao criar usuÃ¡rio: ' + error.message;
         
         if (error.code === 'auth/email-already-in-use') {
-            mensagem = 'Este email já está sendo usado por outro usuário.';
+            mensagem = 'Este email jÃ¡ estÃ¡ sendo usado por outro usuÃ¡rio.';
         } else if (error.code === 'auth/invalid-email') {
-            mensagem = 'Email inválido.';
+            mensagem = 'Email invÃ¡lido.';
         } else if (error.code === 'auth/weak-password') {
-            mensagem = 'Senha muito fraca (mínimo 6 caracteres).';
+            mensagem = 'Senha muito fraca (mÃ­nimo 6 caracteres).';
         }
         
         showToast('Erro', mensagem, 'error');
         
     } finally {
-        // Reabilitar botão
+        // Reabilitar botÃ£o
         const btnSubmit = document.querySelector('#form-novo-usuario button[type="submit"]');
         if (btnSubmit) {
             btnSubmit.disabled = false;
-            btnSubmit.textContent = 'Criar Usuário';
+            btnSubmit.textContent = 'Criar UsuÃ¡rio';
         }
     }
 };
@@ -1541,7 +1541,7 @@ window.showManageUsersModal = async function() {
     // Debug completo do estado atual
     window.debugModals();
     
-    // Verifica se o usuário está autenticado e tem permissões
+    // Verifica se o usuÃ¡rio estÃ¡ autenticado e tem permissÃµes
     const usuarioAdmin = window.usuarioAdmin || JSON.parse(localStorage.getItem('usuarioAdmin') || '{}');
     const userRole = window.userRole || usuarioAdmin.role;
     
@@ -1550,7 +1550,7 @@ window.showManageUsersModal = async function() {
     
     // Permite APENAS para super_admin
     if (!userRole || userRole !== 'super_admin') {
-        showToast('Erro', 'Acesso negado. Apenas super administradores podem gerenciar usuários.', 'error');
+        showToast('Erro', 'Acesso negado. Apenas super administradores podem gerenciar usuÃ¡rios.', 'error');
         console.warn('[AVISO] showManageUsersModal: acesso negado, role:', userRole);
         return;
     }
@@ -1579,34 +1579,34 @@ window.showManageUsersModal = async function() {
         modal.style.alignItems = 'center';
         modal.style.justifyContent = 'center';
         
-        // Focar no modal após um delay
+        // Focar no modal apÃ³s um delay
         setTimeout(() => {
             modal.focus();
             debugLog('[DEBUG] showManageUsersModal: foco definido no modal');
         }, 200);
         
-        // Carregar os usuários após exibir o modal
+        // Carregar os usuÃ¡rios apÃ³s exibir o modal
         try {
-            debugLog('[DEBUG] showManageUsersModal: carregando usuários...');
+            debugLog('[DEBUG] showManageUsersModal: carregando usuÃ¡rios...');
             await window.carregarUsuarios();
-            debugLog('[DEBUG] showManageUsersModal: usuários carregados com sucesso');
+            debugLog('[DEBUG] showManageUsersModal: usuÃ¡rios carregados com sucesso');
         } catch (error) {
-            console.error('[ERRO] showManageUsersModal: erro ao carregar usuários:', error);
-            showToast('Erro', 'Erro ao carregar usuários.', 'error');
+            console.error('[ERRO] showManageUsersModal: erro ao carregar usuÃ¡rios:', error);
+            showToast('Erro', 'Erro ao carregar usuÃ¡rios.', 'error');
         }
         
         debugLog('[DEBUG] showManageUsersModal: modal exibido com sucesso');
     } else {
-        console.error('[ERRO] Modal de gerenciamento de usuários não encontrado no DOM!');
-        alert('Erro: Modal de gerenciamento de usuários não encontrado!');
+        console.error('[ERRO] Modal de gerenciamento de usuÃ¡rios nÃ£o encontrado no DOM!');
+        alert('Erro: Modal de gerenciamento de usuÃ¡rios nÃ£o encontrado!');
     }
 };
 
 window.mostrarRelatorios = function() {
     try {
-        debugLog('[DEBUG] ===== INÍCIO MOSTRAR RELATÓRIOS =====');
+        debugLog('[DEBUG] ===== INÃCIO MOSTRAR RELATÃ“RIOS =====');
         
-        // Verificar estado de autenticação de forma mais robusta
+        // Verificar estado de autenticaÃ§Ã£o de forma mais robusta
         const usuarioAdmin = window.usuarioAdmin || JSON.parse(localStorage.getItem('usuarioAdmin') || '{}');
         const userRole = window.userRole || usuarioAdmin.role || 'admin';
         const isAuthenticated = window.auth?.currentUser || usuarioAdmin.uid;
@@ -1622,23 +1622,23 @@ window.mostrarRelatorios = function() {
         
         // Permitir acesso para admin e super_admin
         if (!userRole || (userRole !== 'super_admin' && userRole !== 'admin')) {
-            console.warn('[AVISO] mostrarRelatorios: tentando forçar role admin...');
+            console.warn('[AVISO] mostrarRelatorios: tentando forÃ§ar role admin...');
             
-            // Tentar forçar role admin como fallback
+            // Tentar forÃ§ar role admin como fallback
             if (isAuthenticated) {
                 window.userRole = 'admin';
-                debugLog('[DEBUG] mostrarRelatorios: role forçado para admin');
+                debugLog('[DEBUG] mostrarRelatorios: role forÃ§ado para admin');
             } else {
-                showToast('Erro', 'Acesso negado. Faça login novamente.', 'error');
-                console.warn('[AVISO] mostrarRelatorios: usuário não autenticado');
+                showToast('Erro', 'Acesso negado. FaÃ§a login novamente.', 'error');
+                console.warn('[AVISO] mostrarRelatorios: usuÃ¡rio nÃ£o autenticado');
                 return;
             }
         }
         
-        debugLog('[DEBUG] mostrarRelatorios: acesso autorizado, configurando interface relatórios');
+        debugLog('[DEBUG] mostrarRelatorios: acesso autorizado, configurando interface relatÃ³rios');
         
-        // Mostrar interface de relatórios diretamente (sem chamar mostrarSecaoPainel recursivamente)
-        // Ocultar outras seções
+        // Mostrar interface de relatÃ³rios diretamente (sem chamar mostrarSecaoPainel recursivamente)
+        // Ocultar outras seÃ§Ãµes
         const secoes = [
             'admin-panel',
             'acompanhantes-section',
@@ -1651,7 +1651,7 @@ window.mostrarRelatorios = function() {
             if (el) el.classList.add('hidden');
         });
         
-        // Mostrar painel admin com relatórios
+        // Mostrar painel admin com relatÃ³rios
         const adminPanel = document.getElementById('admin-panel');
         if (adminPanel) {
             adminPanel.classList.remove('hidden');
@@ -1669,68 +1669,68 @@ window.mostrarRelatorios = function() {
             filtroPeriodo.dataset.listenerAdded = 'true';
         }
         
-        debugLog('[DEBUG] mostrarRelatorios: verificando se deve carregar solicitações');
+        debugLog('[DEBUG] mostrarRelatorios: verificando se deve carregar solicitaÃ§Ãµes');
         
-        // Gerar relatório HTML completo em vez de apenas estatísticas
-        debugLog('[DEBUG] mostrarRelatorios: gerando relatório HTML...');
+        // Gerar relatÃ³rio HTML completo em vez de apenas estatÃ­sticas
+        debugLog('[DEBUG] mostrarRelatorios: gerando relatÃ³rio HTML...');
         
-        // Gerar relatório completo em vez de apenas carregar dados
+        // Gerar relatÃ³rio completo em vez de apenas carregar dados
         setTimeout(async () => {
             try {
                 debugLog('[DEBUG] mostrarRelatorios: chamando gerarRelatorioAdmin...');
                 
-                // Chamar função que gera relatório HTML completo
+                // Chamar funÃ§Ã£o que gera relatÃ³rio HTML completo
                 if (typeof window.gerarRelatorioAdmin === 'function') {
                     await window.gerarRelatorioAdmin();
-                    debugLog('[DEBUG] mostrarRelatorios: relatório HTML gerado com sucesso');
+                    debugLog('[DEBUG] mostrarRelatorios: relatÃ³rio HTML gerado com sucesso');
                 } else {
-                    console.error('[ERRO] mostrarRelatorios: função gerarRelatorioAdmin não encontrada');
-                    // Fallback: carregar apenas dados básicos
+                    console.error('[ERRO] mostrarRelatorios: funÃ§Ã£o gerarRelatorioAdmin nÃ£o encontrada');
+                    // Fallback: carregar apenas dados bÃ¡sicos
                     if (typeof window.carregarSolicitacoes === 'function') {
                         window.carregarSolicitacoes();
                     }
                 }
             } catch (error) {
-                console.error('[ERRO] mostrarRelatorios: erro ao gerar relatório:', error);
-                showToast('Erro', 'Falha ao gerar relatório', 'error');
+                console.error('[ERRO] mostrarRelatorios: erro ao gerar relatÃ³rio:', error);
+                showToast('Erro', 'Falha ao gerar relatÃ³rio', 'error');
             }
         }, 100);
         
-        // Adicionar botões de manutenção apenas para super_admin
+        // Adicionar botÃµes de manutenÃ§Ã£o apenas para super_admin
         if (userRole === 'super_admin') {
-            debugLog('[DEBUG] mostrarRelatorios: adicionando painel de manutenção...');
+            debugLog('[DEBUG] mostrarRelatorios: adicionando painel de manutenÃ§Ã£o...');
             
-            // Verificar se a função existe antes de chamar
+            // Verificar se a funÃ§Ã£o existe antes de chamar
             if (typeof window.adicionarPainelManutencao === 'function') {
                 window.adicionarPainelManutencao();
             } else {
-                console.warn('[AVISO] adicionarPainelManutencao não está definida ainda - será chamada posteriormente');
-                // Tentar novamente após um pequeno delay
+                console.warn('[AVISO] adicionarPainelManutencao nÃ£o estÃ¡ definida ainda - serÃ¡ chamada posteriormente');
+                // Tentar novamente apÃ³s um pequeno delay
                 setTimeout(() => {
                     if (typeof window.adicionarPainelManutencao === 'function') {
                         window.adicionarPainelManutencao();
                     } else {
-                        console.error('[ERRO] adicionarPainelManutencao ainda não está disponível');
+                        console.error('[ERRO] adicionarPainelManutencao ainda nÃ£o estÃ¡ disponÃ­vel');
                     }
                 }, 100);
             }
         } else {
-            debugLog('[DEBUG] mostrarRelatorios: painel de manutenção não adicionado (role não é super_admin)');
+            debugLog('[DEBUG] mostrarRelatorios: painel de manutenÃ§Ã£o nÃ£o adicionado (role nÃ£o Ã© super_admin)');
         }
         
-        // Garantir que os botões estejam configurados corretamente
-        // Removido para evitar chamadas duplicadas - configuração feita no login
-        debugLog('[DEBUG] mostrarRelatorios: função executada com sucesso');
+        // Garantir que os botÃµes estejam configurados corretamente
+        // Removido para evitar chamadas duplicadas - configuraÃ§Ã£o feita no login
+        debugLog('[DEBUG] mostrarRelatorios: funÃ§Ã£o executada com sucesso');
         
-        debugLog('[DEBUG] ===== FIM MOSTRAR RELATÓRIOS =====');
+        debugLog('[DEBUG] ===== FIM MOSTRAR RELATÃ“RIOS =====');
         
     } catch (error) {
-        console.error('[ERRO] mostrarRelatorios: falha na execução:', error);
-        showToast('Erro', 'Erro ao carregar relatórios. Tente novamente.', 'error');
+        console.error('[ERRO] mostrarRelatorios: falha na execuÃ§Ã£o:', error);
+        showToast('Erro', 'Erro ao carregar relatÃ³rios. Tente novamente.', 'error');
         
-        // Em caso de erro, não deixar o usuário em estado inconsistente
+        // Em caso de erro, nÃ£o deixar o usuÃ¡rio em estado inconsistente
         setTimeout(() => {
-            console.log('[RECOVERY] Tentando recuperar estado após erro...');
+            console.log('[RECOVERY] Tentando recuperar estado apÃ³s erro...');
             atualizarVisibilidadeBotoes();
             configurarEventosBotoes();
         }, 500);
@@ -1738,7 +1738,7 @@ window.mostrarRelatorios = function() {
 };
 
 window.abrirAcompanhantesSection = function() {
-    // Verificar se é super_admin
+    // Verificar se Ã© super_admin
     const usuarioAdmin = window.usuarioAdmin || JSON.parse(localStorage.getItem('usuarioAdmin') || '{}');
     const userRole = window.userRole || usuarioAdmin.role;
     
@@ -1758,15 +1758,15 @@ window.voltarPainelPrincipal = function() {
     
     mostrarSecaoPainel('painel');
     
-    // Garantir que os botões estejam configurados ao voltar ao painel
+    // Garantir que os botÃµes estejam configurados ao voltar ao painel
     setTimeout(() => {
-        debugLog('[DEBUG] voltarPainelPrincipal: reconfigurando botões...');
+        debugLog('[DEBUG] voltarPainelPrincipal: reconfigurando botÃµes...');
         atualizarVisibilidadeBotoes();
         configurarEventosBotoes();
     }, 100);
 };
 
-// --- Firestore: Usuários ---
+// --- Firestore: UsuÃ¡rios ---
 window.preencherTabelaUsuarios = function(listaUsuarios) {
     console.log('[USUARIOS] ===== PREENCHENDO TABELA =====');
     console.log('[USUARIOS] Lista recebida:', listaUsuarios);
@@ -1782,10 +1782,10 @@ window.preencherTabelaUsuarios = function(listaUsuarios) {
     });
     
     if (!usersList) {
-        console.error('[USUARIOS] Elemento users-list não encontrado!');
+        console.error('[USUARIOS] Elemento users-list nÃ£o encontrado!');
         console.log('[USUARIOS] Tentando encontrar elemento alternativo...');
         
-        // Listar todos os elementos disponíveis para debug
+        // Listar todos os elementos disponÃ­veis para debug
         const allElements = document.querySelectorAll('[id*="user"], [id*="list"], [class*="user"], [class*="list"]');
         console.log('[USUARIOS] Elementos relacionados encontrados:', Array.from(allElements).map(el => ({
             id: el.id,
@@ -1797,19 +1797,19 @@ window.preencherTabelaUsuarios = function(listaUsuarios) {
     }
     
     if (listaUsuarios.length === 0) {
-        console.log('[USUARIOS] Nenhum usuário para exibir');
-        usersList.innerHTML = `<div style='text-align:center; color:#6b7280; padding:2rem;'>Nenhum usuário cadastrado.</div>`;
+        console.log('[USUARIOS] Nenhum usuÃ¡rio para exibir');
+        usersList.innerHTML = `<div style='text-align:center; color:#6b7280; padding:2rem;'>Nenhum usuÃ¡rio cadastrado.</div>`;
         if (totalCount) totalCount.textContent = '0';
         return;
     }
     
-    console.log('[USUARIOS] Criando HTML para', listaUsuarios.length, 'usuários');
+    console.log('[USUARIOS] Criando HTML para', listaUsuarios.length, 'usuÃ¡rios');
     const htmlContent = listaUsuarios.map(user => `
         <div class='user-row' style='display:flex; align-items:center; gap:1.5rem; background:#fff; border-radius:12px; box-shadow:0 2px 8px rgba(0,0,0,0.04); padding:1rem 2rem;'>
-            <span style='font-weight:600; color:#374151;'>${user.nome || 'Nome não informado'}</span>
+            <span style='font-weight:600; color:#374151;'>${user.nome || 'Nome nÃ£o informado'}</span>
             <span style='color:#2563eb;'>${user.departamento || user.equipe || '-'}</span>
             <span style='color:#f59e0b;'>${user.tipo || '-'}</span>
-            <span style='color:#6b7280;'>${user.email || 'Email não informado'}</span>
+            <span style='color:#6b7280;'>${user.email || 'Email nÃ£o informado'}</span>
             <button onclick="editarUsuario('${user.id}')" style='background:#6366f1; color:#fff; border:none; border-radius:8px; padding:6px 16px; cursor:pointer;'>Editar</button>
             <button onclick="removerUsuario('${user.id}')" style='background:#ef4444; color:#fff; border:none; border-radius:8px; padding:6px 16px; cursor:pointer;'>Remover</button>
         </div>
@@ -1831,23 +1831,23 @@ window.carregarUsuarios = async function() {
     debugLog('[DEBUG] carregarUsuarios: iniciando (APENAS equipe e admin)...');
     
     if (!window.db) {
-        console.error('[USUARIOS] Firestore não inicializado!');
-        showToast('Erro', 'Firestore não inicializado!', 'error');
+        console.error('[USUARIOS] Firestore nÃ£o inicializado!');
+        showToast('Erro', 'Firestore nÃ£o inicializado!', 'error');
         return false;
     }
     
-    // Teste de conectividade básico
+    // Teste de conectividade bÃ¡sico
     console.log('[USUARIOS] Testando conectividade Firestore...');
     
     try {
-        console.log('[USUARIOS] Estado da autenticação:', {
+        console.log('[USUARIOS] Estado da autenticaÃ§Ã£o:', {
             currentUser: !!window.auth?.currentUser,
             userEmail: window.auth?.currentUser?.email,
             usuarioAdmin: !!window.usuarioAdmin,
             userRole: window.userRole
         });
         
-        // Busca usuários de equipe
+        // Busca usuÃ¡rios de equipe
         console.log('[USUARIOS] Buscando usuarios_equipe...');
         debugLog('[DEBUG] carregarUsuarios: buscando usuarios_equipe...');
         
@@ -1862,12 +1862,12 @@ window.carregarUsuarios = async function() {
         equipeSnap.forEach(doc => {
             const userData = { id: doc.id, ...doc.data(), tipo: 'Equipe' };
             listaEquipe.push(userData);
-            console.log('[USUARIOS] Usuário equipe encontrado:', userData);
+            console.log('[USUARIOS] UsuÃ¡rio equipe encontrado:', userData);
         });
         console.log('[USUARIOS] Total equipe encontrados:', listaEquipe.length);
-        debugLog('[DEBUG] carregarUsuarios: encontrados', listaEquipe.length, 'usuários de equipe');
+        debugLog('[DEBUG] carregarUsuarios: encontrados', listaEquipe.length, 'usuÃ¡rios de equipe');
         
-        // Busca usuários admin
+        // Busca usuÃ¡rios admin
         console.log('[USUARIOS] Buscando usuarios_admin...');
         debugLog('[DEBUG] carregarUsuarios: buscando usuarios_admin...');
         
@@ -1882,38 +1882,38 @@ window.carregarUsuarios = async function() {
         adminSnap.forEach(doc => {
             const userData = { id: doc.id, ...doc.data(), tipo: 'Admin' };
             listaAdmin.push(userData);
-            console.log('[USUARIOS] Usuário admin encontrado:', userData);
+            console.log('[USUARIOS] UsuÃ¡rio admin encontrado:', userData);
         });
         console.log('[USUARIOS] Total admin encontrados:', listaAdmin.length);
-        debugLog('[DEBUG] carregarUsuarios: encontrados', listaAdmin.length, 'usuários admin');
+        debugLog('[DEBUG] carregarUsuarios: encontrados', listaAdmin.length, 'usuÃ¡rios admin');
         
         // Junta APENAS equipe e admin (SEM acompanhantes)
         const listaUsuarios = [...listaEquipe, ...listaAdmin];
         console.log('[USUARIOS] LISTA FINAL:', listaUsuarios);
         console.log('[USUARIOS] TOTAL GERAL:', listaUsuarios.length);
-        debugLog('[DEBUG] carregarUsuarios: total de usuários para tabela:', listaUsuarios.length);
+        debugLog('[DEBUG] carregarUsuarios: total de usuÃ¡rios para tabela:', listaUsuarios.length);
         
         window.preencherTabelaUsuarios(listaUsuarios);
-        console.log('[USUARIOS] ===== CARREGAMENTO CONCLUÍDO =====');
-        console.log('[SUCCESS] Usuários de equipe e admin carregados:', listaUsuarios);
+        console.log('[USUARIOS] ===== CARREGAMENTO CONCLUÃDO =====');
+        console.log('[SUCCESS] UsuÃ¡rios de equipe e admin carregados:', listaUsuarios);
         return true;
         
     } catch (error) {
         console.error('[USUARIOS] ===== ERRO NO CARREGAMENTO =====');
         console.error('[ERRO] carregarUsuarios:', error);
         console.error('[ERRO] Stack trace:', error.stack);
-        showToast('Erro', 'Não foi possível carregar os usuários: ' + error.message, 'error');
+        showToast('Erro', 'NÃ£o foi possÃ­vel carregar os usuÃ¡rios: ' + error.message, 'error');
         return false;
     }
 };
 
-// === FUNÇÃO DE TESTE MANUAL PARA DEBUG ===
+// === FUNÃ‡ÃƒO DE TESTE MANUAL PARA DEBUG ===
 window.testarCarregamentoUsuarios = function() {
-    console.log('🔬 [TESTE] ===== TESTE MANUAL CARREGAMENTO USUÁRIOS =====');
-    console.log('🔬 [TESTE] Para usar: digite window.testarCarregamentoUsuarios() no console');
+    console.log('ðŸ”¬ [TESTE] ===== TESTE MANUAL CARREGAMENTO USUÃRIOS =====');
+    console.log('ðŸ”¬ [TESTE] Para usar: digite window.testarCarregamentoUsuarios() no console');
     
-    // Primeiro testar se as funções existem
-    console.log('🔬 [TESTE] Funções disponíveis:', {
+    // Primeiro testar se as funÃ§Ãµes existem
+    console.log('ðŸ”¬ [TESTE] FunÃ§Ãµes disponÃ­veis:', {
         carregarUsuarios: typeof window.carregarUsuarios,
         preencherTabelaUsuarios: typeof window.preencherTabelaUsuarios,
         db: !!window.db,
@@ -1921,54 +1921,54 @@ window.testarCarregamentoUsuarios = function() {
         currentUser: !!window.auth?.currentUser
     });
     
-    // Testar conexão com Firestore
+    // Testar conexÃ£o com Firestore
     if (window.db) {
-        console.log('🔬 [TESTE] Testando conexão simples com Firestore...');
+        console.log('ðŸ”¬ [TESTE] Testando conexÃ£o simples com Firestore...');
         
         window.db.collection('usuarios_equipe').limit(1).get()
             .then(snap => {
-                console.log('🔬 [TESTE] ✅ Conexão usuarios_equipe OK - encontrou:', snap.size, 'documentos');
+                console.log('ðŸ”¬ [TESTE] âœ… ConexÃ£o usuarios_equipe OK - encontrou:', snap.size, 'documentos');
                 
                 return window.db.collection('usuarios_admin').limit(1).get();
             })
             .then(snap => {
-                console.log('🔬 [TESTE] ✅ Conexão usuarios_admin OK - encontrou:', snap.size, 'documentos');
+                console.log('ðŸ”¬ [TESTE] âœ… ConexÃ£o usuarios_admin OK - encontrou:', snap.size, 'documentos');
                 
                 // Agora executar carregamento completo
-                console.log('🔬 [TESTE] Executando carregamento completo...');
+                console.log('ðŸ”¬ [TESTE] Executando carregamento completo...');
                 return window.carregarUsuarios();
             })
             .then(resultado => {
-                console.log('🔬 [TESTE] ✅ Resultado final:', resultado);
+                console.log('ðŸ”¬ [TESTE] âœ… Resultado final:', resultado);
             })
             .catch(error => {
-                console.error('🔬 [TESTE] ❌ Erro:', error);
-                console.error('🔬 [TESTE] ❌ Stack:', error.stack);
+                console.error('ðŸ”¬ [TESTE] âŒ Erro:', error);
+                console.error('ðŸ”¬ [TESTE] âŒ Stack:', error.stack);
             });
     } else {
-        console.error('🔬 [TESTE] ❌ Firestore não disponível!');
+        console.error('ðŸ”¬ [TESTE] âŒ Firestore nÃ£o disponÃ­vel!');
     }
 };
 
-// Função específica para verificar usuários existentes
+// FunÃ§Ã£o especÃ­fica para verificar usuÃ¡rios existentes
 window.verificarUsuariosExistentes = async function() {
-    console.log('👥 [VERIFICAR] ===== VERIFICANDO USUÁRIOS EXISTENTES =====');
+    console.log('ðŸ‘¥ [VERIFICAR] ===== VERIFICANDO USUÃRIOS EXISTENTES =====');
     
     if (!window.db) {
-        console.error('👥 [VERIFICAR] ❌ Firestore não disponível');
+        console.error('ðŸ‘¥ [VERIFICAR] âŒ Firestore nÃ£o disponÃ­vel');
         return;
     }
     
     try {
-        console.log('👥 [VERIFICAR] Verificando usuarios_equipe...');
+        console.log('ðŸ‘¥ [VERIFICAR] Verificando usuarios_equipe...');
         const equipeSnap = await window.db.collection('usuarios_equipe').get();
-        console.log('👥 [VERIFICAR] usuarios_equipe:', equipeSnap.size, 'documentos');
+        console.log('ðŸ‘¥ [VERIFICAR] usuarios_equipe:', equipeSnap.size, 'documentos');
         
-        console.log('👥 [VERIFICAR] Verificando usuarios_admin...');
+        console.log('ðŸ‘¥ [VERIFICAR] Verificando usuarios_admin...');
         const adminSnap = await window.db.collection('usuarios_admin').get();
-        console.log('👥 [VERIFICAR] usuarios_admin:', adminSnap.size, 'documentos');
+        console.log('ðŸ‘¥ [VERIFICAR] usuarios_admin:', adminSnap.size, 'documentos');
         
-        // Verificar permissões antes de tentar acessar usuarios_acompanhantes
+        // Verificar permissÃµes antes de tentar acessar usuarios_acompanhantes
         const user = window.auth.currentUser;
         let acompanhantesCount = 0;
         
@@ -1976,20 +1976,20 @@ window.verificarUsuariosExistentes = async function() {
             try {
                 const userData = await window.verificarUsuarioAdminJS(user);
                 if (userData && (userData.role === 'super_admin' || userData.role === 'admin')) {
-                    console.log('👥 [VERIFICAR] Verificando usuarios_acompanhantes...');
+                    console.log('ðŸ‘¥ [VERIFICAR] Verificando usuarios_acompanhantes...');
                     const acompSnap = await window.db.collection('usuarios_acompanhantes').get();
                     acompanhantesCount = acompSnap.size;
-                    console.log('👥 [VERIFICAR] usuarios_acompanhantes:', acompanhantesCount, 'documentos');
+                    console.log('ðŸ‘¥ [VERIFICAR] usuarios_acompanhantes:', acompanhantesCount, 'documentos');
                 } else {
-                    console.log('👥 [VERIFICAR] ⚠️ Usuário sem permissão para acessar usuarios_acompanhantes');
+                    console.log('ðŸ‘¥ [VERIFICAR] âš ï¸ UsuÃ¡rio sem permissÃ£o para acessar usuarios_acompanhantes');
                 }
             } catch (permError) {
-                console.log('👥 [VERIFICAR] ⚠️ Erro de permissão ao acessar usuarios_acompanhantes:', permError.message);
+                console.log('ðŸ‘¥ [VERIFICAR] âš ï¸ Erro de permissÃ£o ao acessar usuarios_acompanhantes:', permError.message);
             }
         }
         
         const total = equipeSnap.size + adminSnap.size + acompanhantesCount;
-        console.log('👥 [VERIFICAR] ✅ TOTAL GERAL:', total, 'usuários no sistema');
+        console.log('ðŸ‘¥ [VERIFICAR] âœ… TOTAL GERAL:', total, 'usuÃ¡rios no sistema');
         
         return {
             equipe: equipeSnap.size,
@@ -1999,30 +1999,30 @@ window.verificarUsuariosExistentes = async function() {
         };
         
     } catch (error) {
-        console.error('👥 [VERIFICAR] ❌ Erro:', error);
+        console.error('ðŸ‘¥ [VERIFICAR] âŒ Erro:', error);
     }
 };
 
-// === FUNÇÕES DE GERENCIAMENTO DE USUÁRIOS ===
+// === FUNÃ‡Ã•ES DE GERENCIAMENTO DE USUÃRIOS ===
 
-// Função para editar usuário
+// FunÃ§Ã£o para editar usuÃ¡rio
 window.editarUsuario = async function(userId) {
-    debugLog('[DEBUG] Editando usuário:', userId);
+    debugLog('[DEBUG] Editando usuÃ¡rio:', userId);
     
     if (!userId) {
-        showToast('Erro', 'ID do usuário não fornecido', 'error');
+        showToast('Erro', 'ID do usuÃ¡rio nÃ£o fornecido', 'error');
         return;
     }
     
     try {
-        // Verificar permissões
+        // Verificar permissÃµes
         const usuarioAdmin = window.usuarioAdmin || JSON.parse(localStorage.getItem('usuarioAdmin') || '{}');
         if (!usuarioAdmin || usuarioAdmin.role !== 'super_admin') {
-            showToast('Erro', 'Apenas super administradores podem editar usuários', 'error');
+            showToast('Erro', 'Apenas super administradores podem editar usuÃ¡rios', 'error');
             return;
         }
         
-        // Buscar o usuário nas diferentes coleções
+        // Buscar o usuÃ¡rio nas diferentes coleÃ§Ãµes
         let userData = null;
         let userCollection = null;
         
@@ -2034,10 +2034,10 @@ window.editarUsuario = async function(userId) {
                 userCollection = 'usuarios_equipe';
             }
         } catch (error) {
-            debugLog('[DEBUG] Usuário não encontrado em usuarios_equipe');
+            debugLog('[DEBUG] UsuÃ¡rio nÃ£o encontrado em usuarios_equipe');
         }
         
-        // Tentar em usuarios_admin se não encontrou
+        // Tentar em usuarios_admin se nÃ£o encontrou
         if (!userData) {
             try {
                 const adminDoc = await window.db.collection('usuarios_admin').doc(userId).get();
@@ -2046,11 +2046,11 @@ window.editarUsuario = async function(userId) {
                     userCollection = 'usuarios_admin';
                 }
             } catch (error) {
-                debugLog('[DEBUG] Usuário não encontrado em usuarios_admin');
+                debugLog('[DEBUG] UsuÃ¡rio nÃ£o encontrado em usuarios_admin');
             }
         }
         
-        // Tentar em usuarios_acompanhantes se não encontrou (somente para super_admin e admin)
+        // Tentar em usuarios_acompanhantes se nÃ£o encontrou (somente para super_admin e admin)
         if (!userData && (usuarioAdmin.role === 'super_admin' || usuarioAdmin.role === 'admin')) {
             try {
                 const acompDoc = await window.db.collection('usuarios_acompanhantes').doc(userId).get();
@@ -2059,16 +2059,16 @@ window.editarUsuario = async function(userId) {
                     userCollection = 'usuarios_acompanhantes';
                 }
             } catch (error) {
-                debugLog('[DEBUG] Usuário não encontrado em usuarios_acompanhantes ou sem permissão');
+                debugLog('[DEBUG] UsuÃ¡rio nÃ£o encontrado em usuarios_acompanhantes ou sem permissÃ£o');
             }
         }
         
         if (!userData) {
-            showToast('Erro', 'Usuário não encontrado', 'error');
+            showToast('Erro', 'UsuÃ¡rio nÃ£o encontrado', 'error');
             return;
         }
         
-        // Criar modal de edição
+        // Criar modal de ediÃ§Ã£o
         const editModal = document.createElement('div');
         editModal.id = 'edit-user-modal';
         editModal.style.cssText = `
@@ -2079,7 +2079,7 @@ window.editarUsuario = async function(userId) {
         
         editModal.innerHTML = `
             <div style="background: white; border-radius: 12px; padding: 24px; max-width: 500px; width: 90%; max-height: 80vh; overflow-y: auto;">
-                <h3 style="margin: 0 0 20px 0; color: #374151;">Editar Usuário</h3>
+                <h3 style="margin: 0 0 20px 0; color: #374151;">Editar UsuÃ¡rio</h3>
                 
                 <div style="margin-bottom: 16px;">
                     <label style="display: block; margin-bottom: 4px; color: #374151; font-weight: 500;">Nome:</label>
@@ -2097,9 +2097,9 @@ window.editarUsuario = async function(userId) {
                 <div style="margin-bottom: 16px;">
                     <label style="display: block; margin-bottom: 4px; color: #374151; font-weight: 500;">Departamento:</label>
                     <select id="edit-departamento" style="width: 100%; padding: 8px 12px; border: 1px solid #d1d5db; border-radius: 6px;">
-                        <option value="manutencao" ${userData.departamento === 'manutencao' ? 'selected' : ''}>Manutenção</option>
-                        <option value="nutricao" ${userData.departamento === 'nutricao' ? 'selected' : ''}>Nutrição</option>
-                        <option value="higienizacao" ${userData.departamento === 'higienizacao' ? 'selected' : ''}>Higienização</option>
+                        <option value="manutencao" ${userData.departamento === 'manutencao' ? 'selected' : ''}>ManutenÃ§Ã£o</option>
+                        <option value="nutricao" ${userData.departamento === 'nutricao' ? 'selected' : ''}>NutriÃ§Ã£o</option>
+                        <option value="higienizacao" ${userData.departamento === 'higienizacao' ? 'selected' : ''}>HigienizaÃ§Ã£o</option>
                         <option value="hotelaria" ${userData.departamento === 'hotelaria' ? 'selected' : ''}>Hotelaria</option>
                     </select>
                 </div>
@@ -2119,7 +2119,7 @@ window.editarUsuario = async function(userId) {
                 <div style="display: flex; gap: 12px; justify-content: flex-end; margin-top: 24px;">
                     <button onclick="abrirModalAlterarSenha('${userId}', '${userCollection}')" 
                             style="padding: 8px 16px; border: 1px solid #f59e0b; background: #fef3c7; color: #92400e; border-radius: 6px; cursor: pointer;">
-                        🔑 Alterar Senha
+                        ðŸ”‘ Alterar Senha
                     </button>
                     <button onclick="fecharModalEditarUsuario()" 
                             style="padding: 8px 16px; border: 1px solid #d1d5db; background: white; color: #374151; border-radius: 6px; cursor: pointer;">
@@ -2136,12 +2136,12 @@ window.editarUsuario = async function(userId) {
         document.body.appendChild(editModal);
         
     } catch (error) {
-        console.error('[ERRO] Falha ao editar usuário:', error);
-        showToast('Erro', 'Não foi possível carregar dados do usuário', 'error');
+        console.error('[ERRO] Falha ao editar usuÃ¡rio:', error);
+        showToast('Erro', 'NÃ£o foi possÃ­vel carregar dados do usuÃ¡rio', 'error');
     }
 };
 
-// Função para fechar modal de edição
+// FunÃ§Ã£o para fechar modal de ediÃ§Ã£o
 window.fecharModalEditarUsuario = function() {
     const modal = document.getElementById('edit-user-modal');
     if (modal) {
@@ -2149,20 +2149,20 @@ window.fecharModalEditarUsuario = function() {
     }
 };
 
-// Função para salvar usuário editado
+// FunÃ§Ã£o para salvar usuÃ¡rio editado
 window.salvarUsuarioEditado = async function(userId, collection) {
     try {
         const nome = document.getElementById('edit-nome').value.trim();
         const email = document.getElementById('edit-email').value.trim();
         
         if (!nome || !email) {
-            showToast('Erro', 'Nome e email são obrigatórios', 'error');
+            showToast('Erro', 'Nome e email sÃ£o obrigatÃ³rios', 'error');
             return;
         }
         
         const updateData = { nome, email };
         
-        // Adicionar campos específicos da coleção
+        // Adicionar campos especÃ­ficos da coleÃ§Ã£o
         if (collection === 'usuarios_equipe') {
             const departamento = document.getElementById('edit-departamento').value;
             updateData.departamento = departamento;
@@ -2175,7 +2175,7 @@ window.salvarUsuarioEditado = async function(userId, collection) {
         // Atualizar no Firestore
         await window.db.collection(collection).doc(userId).update(updateData);
         
-        showToast('Sucesso', 'Usuário atualizado com sucesso', 'success');
+        showToast('Sucesso', 'UsuÃ¡rio atualizado com sucesso', 'success');
         
         // Fechar modal e recarregar lista
         fecharModalEditarUsuario();
@@ -2191,34 +2191,34 @@ window.salvarUsuarioEditado = async function(userId, collection) {
         }
         
     } catch (error) {
-        console.error('[ERRO] Falha ao salvar usuário:', error);
-        showToast('Erro', 'Não foi possível salvar as alterações', 'error');
+        console.error('[ERRO] Falha ao salvar usuÃ¡rio:', error);
+        showToast('Erro', 'NÃ£o foi possÃ­vel salvar as alteraÃ§Ãµes', 'error');
     }
 };
 
-// ===== FUNÇÕES DE ALTERAÇÃO DE SENHA =====
+// ===== FUNÃ‡Ã•ES DE ALTERAÃ‡ÃƒO DE SENHA =====
 
-// Função para abrir modal de alteração de senha (Admin alterando senha de outros usuários)
+// FunÃ§Ã£o para abrir modal de alteraÃ§Ã£o de senha (Admin alterando senha de outros usuÃ¡rios)
 window.abrirModalAlterarSenha = async function(userId, collection) {
     try {
-        // Verificar se é super admin
+        // Verificar se Ã© super admin
         const usuarioAdmin = window.usuarioAdmin || JSON.parse(localStorage.getItem('usuarioAdmin') || '{}');
         if (!usuarioAdmin || usuarioAdmin.role !== 'super_admin') {
             showToast('Erro', 'Apenas super administradores podem alterar senhas', 'error');
             return;
         }
 
-        // Buscar dados do usuário para exibir nome/email
+        // Buscar dados do usuÃ¡rio para exibir nome/email
         let userData = null;
         const doc = await window.db.collection(collection).doc(userId).get();
         if (doc.exists) {
             userData = doc.data();
         } else {
-            showToast('Erro', 'Usuário não encontrado', 'error');
+            showToast('Erro', 'UsuÃ¡rio nÃ£o encontrado', 'error');
             return;
         }
 
-        // Criar modal de alteração de senha
+        // Criar modal de alteraÃ§Ã£o de senha
         const senhaModal = document.createElement('div');
         senhaModal.id = 'alterar-senha-modal';
         senhaModal.style.cssText = `
@@ -2230,12 +2230,12 @@ window.abrirModalAlterarSenha = async function(userId, collection) {
         senhaModal.innerHTML = `
             <div style="background: white; border-radius: 12px; padding: 24px; max-width: 450px; width: 90%; box-shadow: 0 10px 30px rgba(0,0,0,0.2);">
                 <div style="display: flex; align-items: center; margin-bottom: 20px;">
-                    <span style="font-size: 24px; margin-right: 12px;">🔑</span>
-                    <h3 style="margin: 0; color: #374151;">Alterar Senha do Usuário</h3>
+                    <span style="font-size: 24px; margin-right: 12px;">ðŸ”‘</span>
+                    <h3 style="margin: 0; color: #374151;">Alterar Senha do UsuÃ¡rio</h3>
                 </div>
                 
                 <div style="background: #f3f4f6; padding: 16px; border-radius: 8px; margin-bottom: 20px;">
-                    <p style="margin: 0; color: #6b7280; font-size: 14px;"><strong>Usuário:</strong> ${userData.nome}</p>
+                    <p style="margin: 0; color: #6b7280; font-size: 14px;"><strong>UsuÃ¡rio:</strong> ${userData.nome}</p>
                     <p style="margin: 4px 0 0 0; color: #6b7280; font-size: 14px;"><strong>Email:</strong> ${userData.email}</p>
                 </div>
                 
@@ -2243,7 +2243,7 @@ window.abrirModalAlterarSenha = async function(userId, collection) {
                     <label style="display: block; margin-bottom: 4px; color: #374151; font-weight: 500;">Nova Senha:</label>
                     <input type="password" id="nova-senha-admin" placeholder="Digite a nova senha" 
                            style="width: 100%; padding: 8px 12px; border: 1px solid #d1d5db; border-radius: 6px; font-size: 14px;">
-                    <small style="color: #6b7280; font-size: 12px;">Mínimo de 6 caracteres</small>
+                    <small style="color: #6b7280; font-size: 12px;">MÃ­nimo de 6 caracteres</small>
                 </div>
                 
                 <div style="margin-bottom: 20px;">
@@ -2259,7 +2259,7 @@ window.abrirModalAlterarSenha = async function(userId, collection) {
                     </button>
                     <button onclick="confirmarAlteracaoSenhaAdmin('${userId}', '${userData.email}')" 
                             style="padding: 10px 20px; border: none; background: #ef4444; color: white; border-radius: 6px; cursor: pointer;">
-                        🔑 Alterar Senha
+                        ðŸ”‘ Alterar Senha
                     </button>
                 </div>
             </div>
@@ -2273,18 +2273,18 @@ window.abrirModalAlterarSenha = async function(userId, collection) {
         }, 100);
         
     } catch (error) {
-        console.error('[ERRO] Erro ao abrir modal de alteração de senha:', error);
+        console.error('[ERRO] Erro ao abrir modal de alteraÃ§Ã£o de senha:', error);
         showToast('Erro', 'Erro interno. Tente novamente.', 'error');
     }
 };
 
-// Função para confirmar alteração de senha pelo admin
+// FunÃ§Ã£o para confirmar alteraÃ§Ã£o de senha pelo admin
 window.confirmarAlteracaoSenhaAdmin = async function(userId, userEmail) {
     try {
         const novaSenha = document.getElementById('nova-senha-admin').value;
         const confirmarSenha = document.getElementById('confirmar-senha-admin').value;
         
-        // Validações
+        // ValidaÃ§Ãµes
         if (!novaSenha || !confirmarSenha) {
             showToast('Erro', 'Preencha todos os campos', 'error');
             return;
@@ -2296,26 +2296,26 @@ window.confirmarAlteracaoSenhaAdmin = async function(userId, userEmail) {
         }
         
         if (novaSenha !== confirmarSenha) {
-            showToast('Erro', 'As senhas não coincidem', 'error');
+            showToast('Erro', 'As senhas nÃ£o coincidem', 'error');
             return;
         }
 
-        // Confirmar ação
-        const confirmacao = confirm(`ATENÇÃO: Você está alterando a senha do usuário!\n\nEmail: ${userEmail}\n\nEsta ação não pode ser desfeita. Confirma?`);
+        // Confirmar aÃ§Ã£o
+        const confirmacao = confirm(`ATENÃ‡ÃƒO: VocÃª estÃ¡ alterando a senha do usuÃ¡rio!\n\nEmail: ${userEmail}\n\nEsta aÃ§Ã£o nÃ£o pode ser desfeita. Confirma?`);
         if (!confirmacao) return;
 
-        // Desabilitar botão para evitar cliques duplos
+        // Desabilitar botÃ£o para evitar cliques duplos
         const botao = event.target;
         botao.disabled = true;
         botao.textContent = 'Alterando...';
 
         // Usar Firebase Admin SDK via Cloud Function para alterar senha
-        // Como não temos acesso direto ao Admin SDK no frontend, vamos usar um método alternativo
+        // Como nÃ£o temos acesso direto ao Admin SDK no frontend, vamos usar um mÃ©todo alternativo
         
-        // MÉTODO: Enviar email de redefinição de senha
+        // MÃ‰TODO: Enviar email de redefiniÃ§Ã£o de senha
         await window.auth.sendPasswordResetEmail(userEmail);
         
-        showToast('Sucesso', `Email de redefinição de senha enviado para ${userEmail}. O usuário deve verificar a caixa de entrada.`, 'success');
+        showToast('Sucesso', `Email de redefiniÃ§Ã£o de senha enviado para ${userEmail}. O usuÃ¡rio deve verificar a caixa de entrada.`, 'success');
         
         // Registrar na auditoria
         if (window.registrarLogAuditoria) {
@@ -2333,21 +2333,21 @@ window.confirmarAlteracaoSenhaAdmin = async function(userId, userEmail) {
         
         let mensagem = 'Erro ao alterar senha. Tente novamente.';
         if (error.code === 'auth/user-not-found') {
-            mensagem = 'Usuário não encontrado no Firebase Authentication.';
+            mensagem = 'UsuÃ¡rio nÃ£o encontrado no Firebase Authentication.';
         } else if (error.code === 'auth/invalid-email') {
-            mensagem = 'Email inválido.';
+            mensagem = 'Email invÃ¡lido.';
         }
         
         showToast('Erro', mensagem, 'error');
         
-        // Reabilitar botão
+        // Reabilitar botÃ£o
         const botao = event.target;
         botao.disabled = false;
-        botao.textContent = '🔑 Alterar Senha';
+        botao.textContent = 'ðŸ”‘ Alterar Senha';
     }
 };
 
-// Função para fechar modal de alteração de senha
+// FunÃ§Ã£o para fechar modal de alteraÃ§Ã£o de senha
 window.fecharModalAlterarSenha = function() {
     const modal = document.getElementById('alterar-senha-modal');
     if (modal) {
@@ -2355,9 +2355,9 @@ window.fecharModalAlterarSenha = function() {
     }
 };
 
-// Função para o próprio usuário alterar sua senha
+// FunÃ§Ã£o para o prÃ³prio usuÃ¡rio alterar sua senha
 window.abrirMinhaSenha = function() {
-    // Criar modal para o usuário logado alterar sua própria senha
+    // Criar modal para o usuÃ¡rio logado alterar sua prÃ³pria senha
     const senhaModal = document.createElement('div');
     senhaModal.id = 'minha-senha-modal';
     senhaModal.style.cssText = `
@@ -2371,12 +2371,12 @@ window.abrirMinhaSenha = function() {
     senhaModal.innerHTML = `
         <div style="background: white; border-radius: 12px; padding: 24px; max-width: 450px; width: 90%; box-shadow: 0 10px 30px rgba(0,0,0,0.2);">
             <div style="display: flex; align-items: center; margin-bottom: 20px;">
-                <span style="font-size: 24px; margin-right: 12px;">🔐</span>
+                <span style="font-size: 24px; margin-right: 12px;">ðŸ”</span>
                 <h3 style="margin: 0; color: #374151;">Alterar Minha Senha</h3>
             </div>
             
             <div style="background: #f3f4f6; padding: 16px; border-radius: 8px; margin-bottom: 20px;">
-                <p style="margin: 0; color: #6b7280; font-size: 14px;"><strong>Usuário:</strong> ${usuarioLogado.nome}</p>
+                <p style="margin: 0; color: #6b7280; font-size: 14px;"><strong>UsuÃ¡rio:</strong> ${usuarioLogado.nome}</p>
                 <p style="margin: 4px 0 0 0; color: #6b7280; font-size: 14px;"><strong>Email:</strong> ${usuarioLogado.email}</p>
             </div>
             
@@ -2390,7 +2390,7 @@ window.abrirMinhaSenha = function() {
                 <label style="display: block; margin-bottom: 4px; color: #374151; font-weight: 500;">Nova Senha:</label>
                 <input type="password" id="nova-senha-propria" placeholder="Digite a nova senha" 
                        style="width: 100%; padding: 8px 12px; border: 1px solid #d1d5db; border-radius: 6px; font-size: 14px;">
-                <small style="color: #6b7280; font-size: 12px;">Mínimo de 6 caracteres</small>
+                <small style="color: #6b7280; font-size: 12px;">MÃ­nimo de 6 caracteres</small>
             </div>
             
             <div style="margin-bottom: 20px;">
@@ -2406,7 +2406,7 @@ window.abrirMinhaSenha = function() {
                 </button>
                 <button onclick="alterarMinhaSenha()" 
                         style="padding: 10px 20px; border: none; background: #10b981; color: white; border-radius: 6px; cursor: pointer;">
-                    🔐 Alterar Minha Senha
+                    ðŸ” Alterar Minha Senha
                 </button>
             </div>
         </div>
@@ -2420,14 +2420,14 @@ window.abrirMinhaSenha = function() {
     }, 100);
 };
 
-// Função para alterar a própria senha
+// FunÃ§Ã£o para alterar a prÃ³pria senha
 window.alterarMinhaSenha = async function() {
     try {
         const senhaAtual = document.getElementById('senha-atual').value;
         const novaSenha = document.getElementById('nova-senha-propria').value;
         const confirmarSenha = document.getElementById('confirmar-nova-senha-propria').value;
         
-        // Validações
+        // ValidaÃ§Ãµes
         if (!senhaAtual || !novaSenha || !confirmarSenha) {
             showToast('Erro', 'Preencha todos os campos', 'error');
             return;
@@ -2439,7 +2439,7 @@ window.alterarMinhaSenha = async function() {
         }
         
         if (novaSenha !== confirmarSenha) {
-            showToast('Erro', 'A nova senha e a confirmação não coincidem', 'error');
+            showToast('Erro', 'A nova senha e a confirmaÃ§Ã£o nÃ£o coincidem', 'error');
             return;
         }
         
@@ -2448,17 +2448,17 @@ window.alterarMinhaSenha = async function() {
             return;
         }
 
-        // Desabilitar botão para evitar cliques duplos
+        // Desabilitar botÃ£o para evitar cliques duplos
         const botao = event.target;
         botao.disabled = true;
         botao.textContent = 'Alterando...';
 
         const user = window.auth.currentUser;
         if (!user) {
-            throw new Error('Usuário não autenticado');
+            throw new Error('UsuÃ¡rio nÃ£o autenticado');
         }
 
-        // Reautenticar o usuário com a senha atual
+        // Reautenticar o usuÃ¡rio com a senha atual
         const credential = window.auth.EmailAuthProvider.credential(user.email, senhaAtual);
         await user.reauthenticateWithCredential(credential);
         
@@ -2477,7 +2477,7 @@ window.alterarMinhaSenha = async function() {
         
         fecharModalMinhaSenha();
         
-        // Opcional: Fazer logout forçado para relogin com nova senha
+        // Opcional: Fazer logout forÃ§ado para relogin com nova senha
         // setTimeout(() => {
         //     window.auth.signOut();
         // }, 2000);
@@ -2489,21 +2489,21 @@ window.alterarMinhaSenha = async function() {
         if (error.code === 'auth/wrong-password') {
             mensagem = 'Senha atual incorreta.';
         } else if (error.code === 'auth/weak-password') {
-            mensagem = 'A nova senha é muito fraca. Use pelo menos 6 caracteres.';
+            mensagem = 'A nova senha Ã© muito fraca. Use pelo menos 6 caracteres.';
         } else if (error.code === 'auth/requires-recent-login') {
-            mensagem = 'Por segurança, faça login novamente antes de alterar a senha.';
+            mensagem = 'Por seguranÃ§a, faÃ§a login novamente antes de alterar a senha.';
         }
         
         showToast('Erro', mensagem, 'error');
         
-        // Reabilitar botão
+        // Reabilitar botÃ£o
         const botao = event.target;
         botao.disabled = false;
-        botao.textContent = '🔐 Alterar Minha Senha';
+        botao.textContent = 'ðŸ” Alterar Minha Senha';
     }
 };
 
-// Função para fechar modal da própria senha
+// FunÃ§Ã£o para fechar modal da prÃ³pria senha
 window.fecharModalMinhaSenha = function() {
     const modal = document.getElementById('minha-senha-modal');
     if (modal) {
@@ -2511,29 +2511,29 @@ window.fecharModalMinhaSenha = function() {
     }
 };
 
-// Função para remover usuário
+// FunÃ§Ã£o para remover usuÃ¡rio
 window.removerUsuario = async function(userId) {
-    debugLog('[DEBUG] Removendo usuário:', userId);
+    debugLog('[DEBUG] Removendo usuÃ¡rio:', userId);
     
     if (!userId) {
-        showToast('Erro', 'ID do usuário não fornecido', 'error');
+        showToast('Erro', 'ID do usuÃ¡rio nÃ£o fornecido', 'error');
         return;
     }
     
-    // Verificar permissões
+    // Verificar permissÃµes
     const usuarioAdmin = window.usuarioAdmin || JSON.parse(localStorage.getItem('usuarioAdmin') || '{}');
     if (!usuarioAdmin || usuarioAdmin.role !== 'super_admin') {
-        showToast('Erro', 'Apenas super administradores podem remover usuários', 'error');
+        showToast('Erro', 'Apenas super administradores podem remover usuÃ¡rios', 'error');
         return;
     }
     
-    // Confirmar remoção
-    if (!confirm('Tem certeza que deseja remover este usuário? Esta ação não pode ser desfeita.')) {
+    // Confirmar remoÃ§Ã£o
+    if (!confirm('Tem certeza que deseja remover este usuÃ¡rio? Esta aÃ§Ã£o nÃ£o pode ser desfeita.')) {
         return;
     }
     
     try {
-        // Buscar e remover o usuário nas diferentes coleções
+        // Buscar e remover o usuÃ¡rio nas diferentes coleÃ§Ãµes
         let removido = false;
         const collections = ['usuarios_equipe', 'usuarios_admin', 'usuarios_acompanhantes'];
         
@@ -2555,33 +2555,33 @@ window.removerUsuario = async function(userId) {
                     break;
                 }
             } catch (error) {
-                console.log(`[DEBUG] Usuário não encontrado em ${collection}`);
+                console.log(`[DEBUG] UsuÃ¡rio nÃ£o encontrado em ${collection}`);
             }
         }
         
         if (removido) {
-            showToast('Sucesso', 'Usuário removido com sucesso', 'success');
+            showToast('Sucesso', 'UsuÃ¡rio removido com sucesso', 'success');
             await window.carregarUsuarios(); // Recarregar lista
         } else {
-            showToast('Erro', 'Usuário não encontrado', 'error');
+            showToast('Erro', 'UsuÃ¡rio nÃ£o encontrado', 'error');
         }
         
     } catch (error) {
-        console.error('[ERRO] Falha ao remover usuário:', error);
-        showToast('Erro', 'Não foi possível remover o usuário', 'error');
+        console.error('[ERRO] Falha ao remover usuÃ¡rio:', error);
+        showToast('Erro', 'NÃ£o foi possÃ­vel remover o usuÃ¡rio', 'error');
     }
 };
 
-// --- Firestore: Solicitações & Renderização dos Cards ---
+// --- Firestore: SolicitaÃ§Ãµes & RenderizaÃ§Ã£o dos Cards ---
 
-// Sistema de debounce para evitar chamadas múltiplas
+// Sistema de debounce para evitar chamadas mÃºltiplas
 let carregandoSolicitacoes = false;
 let timeoutRecarregar = null;
 
 async function carregarSolicitacoes() {
-    // Verificar se já está carregando para evitar loops
+    // Verificar se jÃ¡ estÃ¡ carregando para evitar loops
     if (window.carregandoSolicitacoes) {
-        console.log('[DEBUG] carregarSolicitacoes já está executando, ignorando...');
+        console.log('[DEBUG] carregarSolicitacoes jÃ¡ estÃ¡ executando, ignorando...');
         return;
     }
     
@@ -2594,36 +2594,36 @@ async function carregarSolicitacoes() {
     
     window.carregandoSolicitacoes = true;
     
-    // Verificar se estamos na tela de relatórios - se sim, não carregar cards
+    // Verificar se estamos na tela de relatÃ³rios - se sim, nÃ£o carregar cards
     const relatoriosSection = document.getElementById('relatorios-section');
     const adminPanel = document.getElementById('admin-panel');
     
     if (relatoriosSection && !relatoriosSection.classList.contains('hidden')) {
-        debugLog('[DEBUG] carregarSolicitacoes: Na tela de relatórios - não carregando cards de solicitações');
+        debugLog('[DEBUG] carregarSolicitacoes: Na tela de relatÃ³rios - nÃ£o carregando cards de solicitaÃ§Ãµes');
         window.carregandoSolicitacoes = false;
         return;
     }
     
-    // Evitar chamadas múltiplas simultâneas
+    // Evitar chamadas mÃºltiplas simultÃ¢neas
     if (carregandoSolicitacoes) {
-        debugLog('[DEBUG] Carregamento já em andamento - aguardando...');
+        debugLog('[DEBUG] Carregamento jÃ¡ em andamento - aguardando...');
         return;
     }
     
     if (!window.db) {
-        console.error('[ERRO] Firestore não inicializado!');
-        showToast('Erro', 'Firestore não inicializado!', 'error');
+        console.error('[ERRO] Firestore nÃ£o inicializado!');
+        showToast('Erro', 'Firestore nÃ£o inicializado!', 'error');
         return;
     }
     
-    // Verificação mais robusta do usuário com aguardo
+    // VerificaÃ§Ã£o mais robusta do usuÃ¡rio com aguardo
     let usuarioAdmin = window.usuarioAdmin || JSON.parse(localStorage.getItem('usuarioAdmin') || '{}');
     
-    // Se usuário não está carregado, aguardar um pouco
+    // Se usuÃ¡rio nÃ£o estÃ¡ carregado, aguardar um pouco
     if (!usuarioAdmin || !usuarioAdmin.uid || !usuarioAdmin.email) {
-        debugLog('[DEBUG] carregarSolicitacoes: Usuário ainda não carregado, aguardando...');
+        debugLog('[DEBUG] carregarSolicitacoes: UsuÃ¡rio ainda nÃ£o carregado, aguardando...');
         
-        // Tentar aguardar até 3 segundos pelo carregamento do usuário
+        // Tentar aguardar atÃ© 3 segundos pelo carregamento do usuÃ¡rio
         let tentativas = 0;
         const maxTentativas = 6; // 6 tentativas de 500ms = 3 segundos
         
@@ -2632,43 +2632,43 @@ async function carregarSolicitacoes() {
             usuarioAdmin = window.usuarioAdmin || JSON.parse(localStorage.getItem('usuarioAdmin') || '{}');
             
             if (usuarioAdmin && usuarioAdmin.uid && usuarioAdmin.email) {
-                debugLog('[DEBUG] carregarSolicitacoes: Usuário carregado após aguardo');
+                debugLog('[DEBUG] carregarSolicitacoes: UsuÃ¡rio carregado apÃ³s aguardo');
                 break;
             }
             tentativas++;
         }
         
-        // Se após aguardar ainda não temos usuário válido
+        // Se apÃ³s aguardar ainda nÃ£o temos usuÃ¡rio vÃ¡lido
         if (!usuarioAdmin || !usuarioAdmin.uid || !usuarioAdmin.email) {
-            debugLog('[DEBUG] carregarSolicitacoes: Usuário não carregou após aguardo, cancelando...');
+            debugLog('[DEBUG] carregarSolicitacoes: UsuÃ¡rio nÃ£o carregou apÃ³s aguardo, cancelando...');
             
-            // Se estamos na tela de login, não mostrar erro
+            // Se estamos na tela de login, nÃ£o mostrar erro
             const authSection = document.getElementById('auth-section');
             if (!authSection || !authSection.classList.contains('hidden')) {
                 debugLog('[DEBUG] carregarSolicitacoes: Ainda na tela de login, ignorando...');
                 return;
             }
             
-            console.warn('[AVISO] carregarSolicitacoes: Timeout aguardando dados do usuário');
+            console.warn('[AVISO] carregarSolicitacoes: Timeout aguardando dados do usuÃ¡rio');
             return;
         }
     }
     
     try {
         carregandoSolicitacoes = true;
-        debugLog('[DEBUG] === INÍCIO DO CARREGAMENTO DE SOLICITAÇÕES ===');
-        debugLog('[DEBUG] Buscando solicitações da coleção "solicitacoes"...');
+        debugLog('[DEBUG] === INÃCIO DO CARREGAMENTO DE SOLICITAÃ‡Ã•ES ===');
+        debugLog('[DEBUG] Buscando solicitaÃ§Ãµes da coleÃ§Ã£o "solicitacoes"...');
         
         // Mostrar indicador de carregamento
         mostrarIndicadorCarregamento();
         
-        // Obter dados do usuário atual
+        // Obter dados do usuÃ¡rio atual
         const usuarioAdmin = window.usuarioAdmin || JSON.parse(localStorage.getItem('usuarioAdmin') || '{}');
         const isEquipe = usuarioAdmin && (usuarioAdmin.role === 'equipe' || usuarioAdmin.isEquipe);
         const isSuperAdmin = usuarioAdmin && usuarioAdmin.role === 'super_admin';
         const isAdmin = usuarioAdmin && usuarioAdmin.role === 'admin';
         
-        debugLog('[DEBUG] Carregando para usuário:', { 
+        debugLog('[DEBUG] Carregando para usuÃ¡rio:', { 
             email: usuarioAdmin?.email,
             role: usuarioAdmin?.role, 
             isEquipe, 
@@ -2677,13 +2677,13 @@ async function carregarSolicitacoes() {
             equipe: usuarioAdmin?.equipe 
         });
         
-        // Buscar todas as solicitações ordenadas por timestamp (mais recentes primeiro)
+        // Buscar todas as solicitaÃ§Ãµes ordenadas por timestamp (mais recentes primeiro)
         console.log('[DEBUG] Iniciando busca no Firestore...');
         console.log('[DEBUG] Projeto:', window.db.app.options.projectId);
-        console.log('[DEBUG] Coleção: solicitacoes');
+        console.log('[DEBUG] ColeÃ§Ã£o: solicitacoes');
         
-        // TESTE SIMPLIFICADO: Apenas query simples sem ordenação
-        console.log('[DEBUG] Executando query SIMPLES sem ordenação...');
+        // TESTE SIMPLIFICADO: Apenas query simples sem ordenaÃ§Ã£o
+        console.log('[DEBUG] Executando query SIMPLES sem ordenaÃ§Ã£o...');
         const snapshot = await window.db.collection('solicitacoes').get();
         console.log('[DEBUG] Query simples executada com sucesso');
         
@@ -2693,16 +2693,16 @@ async function carregarSolicitacoes() {
             metadata: snapshot.metadata
         });
         
-        // DEBUG AVANÇADO: Verificar autenticação e permissões
+        // DEBUG AVANÃ‡ADO: Verificar autenticaÃ§Ã£o e permissÃµes
         const currentUser = window.auth.currentUser;
         if (currentUser) {
-            console.log('[DEBUG] Usuário autenticado:', {
+            console.log('[DEBUG] UsuÃ¡rio autenticado:', {
                 uid: currentUser.uid,
                 email: currentUser.email,
                 emailVerified: currentUser.emailVerified
             });
             
-            // Verificar token de autenticação
+            // Verificar token de autenticaÃ§Ã£o
             try {
                 const idTokenResult = await currentUser.getIdTokenResult();
                 console.log('[DEBUG] Token claims:', idTokenResult.claims);
@@ -2710,41 +2710,41 @@ async function carregarSolicitacoes() {
                 console.error('[ERRO] Erro ao obter token:', tokenError);
             }
         } else {
-            console.error('[ERRO] Usuário não autenticado!');
+            console.error('[ERRO] UsuÃ¡rio nÃ£o autenticado!');
         }
         
         if (snapshot.empty) {
-            console.warn('[AVISO] Coleção solicitacoes está vazia no Firestore');
-            console.log('[DEBUG] Verificar se há dados na coleção solicitacoes no projeto:', window.db.app.options.projectId);
+            console.warn('[AVISO] ColeÃ§Ã£o solicitacoes estÃ¡ vazia no Firestore');
+            console.log('[DEBUG] Verificar se hÃ¡ dados na coleÃ§Ã£o solicitacoes no projeto:', window.db.app.options.projectId);
             
-            // TESTE DIRETO: Tentar acessar o documento específico do Firebase Console
-            console.log('[TESTE] Verificando documento específico 2yKdMYESGGMQqLOwGC6T...');
+            // TESTE DIRETO: Tentar acessar o documento especÃ­fico do Firebase Console
+            console.log('[TESTE] Verificando documento especÃ­fico 2yKdMYESGGMQqLOwGC6T...');
             try {
                 const docRef = window.db.collection('solicitacoes').doc('2yKdMYESGGMQqLOwGC6T');
                 const docSnap = await docRef.get();
                 if (docSnap.exists) {
-                    console.log('✅ DOCUMENTO ESPECÍFICO ENCONTRADO:', docSnap.data());
+                    console.log('âœ… DOCUMENTO ESPECÃFICO ENCONTRADO:', docSnap.data());
                 } else {
-                    console.log('❌ DOCUMENTO ESPECÍFICO NÃO EXISTE');
+                    console.log('âŒ DOCUMENTO ESPECÃFICO NÃƒO EXISTE');
                 }
             } catch (docError) {
-                console.error('❌ ERRO AO ACESSAR DOCUMENTO ESPECÍFICO:', docError);
+                console.error('âŒ ERRO AO ACESSAR DOCUMENTO ESPECÃFICO:', docError);
             }
             
-            // TESTE: Verificar outras possíveis coleções
+            // TESTE: Verificar outras possÃ­veis coleÃ§Ãµes
             const testeColes = ['solicitacao', 'pedidos', 'requests', 'tickets'];
             for (const nomeCole of testeColes) {
                 try {
                     const testSnapshot = await window.db.collection(nomeCole).limit(1).get();
                     if (!testSnapshot.empty) {
-                        console.log(`🔍 ENCONTRADA: Coleção '${nomeCole}' tem ${testSnapshot.size} documento(s)`);
+                        console.log(`ðŸ” ENCONTRADA: ColeÃ§Ã£o '${nomeCole}' tem ${testSnapshot.size} documento(s)`);
                     }
                 } catch (e) {
-                    // Ignorar coleções inexistentes
+                    // Ignorar coleÃ§Ãµes inexistentes
                 }
             }
         } else {
-            debugLog('[DEBUG] Processando', snapshot.size, 'documentos da coleção solicitacoes');
+            debugLog('[DEBUG] Processando', snapshot.size, 'documentos da coleÃ§Ã£o solicitacoes');
         }
         
         const solicitacoes = [];
@@ -2778,8 +2778,8 @@ async function carregarSolicitacoes() {
                 quarto: data.quarto
             });
             
-            // DEBUG ESPECÍFICO PARA CAMPO QUARTO - TODAS AS SOLICITAÇÕES
-            console.log('[🏠 DEBUG-QUARTO]', {
+            // DEBUG ESPECÃFICO PARA CAMPO QUARTO - TODAS AS SOLICITAÃ‡Ã•ES
+            console.log('[ðŸ  DEBUG-QUARTO]', {
                 id: doc.id,
                 titulo: data.titulo || data.tipo || data.descricao,
                 quartoRaw: data.quarto,
@@ -2788,23 +2788,23 @@ async function carregarSolicitacoes() {
                 quartoLength: data.quarto ? data.quarto.length : 0
             });
             
-            // FILTRO RIGOROSO USANDO A FUNÇÃO DE PERMISSÕES
+            // FILTRO RIGOROSO USANDO A FUNÃ‡ÃƒO DE PERMISSÃ•ES
             if (!podeVerSolicitacaoJS(usuarioAdmin, data)) {
                 docsFiltrados++;
-                // Pular esta solicitação se o usuário não tem permissão para vê-la
+                // Pular esta solicitaÃ§Ã£o se o usuÃ¡rio nÃ£o tem permissÃ£o para vÃª-la
                 return;
             }
             
             totalDocs++;
             solicitacoes.push(item);
             
-            console.log(`[DEBUG] Solicitação incluída:`, item.titulo || item.tipo, 'equipe:', data.equipe);
+            console.log(`[DEBUG] SolicitaÃ§Ã£o incluÃ­da:`, item.titulo || item.tipo, 'equipe:', data.equipe);
             
             if (data.status === 'pendente') pendentes++;
             if (data.status === 'finalizada' && data.dataFinalizacao?.slice(0,10) === hoje) finalizadasHoje++;
             if (data.quarto) quartosAtivos.add(data.quarto);
             
-            // Agrupar por equipe apenas se necessário
+            // Agrupar por equipe apenas se necessÃ¡rio
             if (data.equipe && equipes[data.equipe] !== undefined) {
                 equipes[data.equipe].push(item);
             }
@@ -2820,18 +2820,18 @@ async function carregarSolicitacoes() {
             usuarioRole: usuarioAdmin.role
         });
         
-        console.log(`[DEBUG] Total de solicitações processadas: ${totalDocs} de ${snapshot.size} encontradas`);
-        console.log(`[DEBUG] Filtradas: ${docsFiltrados}, Incluídas: ${totalDocs}`);
-        console.log(`[DEBUG] Solicitações por equipe:`, Object.keys(equipes).map(e => `${e}: ${equipes[e].length}`));
+        console.log(`[DEBUG] Total de solicitaÃ§Ãµes processadas: ${totalDocs} de ${snapshot.size} encontradas`);
+        console.log(`[DEBUG] Filtradas: ${docsFiltrados}, IncluÃ­das: ${totalDocs}`);
+        console.log(`[DEBUG] SolicitaÃ§Ãµes por equipe:`, Object.keys(equipes).map(e => `${e}: ${equipes[e].length}`));
         
-        // Ordenação manual para garantir ordem correta (mais recentes primeiro)
+        // OrdenaÃ§Ã£o manual para garantir ordem correta (mais recentes primeiro)
         solicitacoes.sort((a, b) => {
             const timestampA = a.timestamp?.toMillis() || a.dataCriacao?.toMillis() || 0;
             const timestampB = b.timestamp?.toMillis() || b.dataCriacao?.toMillis() || 0;
             return timestampB - timestampA; // Ordem decrescente (mais recentes primeiro)
         });
         
-        // Ordenar também dentro de cada equipe
+        // Ordenar tambÃ©m dentro de cada equipe
         Object.keys(equipes).forEach(equipeNome => {
             equipes[equipeNome].sort((a, b) => {
                 const timestampA = a.timestamp?.toMillis() || a.dataCriacao?.toMillis() || 0;
@@ -2840,22 +2840,22 @@ async function carregarSolicitacoes() {
             });
         });
         
-        console.log(`[DEBUG] Dados ordenados e prontos para renderização`);
-        console.log(`[DEBUG] Solicitações por equipe:`, Object.keys(equipes).map(e => `${e}: ${equipes[e].length}`));
+        console.log(`[DEBUG] Dados ordenados e prontos para renderizaÃ§Ã£o`);
+        console.log(`[DEBUG] SolicitaÃ§Ãµes por equipe:`, Object.keys(equipes).map(e => `${e}: ${equipes[e].length}`));
         
-        // RENDERIZAÇÃO BASEADA NO TIPO DE USUÁRIO
+        // RENDERIZAÃ‡ÃƒO BASEADA NO TIPO DE USUÃRIO
         if (isEquipe && usuarioAdmin.equipe) {
-            // Usuário de equipe: mostrar APENAS sua equipe
+            // UsuÃ¡rio de equipe: mostrar APENAS sua equipe
             const equipeFiltrada = {};
             equipeFiltrada[usuarioAdmin.equipe] = equipes[usuarioAdmin.equipe] || [];
             
-            console.log(`[DEBUG] Renderizando apenas equipe: ${usuarioAdmin.equipe} com ${equipeFiltrada[usuarioAdmin.equipe].length} solicitações`);
+            console.log(`[DEBUG] Renderizando apenas equipe: ${usuarioAdmin.equipe} com ${equipeFiltrada[usuarioAdmin.equipe].length} solicitaÃ§Ãµes`);
             
             // Enriquecer dados antes de renderizar
             const equipeFiltradaEnriquecida = await enriquecerSolicitacoesComDados(equipeFiltrada);
             renderizarCardsEquipe(equipeFiltradaEnriquecida);
             
-            // Ajustar visibilidade dos painéis (mostrar apenas o da equipe)
+            // Ajustar visibilidade dos painÃ©is (mostrar apenas o da equipe)
             setTimeout(() => {
                 const allPanels = document.querySelectorAll('.team-panel');
                 allPanels.forEach(panel => {
@@ -2878,7 +2878,7 @@ async function carregarSolicitacoes() {
             const equipesEnriquecidas = await enriquecerSolicitacoesComDados(equipes);
             renderizarCardsEquipe(equipesEnriquecidas);
             
-            // Mostrar todos os painéis
+            // Mostrar todos os painÃ©is
             setTimeout(() => {
                 const allPanels = document.querySelectorAll('.team-panel');
                 allPanels.forEach(panel => {
@@ -2888,14 +2888,14 @@ async function carregarSolicitacoes() {
             }, 100);
             
         } else if (isAdmin) {
-            // Admin: mostrar TODAS as equipes (apenas visualização)
-            debugLog('[DEBUG] Renderizando todas as equipes para administrador (visualização apenas)');
+            // Admin: mostrar TODAS as equipes (apenas visualizaÃ§Ã£o)
+            debugLog('[DEBUG] Renderizando todas as equipes para administrador (visualizaÃ§Ã£o apenas)');
             
             // Enriquecer dados antes de renderizar
             const equipesEnriquecidas = await enriquecerSolicitacoesComDados(equipes);
             renderizarCardsEquipe(equipesEnriquecidas);
             
-            // Mostrar todos os painéis
+            // Mostrar todos os painÃ©is
             setTimeout(() => {
                 const allPanels = document.querySelectorAll('.team-panel');
                 allPanels.forEach(panel => {
@@ -2905,17 +2905,17 @@ async function carregarSolicitacoes() {
             }, 100);
             
         } else {
-            // Usuário sem permissões claras
-            console.warn('[AVISO] Usuário sem permissões claras - não exibindo solicitações');
+            // UsuÃ¡rio sem permissÃµes claras
+            console.warn('[AVISO] UsuÃ¡rio sem permissÃµes claras - nÃ£o exibindo solicitaÃ§Ãµes');
             renderizarCardsEquipe({});
         }
         
-        // Atualizar métricas do painel
+        // Atualizar mÃ©tricas do painel
         atualizarMetricasPainel(totalDocs, pendentes, finalizadasHoje, quartosAtivos.size);
         
-        // Log do resultado final (sem criar dados de exemplo em produção)
+        // Log do resultado final (sem criar dados de exemplo em produÃ§Ã£o)
         if (totalDocs === 0) {
-            debugLog('[DEBUG] Nenhuma solicitação encontrada - painel vazio em produção');
+            debugLog('[DEBUG] Nenhuma solicitaÃ§Ã£o encontrada - painel vazio em produÃ§Ã£o');
             // Mostrar interface vazia sem dados simulados
             mostrarInterfaceVazia();
         }
@@ -2923,11 +2923,11 @@ async function carregarSolicitacoes() {
         ocultarIndicadorCarregamento();
         
     } catch (error) {
-        console.error('[ERRO] Falha ao buscar solicitações:', error);
+        console.error('[ERRO] Falha ao buscar solicitaÃ§Ãµes:', error);
         console.error('[ERRO] Stack trace:', error.stack);
         ocultarIndicadorCarregamento();
         
-        // Tentar novamente após falha (uma vez)
+        // Tentar novamente apÃ³s falha (uma vez)
         if (!window.tentativaRecarga) {
             window.tentativaRecarga = true;
             debugLog('[DEBUG] Tentando recarregar automaticamente em 3 segundos...');
@@ -2940,9 +2940,9 @@ async function carregarSolicitacoes() {
                     await carregarSolicitacoes();
                 } catch (retryError) {
                     console.error('[ERRO] Falha na segunda tentativa:', retryError);
-                    showToast('Erro', 'Falha ao carregar dados. Recarregue a página (Ctrl+F5)', 'error');
-                    // EM PRODUÇÃO: Não carregar dados simulados, apenas mostrar erro
-                    debugLog('[DEBUG] Sistema em produção - não gerando dados de exemplo');
+                    showToast('Erro', 'Falha ao carregar dados. Recarregue a pÃ¡gina (Ctrl+F5)', 'error');
+                    // EM PRODUÃ‡ÃƒO: NÃ£o carregar dados simulados, apenas mostrar erro
+                    debugLog('[DEBUG] Sistema em produÃ§Ã£o - nÃ£o gerando dados de exemplo');
                 }
             }, 3000);
             
@@ -2950,11 +2950,11 @@ async function carregarSolicitacoes() {
             showToast('Aviso', 'Modo offline - Carregando dados locais', 'warning');
             carregarDadosOffline();
         } else if (error.code === 'permission-denied') {
-            showToast('Erro', 'Acesso negado. Verifique suas permissões', 'error');
+            showToast('Erro', 'Acesso negado. Verifique suas permissÃµes', 'error');
         } else {
-            showToast('Erro', 'Não foi possível carregar as solicitações', 'error');
-            // EM PRODUÇÃO: Não carregar dados simulados
-            debugLog('[DEBUG] Sistema em produção - não gerando dados de exemplo em caso de erro');
+            showToast('Erro', 'NÃ£o foi possÃ­vel carregar as solicitaÃ§Ãµes', 'error');
+            // EM PRODUÃ‡ÃƒO: NÃ£o carregar dados simulados
+            debugLog('[DEBUG] Sistema em produÃ§Ã£o - nÃ£o gerando dados de exemplo em caso de erro');
         }
         
         console.log('[DEBUG] Finalizando carregarSolicitacoes - indo para finally...');
@@ -2962,21 +2962,21 @@ async function carregarSolicitacoes() {
         console.log('[DEBUG] FINALLY: Entrando no finally block');
         window.carregandoSolicitacoes = false;
         
-        // Configurar listener de notificações em tempo real apenas uma vez
+        // Configurar listener de notificaÃ§Ãµes em tempo real apenas uma vez
         if (!window.notificationListenerConfigured) {
-            console.log('[NOTIFICATION] Configurando listener de notificações...');
+            console.log('[NOTIFICATION] Configurando listener de notificaÃ§Ãµes...');
             configurarListenerNotificacoes();
             window.notificationListenerConfigured = true;
             
-            console.log('[AUTO-UPDATE] Auto-update já foi configurado anteriormente');
+            console.log('[AUTO-UPDATE] Auto-update jÃ¡ foi configurado anteriormente');
             
-            // REMOVIDO: Configuração automática para evitar loops
+            // REMOVIDO: ConfiguraÃ§Ã£o automÃ¡tica para evitar loops
             // configurarAtualizacaoAutomatica();
         } else {
-            console.log('[NOTIFICATION] Listener já configurado (DESABILITADO), pulando...');
+            console.log('[NOTIFICATION] Listener jÃ¡ configurado (DESABILITADO), pulando...');
         }
         
-        // Garantir que a interface está visível após carregamento
+        // Garantir que a interface estÃ¡ visÃ­vel apÃ³s carregamento
         setTimeout(() => {
             const adminPanel = document.getElementById('admin-panel');
             const teamsGrid = document.querySelector('.teams-grid');
@@ -2992,9 +2992,9 @@ async function carregarSolicitacoes() {
                     teamsGrid.classList.remove('hidden');
                 }
                 
-                debugLog('[DEBUG] Interface forçadamente atualizada após carregamento');
+                debugLog('[DEBUG] Interface forÃ§adamente atualizada apÃ³s carregamento');
                 
-                // REMOVER BOTÕES DEBUG IMEDIATAMENTE APÓS CARREGAMENTO
+                // REMOVER BOTÃ•ES DEBUG IMEDIATAMENTE APÃ“S CARREGAMENTO
                 setTimeout(() => {
                     if (typeof window.forceRemoveDebugButtons === 'function') {
                         window.forceRemoveDebugButtons();
@@ -3005,39 +3005,39 @@ async function carregarSolicitacoes() {
     }
 }
 
-// Função para recarregar com debounce
+// FunÃ§Ã£o para recarregar com debounce
 function recarregarSolicitacoes(delay = 1000) {
     if (timeoutRecarregar) {
         clearTimeout(timeoutRecarregar);
     }
     
     timeoutRecarregar = setTimeout(() => {
-        // Verificar se usuário ainda está logado antes de recarregar
+        // Verificar se usuÃ¡rio ainda estÃ¡ logado antes de recarregar
         const usuarioAdmin = window.usuarioAdmin || JSON.parse(localStorage.getItem('usuarioAdmin') || '{}');
         if (!usuarioAdmin || !usuarioAdmin.uid || !usuarioAdmin.email) {
-            debugLog('[DEBUG] recarregarSolicitacoes: usuário não logado, cancelando recarregamento...');
+            debugLog('[DEBUG] recarregarSolicitacoes: usuÃ¡rio nÃ£o logado, cancelando recarregamento...');
             return;
         }
         
-        // Limpar flags de carregamento para permitir atualização
+        // Limpar flags de carregamento para permitir atualizaÃ§Ã£o
         window.carregandoSolicitacoes = false;
-        carregandoSolicitacoes = false;  // Limpar TAMBÉM a flag local
+        carregandoSolicitacoes = false;  // Limpar TAMBÃ‰M a flag local
         
         carregarSolicitacoes();
     }, delay);
 }
 
-// === SISTEMA DE ATUALIZAÇÃO AUTOMÁTICA ===
+// === SISTEMA DE ATUALIZAÃ‡ÃƒO AUTOMÃTICA ===
 function configurarAtualizacaoAutomatica() {
-    console.log('[AUTO-UPDATE] Configurando atualização automática a cada 30 segundos...');
+    console.log('[AUTO-UPDATE] Configurando atualizaÃ§Ã£o automÃ¡tica a cada 30 segundos...');
     
-    // Só configurar se não foi configurado ainda
+    // SÃ³ configurar se nÃ£o foi configurado ainda
     if (!window.autoUpdateInterval) {
         console.log('[AUTO-UPDATE] Auto-update DESABILITADO temporariamente para debug');
         // window.autoUpdateInterval = setInterval(() => {
-        //     // Só atualizar se estiver logado e não carregando
+        //     // SÃ³ atualizar se estiver logado e nÃ£o carregando
         //     if (window.usuarioAdmin && !window.carregandoSolicitacoes) {
-        //         console.log('[AUTO-UPDATE] Recarregamento automático suave...');
+        //         console.log('[AUTO-UPDATE] Recarregamento automÃ¡tico suave...');
         //         recarregarSolicitacoes(5000); // Usar recarregamento com debounce
         //     }
         // }, 60000); // Aumentado para 60 segundos
@@ -3046,16 +3046,16 @@ function configurarAtualizacaoAutomatica() {
     }
 }
 
-// === FUNÇÃO PARA ADICIONAR NOVA SOLICITAÇÃO SEM RECARREGAR TUDO ===
+// === FUNÃ‡ÃƒO PARA ADICIONAR NOVA SOLICITAÃ‡ÃƒO SEM RECARREGAR TUDO ===
 function adicionarNovaSolicitacao(novaSolicitacao) {
     try {
-        console.log('[NOTIFICATION] Nova solicitação detectada:', novaSolicitacao.id);
+        console.log('[NOTIFICATION] Nova solicitaÃ§Ã£o detectada:', novaSolicitacao.id);
         
-        // Verificar se pode ver a solicitação
+        // Verificar se pode ver a solicitaÃ§Ã£o
         const usuarioAdmin = window.usuarioAdmin || JSON.parse(localStorage.getItem('usuarioAdmin') || '{}');
         const podeVer = podeVerSolicitacaoJS(usuarioAdmin, novaSolicitacao);
         if (!podeVer) {
-            console.log('[NOTIFICATION] Sem permissão para ver esta solicitação');
+            console.log('[NOTIFICATION] Sem permissÃ£o para ver esta solicitaÃ§Ã£o');
             return;
         }
         
@@ -3064,27 +3064,27 @@ function adicionarNovaSolicitacao(novaSolicitacao) {
         recarregarSolicitacoes(2000); // 2 segundos de delay
         
     } catch (error) {
-        console.error('[ERRO] Erro ao processar nova solicitação:', error);
+        console.error('[ERRO] Erro ao processar nova solicitaÃ§Ã£o:', error);
     }
 }
 
-// === SISTEMA DE NOTIFICAÇÕES EM TEMPO REAL ===
+// === SISTEMA DE NOTIFICAÃ‡Ã•ES EM TEMPO REAL ===
 function configurarListenerNotificacoes() {
     try {
-        console.log('[NOTIFICATION] Configurando listener de notificações...');
+        console.log('[NOTIFICATION] Configurando listener de notificaÃ§Ãµes...');
         
         const usuarioAdmin = window.usuarioAdmin || JSON.parse(localStorage.getItem('usuarioAdmin') || '{}');
         if (!usuarioAdmin || !usuarioAdmin.uid) {
-            console.log('[NOTIFICATION] Usuário não está logado - não configurando notificações');
+            console.log('[NOTIFICATION] UsuÃ¡rio nÃ£o estÃ¡ logado - nÃ£o configurando notificaÃ§Ãµes');
             return;
         }
         
-        // Armazenar timestamp da última verificação para evitar notificar solicitações existentes
-        // AJUSTE: Definir como 1 minuto atrás para permitir notificações de solicitações muito recentes
+        // Armazenar timestamp da Ãºltima verificaÃ§Ã£o para evitar notificar solicitaÃ§Ãµes existentes
+        // AJUSTE: Definir como 1 minuto atrÃ¡s para permitir notificaÃ§Ãµes de solicitaÃ§Ãµes muito recentes
         const agora = Date.now();
-        window.lastNotificationCheck = agora - (60 * 1000); // 1 minuto atrás
+        window.lastNotificationCheck = agora - (60 * 1000); // 1 minuto atrÃ¡s
         
-        console.log('[NOTIFICATION] Iniciando listener para solicitações...', {
+        console.log('[NOTIFICATION] Iniciando listener para solicitaÃ§Ãµes...', {
             usuario: usuarioAdmin.email,
             equipe: usuarioAdmin.equipe,
             role: usuarioAdmin.role,
@@ -3092,15 +3092,15 @@ function configurarListenerNotificacoes() {
             agoraReal: new Date(agora).toLocaleString()
         });
         
-        // Marcar que é o carregamento inicial para não notificar sobre todas as solicitações existentes
+        // Marcar que Ã© o carregamento inicial para nÃ£o notificar sobre todas as solicitaÃ§Ãµes existentes
         window.isInitialLoad = true;
         setTimeout(() => {
             window.isInitialLoad = false;
-            console.log('[NOTIFICATION] Carregamento inicial finalizado - notificações ativas');
-            console.log('[NOTIFICATION] 🔔 isInitialLoad definido como FALSE - pop-ups agora ativos!');
-        }, 2000); // Reduzido para 2 segundos para permitir notificações mais rápido
+            console.log('[NOTIFICATION] Carregamento inicial finalizado - notificaÃ§Ãµes ativas');
+            console.log('[NOTIFICATION] ðŸ”” isInitialLoad definido como FALSE - pop-ups agora ativos!');
+        }, 2000); // Reduzido para 2 segundos para permitir notificaÃ§Ãµes mais rÃ¡pido
         
-        // Listener para novas solicitações (SEM ORDERBY para evitar problemas de índice)
+        // Listener para novas solicitaÃ§Ãµes (SEM ORDERBY para evitar problemas de Ã­ndice)
         window.db.collection('solicitacoes')
             .onSnapshot((snapshot) => {
                 console.log('[NOTIFICATION] Snapshot recebido:', {
@@ -3109,7 +3109,7 @@ function configurarListenerNotificacoes() {
                     docChanges: snapshot.docChanges().length
                 });
                 
-                if (!snapshot.metadata.hasPendingWrites) { // Ignorar mudanças locais
+                if (!snapshot.metadata.hasPendingWrites) { // Ignorar mudanÃ§as locais
                     snapshot.docChanges().forEach((change) => {
                         console.log('[NOTIFICATION] Change detectado:', {
                             type: change.type,
@@ -3119,7 +3119,7 @@ function configurarListenerNotificacoes() {
                         if (change.type === 'added') {
                             const novaSolicitacao = { id: change.doc.id, ...change.doc.data() };
                             
-                            console.log('[NOTIFICATION] Verificando se é nova:', {
+                            console.log('[NOTIFICATION] Verificando se Ã© nova:', {
                                 id: novaSolicitacao.id,
                                 timestamp: novaSolicitacao.timestamp?.toMillis(),
                                 dataCriacao: novaSolicitacao.dataCriacao?.toMillis(),
@@ -3128,51 +3128,51 @@ function configurarListenerNotificacoes() {
                                 temDataCriacao: !!novaSolicitacao.dataCriacao
                             });
                             
-                            // FALLBACK: Se não há timestamp, considerar como nova durante a primeira verificação
+                            // FALLBACK: Se nÃ£o hÃ¡ timestamp, considerar como nova durante a primeira verificaÃ§Ã£o
                             const timestampSolicitacao = novaSolicitacao.timestamp?.toMillis() || 
                                                         novaSolicitacao.dataCriacao?.toMillis() || 
                                                         Date.now(); // Usar timestamp atual como fallback
                             
                             const isNova = timestampSolicitacao > window.lastNotificationCheck;
                             
-                            // ADICIONAL: Se não tem timestamp, verificar se é uma solicitação que acabou de aparecer no listener
+                            // ADICIONAL: Se nÃ£o tem timestamp, verificar se Ã© uma solicitaÃ§Ã£o que acabou de aparecer no listener
                             const isNovaNoListener = !novaSolicitacao.timestamp && !novaSolicitacao.dataCriacao;
                             
                             if (isNova || (isNovaNoListener && change.type === 'added')) {
-                                console.log('[NOTIFICATION] Verificando permissões para:', {
+                                console.log('[NOTIFICATION] Verificando permissÃµes para:', {
                                     id: novaSolicitacao.id,
                                     equipe: novaSolicitacao.equipe,
                                     isNova,
                                     isNovaNoListener
                                 });
                                 
-                                // Verificar se o usuário tem permissão para ver esta solicitação
+                                // Verificar se o usuÃ¡rio tem permissÃ£o para ver esta solicitaÃ§Ã£o
                                 if (podeVerSolicitacaoJS(usuarioAdmin, novaSolicitacao)) {
-                                    console.log('[NOTIFICATION] ✅ Nova solicitação detectada:', novaSolicitacao);
+                                    console.log('[NOTIFICATION] âœ… Nova solicitaÃ§Ã£o detectada:', novaSolicitacao);
                                     
-                                    // Só mostrar notificação se for realmente nova (não durante o carregamento inicial)
+                                    // SÃ³ mostrar notificaÃ§Ã£o se for realmente nova (nÃ£o durante o carregamento inicial)
                                     if (!window.isInitialLoad) {
                                         mostrarNotificacaoNovaSolicitacao(novaSolicitacao);
                                     }
                                     
-                                    // Recarregar as solicitações para mostrar a nova no topo
+                                    // Recarregar as solicitaÃ§Ãµes para mostrar a nova no topo
                                     setTimeout(() => {
-                                        console.log('[NOTIFICATION] Adicionando nova solicitação sem recarregar tudo...');
-                                        // Evitar loop - usar função específica para adicionar
+                                        console.log('[NOTIFICATION] Adicionando nova solicitaÃ§Ã£o sem recarregar tudo...');
+                                        // Evitar loop - usar funÃ§Ã£o especÃ­fica para adicionar
                                         // carregarSolicitacoes();
                                         adicionarNovaSolicitacao(novaSolicitacao);
                                     }, 1000);
                                 } else {
-                                    console.log('[NOTIFICATION] ❌ Sem permissão para ver esta solicitação');
+                                    console.log('[NOTIFICATION] âŒ Sem permissÃ£o para ver esta solicitaÃ§Ã£o');
                                 }
                             } else {
-                                console.log('[NOTIFICATION] ⏰ Solicitação não é nova (timestamp anterior ao login)');
+                                console.log('[NOTIFICATION] â° SolicitaÃ§Ã£o nÃ£o Ã© nova (timestamp anterior ao login)');
                             }
                         }
                     });
                 }
             }, (error) => {
-                console.error('[ERRO] Erro no listener de notificações:', error);
+                console.error('[ERRO] Erro no listener de notificaÃ§Ãµes:', error);
                 console.log('[NOTIFICATION] Erro no listener - tentando reconfigurar em 5s...');
                 setTimeout(() => {
                     window.notificationListenerConfigured = false;
@@ -3187,55 +3187,55 @@ function configurarListenerNotificacoes() {
 
 function mostrarNotificacaoNovaSolicitacao(solicitacao) {
     try {
-        console.log('[NOTIFICATION] 🎯 EXECUTANDO mostrarNotificacaoNovaSolicitacao para:', solicitacao.id);
+        console.log('[NOTIFICATION] ðŸŽ¯ EXECUTANDO mostrarNotificacaoNovaSolicitacao para:', solicitacao.id);
         
         // Buscar dados completos do acompanhante antes de exibir
         buscarDadosAcompanhante(solicitacao).then(dadosAcompanhante => {
-            console.log('[NOTIFICATION] 📋 Dados obtidos para popup:', dadosAcompanhante);
+            console.log('[NOTIFICATION] ðŸ“‹ Dados obtidos para popup:', dadosAcompanhante);
             exibirPopupNotificacao(solicitacao, dadosAcompanhante);
         }).catch(error => {
-            console.error('[NOTIFICATION] ❌ Erro ao buscar dados do acompanhante:', error);
-            // Mesmo assim, exibir popup com dados básicos
+            console.error('[NOTIFICATION] âŒ Erro ao buscar dados do acompanhante:', error);
+            // Mesmo assim, exibir popup com dados bÃ¡sicos
             exibirPopupNotificacao(solicitacao, null);
         });
         
     } catch (error) {
-        console.error('[NOTIFICATION] Erro ao exibir notificação:', error);
+        console.error('[NOTIFICATION] Erro ao exibir notificaÃ§Ã£o:', error);
     }
 }
 
 function exibirPopupNotificacao(solicitacao, dadosAcompanhante) {
     try {
-        console.log('[NOTIFICATION] 🎉 CRIANDO POPUP para solicitação:', solicitacao.id);
-        console.log('[NOTIFICATION] 📊 Dados do acompanhante recebidos:', dadosAcompanhante);
+        console.log('[NOTIFICATION] ðŸŽ‰ CRIANDO POPUP para solicitaÃ§Ã£o:', solicitacao.id);
+        console.log('[NOTIFICATION] ðŸ“Š Dados do acompanhante recebidos:', dadosAcompanhante);
         
-        // Determinar tipo de serviço e emoji
-        let tipoServico = solicitacao.equipe || solicitacao.tipoServico || 'solicitação';
-        let emoji = '📋';
+        // Determinar tipo de serviÃ§o e emoji
+        let tipoServico = solicitacao.equipe || solicitacao.tipoServico || 'solicitaÃ§Ã£o';
+        let emoji = 'ðŸ“‹';
         
         switch(tipoServico.toLowerCase()) {
             case 'manutencao':
-            case 'manutenção':
-                emoji = '🔧';
-                tipoServico = 'Manutenção';
+            case 'manutenÃ§Ã£o':
+                emoji = 'ðŸ”§';
+                tipoServico = 'ManutenÃ§Ã£o';
                 break;
             case 'nutricao':
-            case 'nutrição':
-                emoji = '🍽️';
-                tipoServico = 'Nutrição';
+            case 'nutriÃ§Ã£o':
+                emoji = 'ðŸ½ï¸';
+                tipoServico = 'NutriÃ§Ã£o';
                 break;
             case 'higienizacao':
-            case 'higienização':
-                emoji = '🧹';
-                tipoServico = 'Higienização';
+            case 'higienizaÃ§Ã£o':
+                emoji = 'ðŸ§¹';
+                tipoServico = 'HigienizaÃ§Ã£o';
                 break;
             case 'hotelaria':
-                emoji = '🏨';
+                emoji = 'ðŸ¨';
                 tipoServico = 'Hotelaria';
                 break;
         }
         
-        // Criar pop-up de notificação
+        // Criar pop-up de notificaÃ§Ã£o
         const popup = document.createElement('div');
         popup.className = 'notification-popup';
         popup.style.cssText = `
@@ -3259,24 +3259,24 @@ function exibirPopupNotificacao(solicitacao, dadosAcompanhante) {
             <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 12px;">
                 <div style="font-size: 24px;">${emoji}</div>
                 <div>
-                    <div style="font-weight: bold; font-size: 16px;">Nova Solicitação!</div>
+                    <div style="font-weight: bold; font-size: 16px;">Nova SolicitaÃ§Ã£o!</div>
                     <div style="font-size: 14px; opacity: 0.9;">${tipoServico}</div>
                 </div>
                 <button onclick="this.parentElement.parentElement.remove()" 
                         style="margin-left: auto; background: rgba(255,255,255,0.2); border: none; color: white; 
-                               padding: 4px 8px; border-radius: 4px; cursor: pointer;">✕</button>
+                               padding: 4px 8px; border-radius: 4px; cursor: pointer;">âœ•</button>
             </div>
             <div style="font-size: 14px; line-height: 1.4;">
-                <strong>Quarto:</strong> ${dadosAcompanhante?.quarto || solicitacao.quarto || 'Não especificado'}<br>
-                <strong>Solicitante:</strong> ${dadosAcompanhante?.nome || solicitacao.usuarioNome || solicitacao.nome || 'Não informado'}<br>
-                <strong>Descrição:</strong> ${solicitacao.descricao || solicitacao.titulo || 'Nova solicitação de atendimento'}
+                <strong>Quarto:</strong> ${dadosAcompanhante?.quarto || solicitacao.quarto || 'NÃ£o especificado'}<br>
+                <strong>Solicitante:</strong> ${dadosAcompanhante?.nome || solicitacao.usuarioNome || solicitacao.nome || 'NÃ£o informado'}<br>
+                <strong>DescriÃ§Ã£o:</strong> ${solicitacao.descricao || solicitacao.titulo || 'Nova solicitaÃ§Ã£o de atendimento'}
             </div>
             <div style="margin-top: 12px; font-size: 12px; opacity: 0.8;">
                 ${new Date().toLocaleString('pt-BR')}
             </div>
         `;
         
-        // Adicionar CSS de animação se não existir
+        // Adicionar CSS de animaÃ§Ã£o se nÃ£o existir
         if (!document.getElementById('notification-styles')) {
             const style = document.createElement('style');
             style.id = 'notification-styles';
@@ -3297,18 +3297,18 @@ function exibirPopupNotificacao(solicitacao, dadosAcompanhante) {
         // Adicionar ao DOM
         document.body.appendChild(popup);
         
-        // Som de notificação (opcional - só se suportado)
+        // Som de notificaÃ§Ã£o (opcional - sÃ³ se suportado)
         try {
             if ('Audio' in window) {
                 const audio = new Audio('data:audio/wav;base64,UklGRnoGAABXQVZFZm10IBAAAAABAAEAQB8AAEAfAAABAAgAZGF0YQoGAACBhYqFbF1fdJivrJBhNjVgodDbq2EcBj+a2/LDciUFLIHO8tiJNwgZaLvt559NEAxQp+PwtmMcBjiR1/LMeSwFJHfH8N2QQAoUXrTp66hVFApGn+DyvmAcBz2c3+7AdSIBII/J8N6OSAgQYrPm56VUEwpJmOLosmIdBDSK1O7HdSII');
                 audio.volume = 0.3;
-                audio.play().catch(() => {}); // Ignorar erro se não conseguir tocar
+                audio.play().catch(() => {}); // Ignorar erro se nÃ£o conseguir tocar
             }
         } catch (e) {
-            // Ignorar erro de áudio
+            // Ignorar erro de Ã¡udio
         }
         
-        // Remover automaticamente após 7 segundos
+        // Remover automaticamente apÃ³s 7 segundos
         setTimeout(() => {
             if (popup && popup.parentNode) {
                 popup.style.animation = 'slideInRight 0.3s ease-in reverse';
@@ -3316,7 +3316,7 @@ function exibirPopupNotificacao(solicitacao, dadosAcompanhante) {
             }
         }, 7000);
         
-        console.log('[NOTIFICATION] Notificação exibida com sucesso');
+        console.log('[NOTIFICATION] NotificaÃ§Ã£o exibida com sucesso');
         
     } catch (error) {
         console.error('[ERRO] exibirPopupNotificacao:', error);
@@ -3329,14 +3329,14 @@ function mostrarIndicadorCarregamento() {
         teamsGrid.innerHTML = `
             <div style="grid-column: 1 / -1; text-align: center; padding: 2rem;">
                 <i class="fas fa-spinner fa-spin" style="font-size: 2rem; color: #3b82f6; margin-bottom: 1rem;"></i>
-                <p>Carregando solicitações...</p>
+                <p>Carregando solicitaÃ§Ãµes...</p>
             </div>
         `;
     }
 }
 
 function ocultarIndicadorCarregamento() {
-    // O indicador será substituído pelo conteúdo real
+    // O indicador serÃ¡ substituÃ­do pelo conteÃºdo real
 }
 
 function carregarDadosOffline() {
@@ -3360,33 +3360,33 @@ function carregarDadosOffline() {
     renderizarCardsEquipe(dadosOffline);
 }
 
-// Função para mostrar interface vazia em produção (sem dados simulados)
+// FunÃ§Ã£o para mostrar interface vazia em produÃ§Ã£o (sem dados simulados)
 function mostrarInterfaceVazia() {
-    debugLog('[DEBUG] Mostrando interface vazia - nenhuma solicitação encontrada');
+    debugLog('[DEBUG] Mostrando interface vazia - nenhuma solicitaÃ§Ã£o encontrada');
     
     const teamsGrid = document.querySelector('.teams-grid');
     if (teamsGrid) {
         teamsGrid.innerHTML = `
             <div style="grid-column: 1 / -1; text-align: center; padding: 3rem; color: #6b7280;">
-                <div style="font-size: 3rem; margin-bottom: 1rem;">📋</div>
-                <h3 style="margin-bottom: 1rem; color: #374151;">Nenhuma solicitação encontrada</h3>
-                <p style="margin-bottom: 2rem;">Não há solicitações para exibir no momento.</p>
+                <div style="font-size: 3rem; margin-bottom: 1rem;">ðŸ“‹</div>
+                <h3 style="margin-bottom: 1rem; color: #374151;">Nenhuma solicitaÃ§Ã£o encontrada</h3>
+                <p style="margin-bottom: 2rem;">NÃ£o hÃ¡ solicitaÃ§Ãµes para exibir no momento.</p>
                 <div style="display: flex; gap: 1rem; justify-content: center; flex-wrap: wrap;">
                     <button onclick="location.reload()" 
                             style="background: #3b82f6; color: white; padding: 0.75rem 1.5rem; border: none; border-radius: 0.375rem; cursor: pointer;">
-                        🔄 Atualizar
+                        ðŸ”„ Atualizar
                     </button>
                 </div>
             </div>
         `;
     }
     
-    // Zerar métricas
+    // Zerar mÃ©tricas
     atualizarMetricasPainel(0, 0, 0, 0);
 }
 
 function atualizarMetricasPainel(total, pendentes, finalizadasHoje, quartosAtivos) {
-    // Atualiza badge do menu para mostrar o papel do usuário
+    // Atualiza badge do menu para mostrar o papel do usuÃ¡rio
     const badge = document.getElementById('user-role-badge');
     if (badge) {
         const usuario = window.usuarioAdmin || JSON.parse(localStorage.getItem('usuarioAdmin') || '{}');
@@ -3402,17 +3402,17 @@ function atualizarMetricasPainel(total, pendentes, finalizadasHoje, quartosAtivo
         }
     }
     
-    // Atualizar visibilidade dos botões
+    // Atualizar visibilidade dos botÃµes
     atualizarVisibilidadeBotoes();
     
-    // Remove loader visual (reforçado)
+    // Remove loader visual (reforÃ§ado)
     setTimeout(() => {
         if (window._mainLoader) {
             window._mainLoader.remove();
             window._mainLoader = null;
         }
     }, 100);
-    // Renderiza bloco de métricas centralizado
+    // Renderiza bloco de mÃ©tricas centralizado
     let metricasEl = document.getElementById('metricas-painel');
     if (!metricasEl) {
         metricasEl = document.createElement('div');
@@ -3431,14 +3431,14 @@ function atualizarMetricasPainel(total, pendentes, finalizadasHoje, quartosAtivo
     if (quartosEl) quartosEl.textContent = quartosAtivos;
 }
 
-// Variável global para controlar reconfiguração de botões
+// VariÃ¡vel global para controlar reconfiguraÃ§Ã£o de botÃµes
 let reconfigurando = false;
 
-// Função específica para garantir visibilidade do botão Minha Senha
+// FunÃ§Ã£o especÃ­fica para garantir visibilidade do botÃ£o Minha Senha
 function forcarVisibilidadeBotaoMinhaSenha() {
     const btnMinhaSenha = document.getElementById('alterar-senha-btn');
     if (btnMinhaSenha) {
-        // Forçar visibilidade com múltiplas abordagens
+        // ForÃ§ar visibilidade com mÃºltiplas abordagens
         btnMinhaSenha.classList.remove('btn-hide', 'hidden', 'd-none');
         btnMinhaSenha.style.cssText = `
             display: inline-flex !important; 
@@ -3457,25 +3457,25 @@ function forcarVisibilidadeBotaoMinhaSenha() {
             z-index: 999 !important;
         `;
         btnMinhaSenha.setAttribute('style', btnMinhaSenha.style.cssText);
-        console.log('[🔑 MINHA SENHA] Botão forçado para ser visível');
+        console.log('[ðŸ”‘ MINHA SENHA] BotÃ£o forÃ§ado para ser visÃ­vel');
         return true;
     } else {
-        console.warn('[🔑 MINHA SENHA] Botão não encontrado no DOM');
-        // Tentar recriar o botão se não existir
+        console.warn('[ðŸ”‘ MINHA SENHA] BotÃ£o nÃ£o encontrado no DOM');
+        // Tentar recriar o botÃ£o se nÃ£o existir
         recriarBotaoMinhaSenha();
         return false;
     }
 }
 
-// Função para recriar o botão se ele não existir
+// FunÃ§Ã£o para recriar o botÃ£o se ele nÃ£o existir
 function recriarBotaoMinhaSenha() {
-    console.log('[🔑 RECRIAR] Tentando recriar botão Minha Senha...');
+    console.log('[ðŸ”‘ RECRIAR] Tentando recriar botÃ£o Minha Senha...');
     
     const userInfo = document.querySelector('.header .user-info');
     const logoutBtn = document.getElementById('logout-btn');
     
     if (userInfo && logoutBtn) {
-        // Criar o botão
+        // Criar o botÃ£o
         const btnMinhaSenha = document.createElement('button');
         btnMinhaSenha.id = 'alterar-senha-btn';
         btnMinhaSenha.className = 'btn-primary';
@@ -3499,41 +3499,41 @@ function recriarBotaoMinhaSenha() {
             z-index: 999 !important;
         `;
         
-        // Inserir antes do botão de logout
+        // Inserir antes do botÃ£o de logout
         userInfo.insertBefore(btnMinhaSenha, logoutBtn);
-        console.log('[🔑 RECRIAR] Botão Minha Senha recriado com sucesso!');
+        console.log('[ðŸ”‘ RECRIAR] BotÃ£o Minha Senha recriado com sucesso!');
         return true;
     } else {
-        console.error('[🔑 RECRIAR] Não foi possível encontrar local para inserir o botão');
+        console.error('[ðŸ”‘ RECRIAR] NÃ£o foi possÃ­vel encontrar local para inserir o botÃ£o');
         return false;
     }
 }
 
-// Watchdog para garantir que o botão sempre esteja visível
+// Watchdog para garantir que o botÃ£o sempre esteja visÃ­vel
 function iniciarWatchdogBotaoMinhaSenha() {
     setInterval(() => {
         const btnMinhaSenha = document.getElementById('alterar-senha-btn');
         if (btnMinhaSenha) {
             const isVisible = btnMinhaSenha.offsetWidth > 0 && btnMinhaSenha.offsetHeight > 0;
             if (!isVisible) {
-                console.log('[🔑 WATCHDOG] Botão "Minha Senha" invisível - forçando visibilidade...');
+                console.log('[ðŸ”‘ WATCHDOG] BotÃ£o "Minha Senha" invisÃ­vel - forÃ§ando visibilidade...');
                 forcarVisibilidadeBotaoMinhaSenha();
             }
         } else {
-            console.log('[🔑 WATCHDOG] Botão "Minha Senha" não encontrado - recriando...');
+            console.log('[ðŸ”‘ WATCHDOG] BotÃ£o "Minha Senha" nÃ£o encontrado - recriando...');
             recriarBotaoMinhaSenha();
         }
     }, 2000); // Verificar a cada 2 segundos
 }
 
-// Observer para monitorar mudanças no DOM
+// Observer para monitorar mudanÃ§as no DOM
 function iniciarObserverBotaoMinhaSenha() {
     const userInfo = document.querySelector('.header .user-info');
     if (userInfo) {
         const observer = new MutationObserver(() => {
             const btnMinhaSenha = document.getElementById('alterar-senha-btn');
             if (!btnMinhaSenha) {
-                console.log('[🔑 OBSERVER] Botão removido - recriando...');
+                console.log('[ðŸ”‘ OBSERVER] BotÃ£o removido - recriando...');
                 setTimeout(() => recriarBotaoMinhaSenha(), 100);
             }
         });
@@ -3543,19 +3543,19 @@ function iniciarObserverBotaoMinhaSenha() {
             subtree: true
         });
         
-        console.log('[🔑 OBSERVER] Observer do botão Minha Senha iniciado');
+        console.log('[ðŸ”‘ OBSERVER] Observer do botÃ£o Minha Senha iniciado');
     }
 }
 
-// Nova função para atualizar visibilidade dos botões
+// Nova funÃ§Ã£o para atualizar visibilidade dos botÃµes
 function atualizarVisibilidadeBotoes() {
-    console.log('🔥🔥🔥 EXECUTANDO atualizarVisibilidadeBotoes - TESTE LIMPEZA 🔥🔥🔥');
+    console.log('ðŸ”¥ðŸ”¥ðŸ”¥ EXECUTANDO atualizarVisibilidadeBotoes - TESTE LIMPEZA ðŸ”¥ðŸ”¥ðŸ”¥');
     
-    // PRIMEIRO: Limpar botões indesejados SEMPRE
+    // PRIMEIRO: Limpar botÃµes indesejados SEMPRE
     forceRemoveDebugButtons();
     
     if (reconfigurando) {
-        debugLog('[DEBUG] atualizarVisibilidadeBotoes: já está reconfigurando, ignorando...');
+        debugLog('[DEBUG] atualizarVisibilidadeBotoes: jÃ¡ estÃ¡ reconfigurando, ignorando...');
         return;
     }
     
@@ -3581,14 +3581,14 @@ function atualizarVisibilidadeBotoes() {
         btnSatisfacao: !!btnSatisfacao
     });
     
-    debugLog('[DEBUG] Atualizando botões para usuário:', usuarioAdmin);
+    debugLog('[DEBUG] Atualizando botÃµes para usuÃ¡rio:', usuarioAdmin);
     
-    // Verificar tipo de usuário baseado nas coleções Firestore
+    // Verificar tipo de usuÃ¡rio baseado nas coleÃ§Ãµes Firestore
     const isSuperAdmin = usuarioAdmin && usuarioAdmin.role === 'super_admin';
     const isEquipe = usuarioAdmin && (usuarioAdmin.role === 'equipe' || usuarioAdmin.isEquipe);
     const isAdmin = usuarioAdmin && usuarioAdmin.role === 'admin';
     
-    debugLog('[DEBUG] Tipo de usuário:', { 
+    debugLog('[DEBUG] Tipo de usuÃ¡rio:', { 
         isSuperAdmin, 
         isEquipe, 
         isAdmin, 
@@ -3596,20 +3596,20 @@ function atualizarVisibilidadeBotoes() {
         equipe: usuarioAdmin?.equipe 
     });
     
-    // Configurar título e badge baseado no tipo de usuário
+    // Configurar tÃ­tulo e badge baseado no tipo de usuÃ¡rio
     if (panelTitle) {
         if (isSuperAdmin) {
-            panelTitle.textContent = '🏥 Painel Administrativo - Super Admin';
+            panelTitle.textContent = 'ðŸ¥ Painel Administrativo - Super Admin';
         } else if (isEquipe && usuarioAdmin.equipe) {
             const nomeEquipe = {
-                'manutencao': 'Manutenção',
-                'nutricao': 'Nutrição', 
-                'higienizacao': 'Higienização',
+                'manutencao': 'ManutenÃ§Ã£o',
+                'nutricao': 'NutriÃ§Ã£o', 
+                'higienizacao': 'HigienizaÃ§Ã£o',
                 'hotelaria': 'Hotelaria'
             }[usuarioAdmin.equipe] || usuarioAdmin.equipe;
-            panelTitle.textContent = `🏥 Painel ${nomeEquipe}`;
+            panelTitle.textContent = `ðŸ¥ Painel ${nomeEquipe}`;
         } else if (isAdmin) {
-            panelTitle.textContent = '🏥 Painel Administrativo';
+            panelTitle.textContent = 'ðŸ¥ Painel Administrativo';
         }
     }
     
@@ -3619,9 +3619,9 @@ function atualizarVisibilidadeBotoes() {
             userRoleBadge.className = 'priority-badge priority-alta';
         } else if (isEquipe && usuarioAdmin.equipe) {
             const nomeEquipe = {
-                'manutencao': 'Equipe Manutenção',
-                'nutricao': 'Equipe Nutrição',
-                'higienizacao': 'Equipe Higienização', 
+                'manutencao': 'Equipe ManutenÃ§Ã£o',
+                'nutricao': 'Equipe NutriÃ§Ã£o',
+                'higienizacao': 'Equipe HigienizaÃ§Ã£o', 
                 'hotelaria': 'Equipe Hotelaria'
             }[usuarioAdmin.equipe] || `Equipe ${usuarioAdmin.equipe}`;
             userRoleBadge.textContent = nomeEquipe;
@@ -3632,133 +3632,133 @@ function atualizarVisibilidadeBotoes() {
         }
     }
     
-    // Botão Criar Usuário - APENAS super_admin
+    // BotÃ£o Criar UsuÃ¡rio - APENAS super_admin
     if (btnNovoUsuario) {
         if (isSuperAdmin) {
             btnNovoUsuario.classList.remove('btn-hide');
             btnNovoUsuario.style.display = 'inline-flex';
-            debugLog('[DEBUG] Botão Criar Usuário exibido para super_admin');
+            debugLog('[DEBUG] BotÃ£o Criar UsuÃ¡rio exibido para super_admin');
         } else {
             btnNovoUsuario.classList.add('btn-hide');
             btnNovoUsuario.style.display = 'none';
-            debugLog('[DEBUG] Botão Criar Usuário ocultado para usuário não super_admin');
+            debugLog('[DEBUG] BotÃ£o Criar UsuÃ¡rio ocultado para usuÃ¡rio nÃ£o super_admin');
         }
     }
     
-    // Botão Gerenciar Usuários - APENAS super_admin
+    // BotÃ£o Gerenciar UsuÃ¡rios - APENAS super_admin
     if (btnGerenciarUsuarios) {
         if (isSuperAdmin) {
             btnGerenciarUsuarios.classList.remove('btn-hide');
             btnGerenciarUsuarios.style.display = 'inline-flex';
-            debugLog('[DEBUG] Botão Gerenciar Usuários exibido para super_admin');
+            debugLog('[DEBUG] BotÃ£o Gerenciar UsuÃ¡rios exibido para super_admin');
         } else {
             btnGerenciarUsuarios.classList.add('btn-hide');
             btnGerenciarUsuarios.style.display = 'none';
-            debugLog('[DEBUG] Botão Gerenciar Usuários ocultado para usuário não super_admin');
+            debugLog('[DEBUG] BotÃ£o Gerenciar UsuÃ¡rios ocultado para usuÃ¡rio nÃ£o super_admin');
         }
     }
 
-    // Botão Acompanhantes - APENAS super_admin
+    // BotÃ£o Acompanhantes - APENAS super_admin
     if (btnAcompanhantes) {
         if (isSuperAdmin) {
             btnAcompanhantes.classList.remove('btn-hide');
             btnAcompanhantes.style.display = 'inline-flex';
-            debugLog('[DEBUG] Botão Acompanhantes exibido para', isSuperAdmin ? 'super_admin' : 'admin');
+            debugLog('[DEBUG] BotÃ£o Acompanhantes exibido para', isSuperAdmin ? 'super_admin' : 'admin');
         } else {
             btnAcompanhantes.classList.add('btn-hide');
             btnAcompanhantes.style.display = 'none';
-            debugLog('[DEBUG] Botão Acompanhantes ocultado para usuário não admin');
+            debugLog('[DEBUG] BotÃ£o Acompanhantes ocultado para usuÃ¡rio nÃ£o admin');
         }
     }
 
-    // Botão Relatórios - super_admin e admin
+    // BotÃ£o RelatÃ³rios - super_admin e admin
     if (btnRelatorios) {
         if (isSuperAdmin || isAdmin) {
             btnRelatorios.classList.remove('btn-hide');
             btnRelatorios.style.display = 'inline-flex';
-            debugLog('[DEBUG] Botão Relatórios exibido para', isSuperAdmin ? 'super_admin' : 'admin');
+            debugLog('[DEBUG] BotÃ£o RelatÃ³rios exibido para', isSuperAdmin ? 'super_admin' : 'admin');
         } else {
             btnRelatorios.classList.add('btn-hide');
             btnRelatorios.style.display = 'none';
-            debugLog('[DEBUG] Botão Relatórios ocultado para usuário não admin');
+            debugLog('[DEBUG] BotÃ£o RelatÃ³rios ocultado para usuÃ¡rio nÃ£o admin');
         }
     }
 
-    // Botão Minha Senha - TODOS os usuários (equipes, admins, super_admins)
-    console.log('[🔑 DEBUG] Iniciando configuração do botão Minha Senha...');
+    // BotÃ£o Minha Senha - TODOS os usuÃ¡rios (equipes, admins, super_admins)
+    console.log('[ðŸ”‘ DEBUG] Iniciando configuraÃ§Ã£o do botÃ£o Minha Senha...');
     
     // Tentar multiple vezes para garantir que funcione
     forcarVisibilidadeBotaoMinhaSenha();
     
     setTimeout(() => {
-        console.log('[🔑 DEBUG] Segunda tentativa de forçar visibilidade...');
+        console.log('[ðŸ”‘ DEBUG] Segunda tentativa de forÃ§ar visibilidade...');
         forcarVisibilidadeBotaoMinhaSenha();
     }, 500);
     
     setTimeout(() => {
-        console.log('[🔑 DEBUG] Terceira tentativa de forçar visibilidade...');
+        console.log('[ðŸ”‘ DEBUG] Terceira tentativa de forÃ§ar visibilidade...');
         forcarVisibilidadeBotaoMinhaSenha();
     }, 1000);
     
-    debugLog('[DEBUG] Botão Minha Senha sempre exibido para todos os usuários');
+    debugLog('[DEBUG] BotÃ£o Minha Senha sempre exibido para todos os usuÃ¡rios');
 
-    // Botão Limpeza - APENAS super_admin
-    console.log('[🧹 LIMPEZA-CHECK] Verificando:', { btnLimpeza: !!btnLimpeza, isSuperAdmin }); 
+    // BotÃ£o Limpeza - APENAS super_admin
+    console.log('[ðŸ§¹ LIMPEZA-CHECK] Verificando:', { btnLimpeza: !!btnLimpeza, isSuperAdmin }); 
     
     if (btnLimpeza) {
         if (isSuperAdmin) {
             btnLimpeza.classList.remove('btn-hide');
             btnLimpeza.style.display = 'inline-flex';
-            debugLog('[DEBUG] Botão Limpeza exibido para super_admin');
+            debugLog('[DEBUG] BotÃ£o Limpeza exibido para super_admin');
             
-            // Forçar novamente após 500ms para combater cache
+            // ForÃ§ar novamente apÃ³s 500ms para combater cache
             setTimeout(() => {
                 btnLimpeza.classList.remove('btn-hide', 'hidden');
                 btnLimpeza.style.cssText = 'display: inline-flex !important; visibility: visible !important;';
-                debugLog('[DEBUG] Botão Limpeza forçado novamente para super_admin');
+                debugLog('[DEBUG] BotÃ£o Limpeza forÃ§ado novamente para super_admin');
             }, 500);
         } else {
             btnLimpeza.classList.add('btn-hide');
             btnLimpeza.style.display = 'none';
-            debugLog('[DEBUG] Botão Limpeza ocultado para usuário não super_admin');
+            debugLog('[DEBUG] BotÃ£o Limpeza ocultado para usuÃ¡rio nÃ£o super_admin');
         }
     }
 
-    // Botão Pesquisa de Satisfação - admin e super_admin
+    // BotÃ£o Pesquisa de SatisfaÃ§Ã£o - admin e super_admin
     if (btnSatisfacao) {
         if (isSuperAdmin || isAdmin) {
             btnSatisfacao.classList.remove('btn-hide');
             btnSatisfacao.style.display = 'inline-flex';
-            debugLog('[DEBUG] Botão Satisfação exibido para admin/super_admin');
+            debugLog('[DEBUG] BotÃ£o SatisfaÃ§Ã£o exibido para admin/super_admin');
         } else {
             btnSatisfacao.classList.add('btn-hide');
             btnSatisfacao.style.display = 'none';
-            debugLog('[DEBUG] Botão Satisfação ocultado para usuário sem permissões de admin');
+            debugLog('[DEBUG] BotÃ£o SatisfaÃ§Ã£o ocultado para usuÃ¡rio sem permissÃµes de admin');
         }
     }
     
-    // Mensagem de permissão
+    // Mensagem de permissÃ£o
     if (msgPermissao) {
         if (isEquipe && usuarioAdmin.equipe) {
             const nomeEquipe = {
-                'manutencao': 'Manutenção',
-                'nutricao': 'Nutrição',
-                'higienizacao': 'Higienização',
+                'manutencao': 'ManutenÃ§Ã£o',
+                'nutricao': 'NutriÃ§Ã£o',
+                'higienizacao': 'HigienizaÃ§Ã£o',
                 'hotelaria': 'Hotelaria'
             }[usuarioAdmin.equipe] || usuarioAdmin.equipe;
             
-            msgPermissao.textContent = `Acesso da equipe: Visualização e gerenciamento de solicitações de ${nomeEquipe}`;
+            msgPermissao.textContent = `Acesso da equipe: VisualizaÃ§Ã£o e gerenciamento de solicitaÃ§Ãµes de ${nomeEquipe}`;
             msgPermissao.classList.remove('msg-permissao-hide');
             msgPermissao.style.display = 'block';
             msgPermissao.style.color = '#059669';
             msgPermissao.style.fontWeight = '500';
         } else if (isAdmin) {
-            // Admin: não mostrar mensagem de permissão (evitar confusão)
+            // Admin: nÃ£o mostrar mensagem de permissÃ£o (evitar confusÃ£o)
             msgPermissao.classList.add('msg-permissao-hide');
             msgPermissao.style.display = 'none';
         } else if (!isSuperAdmin && !isEquipe && !isAdmin) {
-            // Apenas para usuários sem nenhum tipo de permissão definida
-            msgPermissao.textContent = 'Sem permissões definidas';
+            // Apenas para usuÃ¡rios sem nenhum tipo de permissÃ£o definida
+            msgPermissao.textContent = 'Sem permissÃµes definidas';
             msgPermissao.classList.remove('msg-permissao-hide');
             msgPermissao.style.display = 'block';
             msgPermissao.style.color = '#dc2626';
@@ -3768,30 +3768,30 @@ function atualizarVisibilidadeBotoes() {
         }
     }
     
-    // Log final do estado dos botões
-    debugLog('[DEBUG] Estado final dos botões:', {
+    // Log final do estado dos botÃµes
+    debugLog('[DEBUG] Estado final dos botÃµes:', {
         role: usuarioAdmin?.role,
         equipe: usuarioAdmin?.equipe,
         isSuperAdmin,
         isEquipe,
         isAdmin,
-        btnNovoUsuario: btnNovoUsuario ? !btnNovoUsuario.classList.contains('btn-hide') : 'não encontrado',
-        btnGerenciarUsuarios: btnGerenciarUsuarios ? !btnGerenciarUsuarios.classList.contains('btn-hide') : 'não encontrado',
-        btnAcompanhantes: btnAcompanhantes ? !btnAcompanhantes.classList.contains('btn-hide') : 'não encontrado',
-        btnRelatorios: btnRelatorios ? !btnRelatorios.classList.contains('btn-hide') : 'não encontrado',
-        btnMinhaSenha: btnMinhaSenha ? !btnMinhaSenha.classList.contains('btn-hide') : 'não encontrado',
-        btnLimpeza: btnLimpeza ? !btnLimpeza.classList.contains('btn-hide') : 'não encontrado'
+        btnNovoUsuario: btnNovoUsuario ? !btnNovoUsuario.classList.contains('btn-hide') : 'nÃ£o encontrado',
+        btnGerenciarUsuarios: btnGerenciarUsuarios ? !btnGerenciarUsuarios.classList.contains('btn-hide') : 'nÃ£o encontrado',
+        btnAcompanhantes: btnAcompanhantes ? !btnAcompanhantes.classList.contains('btn-hide') : 'nÃ£o encontrado',
+        btnRelatorios: btnRelatorios ? !btnRelatorios.classList.contains('btn-hide') : 'nÃ£o encontrado',
+        btnMinhaSenha: btnMinhaSenha ? !btnMinhaSenha.classList.contains('btn-hide') : 'nÃ£o encontrado',
+        btnLimpeza: btnLimpeza ? !btnLimpeza.classList.contains('btn-hide') : 'nÃ£o encontrado'
     });
     
-    // Reset da flag de reconfiguração
+    // Reset da flag de reconfiguraÃ§Ã£o
     setTimeout(() => {
         reconfigurando = false;
     }, 50);
 }
 
-// Função para configurar eventos dos botões
+// FunÃ§Ã£o para configurar eventos dos botÃµes
 function configurarEventosBotoes() {
-    debugLog('[DEBUG] ===== CONFIGURANDO EVENTOS DOS BOTÕES =====');
+    debugLog('[DEBUG] ===== CONFIGURANDO EVENTOS DOS BOTÃ•ES =====');
     
     // Verificar estado geral
     debugLog('[DEBUG] Estado atual:', {
@@ -3805,8 +3805,8 @@ function configurarEventosBotoes() {
     const btnRelatorios = document.getElementById('relatorios-btn');
     const btnLimpeza = document.getElementById('limpeza-btn');
     
-    // Debug específico para o botão de limpeza
-    debugLog('[DEBUG] Botão Limpeza Debug:', {
+    // Debug especÃ­fico para o botÃ£o de limpeza
+    debugLog('[DEBUG] BotÃ£o Limpeza Debug:', {
         elemento: btnLimpeza,
         id: btnLimpeza?.id,
         classes: btnLimpeza?.className,
@@ -3814,7 +3814,7 @@ function configurarEventosBotoes() {
         hidden: btnLimpeza?.classList.contains('btn-hide')
     });
     
-    debugLog('[DEBUG] configurarEventosBotoes: botões encontrados:', {
+    debugLog('[DEBUG] configurarEventosBotoes: botÃµes encontrados:', {
         btnNovoUsuario: !!btnNovoUsuario,
         btnGerenciarUsuarios: !!btnGerenciarUsuarios,
         btnRelatorios: !!btnRelatorios,
@@ -3826,19 +3826,19 @@ function configurarEventosBotoes() {
         btnLimpezaReal: !!document.querySelector('#limpeza-btn')
     });
 
-    // Configurar botão Relatórios
+    // Configurar botÃ£o RelatÃ³rios
     if (btnRelatorios) {
         // Remove qualquer evento anterior (incluindo onclick do HTML)
         btnRelatorios.onclick = null;
         btnRelatorios.removeAttribute('onclick');
         
         btnRelatorios.onclick = function(e) {
-            console.log('[LOG] ===== CLIQUE RELATÓRIOS DETECTADO =====');
+            console.log('[LOG] ===== CLIQUE RELATÃ“RIOS DETECTADO =====');
             
             // Debug completo do estado
             window.debugEstadoApp();
             
-            console.log('[LOG] Estado da autenticação:', {
+            console.log('[LOG] Estado da autenticaÃ§Ã£o:', {
                 windowUserRole: window.userRole,
                 windowUsuarioAdmin: !!window.usuarioAdmin,
                 localStorage: !!localStorage.getItem('usuarioAdmin'),
@@ -3849,11 +3849,11 @@ function configurarEventosBotoes() {
             e.stopPropagation();
             
             try {
-                debugLog('[DEBUG] Verificando função mostrarRelatorios...');
+                debugLog('[DEBUG] Verificando funÃ§Ã£o mostrarRelatorios...');
                 
                 if (typeof window.mostrarRelatorios !== 'function') {
-                    console.error('[ERRO] mostrarRelatorios não está definida!');
-                    alert('Erro: Função mostrarRelatorios não encontrada!');
+                    console.error('[ERRO] mostrarRelatorios nÃ£o estÃ¡ definida!');
+                    alert('Erro: FunÃ§Ã£o mostrarRelatorios nÃ£o encontrada!');
                     return;
                 }
                 
@@ -3861,11 +3861,11 @@ function configurarEventosBotoes() {
                 window.mostrarRelatorios();
                 
             } catch (err) {
-                console.error('[ERRO] Falha ao abrir relatórios:', err);
-                alert('Erro ao abrir relatórios: ' + err.message);
+                console.error('[ERRO] Falha ao abrir relatÃ³rios:', err);
+                alert('Erro ao abrir relatÃ³rios: ' + err.message);
                 
                 // Debug adicional em caso de erro
-                debugLog('[DEBUG] Estado após erro:', {
+                debugLog('[DEBUG] Estado apÃ³s erro:', {
                     relatoriosSection: !!document.getElementById('relatorios-section'),
                     adminPanel: !!document.getElementById('admin-panel'),
                     userRole: window.userRole
@@ -3873,13 +3873,13 @@ function configurarEventosBotoes() {
             }
         };
         
-        // Garantir que o botão é sempre clicável
+        // Garantir que o botÃ£o Ã© sempre clicÃ¡vel
         btnRelatorios.style.pointerEvents = 'auto';
         btnRelatorios.style.cursor = 'pointer';
         
-        debugLog('[DEBUG] Evento configurado para Relatórios');
+        debugLog('[DEBUG] Evento configurado para RelatÃ³rios');
     } else {
-        console.warn('[AVISO] Botão Relatórios não encontrado!');
+        console.warn('[AVISO] BotÃ£o RelatÃ³rios nÃ£o encontrado!');
     }
     
     if (btnNovoUsuario) {
@@ -3887,16 +3887,16 @@ function configurarEventosBotoes() {
         btnNovoUsuario.onclick = null;
         
         btnNovoUsuario.onclick = function(e) {
-            console.log('[LOG] CLIQUE no botão Criar Usuário detectado');
+            console.log('[LOG] CLIQUE no botÃ£o Criar UsuÃ¡rio detectado');
             e.preventDefault();
             e.stopPropagation();
             
             try {
-                debugLog('[DEBUG] Verificando função showCreateUserModal...');
+                debugLog('[DEBUG] Verificando funÃ§Ã£o showCreateUserModal...');
                 
                 if (typeof window.showCreateUserModal !== 'function') {
-                    console.error('[ERRO] showCreateUserModal não está definida!');
-                    alert('Erro: Função showCreateUserModal não encontrada!');
+                    console.error('[ERRO] showCreateUserModal nÃ£o estÃ¡ definida!');
+                    alert('Erro: FunÃ§Ã£o showCreateUserModal nÃ£o encontrada!');
                     return;
                 }
                 
@@ -3904,37 +3904,37 @@ function configurarEventosBotoes() {
                 window.showCreateUserModal();
                 
             } catch (err) {
-                console.error('[ERRO] Falha ao abrir modal Criar Usuário:', err);
-                alert('Erro ao abrir modal Criar Usuário: ' + err.message);
+                console.error('[ERRO] Falha ao abrir modal Criar UsuÃ¡rio:', err);
+                alert('Erro ao abrir modal Criar UsuÃ¡rio: ' + err.message);
             }
         };
         
-        // Garantir que o botão é sempre clicável
+        // Garantir que o botÃ£o Ã© sempre clicÃ¡vel
         btnNovoUsuario.style.pointerEvents = 'auto';
         btnNovoUsuario.style.cursor = 'pointer';
         
-        debugLog('[DEBUG] Evento configurado para Criar Usuário');
+        debugLog('[DEBUG] Evento configurado para Criar UsuÃ¡rio');
     } else {
-        console.warn('[AVISO] Botão Criar Usuário não encontrado!');
+        console.warn('[AVISO] BotÃ£o Criar UsuÃ¡rio nÃ£o encontrado!');
     }
     
     if (btnGerenciarUsuarios) {
-        debugLog('[DEBUG] Configurando evento para Gerenciar Usuários...');
+        debugLog('[DEBUG] Configurando evento para Gerenciar UsuÃ¡rios...');
         
         // Remove qualquer evento anterior
         btnGerenciarUsuarios.onclick = null;
         btnGerenciarUsuarios.removeAttribute('onclick');
         
         btnGerenciarUsuarios.onclick = function(e) {
-            // Prevenir cliques múltiplos
+            // Prevenir cliques mÃºltiplos
             if (btnGerenciarUsuarios.disabled) {
-                debugLog('[DEBUG] Clique ignorado - botão temporariamente desabilitado');
+                debugLog('[DEBUG] Clique ignorado - botÃ£o temporariamente desabilitado');
                 return;
             }
             
-            console.log('[LOG] ===== CLIQUE GERENCIAR USUÁRIOS DETECTADO =====');
+            console.log('[LOG] ===== CLIQUE GERENCIAR USUÃRIOS DETECTADO =====');
             
-            // Desabilitar temporariamente para evitar cliques múltiplos
+            // Desabilitar temporariamente para evitar cliques mÃºltiplos
             btnGerenciarUsuarios.disabled = true;
             setTimeout(() => {
                 btnGerenciarUsuarios.disabled = false;
@@ -3946,37 +3946,37 @@ function configurarEventosBotoes() {
             try {
                 debugLog('[DEBUG] Chamando mostrarSecaoPainel para manage-users...');
                 
-                // Usar a função de navegação existente em vez da modal diretamente
+                // Usar a funÃ§Ã£o de navegaÃ§Ã£o existente em vez da modal diretamente
                 if (typeof window.mostrarSecaoPainel === 'function') {
                     window.mostrarSecaoPainel('manage-users');
                 } else if (typeof window.showManageUsersModal === 'function') {
                     window.showManageUsersModal();
                 } else {
-                    throw new Error('Nenhuma função de gerenciamento de usuários encontrada');
+                    throw new Error('Nenhuma funÃ§Ã£o de gerenciamento de usuÃ¡rios encontrada');
                 }
                 
-                debugLog('[DEBUG] Gerenciar usuários aberto com sucesso');
+                debugLog('[DEBUG] Gerenciar usuÃ¡rios aberto com sucesso');
                 
             } catch (err) {
-                console.error('[ERRO] Falha ao abrir gerenciar usuários:', err);
-                showToast('Erro', 'Erro ao abrir gerenciamento de usuários: ' + err.message, 'error');
+                console.error('[ERRO] Falha ao abrir gerenciar usuÃ¡rios:', err);
+                showToast('Erro', 'Erro ao abrir gerenciamento de usuÃ¡rios: ' + err.message, 'error');
                 
                 // Debug adicional
-                debugLog('[DEBUG] Estado após erro:', {
+                debugLog('[DEBUG] Estado apÃ³s erro:', {
                     modal: !!document.getElementById('manage-users-modal'),
                     userRole: window.userRole
                 });
             }
         };
         
-        // Garantir que o botão é sempre clicável
+        // Garantir que o botÃ£o Ã© sempre clicÃ¡vel
         btnGerenciarUsuarios.style.pointerEvents = 'auto';
         btnGerenciarUsuarios.style.cursor = 'pointer';
         btnGerenciarUsuarios.disabled = false;
         
-        debugLog('[DEBUG] Evento configurado para Gerenciar Usuários');
+        debugLog('[DEBUG] Evento configurado para Gerenciar UsuÃ¡rios');
     } else {
-        console.warn('[AVISO] Botão Gerenciar Usuários não encontrado no DOM!');
+        console.warn('[AVISO] BotÃ£o Gerenciar UsuÃ¡rios nÃ£o encontrado no DOM!');
     }
     
     if (btnLimpeza) {
@@ -3998,11 +3998,11 @@ function configurarEventosBotoes() {
             e.stopPropagation();
             
             try {
-                debugLog('[DEBUG] Verificando função limparDadosTeste...');
+                debugLog('[DEBUG] Verificando funÃ§Ã£o limparDadosTeste...');
                 
                 if (typeof window.limparDadosTeste !== 'function') {
-                    console.error('[ERRO] limparDadosTeste não está definida!');
-                    alert('Erro: Função limparDadosTeste não encontrada!');
+                    console.error('[ERRO] limparDadosTeste nÃ£o estÃ¡ definida!');
+                    alert('Erro: FunÃ§Ã£o limparDadosTeste nÃ£o encontrada!');
                     return;
                 }
                 
@@ -4016,22 +4016,22 @@ function configurarEventosBotoes() {
             }
         };
         
-        // Garantir que o botão é sempre clicável
+        // Garantir que o botÃ£o Ã© sempre clicÃ¡vel
         btnLimpeza.style.pointerEvents = 'auto';
         btnLimpeza.style.cursor = 'pointer';
         btnLimpeza.disabled = false;
         
         debugLog('[DEBUG] Evento configurado para Limpeza');
     } else {
-        console.warn('[AVISO] Botão Limpeza não encontrado no DOM!');
+        console.warn('[AVISO] BotÃ£o Limpeza nÃ£o encontrado no DOM!');
         
-        // Tentar encontrar o botão por outros meios
+        // Tentar encontrar o botÃ£o por outros meios
         const limpezaAlt = document.querySelector('#limpeza-btn');
         const limpezaByText = Array.from(document.querySelectorAll('button')).find(btn => 
             btn.textContent && btn.textContent.includes('Limpar Dados')
         );
         
-        debugLog('[DEBUG] Busca alternativa do botão limpeza:', {
+        debugLog('[DEBUG] Busca alternativa do botÃ£o limpeza:', {
             porId: !!limpezaAlt,
             porTexto: !!limpezaByText,
             todosOsBotoes: document.querySelectorAll('button').length
@@ -4039,41 +4039,41 @@ function configurarEventosBotoes() {
         
         if (limpezaAlt || limpezaByText) {
             const btnAlternativo = limpezaAlt || limpezaByText;
-            debugLog('[DEBUG] Botão limpeza encontrado por busca alternativa');
+            debugLog('[DEBUG] BotÃ£o limpeza encontrado por busca alternativa');
             btnAlternativo.onclick = () => {
                 if (typeof window.limparDadosTeste === 'function') {
                     window.limparDadosTeste();
                 } else {
-                    alert('Função de limpeza não disponível');
+                    alert('FunÃ§Ã£o de limpeza nÃ£o disponÃ­vel');
                 }
             };
         }
     }
     
-    debugLog('[DEBUG] ===== FIM CONFIGURAÇÃO EVENTOS BOTÕES =====');
+    debugLog('[DEBUG] ===== FIM CONFIGURAÃ‡ÃƒO EVENTOS BOTÃ•ES =====');
     
-    // LIMPEZA FINAL DE BOTÕES DEBUG APÓS CONFIGURAÇÃO
+    // LIMPEZA FINAL DE BOTÃ•ES DEBUG APÃ“S CONFIGURAÃ‡ÃƒO
     setTimeout(() => {
         if (typeof window.forceRemoveDebugButtons === 'function') {
             window.forceRemoveDebugButtons();
         }
     }, 200);
     
-    // Fallback: Garantir que os botões principais sempre funcionem
+    // Fallback: Garantir que os botÃµes principais sempre funcionem
     setTimeout(() => {
-        debugLog('[DEBUG] Aplicando fallback para botões críticos...');
+        debugLog('[DEBUG] Aplicando fallback para botÃµes crÃ­ticos...');
         
         const btnGerenciar = document.getElementById('manage-users-btn');
         const btnRel = document.getElementById('relatorios-btn');
         const btnLimp = document.getElementById('limpeza-btn');
         
         if (btnGerenciar && !btnGerenciar.onclick && window.userRole) {
-            debugLog('[DEBUG] Aplicando fallback para Gerenciar Usuários');
+            debugLog('[DEBUG] Aplicando fallback para Gerenciar UsuÃ¡rios');
             btnGerenciar.onclick = () => window.showManageUsersModal();
         }
         
         if (btnRel && !btnRel.onclick && window.userRole) {
-            debugLog('[DEBUG] Aplicando fallback para Relatórios');
+            debugLog('[DEBUG] Aplicando fallback para RelatÃ³rios');
             btnRel.onclick = () => window.mostrarRelatorios();
         }
         
@@ -4084,18 +4084,18 @@ function configurarEventosBotoes() {
     }, 100);
 }
 
-// Função auxiliar para reconfigurar botões quando necessário
+// FunÃ§Ã£o auxiliar para reconfigurar botÃµes quando necessÃ¡rio
 
-// Função auxiliar para reconfigurar botões quando necessário
+// FunÃ§Ã£o auxiliar para reconfigurar botÃµes quando necessÃ¡rio
 window.reconfigurarBotoes = function() {
-    debugLog('[DEBUG] reconfigurarBotoes: forçando reconfiguração...');
+    debugLog('[DEBUG] reconfigurarBotoes: forÃ§ando reconfiguraÃ§Ã£o...');
     
-    // PRIMEIRO: Limpar botões debug antes de qualquer coisa
+    // PRIMEIRO: Limpar botÃµes debug antes de qualquer coisa
     if (typeof window.forceRemoveDebugButtons === 'function') {
         window.forceRemoveDebugButtons();
     }
     
-    // Remove flags de configuração para forçar reconfiguração
+    // Remove flags de configuraÃ§Ã£o para forÃ§ar reconfiguraÃ§Ã£o
     const btnNovoUsuario = document.getElementById('btn-novo-usuario');
     const btnGerenciarUsuarios = document.getElementById('manage-users-btn');
     const btnLimpeza = document.getElementById('limpeza-btn');
@@ -4110,14 +4110,14 @@ window.reconfigurarBotoes = function() {
         delete btnLimpeza.dataset.configured;
     }
     
-    // Reconfigura os botões
+    // Reconfigura os botÃµes
     atualizarVisibilidadeBotoes();
     configurarEventosBotoes();
     
-    debugLog('[DEBUG] reconfigurarBotoes: reconfiguração concluída');
+    debugLog('[DEBUG] reconfigurarBotoes: reconfiguraÃ§Ã£o concluÃ­da');
 };
 
-// Função de debug para verificar estado dos modais
+// FunÃ§Ã£o de debug para verificar estado dos modais
 window.debugModals = function() {
     const modalCriar = document.getElementById('modal-novo-usuario');
     const modalGerenciar = document.getElementById('manage-users-modal');
@@ -4149,36 +4149,36 @@ window.debugModals = function() {
     };
 };
 
-// Função de teste para os botões
+// FunÃ§Ã£o de teste para os botÃµes
 window.testarBotoes = function() {
-    console.log('=== TESTE DOS BOTÕES ===');
+    console.log('=== TESTE DOS BOTÃ•ES ===');
     
     const btnCriar = document.getElementById('btn-novo-usuario');
     const btnGerenciar = document.getElementById('manage-users-btn');
     const btnLimpeza = document.getElementById('limpeza-btn');
     
-    console.log('Botão Criar Usuário:', {
+    console.log('BotÃ£o Criar UsuÃ¡rio:', {
         existe: !!btnCriar,
         visivel: btnCriar ? !btnCriar.classList.contains('btn-hide') : false,
         display: btnCriar ? btnCriar.style.display : 'N/A',
         onclick: btnCriar ? !!btnCriar.onclick : false
     });
     
-    console.log('Botão Gerenciar Usuários:', {
+    console.log('BotÃ£o Gerenciar UsuÃ¡rios:', {
         existe: !!btnGerenciar,
         visivel: btnGerenciar ? !btnGerenciar.classList.contains('btn-hide') : false,
         display: btnGerenciar ? btnGerenciar.style.display : 'N/A',
         onclick: btnGerenciar ? !!btnGerenciar.onclick : false
     });
     
-    console.log('Botão Limpeza:', {
+    console.log('BotÃ£o Limpeza:', {
         existe: !!btnLimpeza,
         visivel: btnLimpeza ? !btnLimpeza.classList.contains('btn-hide') : false,
         display: btnLimpeza ? btnLimpeza.style.display : 'N/A',
         onclick: btnLimpeza ? !!btnLimpeza.onclick : false
     });
     
-    console.log('Funções disponíveis:', {
+    console.log('FunÃ§Ãµes disponÃ­veis:', {
         showCreateUserModal: typeof window.showCreateUserModal,
         showManageUsersModal: typeof window.showManageUsersModal,
         limparDadosTeste: typeof window.limparDadosTeste,
@@ -4187,47 +4187,47 @@ window.testarBotoes = function() {
     });
     
     // Teste manual dos modals
-    console.log('Testando função showCreateUserModal...');
+    console.log('Testando funÃ§Ã£o showCreateUserModal...');
     try {
         if (typeof window.showCreateUserModal === 'function') {
-            console.log('✅ showCreateUserModal está disponível');
+            console.log('âœ… showCreateUserModal estÃ¡ disponÃ­vel');
         } else {
-            console.error('❌ showCreateUserModal NÃO está disponível');
+            console.error('âŒ showCreateUserModal NÃƒO estÃ¡ disponÃ­vel');
         }
     } catch (e) {
-        console.error('❌ Erro ao verificar showCreateUserModal:', e);
+        console.error('âŒ Erro ao verificar showCreateUserModal:', e);
     }
     
-    console.log('Testando função showManageUsersModal...');
+    console.log('Testando funÃ§Ã£o showManageUsersModal...');
     try {
         if (typeof window.showManageUsersModal === 'function') {
-            console.log('✅ showManageUsersModal está disponível');
+            console.log('âœ… showManageUsersModal estÃ¡ disponÃ­vel');
         } else {
-            console.error('❌ showManageUsersModal NÃO está disponível');
+            console.error('âŒ showManageUsersModal NÃƒO estÃ¡ disponÃ­vel');
         }
     } catch (e) {
-        console.error('❌ Erro ao verificar showManageUsersModal:', e);
+        console.error('âŒ Erro ao verificar showManageUsersModal:', e);
     }
     
     console.log('=== FIM DO TESTE ===');
 };
 
-// Função para forçar inicialização completa dos botões
+// FunÃ§Ã£o para forÃ§ar inicializaÃ§Ã£o completa dos botÃµes
 window.forcarInicializacao = function() {
-    console.log('[FORCE] Forçando inicialização completa...');
+    console.log('[FORCE] ForÃ§ando inicializaÃ§Ã£o completa...');
     
-    // Garantir que todas as funções estão definidas
+    // Garantir que todas as funÃ§Ãµes estÃ£o definidas
     if (typeof window.showCreateUserModal !== 'function') {
-        console.error('[FORCE] showCreateUserModal não está definida - redefinindo...');
-        // A função já está definida acima no código
+        console.error('[FORCE] showCreateUserModal nÃ£o estÃ¡ definida - redefinindo...');
+        // A funÃ§Ã£o jÃ¡ estÃ¡ definida acima no cÃ³digo
     }
     
     if (typeof window.showManageUsersModal !== 'function') {
-        console.error('[FORCE] showManageUsersModal não está definida - redefinindo...');
-        // A função já está definida acima no código
+        console.error('[FORCE] showManageUsersModal nÃ£o estÃ¡ definida - redefinindo...');
+        // A funÃ§Ã£o jÃ¡ estÃ¡ definida acima no cÃ³digo
     }
     
-    // Forçar atualização de visibilidade
+    // ForÃ§ar atualizaÃ§Ã£o de visibilidade
     atualizarVisibilidadeBotoes();
     
     // Reconfigurar eventos
@@ -4236,18 +4236,18 @@ window.forcarInicializacao = function() {
     // Teste final
     window.testarBotoes();
     
-    console.log('[FORCE] Inicialização forçada concluída');
+    console.log('[FORCE] InicializaÃ§Ã£o forÃ§ada concluÃ­da');
 };
 
-// Função de inicialização de emergência para quando Firebase falha
+// FunÃ§Ã£o de inicializaÃ§Ã£o de emergÃªncia para quando Firebase falha
 window.inicializacaoEmergencia = function() {
-    console.log('[EMERGENCY] Iniciando modo de emergência...');
+    console.log('[EMERGENCY] Iniciando modo de emergÃªncia...');
     
-    // Definir usuário admin de emergência
+    // Definir usuÃ¡rio admin de emergÃªncia
     window.userRole = 'admin';
     window.usuarioAdmin = { 
         role: 'admin', 
-        nome: 'Admin Emergência', 
+        nome: 'Admin EmergÃªncia', 
         email: 'admin@emergencia.local',
         isAdmin: true
     };
@@ -4256,7 +4256,7 @@ window.inicializacaoEmergencia = function() {
     document.getElementById('auth-section')?.classList.add('hidden');
     document.getElementById('admin-panel')?.classList.remove('hidden');
     
-    // Forçar visibilidade dos botões
+    // ForÃ§ar visibilidade dos botÃµes
     const btnNovoUsuario = document.getElementById('btn-novo-usuario');
     const btnGerenciarUsuarios = document.getElementById('manage-users-btn');
     
@@ -4275,12 +4275,12 @@ window.inicializacaoEmergencia = function() {
     // Configurar eventos
     configurarEventosBotoes();
     
-    showToast('Modo Emergência', 'Sistema iniciado em modo de emergência - funcionalidade limitada', 'warning');
+    showToast('Modo EmergÃªncia', 'Sistema iniciado em modo de emergÃªncia - funcionalidade limitada', 'warning');
     
-    console.log('[EMERGENCY] Modo de emergência ativo');
+    console.log('[EMERGENCY] Modo de emergÃªncia ativo');
 };
 
-// Expor função para debug direto no console
+// Expor funÃ§Ã£o para debug direto no console
 window.debug = {
     testarBotoes: window.testarBotoes,
     debugModals: window.debugModals,
@@ -4290,25 +4290,25 @@ window.debug = {
     loginDev: window.loginDesenvolvimento
 };
 
-// ========== FUNÇÕES DE ACESSO RÁPIDO ==========
-// Para usar no console quando há problemas de login:
+// ========== FUNÃ‡Ã•ES DE ACESSO RÃPIDO ==========
+// Para usar no console quando hÃ¡ problemas de login:
 
-// 1. Login rápido de desenvolvimento
+// 1. Login rÃ¡pido de desenvolvimento
 window.loginRapido = function() {
-    console.log('🚀 ATIVANDO LOGIN RÁPIDO...');
+    console.log('ðŸš€ ATIVANDO LOGIN RÃPIDO...');
     window.loginDesenvolvimento('admin@rapido.local');
-    console.log('✅ Login rápido ativado!');
+    console.log('âœ… Login rÃ¡pido ativado!');
     return 'Login realizado em modo desenvolvimento';
 };
 
 // 2. Corrigir tudo de uma vez
 window.corrigirTudo = function() {
-    console.log('🔧 CORRIGINDO TODOS OS PROBLEMAS...');
+    console.log('ðŸ”§ CORRIGINDO TODOS OS PROBLEMAS...');
     
     // 1. Login de desenvolvimento
     window.loginDesenvolvimento('admin@corrigir.local');
     
-    // 2. Configurar botões
+    // 2. Configurar botÃµes
     setTimeout(() => {
         window.solucionarBotoes();
     }, 500);
@@ -4318,26 +4318,26 @@ window.corrigirTudo = function() {
         mostrarSecaoPainel('painel');
     }, 1000);
     
-    console.log('🎉 TUDO CORRIGIDO!');
+    console.log('ðŸŽ‰ TUDO CORRIGIDO!');
     return 'Sistema totalmente funcional em modo desenvolvimento';
 };
 
-// 3. Criar usuário admin de teste (se Firebase estiver funcionando)
+// 3. Criar usuÃ¡rio admin de teste (se Firebase estiver funcionando)
 window.criarUsuarioTeste = async function() {
-    console.log('👤 CRIANDO USUÁRIO DE TESTE...');
+    console.log('ðŸ‘¤ CRIANDO USUÃRIO DE TESTE...');
     
     if (!window.auth) {
-        console.error('Firebase Auth não disponível');
-        return 'Firebase não disponível';
+        console.error('Firebase Auth nÃ£o disponÃ­vel');
+        return 'Firebase nÃ£o disponÃ­vel';
     }
     
     const emailTeste = 'admin@teste.com';
     const senhaTeste = '123456';
     
     try {
-        // Tentar criar o usuário
+        // Tentar criar o usuÃ¡rio
         const userCredential = await window.auth.createUserWithEmailAndPassword(emailTeste, senhaTeste);
-        console.log('✅ Usuário de teste criado:', emailTeste);
+        console.log('âœ… UsuÃ¡rio de teste criado:', emailTeste);
         
         // Adicionar aos admins no Firestore
         if (window.db) {
@@ -4351,27 +4351,27 @@ window.criarUsuarioTeste = async function() {
                     criarUsuarios: false,              // Apenas super_admin
                     gerenciarDepartamentos: false,     // Apenas super_admin
                     verRelatorios: true,               // Admin pode acessar
-                    gerenciarSolicitacoes: true,       // Admin pode gerenciar solicitações
+                    gerenciarSolicitacoes: true,       // Admin pode gerenciar solicitaÃ§Ãµes
                     gerenciarAcompanhantes: false,     // Apenas super_admin
-                    verMetricas: true,                 // Admin pode ver métricas
-                    verPesquisaSatisfacao: true        // Admin pode ver pesquisa satisfação
+                    verMetricas: true,                 // Admin pode ver mÃ©tricas
+                    verPesquisaSatisfacao: true        // Admin pode ver pesquisa satisfaÃ§Ã£o
                 }
             });
-            console.log('✅ Usuário adicionado como admin no Firestore');
+            console.log('âœ… UsuÃ¡rio adicionado como admin no Firestore');
         }
         
-        showToast('Sucesso', `Usuário criado: ${emailTeste} / 123456`, 'success');
-        return `Usuário criado: ${emailTeste} / senha: ${senhaTeste}`;
+        showToast('Sucesso', `UsuÃ¡rio criado: ${emailTeste} / 123456`, 'success');
+        return `UsuÃ¡rio criado: ${emailTeste} / senha: ${senhaTeste}`;
         
     } catch (error) {
         if (error.code === 'auth/email-already-in-use') {
-            console.log('✅ Usuário já existe:', emailTeste);
-            showToast('Info', `Usuário já existe: ${emailTeste} / 123456`, 'warning');
-            return `Usuário já existe: ${emailTeste} / senha: ${senhaTeste}`;
+            console.log('âœ… UsuÃ¡rio jÃ¡ existe:', emailTeste);
+            showToast('Info', `UsuÃ¡rio jÃ¡ existe: ${emailTeste} / 123456`, 'warning');
+            return `UsuÃ¡rio jÃ¡ existe: ${emailTeste} / senha: ${senhaTeste}`;
         } else {
-            console.error('❌ Erro ao criar usuário:', error);
-            showToast('Erro', 'Erro ao criar usuário de teste', 'error');
-            return 'Erro ao criar usuário: ' + error.message;
+            console.error('âŒ Erro ao criar usuÃ¡rio:', error);
+            showToast('Erro', 'Erro ao criar usuÃ¡rio de teste', 'error');
+            return 'Erro ao criar usuÃ¡rio: ' + error.message;
         }
     }
 };
@@ -4381,30 +4381,30 @@ window.mostrarAjudaDev = function() {
     const devHelp = document.getElementById('dev-help');
     if (devHelp) {
         devHelp.style.display = 'block';
-        console.log('ℹ️ Ajuda de desenvolvimento exibida');
+        console.log('â„¹ï¸ Ajuda de desenvolvimento exibida');
     }
 };
 
-// 6. Função para atualizar permissões de usuários admin existentes
+// 6. FunÃ§Ã£o para atualizar permissÃµes de usuÃ¡rios admin existentes
 window.atualizarPermissoesAdmin = async function() {
-    console.log('🔧 ATUALIZANDO PERMISSÕES DE USUÁRIOS ADMIN...');
+    console.log('ðŸ”§ ATUALIZANDO PERMISSÃ•ES DE USUÃRIOS ADMIN...');
     
     if (!window.db) {
-        console.error('Firestore não disponível');
-        return 'Firestore não disponível';
+        console.error('Firestore nÃ£o disponÃ­vel');
+        return 'Firestore nÃ£o disponÃ­vel';
     }
     
     try {
-        // Buscar todos os usuários admin
+        // Buscar todos os usuÃ¡rios admin
         const adminSnapshot = await window.db.collection('usuarios_admin').get();
         let atualizados = 0;
         
         for (const doc of adminSnapshot.docs) {
             const userData = doc.data();
             
-            // Se for admin (não super_admin) e tem permissões antigas
+            // Se for admin (nÃ£o super_admin) e tem permissÃµes antigas
             if (userData.role === 'admin') {
-                console.log(`Atualizando permissões para: ${userData.email}`);
+                console.log(`Atualizando permissÃµes para: ${userData.email}`);
                 
                 await window.db.collection('usuarios_admin').doc(doc.id).update({
                     'permissoes.criarUsuarios': false,
@@ -4418,55 +4418,55 @@ window.atualizarPermissoesAdmin = async function() {
                 });
                 
                 atualizados++;
-                console.log(`✅ Permissões atualizadas para: ${userData.email}`);
+                console.log(`âœ… PermissÃµes atualizadas para: ${userData.email}`);
             }
         }
         
-        showToast('Sucesso', `${atualizados} usuários admin atualizados`, 'success');
-        return `${atualizados} usuários admin atualizados com novas permissões`;
+        showToast('Sucesso', `${atualizados} usuÃ¡rios admin atualizados`, 'success');
+        return `${atualizados} usuÃ¡rios admin atualizados com novas permissÃµes`;
         
     } catch (error) {
-        console.error('❌ Erro ao atualizar permissões:', error);
-        showToast('Erro', 'Erro ao atualizar permissões', 'error');
-        return 'Erro ao atualizar permissões: ' + error.message;
+        console.error('âŒ Erro ao atualizar permissÃµes:', error);
+        showToast('Erro', 'Erro ao atualizar permissÃµes', 'error');
+        return 'Erro ao atualizar permissÃµes: ' + error.message;
     }
 };
 
-// 7. Função para mostrar todas as opções disponíveis
+// 7. FunÃ§Ã£o para mostrar todas as opÃ§Ãµes disponÃ­veis
 window.ajuda = function() {
     console.log(`
-🆘 === FUNÇÕES DE AJUDA DISPONÍVEIS ===
+ðŸ†˜ === FUNÃ‡Ã•ES DE AJUDA DISPONÃVEIS ===
 
 PARA PROBLEMAS DE LOGIN:
-• loginRapido() - Login rápido em modo desenvolvimento
-• corrigirTudo() - Corrige todos os problemas de uma vez
-• criarUsuarioTeste() - Cria usuário admin@teste.com / 123456
-• atualizarPermissoesAdmin() - Atualiza permissões de usuários admin existentes
+â€¢ loginRapido() - Login rÃ¡pido em modo desenvolvimento
+â€¢ corrigirTudo() - Corrige todos os problemas de uma vez
+â€¢ criarUsuarioTeste() - Cria usuÃ¡rio admin@teste.com / 123456
+â€¢ atualizarPermissoesAdmin() - Atualiza permissÃµes de usuÃ¡rios admin existentes
 
-PARA PROBLEMAS DE BOTÕES:
-• solucionarBotoes() - Força funcionamento dos botões
-• debug.testarBotoes() - Testa estado dos botões
-• debug.forcarInicializacao() - Força reinicialização
+PARA PROBLEMAS DE BOTÃ•ES:
+â€¢ solucionarBotoes() - ForÃ§a funcionamento dos botÃµes
+â€¢ debug.testarBotoes() - Testa estado dos botÃµes
+â€¢ debug.forcarInicializacao() - ForÃ§a reinicializaÃ§Ã£o
 
 PARA DEBUG:
-• debug.debugModals() - Verifica estado dos modais
-• debug.inicializacaoEmergencia() - Modo emergência completo
-• mostrarAjudaDev() - Mostra ajuda na tela
+â€¢ debug.debugModals() - Verifica estado dos modais
+â€¢ debug.inicializacaoEmergencia() - Modo emergÃªncia completo
+â€¢ mostrarAjudaDev() - Mostra ajuda na tela
 
 EXEMPLO DE USO:
-Se os botões não funcionam após login, execute:
+Se os botÃµes nÃ£o funcionam apÃ³s login, execute:
 corrigirTudo()
 
-Se precisar atualizar permissões de admins, execute:
+Se precisar atualizar permissÃµes de admins, execute:
 atualizarPermissoesAdmin()
 
 ==========================================
     `);
     
-    return 'Veja o console para lista completa de funções';
+    return 'Veja o console para lista completa de funÃ§Ãµes';
 };
 
-// Funções para fechar modais
+// FunÃ§Ãµes para fechar modais
 window.closeCreateUserModal = function() {
     debugLog('[DEBUG] closeCreateUserModal: fechando modal...');
     const modal = document.getElementById('modal-novo-usuario');
@@ -4477,11 +4477,11 @@ window.closeCreateUserModal = function() {
     }
 };
 
-// Função de teste para verificar as melhorias nos cards
+// FunÃ§Ã£o de teste para verificar as melhorias nos cards
 function testarMelhoriasCards() {
     console.log('[TESTE] Verificando melhorias nos cards...');
     
-    // Log das funções existentes
+    // Log das funÃ§Ãµes existentes
     console.log('[TESTE] abrirSolicitacaoModal:', typeof abrirSolicitacaoModal);
     console.log('[TESTE] fecharSolicitacaoModal:', typeof fecharSolicitacaoModal);
     console.log('[TESTE] window.fecharSolicitacaoModal:', typeof window.fecharSolicitacaoModal);
@@ -4506,45 +4506,45 @@ function testarMelhoriasCards() {
     };
 }
 
-// Funções para gerenciar status das solicitações (para equipes)
+// FunÃ§Ãµes para gerenciar status das solicitaÃ§Ãµes (para equipes)
 async function alterarStatusSolicitacao(solicitacaoId, novoStatus) {
     if (!window.db || !solicitacaoId) {
-        showToast('Erro', 'Parâmetros inválidos', 'error');
+        showToast('Erro', 'ParÃ¢metros invÃ¡lidos', 'error');
         return;
     }
 
     try {
-        console.log(`[DEBUG] Iniciando alteração de status: ${solicitacaoId} -> ${novoStatus}`);
+        console.log(`[DEBUG] Iniciando alteraÃ§Ã£o de status: ${solicitacaoId} -> ${novoStatus}`);
         
         // Mostrar loading
         const loadingToast = showToast('Aguarde', 'Atualizando status...', 'info');
         
         const usuarioAdmin = window.usuarioAdmin || JSON.parse(localStorage.getItem('usuarioAdmin') || '{}');
         
-        // Verificar se o usuário pode alterar esta solicitação
+        // Verificar se o usuÃ¡rio pode alterar esta solicitaÃ§Ã£o
         const solicitacaoDoc = await window.db.collection('solicitacoes').doc(solicitacaoId).get();
         if (!solicitacaoDoc.exists) {
-            showToast('Erro', 'Solicitação não encontrada', 'error');
+            showToast('Erro', 'SolicitaÃ§Ã£o nÃ£o encontrada', 'error');
             return;
         }
         
         const solicitacaoData = solicitacaoDoc.data();
         
-        // Verificar permissões usando a função de filtro
+        // Verificar permissÃµes usando a funÃ§Ã£o de filtro
         if (!podeVerSolicitacaoJS(usuarioAdmin, solicitacaoData)) {
-            showToast('Erro', 'Você não tem permissão para alterar esta solicitação', 'error');
-            console.warn('[AVISO] alterarStatusSolicitacao: acesso negado para equipe:', usuarioAdmin.equipe, 'solicitação equipe:', solicitacaoData.equipe);
+            showToast('Erro', 'VocÃª nÃ£o tem permissÃ£o para alterar esta solicitaÃ§Ã£o', 'error');
+            console.warn('[AVISO] alterarStatusSolicitacao: acesso negado para equipe:', usuarioAdmin.equipe, 'solicitaÃ§Ã£o equipe:', solicitacaoData.equipe);
             return;
         }
         
-        // Verificar se o status é válido
+        // Verificar se o status Ã© vÃ¡lido
         const statusValidos = ['pendente', 'em-andamento', 'finalizada'];
         if (!statusValidos.includes(novoStatus)) {
-            showToast('Erro', 'Status inválido', 'error');
+            showToast('Erro', 'Status invÃ¡lido', 'error');
             return;
         }
         
-        console.log(`[DEBUG] Alterando status da solicitação ${solicitacaoId} para ${novoStatus}`);
+        console.log(`[DEBUG] Alterando status da solicitaÃ§Ã£o ${solicitacaoId} para ${novoStatus}`);
         
         const agora = new Date();
         const updateData = {
@@ -4552,17 +4552,17 @@ async function alterarStatusSolicitacao(solicitacaoId, novoStatus) {
             dataAtualizacao: agora.toISOString()
         };
 
-        // Se está iniciando atendimento, adicionar responsável e métricas de início
+        // Se estÃ¡ iniciando atendimento, adicionar responsÃ¡vel e mÃ©tricas de inÃ­cio
         if (novoStatus === 'em-andamento' && usuarioAdmin.nome) {
             updateData.responsavel = usuarioAdmin.nome;
             updateData.dataInicioAtendimento = agora.toISOString();
             updateData.tempoInicioAtendimento = firebase.firestore.FieldValue.serverTimestamp();
             
-            // Calcular tempo de espera (do registro até início do atendimento)
+            // Calcular tempo de espera (do registro atÃ© inÃ­cio do atendimento)
             if (solicitacaoData.criadoEm || solicitacaoData.dataAbertura) {
                 let dataCreacao;
                 
-                // Tentar parsear data de criação de diferentes formatos
+                // Tentar parsear data de criaÃ§Ã£o de diferentes formatos
                 if (solicitacaoData.criadoEm && typeof solicitacaoData.criadoEm.toDate === 'function') {
                     dataCreacao = solicitacaoData.criadoEm.toDate();
                 } else if (solicitacaoData.criadoEm && typeof solicitacaoData.criadoEm === 'string') {
@@ -4584,13 +4584,13 @@ async function alterarStatusSolicitacao(solicitacaoId, novoStatus) {
             }
         }
 
-        // Se está pausando, calcular tempo trabalhado
+        // Se estÃ¡ pausando, calcular tempo trabalhado
         if (novoStatus === 'pendente' && solicitacaoData.status === 'em-andamento') {
             if (solicitacaoData.dataInicioAtendimento) {
                 const inicioAtendimento = new Date(solicitacaoData.dataInicioAtendimento);
                 const tempoTrabalhadoMinutos = Math.round((agora - inicioAtendimento) / (1000 * 60));
                 
-                // Somar ao tempo total trabalhado (se já existir)
+                // Somar ao tempo total trabalhado (se jÃ¡ existir)
                 const tempoAnterior = solicitacaoData.tempoTrabalhadoTotal || 0;
                 updateData.tempoTrabalhadoTotal = tempoAnterior + tempoTrabalhadoMinutos;
                 updateData.dataPausa = agora.toISOString();
@@ -4621,13 +4621,13 @@ async function alterarStatusSolicitacao(solicitacaoId, novoStatus) {
     } catch (error) {
         console.error('[ERRO] Falha ao alterar status:', error);
         
-        let mensagemErro = 'Não foi possível alterar o status';
+        let mensagemErro = 'NÃ£o foi possÃ­vel alterar o status';
         if (error.code === 'permission-denied') {
-            mensagemErro = 'Você não tem permissão para esta ação';
+            mensagemErro = 'VocÃª nÃ£o tem permissÃ£o para esta aÃ§Ã£o';
         } else if (error.code === 'unavailable') {
-            mensagemErro = 'Serviço temporariamente indisponível. Tente novamente';
+            mensagemErro = 'ServiÃ§o temporariamente indisponÃ­vel. Tente novamente';
         } else if (error.code === 'not-found') {
-            mensagemErro = 'Solicitação não encontrada';
+            mensagemErro = 'SolicitaÃ§Ã£o nÃ£o encontrada';
         }
         
         showToast('Erro', mensagemErro, 'error');
@@ -4646,30 +4646,30 @@ async function alterarStatusSolicitacao(solicitacaoId, novoStatus) {
 
 async function finalizarSolicitacao(solicitacaoId) {
     if (!window.db || !solicitacaoId) {
-        showToast('Erro', 'Parâmetros inválidos', 'error');
+        showToast('Erro', 'ParÃ¢metros invÃ¡lidos', 'error');
         return;
     }
 
     try {
         const usuarioAdmin = window.usuarioAdmin || JSON.parse(localStorage.getItem('usuarioAdmin') || '{}');
         
-        // Verificar se o usuário pode finalizar esta solicitação
+        // Verificar se o usuÃ¡rio pode finalizar esta solicitaÃ§Ã£o
         const solicitacaoDoc = await window.db.collection('solicitacoes').doc(solicitacaoId).get();
         if (!solicitacaoDoc.exists) {
-            showToast('Erro', 'Solicitação não encontrada', 'error');
+            showToast('Erro', 'SolicitaÃ§Ã£o nÃ£o encontrada', 'error');
             return;
         }
         
         const solicitacaoData = solicitacaoDoc.data();
         
-        // Verificar permissões usando a função de filtro
+        // Verificar permissÃµes usando a funÃ§Ã£o de filtro
         if (!podeVerSolicitacaoJS(usuarioAdmin, solicitacaoData)) {
-            showToast('Erro', 'Você não tem permissão para finalizar esta solicitação', 'error');
-            console.warn('[AVISO] finalizarSolicitacao: acesso negado para equipe:', usuarioAdmin.equipe, 'solicitação equipe:', solicitacaoData.equipe);
+            showToast('Erro', 'VocÃª nÃ£o tem permissÃ£o para finalizar esta solicitaÃ§Ã£o', 'error');
+            console.warn('[AVISO] finalizarSolicitacao: acesso negado para equipe:', usuarioAdmin.equipe, 'solicitaÃ§Ã£o equipe:', solicitacaoData.equipe);
             return;
         }
 
-        // Criar modal de finalização
+        // Criar modal de finalizaÃ§Ã£o
         const modalFinalizacao = document.createElement('div');
         modalFinalizacao.id = 'modal-finalizacao';
         modalFinalizacao.style.cssText = 'position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0, 0, 0, 0.6); display: flex; justify-content: center; align-items: center; z-index: 1001;';
@@ -4678,14 +4678,14 @@ async function finalizarSolicitacao(solicitacaoId) {
             <div style="background: white; border-radius: 12px; padding: 24px; max-width: 600px; width: 90%; box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2); max-height: 80vh; overflow-y: auto;">
                 <h3 style="margin: 0 0 16px 0; color: #059669; display: flex; align-items: center;">
                     <i class="fas fa-check-circle" style="margin-right: 8px;"></i>
-                    Finalizar Solicitação
+                    Finalizar SolicitaÃ§Ã£o
                 </h3>
                 
-                <!-- Descrição da Solução -->
+                <!-- DescriÃ§Ã£o da SoluÃ§Ã£o -->
                 <div style="margin-bottom: 20px;">
                     <label style="display: block; margin-bottom: 8px; font-weight: 500; color: #374151;">
                         <i class="fas fa-edit" style="margin-right: 6px;"></i>
-                        Descrição da Solução (opcional):
+                        DescriÃ§Ã£o da SoluÃ§Ã£o (opcional):
                     </label>
                     <textarea 
                         id="solucao-descricao" 
@@ -4694,11 +4694,11 @@ async function finalizarSolicitacao(solicitacaoId) {
                     ></textarea>
                 </div>
                 
-                <!-- Upload de Evidências -->
+                <!-- Upload de EvidÃªncias -->
                 <div style="margin-bottom: 20px;">
                     <label style="display: block; margin-bottom: 8px; font-weight: 500; color: #374151;">
                         <i class="fas fa-camera" style="margin-right: 6px;"></i>
-                        Evidências do Serviço (opcional):
+                        EvidÃªncias do ServiÃ§o (opcional):
                     </label>
                     <div style="border: 2px dashed #d1d5db; border-radius: 8px; padding: 20px; text-align: center; background: #f9fafb;">
                         <input 
@@ -4713,7 +4713,7 @@ async function finalizarSolicitacao(solicitacaoId) {
                             <i class="fas fa-cloud-upload-alt" style="font-size: 24px; color: #6b7280; margin-bottom: 8px;"></i>
                             <p style="margin: 0; color: #6b7280;">
                                 <strong>Clique aqui</strong> para selecionar arquivos<br>
-                                <small>Fotos, PDFs ou documentos (máx. 5 arquivos, 10MB cada)</small>
+                                <small>Fotos, PDFs ou documentos (mÃ¡x. 5 arquivos, 10MB cada)</small>
                             </p>
                         </div>
                         <div id="evidencias-preview" style="margin-top: 12px;"></div>
@@ -4730,7 +4730,7 @@ async function finalizarSolicitacao(solicitacaoId) {
                         id="btn-confirmar-finalizacao"
                         onclick="confirmarFinalizacao('${solicitacaoId}')" 
                         style="background: #059669; color: white; border: none; padding: 10px 20px; border-radius: 6px; cursor: pointer;">
-                        <i class="fas fa-check" style="margin-right: 4px;"></i>Confirmar Finalização
+                        <i class="fas fa-check" style="margin-right: 4px;"></i>Confirmar FinalizaÃ§Ã£o
                     </button>
                 </div>
             </div>
@@ -4745,14 +4745,14 @@ async function finalizarSolicitacao(solicitacaoId) {
         }, 100);
         
     } catch (error) {
-        console.error('Erro ao abrir modal de finalização:', error);
-        showToast('Erro', 'Não foi possível abrir o modal de finalização: ' + (error.message || error), 'error');
+        console.error('Erro ao abrir modal de finalizaÃ§Ã£o:', error);
+        showToast('Erro', 'NÃ£o foi possÃ­vel abrir o modal de finalizaÃ§Ã£o: ' + (error.message || error), 'error');
     }
 }
 
 async function confirmarFinalizacao(solicitacaoId) {
     try {
-        // Desabilitar botão para evitar duplo clique
+        // Desabilitar botÃ£o para evitar duplo clique
         const btnConfirmar = document.getElementById('btn-confirmar-finalizacao');
         if (btnConfirmar) {
             btnConfirmar.disabled = true;
@@ -4762,39 +4762,39 @@ async function confirmarFinalizacao(solicitacaoId) {
         const usuarioAdmin = window.usuarioAdmin || JSON.parse(localStorage.getItem('usuarioAdmin') || '{}');
         const solucao = document.getElementById('solucao-descricao')?.value || '';
         
-        // Processar upload de evidências primeiro (se houver)
+        // Processar upload de evidÃªncias primeiro (se houver)
         let evidencias = [];
         if (arquivosEvidencias && arquivosEvidencias.length > 0) {
-            console.log(`[DEBUG] Processando ${arquivosEvidencias.length} evidência(s)...`);
-            showToast('Info', 'Processando evidências...', 'info');
+            console.log(`[DEBUG] Processando ${arquivosEvidencias.length} evidÃªncia(s)...`);
+            showToast('Info', 'Processando evidÃªncias...', 'info');
             
             try {
                 evidencias = await uploadEvidenciasParaFirebase(solicitacaoId);
-                console.log(`[DEBUG] Evidências processadas com sucesso:`, evidencias.length);
+                console.log(`[DEBUG] EvidÃªncias processadas com sucesso:`, evidencias.length);
             } catch (error) {
-                console.error('[ERRO] Falha no upload das evidências:', error);
-                showToast('Erro', 'Falha ao processar evidências. Tente novamente.', 'error');
+                console.error('[ERRO] Falha no upload das evidÃªncias:', error);
+                showToast('Erro', 'Falha ao processar evidÃªncias. Tente novamente.', 'error');
                 
-                // Reabilitar botão
+                // Reabilitar botÃ£o
                 if (btnConfirmar) {
                     btnConfirmar.disabled = false;
-                    btnConfirmar.innerHTML = '<i class="fas fa-check" style="margin-right: 4px;"></i>Confirmar Finalização';
+                    btnConfirmar.innerHTML = '<i class="fas fa-check" style="margin-right: 4px;"></i>Confirmar FinalizaÃ§Ã£o';
                 }
                 return;
             }
         }
         
-        // Buscar dados atuais da solicitação para calcular métricas
+        // Buscar dados atuais da solicitaÃ§Ã£o para calcular mÃ©tricas
         const solicitacaoDoc = await window.db.collection('solicitacoes').doc(solicitacaoId).get();
         if (!solicitacaoDoc.exists) {
-            showToast('Erro', 'Solicitação não encontrada', 'error');
+            showToast('Erro', 'SolicitaÃ§Ã£o nÃ£o encontrada', 'error');
             return;
         }
         
         const solicitacaoData = solicitacaoDoc.data();
         const agora = new Date();
         
-        console.log(`[DEBUG] Finalizando solicitação ${solicitacaoId} com ${evidencias.length} evidência(s)`);
+        console.log(`[DEBUG] Finalizando solicitaÃ§Ã£o ${solicitacaoId} com ${evidencias.length} evidÃªncia(s)`);
         
         const updateData = {
             status: 'finalizada',
@@ -4802,7 +4802,7 @@ async function confirmarFinalizacao(solicitacaoId) {
             finalizadoEm: firebase.firestore.FieldValue.serverTimestamp(), // Para o listener detectar
             tempoFinalizacao: firebase.firestore.FieldValue.serverTimestamp(),
             dataAtualizacao: agora.toISOString(),
-            avaliada: false // Marca que ainda não foi avaliada pelo acompanhante
+            avaliada: false // Marca que ainda nÃ£o foi avaliada pelo acompanhante
         };
 
         if (usuarioAdmin.nome) {
@@ -4813,18 +4813,18 @@ async function confirmarFinalizacao(solicitacaoId) {
             updateData.solucao = solucao.trim();
         }
         
-        // Adicionar evidências se houver
+        // Adicionar evidÃªncias se houver
         if (evidencias.length > 0) {
             updateData.evidencias = evidencias;
             updateData.possuiEvidencias = true;
-            console.log(`[DEBUG] Adicionando ${evidencias.length} evidência(s) à solicitação`);
+            console.log(`[DEBUG] Adicionando ${evidencias.length} evidÃªncia(s) Ã  solicitaÃ§Ã£o`);
         }
 
-        // Calcular métricas de tempo completas
+        // Calcular mÃ©tricas de tempo completas
         if (solicitacaoData.criadoEm || solicitacaoData.dataAbertura) {
             let dataCreacao;
             
-            // Tentar parsear data de criação de diferentes formatos
+            // Tentar parsear data de criaÃ§Ã£o de diferentes formatos
             if (solicitacaoData.criadoEm && typeof solicitacaoData.criadoEm.toDate === 'function') {
                 dataCreacao = solicitacaoData.criadoEm.toDate();
             } else if (solicitacaoData.criadoEm && typeof solicitacaoData.criadoEm === 'string') {
@@ -4836,7 +4836,7 @@ async function confirmarFinalizacao(solicitacaoId) {
             }
             
             if (dataCreacao && !isNaN(dataCreacao.getTime())) {
-                // Tempo total de resolução (do registro até finalização)
+                // Tempo total de resoluÃ§Ã£o (do registro atÃ© finalizaÃ§Ã£o)
                 const tempoTotalMinutos = Math.round((agora - dataCreacao) / (1000 * 60));
                 updateData.tempoTotalMinutos = tempoTotalMinutos;
                 
@@ -4854,7 +4854,7 @@ async function confirmarFinalizacao(solicitacaoId) {
                 
                 updateData.tempoTrabalhoMinutos = tempoTrabalho;
                 
-                // Calcular SLA e definir prioridades baseadas no tipo de serviço
+                // Calcular SLA e definir prioridades baseadas no tipo de serviÃ§o
                 const slaConfig = {
                     'manutencao': { slaMinutos: 240, prioridade: 'alta' },     // 4 horas
                     'nutricao': { slaMinutos: 60, prioridade: 'critica' },     // 1 hora
@@ -4865,7 +4865,7 @@ async function confirmarFinalizacao(solicitacaoId) {
                 const config = slaConfig[solicitacaoData.equipe] || { slaMinutos: 240, prioridade: 'media' };
                 const statusSLA = tempoTotalMinutos <= config.slaMinutos ? 'cumprido' : 'violado';
                 
-                // Métricas completas
+                // MÃ©tricas completas
                 updateData.metricas = {
                     tempoTotal: tempoTotalMinutos,
                     tempoTrabalho: tempoTrabalho,
@@ -4878,8 +4878,8 @@ async function confirmarFinalizacao(solicitacaoId) {
                     criadoEm: dataCreacao.toISOString()
                 };
                 
-                // Log das métricas para análise
-                console.log('📊 MÉTRICAS DA SOLICITAÇÃO:', {
+                // Log das mÃ©tricas para anÃ¡lise
+                console.log('ðŸ“Š MÃ‰TRICAS DA SOLICITAÃ‡ÃƒO:', {
                     id: solicitacaoId,
                     equipe: solicitacaoData.equipe,
                     tempoTotal: `${tempoTotalMinutos} min`,
@@ -4889,49 +4889,49 @@ async function confirmarFinalizacao(solicitacaoId) {
                     eficiencia: `${Math.round((tempoTrabalho / tempoTotalMinutos) * 100)}%`
                 });
             } else {
-                console.warn('Não foi possível calcular métricas - data de criação inválida');
+                console.warn('NÃ£o foi possÃ­vel calcular mÃ©tricas - data de criaÃ§Ã£o invÃ¡lida');
             }
         } else {
-            console.warn('Não foi possível calcular métricas - sem data de criação');
+            console.warn('NÃ£o foi possÃ­vel calcular mÃ©tricas - sem data de criaÃ§Ã£o');
         }
 
         await window.db.collection('solicitacoes').doc(solicitacaoId).update(updateData);
         
-        showToast('Sucesso', 'Solicitação finalizada com sucesso!', 'success');
+        showToast('Sucesso', 'SolicitaÃ§Ã£o finalizada com sucesso!', 'success');
         
-        // Limpar evidências após sucesso
+        // Limpar evidÃªncias apÃ³s sucesso
         arquivosEvidencias = [];
         
-        // Remover modal de finalização
+        // Remover modal de finalizaÃ§Ã£o
         const modalFinalizacao = document.getElementById('modal-finalizacao');
         if (modalFinalizacao) modalFinalizacao.remove();
         
-        // CORREÇÃO APLICADA: NÃO abrir pesquisa no admin - ela deve ir para o acompanhante!
-        // O listener no portal dos acompanhantes detectará a finalização e abrirá a pesquisa
-        // Atualização forçada: pesquisa vai para o solicitante via listener em tempo real
-        console.log('✅ Solicitação finalizada - pesquisa será enviada ao acompanhante automaticamente via listener');
+        // CORREÃ‡ÃƒO APLICADA: NÃƒO abrir pesquisa no admin - ela deve ir para o acompanhante!
+        // O listener no portal dos acompanhantes detectarÃ¡ a finalizaÃ§Ã£o e abrirÃ¡ a pesquisa
+        // AtualizaÃ§Ã£o forÃ§ada: pesquisa vai para o solicitante via listener em tempo real
+        console.log('âœ… SolicitaÃ§Ã£o finalizada - pesquisa serÃ¡ enviada ao acompanhante automaticamente via listener');
         
         // Fechar modal principal e recarregar dados
         fecharSolicitacaoModal();
         
-        // CORREÇÃO CRÍTICA: Usar recarregarSolicitacoes() que limpa AMBAS as flags
-        // ao invés de carregarSolicitacoes() diretamente
+        // CORREÃ‡ÃƒO CRÃTICA: Usar recarregarSolicitacoes() que limpa AMBAS as flags
+        // ao invÃ©s de carregarSolicitacoes() diretamente
         recarregarSolicitacoes(0); // 0 = sem delay, recarregar imediatamente
         
     } catch (error) {
-        console.error('Erro ao finalizar solicitação:', error);
-        showToast('Erro', 'Não foi possível finalizar a solicitação: ' + (error.message || error), 'error');
+        console.error('Erro ao finalizar solicitaÃ§Ã£o:', error);
+        showToast('Erro', 'NÃ£o foi possÃ­vel finalizar a solicitaÃ§Ã£o: ' + (error.message || error), 'error');
         
-        // Reabilitar botão em caso de erro
+        // Reabilitar botÃ£o em caso de erro
         const btnConfirmar = document.getElementById('btn-confirmar-finalizacao');
         if (btnConfirmar) {
             btnConfirmar.disabled = false;
-            btnConfirmar.innerHTML = '<i class="fas fa-check" style="margin-right: 4px;"></i>Confirmar Finalização';
+            btnConfirmar.innerHTML = '<i class="fas fa-check" style="margin-right: 4px;"></i>Confirmar FinalizaÃ§Ã£o';
         }
     }
 }
 
-// Expor funções globalmente para uso nos modais
+// Expor funÃ§Ãµes globalmente para uso nos modais
 window.alterarStatusSolicitacao = alterarStatusSolicitacao;
 window.finalizarSolicitacao = finalizarSolicitacao;
 window.confirmarFinalizacao = confirmarFinalizacao;
@@ -4940,34 +4940,34 @@ window.fecharSolicitacaoModal = fecharSolicitacaoModal;
 window.abrirDashboardMetricas = abrirDashboardMetricas;
 window.fecharDashboardMetricas = fecharDashboardMetricas;
 
-// Função para abrir dashboard de métricas
+// FunÃ§Ã£o para abrir dashboard de mÃ©tricas
 async function abrirDashboardMetricas() {
     try {
         const usuarioAdmin = window.usuarioAdmin || JSON.parse(localStorage.getItem('usuarioAdmin') || '{}');
         
-        // Determinar se deve mostrar métricas de todas as equipes ou apenas da equipe do usuário
+        // Determinar se deve mostrar mÃ©tricas de todas as equipes ou apenas da equipe do usuÃ¡rio
         const isSuperAdmin = usuarioAdmin && usuarioAdmin.role === 'super_admin';
         const isAdmin = usuarioAdmin && usuarioAdmin.role === 'admin';
         const equipeUsuario = usuarioAdmin && usuarioAdmin.equipe;
         
-        console.log('🔍 DASHBOARD MÉTRICAS AVANÇADO:', {
+        console.log('ðŸ” DASHBOARD MÃ‰TRICAS AVANÃ‡ADO:', {
             usuario: usuarioAdmin.nome,
             role: usuarioAdmin.role,
             equipe: equipeUsuario,
             mostrarTodas: isSuperAdmin || isAdmin
         });
         
-        // Buscar todas as solicitações para análise avançada
+        // Buscar todas as solicitaÃ§Ãµes para anÃ¡lise avanÃ§ada
         let query = window.db.collection('solicitacoes').limit(500);
         
-        // Se não for super_admin ou admin, filtrar apenas pela equipe do usuário
+        // Se nÃ£o for super_admin ou admin, filtrar apenas pela equipe do usuÃ¡rio
         if (!isSuperAdmin && !isAdmin && equipeUsuario) {
             query = query.where('equipe', '==', equipeUsuario);
         }
         
         const snapshot = await query.get();
         
-        // Processar dados para diferentes períodos
+        // Processar dados para diferentes perÃ­odos
         const agora = new Date();
         const dataLimite30 = new Date(); dataLimite30.setDate(agora.getDate() - 30);
         const dataLimite7 = new Date(); dataLimite7.setDate(agora.getDate() - 7);
@@ -4988,10 +4988,10 @@ async function abrirDashboardMetricas() {
             return false;
         });
         
-        // Calcular métricas avançadas
+        // Calcular mÃ©tricas avanÃ§adas
         const metricasAvancadas = calcularMetricasAvancadas(todasSolicitacoes, solicitacoes30dias, solicitacoes7dias);
         
-        // Criar modal de dashboard avançado
+        // Criar modal de dashboard avanÃ§ado
         let modal = document.getElementById('dashboard-metricas');
         if (!modal) {
             modal = document.createElement('div');
@@ -5004,11 +5004,11 @@ async function abrirDashboardMetricas() {
         modal.innerHTML = gerarHTMLDashboardAvancado(metricasAvancadas, { 
             isSuperAdmin: isSuperAdmin || isAdmin, 
             equipeUsuario: equipeUsuario,
-            nomeUsuario: usuarioAdmin.nome || 'Usuário'
+            nomeUsuario: usuarioAdmin.nome || 'UsuÃ¡rio'
         });
         modal.style.display = 'flex';
         
-        // Renderizar gráficos após o modal estar no DOM
+        // Renderizar grÃ¡ficos apÃ³s o modal estar no DOM
         setTimeout(() => {
             renderizarGraficos(metricasAvancadas);
             configurarAlertasInteligentes(metricasAvancadas);
@@ -5016,7 +5016,7 @@ async function abrirDashboardMetricas() {
         
     } catch (error) {
         console.error('Erro ao carregar dashboard:', error);
-        showToast('Erro', 'Não foi possível carregar o dashboard de métricas', 'error');
+        showToast('Erro', 'NÃ£o foi possÃ­vel carregar o dashboard de mÃ©tricas', 'error');
     }
 }
 
@@ -5024,7 +5024,7 @@ function fecharDashboardMetricas() {
     const modal = document.getElementById('dashboard-metricas');
     if (modal) {
         modal.style.display = 'none';
-        // Destruir gráficos para liberar memória
+        // Destruir grÃ¡ficos para liberar memÃ³ria
         if (window.chartInstances) {
             Object.values(window.chartInstances).forEach(chart => chart.destroy());
             window.chartInstances = {};
@@ -5032,13 +5032,13 @@ function fecharDashboardMetricas() {
     }
 }
 
-// ===== FUNÇÕES DE MÉTRICAS AVANÇADAS =====
+// ===== FUNÃ‡Ã•ES DE MÃ‰TRICAS AVANÃ‡ADAS =====
 
 function calcularMetricasAvancadas(todasSolicitacoes, solicitacoes30dias, solicitacoes7dias) {
     const agora = new Date();
     
     const metricas = {
-        // Métricas básicas
+        // MÃ©tricas bÃ¡sicas
         totais: {
             todas: todasSolicitacoes.length,
             ultimos30dias: solicitacoes30dias.length,
@@ -5048,10 +5048,10 @@ function calcularMetricasAvancadas(todasSolicitacoes, solicitacoes30dias, solici
         // Status distribution
         statusDistribution: calcularDistribuicaoStatus(solicitacoes30dias),
         
-        // Métricas por equipe
+        // MÃ©tricas por equipe
         porEquipe: calcularMetricasPorEquipe(solicitacoes30dias),
         
-        // Tendências temporais
+        // TendÃªncias temporais
         tendencias: calcularTendencias(todasSolicitacoes),
         
         // Picos de demanda
@@ -5060,10 +5060,10 @@ function calcularMetricasAvancadas(todasSolicitacoes, solicitacoes30dias, solici
         // Alertas
         alertas: calcularAlertas(solicitacoes30dias),
         
-        // Performance e eficiência
+        // Performance e eficiÃªncia
         performance: calcularPerformanceGeral(solicitacoes30dias),
         
-        // Satisfação integrada
+        // SatisfaÃ§Ã£o integrada
         satisfacao: calcularSatisfacaoPorEquipe(solicitacoes30dias)
     };
     
@@ -5118,17 +5118,17 @@ function calcularMetricasPorEquipe(solicitacoes) {
             case 'finalizada': equipeData.finalizadas++; break;
         }
         
-        // Calcular métricas de tempo para finalizadas
+        // Calcular mÃ©tricas de tempo para finalizadas
         if (sol.status === 'finalizada' && sol.metricas) {
             const tempo = sol.metricas.tempoTotal || 0;
             equipeData.tempos.push(tempo);
         }
         
-        // Alerta de acúmulo (mais de 5 pendentes + em-andamento)
+        // Alerta de acÃºmulo (mais de 5 pendentes + em-andamento)
         equipeData.alertaAcumulo = (equipeData.pendentes + equipeData.emAndamento) > 5;
     });
     
-    // Calcular médias
+    // Calcular mÃ©dias
     Object.keys(equipesMetricas).forEach(equipe => {
         const data = equipesMetricas[equipe];
         if (data.tempos.length > 0) {
@@ -5149,7 +5149,7 @@ function calcularTendencias(todasSolicitacoes) {
         crescimentoMensal: 0
     };
     
-    // Agrupar por dia nos últimos 7 dias
+    // Agrupar por dia nos Ãºltimos 7 dias
     for (let i = 6; i >= 0; i--) {
         const data = new Date(hoje);
         data.setDate(hoje.getDate() - i);
@@ -5208,7 +5208,7 @@ function calcularAlertas(solicitacoes) {
     const alertas = [];
     const agora = new Date();
     
-    // SLA próximo do limite
+    // SLA prÃ³ximo do limite
     const slaConfig = {
         'manutencao': 240, 'nutricao': 60, 'higienizacao': 120, 'hotelaria': 180
     };
@@ -5254,8 +5254,8 @@ function calcularPerformanceGeral(solicitacoes) {
 }
 
 function calcularSatisfacaoPorEquipe(solicitacoes) {
-    // Esta função será integrada com os dados de satisfação
-    // Por enquanto, retorna estrutura básica
+    // Esta funÃ§Ã£o serÃ¡ integrada com os dados de satisfaÃ§Ã£o
+    // Por enquanto, retorna estrutura bÃ¡sica
     return {
         mediaGeral: 4.2,
         porEquipe: {
@@ -5278,10 +5278,10 @@ function calcularSLACompliance(tempos, equipe) {
     return tempos.length > 0 ? Math.round((cumpridos / tempos.length) * 100) : 0;
 }
 
-// ===== GERAÇÃO DE HTML AVANÇADO =====
+// ===== GERAÃ‡ÃƒO DE HTML AVANÃ‡ADO =====
 
 function gerarHTMLDashboardAvancado(metricas, opcoes = {}) {
-    const { isSuperAdmin = false, equipeUsuario = null, nomeUsuario = 'Usuário' } = opcoes;
+    const { isSuperAdmin = false, equipeUsuario = null, nomeUsuario = 'UsuÃ¡rio' } = opcoes;
     
     return `
         <div class="modal-content" style="max-width: 95vw; max-height: 90vh; overflow-y: auto; background: white; border-radius: 12px; padding: 0;">
@@ -5289,10 +5289,10 @@ function gerarHTMLDashboardAvancado(metricas, opcoes = {}) {
             <div style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 20px; border-radius: 12px 12px 0 0; position: sticky; top: 0; z-index: 10;">
                 <div style="display: flex; justify-content: space-between; align-items: center;">
                     <div>
-                        <h2 style="margin: 0; font-size: 1.5rem;">📊 Dashboard Executivo - Métricas Avançadas</h2>
-                        <p style="margin: 5px 0 0 0; opacity: 0.9;">${isSuperAdmin ? 'Visão Completa' : 'Equipe: ' + equipeUsuario} | ${nomeUsuario}</p>
+                        <h2 style="margin: 0; font-size: 1.5rem;">ðŸ“Š Dashboard Executivo - MÃ©tricas AvanÃ§adas</h2>
+                        <p style="margin: 5px 0 0 0; opacity: 0.9;">${isSuperAdmin ? 'VisÃ£o Completa' : 'Equipe: ' + equipeUsuario} | ${nomeUsuario}</p>
                     </div>
-                    <button onclick="fecharDashboardMetricas()" style="background: rgba(255,255,255,0.2); border: none; color: white; width: 40px; height: 40px; border-radius: 50%; font-size: 20px; cursor: pointer;">×</button>
+                    <button onclick="fecharDashboardMetricas()" style="background: rgba(255,255,255,0.2); border: none; color: white; width: 40px; height: 40px; border-radius: 50%; font-size: 20px; cursor: pointer;">Ã—</button>
                 </div>
             </div>
             
@@ -5314,16 +5314,16 @@ function gerarHTMLDashboardAvancado(metricas, opcoes = {}) {
                 </div>
             </div>
 
-            <!-- Gráficos -->
+            <!-- GrÃ¡ficos -->
             <div style="padding: 0 20px;">
                 <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-bottom: 20px;">
-                    <!-- Gráfico de Status -->
+                    <!-- GrÃ¡fico de Status -->
                     <div style="background: white; border: 1px solid #e5e7eb; border-radius: 8px; padding: 20px;">
-                        <h3 style="margin: 0 0 15px 0; color: #374151;">Status das Solicitações</h3>
+                        <h3 style="margin: 0 0 15px 0; color: #374151;">Status das SolicitaÃ§Ãµes</h3>
                         <canvas id="grafico-status" width="300" height="200"></canvas>
                     </div>
                     
-                    <!-- Gráfico de Performance por Equipe -->
+                    <!-- GrÃ¡fico de Performance por Equipe -->
                     <div style="background: white; border: 1px solid #e5e7eb; border-radius: 8px; padding: 20px;">
                         <h3 style="margin: 0 0 15px 0; color: #374151;">Performance por Equipe</h3>
                         <canvas id="grafico-equipes" width="300" height="200"></canvas>
@@ -5331,9 +5331,9 @@ function gerarHTMLDashboardAvancado(metricas, opcoes = {}) {
                 </div>
 
                 <div style="display: grid; grid-template-columns: 2fr 1fr; gap: 20px; margin-bottom: 20px;">
-                    <!-- Tendências -->
+                    <!-- TendÃªncias -->
                     <div style="background: white; border: 1px solid #e5e7eb; border-radius: 8px; padding: 20px;">
-                        <h3 style="margin: 0 0 15px 0; color: #374151;">Tendência de Demanda (7 dias)</h3>
+                        <h3 style="margin: 0 0 15px 0; color: #374151;">TendÃªncia de Demanda (7 dias)</h3>
                         <canvas id="grafico-tendencias" width="500" height="200"></canvas>
                     </div>
                     
@@ -5345,9 +5345,9 @@ function gerarHTMLDashboardAvancado(metricas, opcoes = {}) {
                 </div>
             </div>
 
-            <!-- Métricas Detalhadas por Equipe -->
+            <!-- MÃ©tricas Detalhadas por Equipe -->
             <div style="padding: 20px;">
-                <h3 style="margin: 0 0 20px 0; color: #374151;">Análise Detalhada por Equipe</h3>
+                <h3 style="margin: 0 0 20px 0; color: #374151;">AnÃ¡lise Detalhada por Equipe</h3>
                 <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 15px;">
                     ${gerarCardsEquipes(metricas.porEquipe)}
                 </div>
@@ -5378,7 +5378,7 @@ function gerarHTMLAlertas(alertas) {
         return `
             <div style="background: ${cor.bg}; color: ${cor.text}; padding: 10px; border-radius: 6px; margin-bottom: 8px; font-size: 0.9rem;">
                 <i class="fas fa-${cor.icon}" style="margin-right: 8px;"></i>
-                <strong>${alerta.equipe}:</strong> SLA ${alerta.percentual}% - Solicitação ${alerta.solicitacao}
+                <strong>${alerta.equipe}:</strong> SLA ${alerta.percentual}% - SolicitaÃ§Ã£o ${alerta.solicitacao}
             </div>
         `;
     }).join('');
@@ -5398,21 +5398,21 @@ function gerarCardsKPI(metricas) {
         
         <div style="background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%); color: white; padding: 20px; border-radius: 8px; text-align: center;">
             <div style="font-size: 2rem; font-weight: bold; margin-bottom: 5px;">${metricas.performance.tmaGeral}min</div>
-            <div style="opacity: 0.9;">TMA Médio</div>
+            <div style="opacity: 0.9;">TMA MÃ©dio</div>
         </div>
         
         <div style="background: linear-gradient(135deg, #8b5cf6 0%, #7c3aed 100%); color: white; padding: 20px; border-radius: 8px; text-align: center;">
             <div style="font-size: 2rem; font-weight: bold; margin-bottom: 5px;">${metricas.performance.eficienciaGeral}%</div>
-            <div style="opacity: 0.9;">Eficiência</div>
+            <div style="opacity: 0.9;">EficiÃªncia</div>
         </div>
     `;
 }
 
 function gerarCardsEquipes(equipesMetricas) {
     const equipesNomes = {
-        manutencao: 'Manutenção',
-        nutricao: 'Nutrição', 
-        higienizacao: 'Higienização',
+        manutencao: 'ManutenÃ§Ã£o',
+        nutricao: 'NutriÃ§Ã£o', 
+        higienizacao: 'HigienizaÃ§Ã£o',
         hotelaria: 'Hotelaria'
     };
     
@@ -5472,7 +5472,7 @@ function calcularMetricasGerais(solicitacoes) {
         const equipeMetrica = metricas.porEquipe[equipe];
         equipeMetrica.total++;
         
-        // Verificar se tem métricas válidas
+        // Verificar se tem mÃ©tricas vÃ¡lidas
         if (sol.metricas && sol.metricas.tempoTotal) {
             const m = sol.metricas;
             
@@ -5498,11 +5498,11 @@ function calcularMetricasGerais(solicitacoes) {
                 equipeMetrica.sla.violado++;
             }
         } else {
-            // Calcular métricas básicas se não existirem métricas completas
+            // Calcular mÃ©tricas bÃ¡sicas se nÃ£o existirem mÃ©tricas completas
             let dataCreacao = null;
-            let dataFinalização = null;
+            let dataFinalizaÃ§Ã£o = null;
             
-            // Tentar parsear data de criação
+            // Tentar parsear data de criaÃ§Ã£o
             if (sol.criadoEm && typeof sol.criadoEm.toDate === 'function') {
                 dataCreacao = sol.criadoEm.toDate();
             } else if (sol.criadoEm && typeof sol.criadoEm === 'string') {
@@ -5511,23 +5511,23 @@ function calcularMetricasGerais(solicitacoes) {
                 dataCreacao = sol.dataAbertura.toDate();
             }
             
-            // Tentar parsear data de finalização
+            // Tentar parsear data de finalizaÃ§Ã£o
             if (sol.dataFinalizacao && typeof sol.dataFinalizacao === 'string') {
-                dataFinalização = new Date(sol.dataFinalizacao);
+                dataFinalizaÃ§Ã£o = new Date(sol.dataFinalizacao);
             } else if (sol.tempoFinalizacao && typeof sol.tempoFinalizacao.toDate === 'function') {
-                dataFinalização = sol.tempoFinalizacao.toDate();
+                dataFinalizaÃ§Ã£o = sol.tempoFinalizacao.toDate();
             }
             
             // Se conseguiu parsear ambas as datas, calcular tempo total
-            if (dataCreacao && dataFinalização) {
-                const tempoTotal = Math.round((dataFinalização - dataCreacao) / (1000 * 60));
+            if (dataCreacao && dataFinalizaÃ§Ã£o) {
+                const tempoTotal = Math.round((dataFinalizaÃ§Ã£o - dataCreacao) / (1000 * 60));
                 if (tempoTotal > 0) {
                     tempoTotalSoma += tempoTotal;
                     equipeMetrica.tempoTotalSoma += tempoTotal;
                     contadorValidos++;
                     equipeMetrica.contadorValidos++;
                     
-                    // Verificar SLA básico
+                    // Verificar SLA bÃ¡sico
                     const slaConfig = {
                         'manutencao': 240, 'nutricao': 60, 'higienizacao': 120, 'hotelaria': 180
                     };
@@ -5545,14 +5545,14 @@ function calcularMetricasGerais(solicitacoes) {
         }
     });
     
-    // Calcular médias gerais
+    // Calcular mÃ©dias gerais
     if (contadorValidos > 0) {
         metricas.tmaGeral = Math.round(tempoTotalSoma / contadorValidos);
         metricas.tmeGeral = Math.round(tempoTrabalhoSoma / contadorValidos);
         metricas.eficienciaGeral = tempoTotalSoma > 0 ? Math.round((tempoTrabalhoSoma / tempoTotalSoma) * 100) : 0;
     }
     
-    // Calcular médias por equipe
+    // Calcular mÃ©dias por equipe
     Object.keys(metricas.porEquipe).forEach(equipe => {
         const eq = metricas.porEquipe[equipe];
         if (eq.contadorValidos > 0) {
@@ -5566,16 +5566,16 @@ function calcularMetricasGerais(solicitacoes) {
 }
 
 function gerarHTMLDashboard(metricas, opcoes = {}) {
-    const { isSuperAdmin = false, equipeUsuario = null, nomeUsuario = 'Usuário' } = opcoes;
+    const { isSuperAdmin = false, equipeUsuario = null, nomeUsuario = 'UsuÃ¡rio' } = opcoes;
     const slaPercentual = metricas.total > 0 ? Math.round((metricas.slaGeral.cumprido / metricas.total) * 100) : 0;
     
-    // Título personalizado baseado no tipo de usuário
-    let titulo = 'Dashboard de Métricas - Últimos 30 dias';
+    // TÃ­tulo personalizado baseado no tipo de usuÃ¡rio
+    let titulo = 'Dashboard de MÃ©tricas - Ãšltimos 30 dias';
     if (!isSuperAdmin && equipeUsuario) {
-        titulo = `Dashboard de Métricas - Equipe ${equipeUsuario.charAt(0).toUpperCase() + equipeUsuario.slice(1)}`;
+        titulo = `Dashboard de MÃ©tricas - Equipe ${equipeUsuario.charAt(0).toUpperCase() + equipeUsuario.slice(1)}`;
     }
     
-    // Gerar HTML das equipes (apenas equipe do usuário se não for admin)
+    // Gerar HTML das equipes (apenas equipe do usuÃ¡rio se nÃ£o for admin)
     let htmlEquipes = '';
     const equipesParaExibir = isSuperAdmin ? 
         Object.entries(metricas.porEquipe) : 
@@ -5585,21 +5585,21 @@ function gerarHTMLDashboard(metricas, opcoes = {}) {
         const slaEquipePercentual = dados.total > 0 ? Math.round((dados.sla.cumprido / dados.total) * 100) : 0;
         const slaColor = slaEquipePercentual >= 90 ? '#059669' : slaEquipePercentual >= 70 ? '#d97706' : '#dc2626';
         
-        // Nome amigável da equipe
+        // Nome amigÃ¡vel da equipe
         const nomeEquipe = {
-            'manutencao': 'Manutenção',
-            'nutricao': 'Nutrição', 
-            'higienizacao': 'Higienização',
+            'manutencao': 'ManutenÃ§Ã£o',
+            'nutricao': 'NutriÃ§Ã£o', 
+            'higienizacao': 'HigienizaÃ§Ã£o',
             'hotelaria': 'Hotelaria'
         }[equipe] || equipe.charAt(0).toUpperCase() + equipe.slice(1);
         
-        // Ícone da equipe
+        // Ãcone da equipe
         const iconeEquipe = {
-            'manutencao': '🔧',
-            'nutricao': '🍽️',
-            'higienizacao': '🧽',
-            'hotelaria': '🛏️'
-        }[equipe] || '⚙️';
+            'manutencao': 'ðŸ”§',
+            'nutricao': 'ðŸ½ï¸',
+            'higienizacao': 'ðŸ§½',
+            'hotelaria': 'ðŸ›ï¸'
+        }[equipe] || 'âš™ï¸';
         
         htmlEquipes += `
             <div style="background: white; padding: 16px; border-radius: 8px; border-left: 4px solid ${slaColor};">
@@ -5608,32 +5608,32 @@ function gerarHTMLDashboard(metricas, opcoes = {}) {
                     ${!isSuperAdmin ? '<span style="font-size: 12px; background: #3b82f6; color: white; padding: 2px 8px; border-radius: 12px; margin-left: 8px;">Sua Equipe</span>' : ''}
                 </h4>
                 <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px; font-size: 14px;">
-                    <div><strong>Solicitações:</strong> ${dados.total}</div>
+                    <div><strong>SolicitaÃ§Ãµes:</strong> ${dados.total}</div>
                     <div><strong>TMA:</strong> ${dados.tma}min (${Math.round(dados.tma/60*10)/10}h)</div>
                     <div><strong>TME:</strong> ${dados.tme}min (${Math.round(dados.tme/60*10)/10}h)</div>
                     <div><strong>SLA:</strong> <span style="color: ${slaColor}; font-weight: bold;">${slaEquipePercentual}%</span></div>
-                    <div><strong>Eficiência:</strong> ${dados.eficiencia}%</div>
+                    <div><strong>EficiÃªncia:</strong> ${dados.eficiencia}%</div>
                     <div><strong>Cumpridas:</strong> ${dados.sla.cumprido} / ${dados.total}</div>
                 </div>
             </div>
         `;
     });
     
-    // Se não há dados da equipe específica, mostrar mensagem
+    // Se nÃ£o hÃ¡ dados da equipe especÃ­fica, mostrar mensagem
     if (!isSuperAdmin && equipesParaExibir.length === 0 && equipeUsuario) {
         const nomeEquipe = {
-            'manutencao': 'Manutenção',
-            'nutricao': 'Nutrição', 
-            'higienizacao': 'Higienização',
+            'manutencao': 'ManutenÃ§Ã£o',
+            'nutricao': 'NutriÃ§Ã£o', 
+            'higienizacao': 'HigienizaÃ§Ã£o',
             'hotelaria': 'Hotelaria'
         }[equipeUsuario] || equipeUsuario.charAt(0).toUpperCase() + equipeUsuario.slice(1);
         
         htmlEquipes = `
             <div style="background: #f9fafb; padding: 20px; border-radius: 8px; text-align: center; color: #6b7280;">
                 <i class="fas fa-chart-line" style="font-size: 48px; margin-bottom: 16px; opacity: 0.5;"></i>
-                <h3 style="margin: 0 0 8px 0; color: #374151;">Nenhuma Solicitação Finalizada</h3>
+                <h3 style="margin: 0 0 8px 0; color: #374151;">Nenhuma SolicitaÃ§Ã£o Finalizada</h3>
                 <p style="margin: 0; font-size: 14px;">
-                    A equipe ${nomeEquipe} ainda não possui solicitações finalizadas nos últimos 30 dias.
+                    A equipe ${nomeEquipe} ainda nÃ£o possui solicitaÃ§Ãµes finalizadas nos Ãºltimos 30 dias.
                 </p>
             </div>
         `;
@@ -5649,21 +5649,21 @@ function gerarHTMLDashboard(metricas, opcoes = {}) {
             </h2>
             
             ${isSuperAdmin || metricas.total > 0 ? `
-            <!-- Métricas Gerais -->
+            <!-- MÃ©tricas Gerais -->
             <div style="background: linear-gradient(135deg, #3b82f6, #1d4ed8); color: white; padding: 20px; border-radius: 12px; margin-bottom: 20px;">
-                <h3 style="margin: 0 0 16px 0;">📊 ${isSuperAdmin ? 'Métricas Gerais' : 'Métricas da Sua Equipe'}</h3>
+                <h3 style="margin: 0 0 16px 0;">ðŸ“Š ${isSuperAdmin ? 'MÃ©tricas Gerais' : 'MÃ©tricas da Sua Equipe'}</h3>
                 <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(120px, 1fr)); gap: 16px;">
                     <div style="text-align: center;">
                         <div style="font-size: 24px; font-weight: bold;">${metricas.total}</div>
-                        <div style="font-size: 12px; opacity: 0.9;">Total Solicitações</div>
+                        <div style="font-size: 12px; opacity: 0.9;">Total SolicitaÃ§Ãµes</div>
                     </div>
                     <div style="text-align: center;">
                         <div style="font-size: 24px; font-weight: bold;">${metricas.tmaGeral}min</div>
-                        <div style="font-size: 12px; opacity: 0.9;">TMA (Tempo Médio Atendimento)</div>
+                        <div style="font-size: 12px; opacity: 0.9;">TMA (Tempo MÃ©dio Atendimento)</div>
                     </div>
                     <div style="text-align: center;">
                         <div style="font-size: 24px; font-weight: bold;">${metricas.tmeGeral}min</div>
-                        <div style="font-size: 12px; opacity: 0.9;">TME (Tempo Médio Execução)</div>
+                        <div style="font-size: 12px; opacity: 0.9;">TME (Tempo MÃ©dio ExecuÃ§Ã£o)</div>
                     </div>
                     <div style="text-align: center;">
                         <div style="font-size: 24px; font-weight: bold;">${slaPercentual}%</div>
@@ -5671,7 +5671,7 @@ function gerarHTMLDashboard(metricas, opcoes = {}) {
                     </div>
                     <div style="text-align: center;">
                         <div style="font-size: 24px; font-weight: bold;">${metricas.eficienciaGeral}%</div>
-                        <div style="font-size: 12px; opacity: 0.9;">Eficiência</div>
+                        <div style="font-size: 12px; opacity: 0.9;">EficiÃªncia</div>
                     </div>
                 </div>
             </div>
@@ -5679,7 +5679,7 @@ function gerarHTMLDashboard(metricas, opcoes = {}) {
             
             <!-- Desempenho por Equipe -->
             <h3 style="margin: 0 0 16px 0; color: #374151;">
-                ${isSuperAdmin ? '👥 Desempenho por Equipe' : '📈 Desempenho da Sua Equipe'}
+                ${isSuperAdmin ? 'ðŸ‘¥ Desempenho por Equipe' : 'ðŸ“ˆ Desempenho da Sua Equipe'}
             </h3>
             <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 16px;">
                 ${htmlEquipes}
@@ -5687,19 +5687,19 @@ function gerarHTMLDashboard(metricas, opcoes = {}) {
             
             <!-- Legenda SLA -->
             <div style="background: #f9fafb; padding: 16px; border-radius: 8px; margin-top: 20px;">
-                <h4 style="margin: 0 0 8px 0; color: #374151;">📋 Definições SLA ${!isSuperAdmin && equipeUsuario ? `- ${equipeUsuario.charAt(0).toUpperCase() + equipeUsuario.slice(1)}` : 'por Equipe'}</h4>
+                <h4 style="margin: 0 0 8px 0; color: #374151;">ðŸ“‹ DefiniÃ§Ãµes SLA ${!isSuperAdmin && equipeUsuario ? `- ${equipeUsuario.charAt(0).toUpperCase() + equipeUsuario.slice(1)}` : 'por Equipe'}</h4>
                 <div style="font-size: 14px; color: #6b7280; display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 8px;">
                     ${isSuperAdmin ? `
-                        <div><strong>Nutrição:</strong> 60 min (Crítico)</div>
-                        <div><strong>Higienização:</strong> 120 min (Médio)</div>
-                        <div><strong>Hotelaria:</strong> 180 min (Médio)</div>
-                        <div><strong>Manutenção:</strong> 240 min (Alto)</div>
+                        <div><strong>NutriÃ§Ã£o:</strong> 60 min (CrÃ­tico)</div>
+                        <div><strong>HigienizaÃ§Ã£o:</strong> 120 min (MÃ©dio)</div>
+                        <div><strong>Hotelaria:</strong> 180 min (MÃ©dio)</div>
+                        <div><strong>ManutenÃ§Ã£o:</strong> 240 min (Alto)</div>
                     ` : `
-                        <div><strong>${equipeUsuario === 'nutricao' ? 'Nutrição: 60 min (Crítico)' : 
-                                       equipeUsuario === 'higienizacao' ? 'Higienização: 120 min (Médio)' :
-                                       equipeUsuario === 'hotelaria' ? 'Hotelaria: 180 min (Médio)' :
-                                       'Manutenção: 240 min (Alto)'}</strong></div>
-                        <div>Meta: Cumprir SLA em pelo menos 90% das solicitações</div>
+                        <div><strong>${equipeUsuario === 'nutricao' ? 'NutriÃ§Ã£o: 60 min (CrÃ­tico)' : 
+                                       equipeUsuario === 'higienizacao' ? 'HigienizaÃ§Ã£o: 120 min (MÃ©dio)' :
+                                       equipeUsuario === 'hotelaria' ? 'Hotelaria: 180 min (MÃ©dio)' :
+                                       'ManutenÃ§Ã£o: 240 min (Alto)'}</strong></div>
+                        <div>Meta: Cumprir SLA em pelo menos 90% das solicitaÃ§Ãµes</div>
                     `}
                 </div>
             </div>
@@ -5722,22 +5722,22 @@ window.closeManageUsersModal = function() {
         modal.style.display = 'none';
         debugLog('[DEBUG] closeManageUsersModal: modal fechado');
         
-        // CORREÇÃO: Navegar de volta para o painel principal
+        // CORREÃ‡ÃƒO: Navegar de volta para o painel principal
         debugLog('[DEBUG] closeManageUsersModal: navegando para painel principal...');
         mostrarSecaoPainel('painel');
-        debugLog('[DEBUG] closeManageUsersModal: navegação concluída');
+        debugLog('[DEBUG] closeManageUsersModal: navegaÃ§Ã£o concluÃ­da');
     }
 };
 
-// ========== FUNÇÃO DE SOLUÇÃO RÁPIDA ==========
+// ========== FUNÃ‡ÃƒO DE SOLUÃ‡ÃƒO RÃPIDA ==========
 // Execute no console: solucionarBotoes()
 window.solucionarBotoes = function() {
-    console.log('🔧 SOLUCIONANDO PROBLEMA DOS BOTÕES...');
+    console.log('ðŸ”§ SOLUCIONANDO PROBLEMA DOS BOTÃ•ES...');
     
-    // 1. Garantir que o usuário tem permissão
+    // 1. Garantir que o usuÃ¡rio tem permissÃ£o
     if (!window.userRole) {
         window.userRole = 'admin';
-        console.log('✅ UserRole definido como admin');
+        console.log('âœ… UserRole definido como admin');
     }
     
     if (!window.usuarioAdmin) {
@@ -5747,10 +5747,10 @@ window.solucionarBotoes = function() {
             email: 'admin@yuna.com.br',
             isAdmin: true
         };
-        console.log('✅ UsuarioAdmin definido');
+        console.log('âœ… UsuarioAdmin definido');
     }
     
-    // 2. Forçar exibição dos botões
+    // 2. ForÃ§ar exibiÃ§Ã£o dos botÃµes
     const btnNovoUsuario = document.getElementById('btn-novo-usuario');
     const btnGerenciarUsuarios = document.getElementById('manage-users-btn');
     
@@ -5759,7 +5759,7 @@ window.solucionarBotoes = function() {
         btnNovoUsuario.style.display = 'inline-flex';
         btnNovoUsuario.style.visibility = 'visible';
         btnNovoUsuario.style.pointerEvents = 'auto';
-        console.log('✅ Botão Criar Usuário exibido');
+        console.log('âœ… BotÃ£o Criar UsuÃ¡rio exibido');
     }
     
     if (btnGerenciarUsuarios) {
@@ -5767,27 +5767,27 @@ window.solucionarBotoes = function() {
         btnGerenciarUsuarios.style.display = 'inline-flex';
         btnGerenciarUsuarios.style.visibility = 'visible';
         btnGerenciarUsuarios.style.pointerEvents = 'auto';
-        console.log('✅ Botão Gerenciar Usuários exibido');
+        console.log('âœ… BotÃ£o Gerenciar UsuÃ¡rios exibido');
     }
     
-    // 3. Configurar eventos dos botões
+    // 3. Configurar eventos dos botÃµes
     configurarEventosBotoes();
-    console.log('✅ Eventos dos botões configurados');
+    console.log('âœ… Eventos dos botÃµes configurados');
     
-    // 4. Testar botões
+    // 4. Testar botÃµes
     window.testarBotoes();
     
-    console.log('🎉 PROBLEMA RESOLVIDO! Os botões devem funcionar agora.');
-    showToast('Sucesso', 'Botões corrigidos com sucesso!', 'success');
+    console.log('ðŸŽ‰ PROBLEMA RESOLVIDO! Os botÃµes devem funcionar agora.');
+    showToast('Sucesso', 'BotÃµes corrigidos com sucesso!', 'success');
     
-    return 'Solução aplicada com sucesso!';
+    return 'SoluÃ§Ã£o aplicada com sucesso!';
 };
 
 // ========== MODO DESENVOLVIMENTO ==========
 window.loginDesenvolvimento = function(email = 'admin@dev.local') {
     console.log('[DEV] Ativando modo desenvolvimento...');
     
-    // Simular usuário admin
+    // Simular usuÃ¡rio admin
     window.userRole = 'admin';
     window.usuarioAdmin = {
         role: 'admin',
@@ -5811,12 +5811,12 @@ window.loginDesenvolvimento = function(email = 'admin@dev.local') {
         badge.style.backgroundColor = '#f59e0b'; // Cor diferente para modo dev
     }
     
-    // Configurar botões
+    // Configurar botÃµes
     setTimeout(() => {
         atualizarVisibilidadeBotoes();
         configurarEventosBotoes();
         
-        // Forçar exibição dos botões
+        // ForÃ§ar exibiÃ§Ã£o dos botÃµes
         const btnNovoUsuario = document.getElementById('btn-novo-usuario');
         const btnGerenciarUsuarios = document.getElementById('manage-users-btn');
         
@@ -5830,13 +5830,13 @@ window.loginDesenvolvimento = function(email = 'admin@dev.local') {
             btnGerenciarUsuarios.style.display = 'inline-flex';
         }
         
-        console.log('[DEV] Botões configurados em modo desenvolvimento');
+        console.log('[DEV] BotÃµes configurados em modo desenvolvimento');
     }, 100);
     
     // Mostrar painel principal
     mostrarSecaoPainel('painel');
     
-    // Mostrar dados de desenvolvimento nas métricas
+    // Mostrar dados de desenvolvimento nas mÃ©tricas
     setTimeout(() => {
         carregarDadosDesenvolvimento();
     }, 500);
@@ -5845,11 +5845,11 @@ window.loginDesenvolvimento = function(email = 'admin@dev.local') {
     console.log('[DEV] Modo desenvolvimento ativo');
 };
 
-// Função para carregar dados simulados no modo desenvolvimento
+// FunÃ§Ã£o para carregar dados simulados no modo desenvolvimento
 window.carregarDadosDesenvolvimento = function() {
     console.log('[DEV] Carregando dados simulados...');
     
-    // Simular métricas
+    // Simular mÃ©tricas
     const stats = [
         { id: 'total-solicitacoes', value: '42' },
         { id: 'pendentes', value: '12' },
@@ -5869,9 +5869,9 @@ window.carregarDadosDesenvolvimento = function() {
     if (teamsGrid) {
         teamsGrid.innerHTML = `
             <div class="team-card" onclick="verSolicitacoesEquipe('manutencao')">
-                <div class="team-icon">🔧</div>
+                <div class="team-icon">ðŸ”§</div>
                 <div class="team-info">
-                    <h3>Manutenção</h3>
+                    <h3>ManutenÃ§Ã£o</h3>
                     <div class="team-stats">
                         <span class="pendentes">3 pendentes</span>
                         <span class="andamento">2 em andamento</span>
@@ -5880,9 +5880,9 @@ window.carregarDadosDesenvolvimento = function() {
                 </div>
             </div>
             <div class="team-card" onclick="verSolicitacoesEquipe('nutricao')">
-                <div class="team-icon">🍽️</div>
+                <div class="team-icon">ðŸ½ï¸</div>
                 <div class="team-info">
-                    <h3>Nutrição</h3>
+                    <h3>NutriÃ§Ã£o</h3>
                     <div class="team-stats">
                         <span class="pendentes">2 pendentes</span>
                         <span class="andamento">4 em andamento</span>
@@ -5891,9 +5891,9 @@ window.carregarDadosDesenvolvimento = function() {
                 </div>
             </div>
             <div class="team-card" onclick="verSolicitacoesEquipe('higienizacao')">
-                <div class="team-icon">🧽</div>
+                <div class="team-icon">ðŸ§½</div>
                 <div class="team-info">
-                    <h3>Higienização</h3>
+                    <h3>HigienizaÃ§Ã£o</h3>
                     <div class="team-stats">
                         <span class="pendentes">4 pendentes</span>
                         <span class="andamento">6 em andamento</span>
@@ -5902,7 +5902,7 @@ window.carregarDadosDesenvolvimento = function() {
                 </div>
             </div>
             <div class="team-card" onclick="verSolicitacoesEquipe('hotelaria')">
-                <div class="team-icon">🏨</div>
+                <div class="team-icon">ðŸ¨</div>
                 <div class="team-info">
                     <h3>Hotelaria</h3>
                     <div class="team-stats">
@@ -5919,7 +5919,7 @@ window.carregarDadosDesenvolvimento = function() {
     console.log('[DEV] Dados simulados carregados');
 };
 
-// Função para enriquecer solicitações com dados do acompanhante
+// FunÃ§Ã£o para enriquecer solicitaÃ§Ãµes com dados do acompanhante
 async function enriquecerSolicitacoesComDados(equipes) {
     console.log('[ENRIQUECIMENTO] === INICIANDO ENRIQUECIMENTO DE DADOS ===');
     console.log('[ENRIQUECIMENTO] Equipes recebidas:', Object.keys(equipes));
@@ -5927,18 +5927,18 @@ async function enriquecerSolicitacoesComDados(equipes) {
     const equipesEnriquecidas = {};
     
     for (const [nomeEquipe, solicitacoes] of Object.entries(equipes)) {
-        console.log(`[ENRIQUECIMENTO] Processando equipe: ${nomeEquipe} com ${solicitacoes.length} solicitações`);
+        console.log(`[ENRIQUECIMENTO] Processando equipe: ${nomeEquipe} com ${solicitacoes.length} solicitaÃ§Ãµes`);
         
         equipesEnriquecidas[nomeEquipe] = await Promise.all(
             solicitacoes.map(async (solicitacao, index) => {
                 try {
-                    console.log(`[ENRIQUECIMENTO] [${index + 1}/${solicitacoes.length}] Processando solicitação:`, solicitacao.id);
+                    console.log(`[ENRIQUECIMENTO] [${index + 1}/${solicitacoes.length}] Processando solicitaÃ§Ã£o:`, solicitacao.id);
                     
                     const dadosAcompanhante = await buscarDadosAcompanhante(solicitacao);
                     
                     const solicitacaoEnriquecida = {
                         ...solicitacao,
-                        nomeAcompanhante: dadosAcompanhante.nome !== 'N/A' && dadosAcompanhante.nome !== 'Usuário' ? dadosAcompanhante.nome : null,
+                        nomeAcompanhante: dadosAcompanhante.nome !== 'N/A' && dadosAcompanhante.nome !== 'UsuÃ¡rio' ? dadosAcompanhante.nome : null,
                         quartoAcompanhante: dadosAcompanhante.quarto !== 'N/A' ? dadosAcompanhante.quarto : null
                     };
                     
@@ -5953,14 +5953,14 @@ async function enriquecerSolicitacoesComDados(equipes) {
                     
                     return solicitacaoEnriquecida;
                 } catch (error) {
-                    console.warn('[ENRIQUECIMENTO] Erro ao buscar dados do acompanhante para solicitação', solicitacao.id, ':', error);
+                    console.warn('[ENRIQUECIMENTO] Erro ao buscar dados do acompanhante para solicitaÃ§Ã£o', solicitacao.id, ':', error);
                     return solicitacao; // Retorna dados originais em caso de erro
                 }
             })
         );
     }
     
-    console.log('[ENRIQUECIMENTO] === ENRIQUECIMENTO CONCLUÍDO ===');
+    console.log('[ENRIQUECIMENTO] === ENRIQUECIMENTO CONCLUÃDO ===');
     return equipesEnriquecidas;
 }
 
@@ -5982,7 +5982,7 @@ function renderizarCardsEquipe(equipes) {
         }))
     });
     
-    // Remove loader visual ao finalizar renderização dos cards
+    // Remove loader visual ao finalizar renderizaÃ§Ã£o dos cards
     if (window._mainLoader) {
         window._mainLoader.remove();
         window._mainLoader = null;
@@ -5996,15 +5996,15 @@ function renderizarCardsEquipe(equipes) {
     };
     
     const equipesNomes = {
-        manutencao: 'Manutenção',
-        nutricao: 'Nutrição',
-        higienizacao: 'Higienização',
+        manutencao: 'ManutenÃ§Ã£o',
+        nutricao: 'NutriÃ§Ã£o',
+        higienizacao: 'HigienizaÃ§Ã£o',
         hotelaria: 'Hotelaria'
     };
     
-    // Função para formatar data e hora
+    // FunÃ§Ã£o para formatar data e hora
     function formatarDataHora(timestamp) {
-        if (!timestamp) return 'Não informado';
+        if (!timestamp) return 'NÃ£o informado';
         try {
             const data = new Date(timestamp);
             const hoje = new Date();
@@ -6014,25 +6014,25 @@ function renderizarCardsEquipe(equipes) {
             const diffMinutes = Math.floor(diffTime / (1000 * 60));
             
             if (diffDays > 0) {
-                return `há ${diffDays} dia${diffDays > 1 ? 's' : ''}`;
+                return `hÃ¡ ${diffDays} dia${diffDays > 1 ? 's' : ''}`;
             } else if (diffHours > 0) {
-                return `há ${diffHours} hora${diffHours > 1 ? 's' : ''}`;
+                return `hÃ¡ ${diffHours} hora${diffHours > 1 ? 's' : ''}`;
             } else if (diffMinutes > 0) {
-                return `há ${diffMinutes} minuto${diffMinutes > 1 ? 's' : ''}`;
+                return `hÃ¡ ${diffMinutes} minuto${diffMinutes > 1 ? 's' : ''}`;
             } else {
                 return 'agora mesmo';
             }
         } catch (error) {
-            return 'Tempo inválido';
+            return 'Tempo invÃ¡lido';
         }
     }
     
-    // Função para obter prioridade visual baseada no status e tempo
+    // FunÃ§Ã£o para obter prioridade visual baseada no status e tempo
     function obterPrioridade(solicitacao) {
         if (solicitacao.status === 'finalizada') return 'baixa';
         if (solicitacao.status === 'em-andamento') return 'media';
         
-        // Para solicitações pendentes, verificar tempo
+        // Para solicitaÃ§Ãµes pendentes, verificar tempo
         const agora = new Date();
         const criacao = new Date(solicitacao.dataCriacao);
         const diffHoras = (agora - criacao) / (1000 * 60 * 60);
@@ -6048,7 +6048,7 @@ function renderizarCardsEquipe(equipes) {
     // Limpar container
     gridContainer.innerHTML = '';
     
-    // Verificar se há equipes para mostrar
+    // Verificar se hÃ¡ equipes para mostrar
     const equipesParaMostrar = Object.keys(equipes).filter(equipe => 
         equipes[equipe] && Array.isArray(equipes[equipe])
     );
@@ -6057,8 +6057,8 @@ function renderizarCardsEquipe(equipes) {
         gridContainer.innerHTML = `
             <div class="empty-state" style="grid-column: 1 / -1; text-align: center; padding: 3rem;">
                 <i class="fas fa-inbox" style="font-size: 3rem; color: #cbd5e1; margin-bottom: 1rem;"></i>
-                <h3 style="color: #64748b; margin-bottom: 0.5rem;">Nenhuma solicitação encontrada</h3>
-                <p style="color: #94a3b8;">Não há solicitações para exibir no momento.</p>
+                <h3 style="color: #64748b; margin-bottom: 0.5rem;">Nenhuma solicitaÃ§Ã£o encontrada</h3>
+                <p style="color: #94a3b8;">NÃ£o hÃ¡ solicitaÃ§Ãµes para exibir no momento.</p>
             </div>
         `;
         return;
@@ -6068,9 +6068,9 @@ function renderizarCardsEquipe(equipes) {
     equipesParaMostrar.forEach(equipe => {
         const solicitacoes = equipes[equipe] || [];
         
-        // Ordenar solicitações por ordem de chegada (mais antigas primeiro)
+        // Ordenar solicitaÃ§Ãµes por ordem de chegada (mais antigas primeiro)
         const solicitacoesOrdenadas = [...solicitacoes].sort((a, b) => {
-            // Primeiro, ordenar por status (pendentes e em-andamento primeiro, finalizadas por último)
+            // Primeiro, ordenar por status (pendentes e em-andamento primeiro, finalizadas por Ãºltimo)
             const statusOrder = { 'pendente': 0, 'em-andamento': 1, 'finalizada': 2 };
             const statusA = statusOrder[a.status] || 3;
             const statusB = statusOrder[b.status] || 3;
@@ -6079,7 +6079,7 @@ function renderizarCardsEquipe(equipes) {
                 return statusA - statusB;
             }
             
-            // Para mesmo status, ordenar por data de criação (mais antigas primeiro)
+            // Para mesmo status, ordenar por data de criaÃ§Ã£o (mais antigas primeiro)
             const dataA = a.criadoEm ? (a.criadoEm.toDate ? a.criadoEm.toDate() : new Date(a.criadoEm)) :
                          a.dataAbertura ? (a.dataAbertura.toDate ? a.dataAbertura.toDate() : new Date(a.dataAbertura)) :
                          new Date(0);
@@ -6136,11 +6136,11 @@ function renderizarCardsEquipe(equipes) {
                 ${solicitacoes.length === 0 ? `
                     <div class="empty-state">
                         <i class="fas fa-${icones[equipe]}"></i>
-                        <p>Nenhuma solicitação de ${equipesNomes[equipe].toLowerCase()}</p>
+                        <p>Nenhuma solicitaÃ§Ã£o de ${equipesNomes[equipe].toLowerCase()}</p>
                     </div>
                 ` : `
                     ${solicitacoesOrdenadas.map((solicitacao, index) => {
-                        // DEBUG para rastrear dados da solicitação na renderização
+                        // DEBUG para rastrear dados da solicitaÃ§Ã£o na renderizaÃ§Ã£o
                         console.log(`[RENDER-DEBUG] Renderizando card ${index + 1}:`, {
                             id: solicitacao.id,
                             titulo: solicitacao.titulo || solicitacao.tipo,
@@ -6153,7 +6153,7 @@ function renderizarCardsEquipe(equipes) {
                             quartoParaExibir: solicitacao.quartoAcompanhante || solicitacao.quarto
                         });
                         
-                        // Verificar se usuário pode interagir com esta solicitação ou apenas visualizar
+                        // Verificar se usuÃ¡rio pode interagir com esta solicitaÃ§Ã£o ou apenas visualizar
                         const usuarioAdmin = window.usuarioAdmin || JSON.parse(localStorage.getItem('usuarioAdmin') || '{}');
                         const podeInteragir = usuarioAdmin.role === 'super_admin' || 
                                             (usuarioAdmin.isEquipe && usuarioAdmin.equipe === solicitacao.equipe);
@@ -6168,7 +6168,7 @@ function renderizarCardsEquipe(equipes) {
                              onclick="${podeInteragir ? `abrirSolicitacaoModal(${JSON.stringify(solicitacao).replace(/'/g, '&apos;')})` : `mostrarInfoVisualizacao('${solicitacao.id}')`}"
                              style="${apenasVisualizar ? 'opacity: 0.8; cursor: help;' : 'cursor: pointer;'}">
                             
-                            ${apenasVisualizar ? '<div class="badge-visualizacao">👀 Apenas Visualização</div>' : ''}
+                            ${apenasVisualizar ? '<div class="badge-visualizacao">ðŸ‘€ Apenas VisualizaÃ§Ã£o</div>' : ''}
                             
                             <div class="card-header">
                                 <div class="card-order-info">
@@ -6181,19 +6181,19 @@ function renderizarCardsEquipe(equipes) {
                                     <button class="action-btn view" title="${apenasVisualizar ? 'Visualizar detalhes' : 'Ver detalhes'}">
                                         <i class="fas fa-eye"></i>
                                     </button>
-                                    ${apenasVisualizar ? '<span style="font-size: 10px; color: #64748b;">👁️ Somente visualização</span>' : ''}
+                                    ${apenasVisualizar ? '<span style="font-size: 10px; color: #64748b;">ðŸ‘ï¸ Somente visualizaÃ§Ã£o</span>' : ''}
                                 </div>
                             </div>
                             
                             <div class="card-title">
                                 ${(() => {
-                                    // Priorizar titulo ou tipo, mas se não houver, usar o campo de descrição da equipe
+                                    // Priorizar titulo ou tipo, mas se nÃ£o houver, usar o campo de descriÃ§Ã£o da equipe
                                     if (solicitacao.titulo) return solicitacao.titulo;
                                     if (solicitacao.tipo) return solicitacao.tipo;
                                     if (solicitacao.descricao) return solicitacao.descricao;
                                     if (solicitacao.detalhes) return solicitacao.detalhes;
                                     if (solicitacao.observacoes) return solicitacao.observacoes;
-                                    return 'Solicitação sem título';
+                                    return 'SolicitaÃ§Ã£o sem tÃ­tulo';
                                 })()}
                             </div>
                             
@@ -6216,14 +6216,14 @@ function renderizarCardsEquipe(equipes) {
                                 ` : ''}
                                 
                                 ${(() => {
-                                    // Determinar o campo de descrição baseado na equipe
+                                    // Determinar o campo de descriÃ§Ã£o baseado na equipe
                                     let descricaoTexto = '';
                                     if (solicitacao.descricao && solicitacao.descricao !== solicitacao.titulo) {
-                                        descricaoTexto = solicitacao.descricao; // Manutenção
+                                        descricaoTexto = solicitacao.descricao; // ManutenÃ§Ã£o
                                     } else if (solicitacao.detalhes) {
-                                        descricaoTexto = solicitacao.detalhes; // Nutrição e Hotelaria
+                                        descricaoTexto = solicitacao.detalhes; // NutriÃ§Ã£o e Hotelaria
                                     } else if (solicitacao.observacoes) {
-                                        descricaoTexto = solicitacao.observacoes; // Higienização
+                                        descricaoTexto = solicitacao.observacoes; // HigienizaÃ§Ã£o
                                     }
                                     
                                     return descricaoTexto ? `
@@ -6250,9 +6250,9 @@ function renderizarCardsEquipe(equipes) {
                                     <span>${formatarDataHora(solicitacao.dataCriacao)}</span>
                                 </div>
                                 <div class="card-priority priority-${obterPrioridade(solicitacao)}">
-                                    ${obterPrioridade(solicitacao) === 'alta' ? '🔴' : 
-                                      obterPrioridade(solicitacao) === 'media' ? '🟡' : 
-                                      obterPrioridade(solicitacao) === 'normal' ? '🟢' : '⚪'}
+                                    ${obterPrioridade(solicitacao) === 'alta' ? 'ðŸ”´' : 
+                                      obterPrioridade(solicitacao) === 'media' ? 'ðŸŸ¡' : 
+                                      obterPrioridade(solicitacao) === 'normal' ? 'ðŸŸ¢' : 'âšª'}
                                 </div>
                             </div>
                         </div>
@@ -6264,20 +6264,20 @@ function renderizarCardsEquipe(equipes) {
         gridContainer.appendChild(panel);
     });
     
-    // Adicionar eventos aos cards após renderização
+    // Adicionar eventos aos cards apÃ³s renderizaÃ§Ã£o
     adicionarEventosSolicitacoes();
     
     console.log(`[DEBUG] Cards renderizados para ${equipesParaMostrar.length} equipe(s)`);
 }
 
-// === MODAL DE SOLICITAÇÃO (VERSÃO LIMPA) ===
+// === MODAL DE SOLICITAÃ‡ÃƒO (VERSÃƒO LIMPA) ===
 function abrirSolicitacaoModal(solicitacao) {
     debugLog('[DEBUG] Abrindo modal para:', solicitacao.id, 'Status:', solicitacao.status);
     mostrarModal(solicitacao);
 }
 
 function mostrarModal(solicitacao) {
-    // Criar modal se não existir
+    // Criar modal se nÃ£o existir
     let modal = document.getElementById('solicitacao-modal');
     if (!modal) {
         modal = document.createElement('div');
@@ -6287,7 +6287,7 @@ function mostrarModal(solicitacao) {
         modal.innerHTML = `
             <div class="modal-content" style="max-width: 600px; max-height: 80vh; overflow-y: auto; position: relative; background: white; border-radius: 12px; padding: 24px;">
                 <span onclick="fecharSolicitacaoModal()" style="position: absolute; top: 15px; right: 20px; font-size: 24px; cursor: pointer; color: #6b7280;">&times;</span>
-                <h2 style="margin-bottom: 20px; color: #374151; border-bottom: 2px solid #e5e7eb; padding-bottom: 10px;">Detalhes da Solicitação</h2>
+                <h2 style="margin-bottom: 20px; color: #374151; border-bottom: 2px solid #e5e7eb; padding-bottom: 10px;">Detalhes da SolicitaÃ§Ã£o</h2>
                 <div id="modal-detalhes"></div>
                 <div id="modal-acoes" style="margin-top: 20px; border-top: 1px solid #e5e7eb; padding-top: 15px;"></div>
                 <div style="margin-top: 20px; text-align: right;">
@@ -6301,11 +6301,11 @@ function mostrarModal(solicitacao) {
     // Buscar dados completos do acompanhante (nome + quarto) ANTES de mostrar o modal
     buscarDadosAcompanhante(solicitacao).then(dadosAcompanhante => {
         preencherDetalhesModal(solicitacao, dadosAcompanhante);
-        // Só mostrar modal DEPOIS que os dados foram carregados
+        // SÃ³ mostrar modal DEPOIS que os dados foram carregados
         modal.classList.remove('hidden');
     }).catch(error => {
         console.error('[MODAL] Erro ao buscar dados do acompanhante:', error);
-        // Se der erro, usar dados da própria solicitação e mostrar mesmo assim
+        // Se der erro, usar dados da prÃ³pria solicitaÃ§Ã£o e mostrar mesmo assim
         const dadosBasicos = {
             nome: solicitacao.usuarioNome || solicitacao.nome || 'Acompanhante',
             quarto: solicitacao.quarto || 'N/A',
@@ -6316,10 +6316,10 @@ function mostrarModal(solicitacao) {
     });
 }
 
-// Função para buscar dados completos do acompanhante (nome + quarto)
+// FunÃ§Ã£o para buscar dados completos do acompanhante (nome + quarto)
 async function buscarDadosAcompanhante(solicitacao) {
     console.log('[DEBUG-ACOMPANHANTE] === INICIANDO BUSCA DE DADOS ===');
-    console.log('[DEBUG-ACOMPANHANTE] Solicitação recebida:', {
+    console.log('[DEBUG-ACOMPANHANTE] SolicitaÃ§Ã£o recebida:', {
         id: solicitacao.id,
         titulo: solicitacao.titulo,
         usuarioEmail: solicitacao.usuarioEmail,
@@ -6330,32 +6330,32 @@ async function buscarDadosAcompanhante(solicitacao) {
     });
     
     try {
-        // **PRIORIDADE TOTAL: Dados da solicitação (agora sempre atualizados)**
+        // **PRIORIDADE TOTAL: Dados da solicitaÃ§Ã£o (agora sempre atualizados)**
         let nomeEncontrado = 'Acompanhante'; // fallback
         let quartoEncontrado = 'N/A'; // fallback
         
-        // 1. Nome: priorizar usuarioNome da solicitação
-        if (solicitacao.usuarioNome && solicitacao.usuarioNome !== 'Usuário') {
+        // 1. Nome: priorizar usuarioNome da solicitaÃ§Ã£o
+        if (solicitacao.usuarioNome && solicitacao.usuarioNome !== 'UsuÃ¡rio') {
             nomeEncontrado = solicitacao.usuarioNome;
-            console.log('[DEBUG-ACOMPANHANTE] ✅ Nome da solicitação (usuarioNome):', nomeEncontrado);
+            console.log('[DEBUG-ACOMPANHANTE] âœ… Nome da solicitaÃ§Ã£o (usuarioNome):', nomeEncontrado);
         } else if (solicitacao.usuarioEmail) {
             // Fallback: extrair do email
             const emailPart = solicitacao.usuarioEmail.split('@')[0];
             nomeEncontrado = emailPart;
-            console.log('[DEBUG-ACOMPANHANTE] ✅ Nome extraído do email:', nomeEncontrado);
+            console.log('[DEBUG-ACOMPANHANTE] âœ… Nome extraÃ­do do email:', nomeEncontrado);
         }
         
-        // 2. Quarto: primeiro tentar da solicitação, depois Firestore se necessário
+        // 2. Quarto: primeiro tentar da solicitaÃ§Ã£o, depois Firestore se necessÃ¡rio
         if (solicitacao.quarto && solicitacao.quarto !== 'N/A') {
             quartoEncontrado = solicitacao.quarto;
-            console.log('[DEBUG-ACOMPANHANTE] ✅ Quarto da solicitação:', quartoEncontrado);
+            console.log('[DEBUG-ACOMPANHANTE] âœ… Quarto da solicitaÃ§Ã£o:', quartoEncontrado);
         } else {
-            console.log('[DEBUG-ACOMPANHANTE] ⚠️ Quarto N/A na solicitação - buscando no Firestore...');
+            console.log('[DEBUG-ACOMPANHANTE] âš ï¸ Quarto N/A na solicitaÃ§Ã£o - buscando no Firestore...');
             
             // **BUSCAR NO FIRESTORE POR EMAIL SE QUARTO FOR N/A**
             if (solicitacao.usuarioEmail) {
                 try {
-                    console.log('[DEBUG-ACOMPANHANTE] 🔍 Buscando por email:', solicitacao.usuarioEmail);
+                    console.log('[DEBUG-ACOMPANHANTE] ðŸ” Buscando por email:', solicitacao.usuarioEmail);
                     
                     const usersSnapshot = await window.db.collection('usuarios_acompanhantes')
                         .where('email', '==', solicitacao.usuarioEmail)
@@ -6364,24 +6364,24 @@ async function buscarDadosAcompanhante(solicitacao) {
                     if (!usersSnapshot.empty) {
                         const userDoc = usersSnapshot.docs[0];
                         const userData = userDoc.data();
-                        console.log('[DEBUG-ACOMPANHANTE] ✅ Dados encontrados no Firestore:', userData);
+                        console.log('[DEBUG-ACOMPANHANTE] âœ… Dados encontrados no Firestore:', userData);
                         
-                        // Atualizar nome se não temos um melhor
+                        // Atualizar nome se nÃ£o temos um melhor
                         if (!solicitacao.usuarioNome && userData.nome) {
                             nomeEncontrado = userData.nome;
-                            console.log('[DEBUG-ACOMPANHANTE] ✅ Nome atualizado do Firestore:', nomeEncontrado);
+                            console.log('[DEBUG-ACOMPANHANTE] âœ… Nome atualizado do Firestore:', nomeEncontrado);
                         }
                         
                         // Atualizar quarto se encontrado
                         if (userData.quarto) {
                             quartoEncontrado = userData.quarto;
-                            console.log('[DEBUG-ACOMPANHANTE] 🏠 Quarto encontrado no Firestore:', quartoEncontrado);
+                            console.log('[DEBUG-ACOMPANHANTE] ðŸ  Quarto encontrado no Firestore:', quartoEncontrado);
                         }
                     } else {
-                        console.log('[DEBUG-ACOMPANHANTE] ⚠️ Usuário não encontrado no Firestore por email');
+                        console.log('[DEBUG-ACOMPANHANTE] âš ï¸ UsuÃ¡rio nÃ£o encontrado no Firestore por email');
                     }
                 } catch (firestoreError) {
-                    console.error('[DEBUG-ACOMPANHANTE] ❌ Erro ao buscar no Firestore:', firestoreError);
+                    console.error('[DEBUG-ACOMPANHANTE] âŒ Erro ao buscar no Firestore:', firestoreError);
                 }
             }
         }
@@ -6393,13 +6393,13 @@ async function buscarDadosAcompanhante(solicitacao) {
             encontrado: true
         };
         
-        console.log('[DEBUG-ACOMPANHANTE] ✅ RESULTADO FINAL:', resultado);
+        console.log('[DEBUG-ACOMPANHANTE] âœ… RESULTADO FINAL:', resultado);
         return resultado;
         
     } catch (error) {
-        console.error('[DEBUG-ACOMPANHANTE] ❌ ERRO:', error);
+        console.error('[DEBUG-ACOMPANHANTE] âŒ ERRO:', error);
         
-        // Retorno de emergência
+        // Retorno de emergÃªncia
         return {
             nome: solicitacao.usuarioNome || solicitacao.nome || 'Acompanhante',
             quarto: solicitacao.quarto || 'N/A',
@@ -6409,33 +6409,33 @@ async function buscarDadosAcompanhante(solicitacao) {
     }
 }
 
-// Função para buscar nome do acompanhante (mantida para compatibilidade)
+// FunÃ§Ã£o para buscar nome do acompanhante (mantida para compatibilidade)
 async function buscarNomeAcompanhante(solicitacao) {
     if (!solicitacao.usuarioId && !solicitacao.solicitanteId) {
-        return solicitacao.nome || 'Acompanhante não identificado';
+        return solicitacao.nome || 'Acompanhante nÃ£o identificado';
     }
 
     try {
-        // Verificar se o usuário atual tem permissão para acessar usuarios_acompanhantes
+        // Verificar se o usuÃ¡rio atual tem permissÃ£o para acessar usuarios_acompanhantes
         const user = window.auth.currentUser;
         if (!user) {
-            return solicitacao.nome || solicitacao.nomeAcompanhante || 'Acompanhante não identificado';
+            return solicitacao.nome || solicitacao.nomeAcompanhante || 'Acompanhante nÃ£o identificado';
         }
 
         try {
             const userData = await window.verificarUsuarioAdminJS(user);
             if (!userData || (userData.role !== 'super_admin' && userData.role !== 'admin')) {
-                // Usuário sem permissão - retornar dados da própria solicitação
-                return solicitacao.nome || solicitacao.nomeAcompanhante || 'Acompanhante não identificado';
+                // UsuÃ¡rio sem permissÃ£o - retornar dados da prÃ³pria solicitaÃ§Ã£o
+                return solicitacao.nome || solicitacao.nomeAcompanhante || 'Acompanhante nÃ£o identificado';
             }
         } catch (permError) {
-            return solicitacao.nome || solicitacao.nomeAcompanhante || 'Acompanhante não identificado';
+            return solicitacao.nome || solicitacao.nomeAcompanhante || 'Acompanhante nÃ£o identificado';
         }
 
-        // Tentar buscar nas duas possíveis coleções
+        // Tentar buscar nas duas possÃ­veis coleÃ§Ãµes
         const userId = solicitacao.usuarioId || solicitacao.solicitanteId;
         
-        // Primeiro tentar na coleção usuarios_acompanhantes (somente se tiver permissão)
+        // Primeiro tentar na coleÃ§Ã£o usuarios_acompanhantes (somente se tiver permissÃ£o)
         const acompanhanteRef = await window.db.collection('usuarios_acompanhantes').doc(userId).get();
         
         if (acompanhanteRef.exists) {
@@ -6443,17 +6443,17 @@ async function buscarNomeAcompanhante(solicitacao) {
             return data.nome || data.nomeCompleto || 'Acompanhante';
         }
         
-        // Se não encontrar, tentar buscar pelo email na Auth (fallback)
-        // Retornar nome da solicitação se existir
-        return solicitacao.nome || solicitacao.nomeAcompanhante || 'Acompanhante não identificado';
+        // Se nÃ£o encontrar, tentar buscar pelo email na Auth (fallback)
+        // Retornar nome da solicitaÃ§Ã£o se existir
+        return solicitacao.nome || solicitacao.nomeAcompanhante || 'Acompanhante nÃ£o identificado';
         
     } catch (error) {
         console.warn('[DEBUG] Erro ao buscar nome do acompanhante:', error);
-        return solicitacao.nome || solicitacao.nomeAcompanhante || 'Acompanhante não identificado';
+        return solicitacao.nome || solicitacao.nomeAcompanhante || 'Acompanhante nÃ£o identificado';
     }
 }
 
-// Função para preencher detalhes do modal
+// FunÃ§Ã£o para preencher detalhes do modal
 function preencherDetalhesModal(solicitacao, dadosAcompanhante) {
     const detalhesEl = document.getElementById('modal-detalhes');
     const acoesEl = document.getElementById('modal-acoes');
@@ -6472,14 +6472,14 @@ function preencherDetalhesModal(solicitacao, dadosAcompanhante) {
         
         const info = statusInfo[solicitacao.status] || statusInfo['pendente'];
         
-        // Calcular métricas de tempo para exibição
+        // Calcular mÃ©tricas de tempo para exibiÃ§Ã£o
         let metricas = '';
         const agora = new Date();
         
         if (solicitacao.criadoEm) {
             let dataCreacao;
             
-            // Verificar se criadoEm é um timestamp do Firestore ou uma string
+            // Verificar se criadoEm Ã© um timestamp do Firestore ou uma string
             if (solicitacao.criadoEm && typeof solicitacao.criadoEm.toDate === 'function') {
                 dataCreacao = solicitacao.criadoEm.toDate();
             } else if (solicitacao.criadoEm && typeof solicitacao.criadoEm === 'string') {
@@ -6489,22 +6489,22 @@ function preencherDetalhesModal(solicitacao, dadosAcompanhante) {
             } else if (solicitacao.dataAbertura && typeof solicitacao.dataAbertura === 'string') {
                 dataCreacao = new Date(solicitacao.dataAbertura);
             } else {
-                // Fallback: usar data atual se não conseguir parsear
+                // Fallback: usar data atual se nÃ£o conseguir parsear
                 dataCreacao = new Date();
-                console.warn('Não foi possível determinar data de criação para solicitação:', solicitacao.id);
+                console.warn('NÃ£o foi possÃ­vel determinar data de criaÃ§Ã£o para solicitaÃ§Ã£o:', solicitacao.id);
             }
             
             const tempoDesdeAbertura = Math.round((agora - dataCreacao) / (1000 * 60));
             
             metricas += `
                 <div style="background: #f3f4f6; padding: 12px; border-radius: 6px; margin: 12px 0;">
-                    <h4 style="margin: 0 0 8px 0; color: #374151; font-size: 14px;">⏱️ Métricas de Tempo</h4>
+                    <h4 style="margin: 0 0 8px 0; color: #374151; font-size: 14px;">â±ï¸ MÃ©tricas de Tempo</h4>
                     <div style="font-size: 13px; color: #6b7280;">
-                        <div><strong>Criado em:</strong> ${dataCreacao.toLocaleDateString('pt-BR')} às ${dataCreacao.toLocaleTimeString('pt-BR')}</div>
+                        <div><strong>Criado em:</strong> ${dataCreacao.toLocaleDateString('pt-BR')} Ã s ${dataCreacao.toLocaleTimeString('pt-BR')}</div>
                         <div><strong>Tempo desde abertura:</strong> ${tempoDesdeAbertura} min (${Math.round(tempoDesdeAbertura/60*10)/10}h)</div>
             `;
             
-            // Métricas específicas por status
+            // MÃ©tricas especÃ­ficas por status
             if (solicitacao.status === 'em-andamento' && solicitacao.dataInicioAtendimento) {
                 const inicioAtendimento = new Date(solicitacao.dataInicioAtendimento);
                 const tempoAtendimento = Math.round((agora - inicioAtendimento) / (1000 * 60));
@@ -6526,14 +6526,14 @@ function preencherDetalhesModal(solicitacao, dadosAcompanhante) {
                 const slaColor = slaStatus === 'cumprido' ? '#059669' : '#dc2626';
                 
                 metricas += `
-                        <div><strong>Tempo total de resolução:</strong> ${m.tempoTotal || tempoDesdeAbertura} min</div>
+                        <div><strong>Tempo total de resoluÃ§Ã£o:</strong> ${m.tempoTotal || tempoDesdeAbertura} min</div>
                         <div><strong>Tempo efetivo de trabalho:</strong> ${m.tempoTrabalho || 0} min</div>
                         <div><strong>SLA:</strong> <span style="color: ${slaColor}; font-weight: bold;">${slaStatus.toUpperCase()}</span> (limite: ${slaLimite} min)</div>
-                        <div><strong>Eficiência:</strong> ${m.tempoTrabalho && m.tempoTotal ? Math.round((m.tempoTrabalho / m.tempoTotal) * 100) : 0}%</div>
+                        <div><strong>EficiÃªncia:</strong> ${m.tempoTrabalho && m.tempoTotal ? Math.round((m.tempoTrabalho / m.tempoTotal) * 100) : 0}%</div>
                 `;
             }
             
-            // SLA em tempo real para solicitações não finalizadas
+            // SLA em tempo real para solicitaÃ§Ãµes nÃ£o finalizadas
             if (solicitacao.status !== 'finalizada') {
                 const slaConfig = {
                     'manutencao': 240, 'nutricao': 60, 'higienizacao': 120, 'hotelaria': 180
@@ -6566,12 +6566,12 @@ function preencherDetalhesModal(solicitacao, dadosAcompanhante) {
                     if (solicitacao.descricao) return solicitacao.descricao;
                     if (solicitacao.detalhes) return solicitacao.detalhes;
                     if (solicitacao.observacoes) return solicitacao.observacoes;
-                    return 'Solicitação';
+                    return 'SolicitaÃ§Ã£o';
                 })()}</div>
             </div>
             <div><strong>ID:</strong> ${solicitacao.id || 'N/A'}</div>
             <div><strong>Equipe:</strong> ${solicitacao.equipe || 'N/A'}</div>
-            <div><strong>Descrição:</strong> ${(() => {
+            <div><strong>DescriÃ§Ã£o:</strong> ${(() => {
                 if (solicitacao.descricao) return solicitacao.descricao;
                 if (solicitacao.detalhes) return solicitacao.detalhes;
                 if (solicitacao.observacoes) return solicitacao.observacoes;
@@ -6579,19 +6579,19 @@ function preencherDetalhesModal(solicitacao, dadosAcompanhante) {
             })()}</div>
             <div><strong>Quarto:</strong> ${dadosAcompanhante?.quarto || solicitacao.quarto || 'N/A'}</div>
             <div><strong>Solicitante:</strong> ${dadosAcompanhante?.nome || solicitacao.usuarioNome || solicitacao.nome || 'N/A'}</div>
-            ${solicitacao.responsavel ? `<div><strong>Responsável:</strong> ${solicitacao.responsavel}</div>` : ''}
-            ${solicitacao.solucao ? `<div><strong>Solução:</strong> ${solicitacao.solucao}</div>` : ''}
+            ${solicitacao.responsavel ? `<div><strong>ResponsÃ¡vel:</strong> ${solicitacao.responsavel}</div>` : ''}
+            ${solicitacao.solucao ? `<div><strong>SoluÃ§Ã£o:</strong> ${solicitacao.solucao}</div>` : ''}
             ${gerarSecaoEvidencias(solicitacao)}
             ${metricas}
         `;
         
-        // Verificar permissões e criar botões de ação
+        // Verificar permissÃµes e criar botÃµes de aÃ§Ã£o
         const usuarioAdmin = window.usuarioAdmin || JSON.parse(localStorage.getItem('usuarioAdmin') || '{}');
         const isEquipe = usuarioAdmin && (usuarioAdmin.role === 'equipe' || usuarioAdmin.isEquipe);
         const isSuperAdmin = usuarioAdmin && usuarioAdmin.role === 'super_admin';
         const podeAlterar = (isEquipe && usuarioAdmin.equipe === solicitacao.equipe) || isSuperAdmin;
         
-        console.log('🎯 MODAL DEBUG:', {
+        console.log('ðŸŽ¯ MODAL DEBUG:', {
             usuarioAdmin: usuarioAdmin,
             podeAlterar: podeAlterar,
             status: solicitacao.status,
@@ -6599,9 +6599,9 @@ function preencherDetalhesModal(solicitacao, dadosAcompanhante) {
             equipeSolicitacao: solicitacao.equipe
         });
         
-        // Criar botões apenas se usuário tem permissão e solicitação não está finalizada
+        // Criar botÃµes apenas se usuÃ¡rio tem permissÃ£o e solicitaÃ§Ã£o nÃ£o estÃ¡ finalizada
         if (acoesEl && podeAlterar && solicitacao.status !== 'finalizada') {
-            let botoesHTML = '<h4 style="margin-bottom: 12px; color: #374151;">Ações da Equipe:</h4><div style="display: flex; gap: 8px; flex-wrap: wrap;">';
+            let botoesHTML = '<h4 style="margin-bottom: 12px; color: #374151;">AÃ§Ãµes da Equipe:</h4><div style="display: flex; gap: 8px; flex-wrap: wrap;">';
             
             if (solicitacao.status === 'pendente') {
                 botoesHTML += `
@@ -6630,10 +6630,10 @@ function preencherDetalhesModal(solicitacao, dadosAcompanhante) {
             botoesHTML += '</div>';
             acoesEl.innerHTML = botoesHTML;
             
-            console.log('✅ BOTÕES CRIADOS:', botoesHTML);
+            console.log('âœ… BOTÃ•ES CRIADOS:', botoesHTML);
         } else {
             if (acoesEl) acoesEl.innerHTML = '';
-            console.log('❌ SEM BOTÕES:', { podeAlterar, status: solicitacao.status });
+            console.log('âŒ SEM BOTÃ•ES:', { podeAlterar, status: solicitacao.status });
         }
     }
 
@@ -6651,7 +6651,7 @@ function fecharSolicitacaoModal() {
         modal.classList.add('hidden');
         modal.style.display = 'none';
         
-        // Limpar conteúdo do modal para evitar problemas de estado
+        // Limpar conteÃºdo do modal para evitar problemas de estado
         const detalhesEl = document.getElementById('modal-detalhes');
         const acoesEl = document.getElementById('modal-acoes');
         
@@ -6670,18 +6670,18 @@ function adicionarEventosSolicitacoes() {
             e.stopPropagation();
             
             if (!card.dataset.solicitacao) {
-                console.error('[ERRO] Card sem dados de solicitação');
-                showToast('Erro', 'Dados da solicitação não encontrados', 'error');
+                console.error('[ERRO] Card sem dados de solicitaÃ§Ã£o');
+                showToast('Erro', 'Dados da solicitaÃ§Ã£o nÃ£o encontrados', 'error');
                 return;
             }
             
             try {
                 const solicitacao = JSON.parse(card.dataset.solicitacao.replace(/&apos;/g, "'"));
-                debugLog('[DEBUG] Abrindo modal para solicitação:', solicitacao.id);
+                debugLog('[DEBUG] Abrindo modal para solicitaÃ§Ã£o:', solicitacao.id);
                 abrirSolicitacaoModal(solicitacao);
             } catch (error) {
-                console.error('[ERRO] Falha ao parsear dados da solicitação:', error);
-                showToast('Erro', 'Erro ao carregar dados da solicitação', 'error');
+                console.error('[ERRO] Falha ao parsear dados da solicitaÃ§Ã£o:', error);
+                showToast('Erro', 'Erro ao carregar dados da solicitaÃ§Ã£o', 'error');
             }
         };
     });
@@ -6689,12 +6689,12 @@ function adicionarEventosSolicitacoes() {
     console.log(`[DEBUG] Eventos adicionados a ${document.querySelectorAll('.solicitacao-card').length} cards`);
 }
 
-// === SISTEMA DE PESQUISA DE SATISFAÇÃO ===
+// === SISTEMA DE PESQUISA DE SATISFAÃ‡ÃƒO ===
 
 function abrirPesquisaSatisfacao(solicitacaoId, solicitacaoData) {
-    debugLog('[DEBUG] Abrindo pesquisa de satisfação para:', solicitacaoId);
+    debugLog('[DEBUG] Abrindo pesquisa de satisfaÃ§Ã£o para:', solicitacaoId);
     
-    // Criar modal de pesquisa de satisfação
+    // Criar modal de pesquisa de satisfaÃ§Ã£o
     const modalSatisfacao = document.createElement('div');
     modalSatisfacao.id = 'modal-pesquisa-satisfacao';
     modalSatisfacao.style.cssText = `
@@ -6789,35 +6789,35 @@ function abrirPesquisaSatisfacao(solicitacaoId, solicitacaoData) {
                     Avalie nosso atendimento
                 </h2>
                 <p style="margin: 6px 0 0 0; opacity: 0.9; font-size: 13px;">
-                    Sua opinião é muito importante para nós!
+                    Sua opiniÃ£o Ã© muito importante para nÃ³s!
                 </p>
             </div>
             
             <div style="margin-bottom: 16px; padding: 12px; background: #f8fafc; border-radius: 8px; border-left: 4px solid #3b82f6;">
                 <div style="display: flex; align-items: center; margin-bottom: 6px;">
                     <i class="fas fa-tools" style="color: #3b82f6; margin-right: 8px;"></i>
-                    <strong style="color: #374151;">${solicitacaoData.equipe || 'Manutenção'}</strong>
+                    <strong style="color: #374151;">${solicitacaoData.equipe || 'ManutenÃ§Ã£o'}</strong>
                 </div>
                 <p style="margin: 0; color: #6b7280; font-size: 13px;">
-                    ${solicitacaoData.descricao || solicitacaoData.titulo || 'Teste elétrico'} | Quarto: ${solicitacaoData.quarto || '04/11'}
+                    ${solicitacaoData.descricao || solicitacaoData.titulo || 'Teste elÃ©trico'} | Quarto: ${solicitacaoData.quarto || '04/11'}
                 </p>
                 <p style="margin: 4px 0 0 0; color: #10b981; font-size: 12px; font-weight: 500;">
-                    <i class="fas fa-check-circle" style="margin-right: 4px;"></i>Finalizado há 12 horas
+                    <i class="fas fa-check-circle" style="margin-right: 4px;"></i>Finalizado hÃ¡ 12 horas
                 </p>
             </div>
             
             <div style="margin-bottom: 16px;">
                 <p style="margin: 0 0 12px 0; color: #374151; font-weight: 500; font-size: 14px;">
-                    Como você avalia o atendimento?
+                    Como vocÃª avalia o atendimento?
                 </p>
             </div>
             
             <div class="star-rating">
-                <span class="star" data-rating="1">⭐</span>
-                <span class="star" data-rating="2">⭐</span>
-                <span class="star" data-rating="3">⭐</span>
-                <span class="star" data-rating="4">⭐</span>
-                <span class="star" data-rating="5">⭐</span>
+                <span class="star" data-rating="1">â­</span>
+                <span class="star" data-rating="2">â­</span>
+                <span class="star" data-rating="3">â­</span>
+                <span class="star" data-rating="4">â­</span>
+                <span class="star" data-rating="5">â­</span>
             </div>
             
             <div id="rating-text" style="font-weight: 500; color: #6b7280; margin-bottom: 16px; min-height: 20px; font-size: 14px;">
@@ -6828,7 +6828,7 @@ function abrirPesquisaSatisfacao(solicitacaoId, solicitacaoData) {
                 <div style="display: flex; align-items: center; margin-bottom: 8px; justify-content: flex-start;">
                     <i class="fas fa-comment-alt" style="color: #6b7280; margin-right: 8px; font-size: 14px;"></i>
                     <label style="color: #374151; font-weight: 500; font-size: 14px;">
-                        Avalie aspectos específicos:
+                        Avalie aspectos especÃ­ficos:
                     </label>
                 </div>
                 
@@ -6836,11 +6836,11 @@ function abrirPesquisaSatisfacao(solicitacaoId, solicitacaoData) {
                 <div style="display: flex; justify-content: space-between; align-items: center; padding: 8px 12px; background: #f8fafc; border-radius: 6px; margin-bottom: 8px;">
                     <span style="color: #374151; font-size: 13px;">Rapidez</span>
                     <div class="aspect-rating" data-aspect="rapidez">
-                        <span class="aspect-star" data-rating="1">⭐</span>
-                        <span class="aspect-star" data-rating="2">⭐</span>
-                        <span class="aspect-star" data-rating="3">⭐</span>
-                        <span class="aspect-star" data-rating="4">⭐</span>
-                        <span class="aspect-star" data-rating="5">⭐</span>
+                        <span class="aspect-star" data-rating="1">â­</span>
+                        <span class="aspect-star" data-rating="2">â­</span>
+                        <span class="aspect-star" data-rating="3">â­</span>
+                        <span class="aspect-star" data-rating="4">â­</span>
+                        <span class="aspect-star" data-rating="5">â­</span>
                     </div>
                 </div>
                 
@@ -6848,11 +6848,11 @@ function abrirPesquisaSatisfacao(solicitacaoId, solicitacaoData) {
                 <div style="display: flex; justify-content: space-between; align-items: center; padding: 8px 12px; background: #f8fafc; border-radius: 6px; margin-bottom: 8px;">
                     <span style="color: #374151; font-size: 13px;">Qualidade</span>
                     <div class="aspect-rating" data-aspect="qualidade">
-                        <span class="aspect-star" data-rating="1">⭐</span>
-                        <span class="aspect-star" data-rating="2">⭐</span>
-                        <span class="aspect-star" data-rating="3">⭐</span>
-                        <span class="aspect-star" data-rating="4">⭐</span>
-                        <span class="aspect-star" data-rating="5">⭐</span>
+                        <span class="aspect-star" data-rating="1">â­</span>
+                        <span class="aspect-star" data-rating="2">â­</span>
+                        <span class="aspect-star" data-rating="3">â­</span>
+                        <span class="aspect-star" data-rating="4">â­</span>
+                        <span class="aspect-star" data-rating="5">â­</span>
                     </div>
                 </div>
                 
@@ -6860,17 +6860,17 @@ function abrirPesquisaSatisfacao(solicitacaoId, solicitacaoData) {
                 <div style="display: flex; justify-content: space-between; align-items: center; padding: 8px 12px; background: #f8fafc; border-radius: 6px; margin-bottom: 12px;">
                     <span style="color: #374151; font-size: 13px;">Atendimento</span>
                     <div class="aspect-rating" data-aspect="atendimento">
-                        <span class="aspect-star" data-rating="1">⭐</span>
-                        <span class="aspect-star" data-rating="2">⭐</span>
-                        <span class="aspect-star" data-rating="3">⭐</span>
-                        <span class="aspect-star" data-rating="4">⭐</span>
-                        <span class="aspect-star" data-rating="5">⭐</span>
+                        <span class="aspect-star" data-rating="1">â­</span>
+                        <span class="aspect-star" data-rating="2">â­</span>
+                        <span class="aspect-star" data-rating="3">â­</span>
+                        <span class="aspect-star" data-rating="4">â­</span>
+                        <span class="aspect-star" data-rating="5">â­</span>
                     </div>
                 </div>
                 
                 <textarea 
                     id="comentario-satisfacao" 
-                    placeholder="Conte-nos sobre sua experiência ou deixe sugestões..."
+                    placeholder="Conte-nos sobre sua experiÃªncia ou deixe sugestÃµes..."
                     style="width: 100%; height: 60px; padding: 10px; border: 1px solid #d1d5db; border-radius: 6px; resize: vertical; font-family: inherit; box-sizing: border-box; font-size: 13px; margin-top: 8px;"
                 ></textarea>
             </div>
@@ -6886,7 +6886,7 @@ function abrirPesquisaSatisfacao(solicitacaoId, solicitacaoData) {
                     onclick="enviarAvaliacao('${solicitacaoId}')" 
                     disabled
                     style="background: #6b7280; color: white; border: none; padding: 12px 24px; border-radius: 8px; cursor: not-allowed; font-weight: 500; min-width: 160px; transition: all 0.3s ease;">
-                    <i class="fas fa-paper-plane" style="margin-right: 6px;"></i>Enviar Avaliação
+                    <i class="fas fa-paper-plane" style="margin-right: 6px;"></i>Enviar AvaliaÃ§Ã£o
                 </button>
             </div>
         </div>
@@ -6907,11 +6907,11 @@ function abrirPesquisaSatisfacao(solicitacaoId, solicitacaoData) {
     });
     
     const textoAvaliacoes = {
-        1: '😞 Muito insatisfeito',
-        2: '😐 Insatisfeito', 
-        3: '😊 Neutro',
-        4: '😃 Satisfeito',
-        5: '🤩 Muito satisfeito'
+        1: 'ðŸ˜ž Muito insatisfeito',
+        2: 'ðŸ˜ Insatisfeito', 
+        3: 'ðŸ˜Š Neutro',
+        4: 'ðŸ˜ƒ Satisfeito',
+        5: 'ðŸ¤© Muito satisfeito'
     };
     
     stars.forEach((star, index) => {
@@ -6931,14 +6931,14 @@ function abrirPesquisaSatisfacao(solicitacaoId, solicitacaoData) {
             // Atualizar texto
             ratingText.textContent = textoAvaliacoes[avaliacaoSelecionada];
             
-            // Habilitar botão enviar
+            // Habilitar botÃ£o enviar
             if (btnEnviar) {
                 btnEnviar.disabled = false;
                 btnEnviar.style.background = '#10b981';
                 btnEnviar.style.cursor = 'pointer';
-                debugLog('[DEBUG] Botão habilitado para avaliação:', avaliacaoSelecionada);
+                debugLog('[DEBUG] BotÃ£o habilitado para avaliaÃ§Ã£o:', avaliacaoSelecionada);
             } else {
-                console.error('[ERRO] Botão enviar não encontrado!');
+                console.error('[ERRO] BotÃ£o enviar nÃ£o encontrado!');
             }
         });
         
@@ -6965,7 +6965,7 @@ function abrirPesquisaSatisfacao(solicitacaoId, solicitacaoData) {
         });
     });
     
-    // Funcionalidade para avaliações por aspectos
+    // Funcionalidade para avaliaÃ§Ãµes por aspectos
     const aspectRatings = {};
     const aspectContainers = document.querySelectorAll('.aspect-rating');
     
@@ -6990,7 +6990,7 @@ function abrirPesquisaSatisfacao(solicitacaoId, solicitacaoData) {
                     }
                 });
                 
-                debugLog('[DEBUG] Avaliação do aspecto', aspect + ':', rating);
+                debugLog('[DEBUG] AvaliaÃ§Ã£o do aspecto', aspect + ':', rating);
             });
             
             // Efeito hover para aspectos
@@ -7015,7 +7015,7 @@ function abrirPesquisaSatisfacao(solicitacaoId, solicitacaoData) {
         });
     });
     
-    // Salvar referência global para acesso nas funções onclick
+    // Salvar referÃªncia global para acesso nas funÃ§Ãµes onclick
     window.avaliacaoAtual = {
         solicitacaoId: solicitacaoId,
         getAvaliacao: () => avaliacaoSelecionada,
@@ -7024,15 +7024,15 @@ function abrirPesquisaSatisfacao(solicitacaoId, solicitacaoData) {
 }
 
 async function enviarAvaliacao(solicitacaoId) {
-    debugLog('[DEBUG] Iniciando envio de avaliação para:', solicitacaoId);
+    debugLog('[DEBUG] Iniciando envio de avaliaÃ§Ã£o para:', solicitacaoId);
     
     if (!window.avaliacaoAtual || window.avaliacaoAtual.getAvaliacao() === 0) {
-        showToast('Aviso', 'Por favor, selecione uma avaliação primeiro!', 'warning');
-        console.warn('[AVISO] Tentativa de envio sem avaliação selecionada');
+        showToast('Aviso', 'Por favor, selecione uma avaliaÃ§Ã£o primeiro!', 'warning');
+        console.warn('[AVISO] Tentativa de envio sem avaliaÃ§Ã£o selecionada');
         return;
     }
     
-    // Desabilitar botão para evitar múltiplos envios
+    // Desabilitar botÃ£o para evitar mÃºltiplos envios
     const btnEnviar = document.getElementById('btn-enviar-avaliacao');
     if (btnEnviar) {
         btnEnviar.disabled = true;
@@ -7045,7 +7045,7 @@ async function enviarAvaliacao(solicitacaoId) {
         const comentario = document.getElementById('comentario-satisfacao')?.value || '';
         const usuarioAdmin = window.usuarioAdmin || JSON.parse(localStorage.getItem('usuarioAdmin') || '{}');
         
-        // Capturar avaliações por aspectos
+        // Capturar avaliaÃ§Ãµes por aspectos
         const aspectosAvaliacao = {};
         const aspectContainers = document.querySelectorAll('.aspect-rating');
         aspectContainers.forEach(container => {
@@ -7054,7 +7054,7 @@ async function enviarAvaliacao(solicitacaoId) {
             aspectosAvaliacao[aspect] = stars.length;
         });
         
-        debugLog('[DEBUG] Dados da avaliação:', {
+        debugLog('[DEBUG] Dados da avaliaÃ§Ã£o:', {
             avaliacao,
             aspectos: aspectosAvaliacao,
             comentario: comentario.slice(0, 50) + '...',
@@ -7073,17 +7073,17 @@ async function enviarAvaliacao(solicitacaoId) {
             quarto: window.avaliacaoAtual.solicitacaoData.quarto
         };
         
-        // Verificar se Firebase está disponível
+        // Verificar se Firebase estÃ¡ disponÃ­vel
         if (!window.db) {
-            throw new Error('Firebase não está disponível');
+            throw new Error('Firebase nÃ£o estÃ¡ disponÃ­vel');
         }
         
         // Salvar no Firestore
-        debugLog('[DEBUG] Salvando avaliação no Firestore...');
+        debugLog('[DEBUG] Salvando avaliaÃ§Ã£o no Firestore...');
         await window.db.collection('avaliacoes_satisfacao').add(avaliacaoData);
         
-        // Atualizar solicitação com referência à avaliação
-        debugLog('[DEBUG] Atualizando solicitação com dados da avaliação...');
+        // Atualizar solicitaÃ§Ã£o com referÃªncia Ã  avaliaÃ§Ã£o
+        debugLog('[DEBUG] Atualizando solicitaÃ§Ã£o com dados da avaliaÃ§Ã£o...');
         await window.db.collection('solicitacoes').doc(solicitacaoId).update({
             avaliacaoSatisfacao: {
                 nota: avaliacao,
@@ -7103,30 +7103,30 @@ async function enviarAvaliacao(solicitacaoId) {
             });
         }
         
-        showToast('Sucesso', `Obrigado! Sua avaliação foi registrada com sucesso.`, 'success');
+        showToast('Sucesso', `Obrigado! Sua avaliaÃ§Ã£o foi registrada com sucesso.`, 'success');
         
-        console.log('✅ Avaliação de satisfação salva com sucesso:', avaliacaoData);
+        console.log('âœ… AvaliaÃ§Ã£o de satisfaÃ§Ã£o salva com sucesso:', avaliacaoData);
         
-        // Fechar modal após 2 segundos para que o usuário veja a mensagem
+        // Fechar modal apÃ³s 2 segundos para que o usuÃ¡rio veja a mensagem
         setTimeout(() => {
             fecharPesquisaSatisfacao();
         }, 2000);
         
     } catch (error) {
-        console.error('[ERRO] Falha ao salvar avaliação:', error);
+        console.error('[ERRO] Falha ao salvar avaliaÃ§Ã£o:', error);
         
-        // Reabilitar botão em caso de erro
+        // Reabilitar botÃ£o em caso de erro
         if (btnEnviar) {
             btnEnviar.disabled = false;
-            btnEnviar.innerHTML = '<i class="fas fa-paper-plane" style="margin-right: 4px;"></i>Enviar Avaliação';
+            btnEnviar.innerHTML = '<i class="fas fa-paper-plane" style="margin-right: 4px;"></i>Enviar AvaliaÃ§Ã£o';
             btnEnviar.style.background = '#10b981';
         }
         
-        let mensagemErro = 'Não foi possível salvar sua avaliação. Tente novamente.';
+        let mensagemErro = 'NÃ£o foi possÃ­vel salvar sua avaliaÃ§Ã£o. Tente novamente.';
         if (error.code === 'permission-denied') {
-            mensagemErro = 'Acesso negado. Verifique suas permissões.';
+            mensagemErro = 'Acesso negado. Verifique suas permissÃµes.';
         } else if (error.code === 'unavailable') {
-            mensagemErro = 'Serviço temporariamente indisponível. Tente novamente em alguns instantes.';
+            mensagemErro = 'ServiÃ§o temporariamente indisponÃ­vel. Tente novamente em alguns instantes.';
         }
         
         showToast('Erro', mensagemErro, 'error');
@@ -7142,23 +7142,23 @@ function fecharPesquisaSatisfacao() {
         }, 300);
     }
     
-    // Limpar referência global
+    // Limpar referÃªncia global
     if (window.avaliacaoAtual) {
         delete window.avaliacaoAtual;
     }
 }
 
-// Expor funções globalmente
+// Expor funÃ§Ãµes globalmente
 window.abrirPesquisaSatisfacao = abrirPesquisaSatisfacao;
 window.enviarAvaliacao = enviarAvaliacao;
 window.fecharPesquisaSatisfacao = fecharPesquisaSatisfacao;
 
-// Função de teste para debugar a pesquisa de satisfação
+// FunÃ§Ã£o de teste para debugar a pesquisa de satisfaÃ§Ã£o
 window.testarPesquisaSatisfacao = function() {
-    debugLog('[DEBUG] Testando pesquisa de satisfação...');
+    debugLog('[DEBUG] Testando pesquisa de satisfaÃ§Ã£o...');
     const dadosTeste = {
         id: 'teste-123',
-        descricao: 'Solicitação de teste para avaliação',
+        descricao: 'SolicitaÃ§Ã£o de teste para avaliaÃ§Ã£o',
         quarto: '101',
         equipe: 'manutencao',
         tipo: 'manutencao'
@@ -7166,22 +7166,22 @@ window.testarPesquisaSatisfacao = function() {
     abrirPesquisaSatisfacao('teste-123', dadosTeste);
 };
 
-// === DASHBOARD DE SATISFAÇÃO ===
+// === DASHBOARD DE SATISFAÃ‡ÃƒO ===
 
 async function abrirDashboardSatisfacao() {
-    debugLog('[DEBUG] Abrindo dashboard de satisfação...');
+    debugLog('[DEBUG] Abrindo dashboard de satisfaÃ§Ã£o...');
     
-    // Verificar permissões (super_admin e admin)
+    // Verificar permissÃµes (super_admin e admin)
     const usuarioAdmin = window.usuarioAdmin || JSON.parse(localStorage.getItem('usuarioAdmin') || '{}');
     const userRole = window.userRole || usuarioAdmin.role;
     
     if (!userRole || (userRole !== 'super_admin' && userRole !== 'admin')) {
-        showToast('Erro', 'Acesso negado. Apenas administradores podem ver relatórios de satisfação.', 'error');
+        showToast('Erro', 'Acesso negado. Apenas administradores podem ver relatÃ³rios de satisfaÃ§Ã£o.', 'error');
         return;
     }
     
     try {
-        // Buscar todas as avaliações
+        // Buscar todas as avaliaÃ§Ãµes
         const avaliacoesSnapshot = await window.db.collection('avaliacoes_satisfacao')
             .orderBy('dataAvaliacao', 'desc')
             .limit(100)
@@ -7190,9 +7190,9 @@ async function abrirDashboardSatisfacao() {
         const avaliacoes = [];
         avaliacoesSnapshot.forEach(doc => {
             const data = doc.data();
-            console.log('[DEBUG-SATISFACAO] Dados brutos da avaliação:', data);
-            console.log('[DEBUG-SATISFACAO] Campos da avaliação:', Object.keys(data));
-            console.log('[DEBUG-SATISFACAO] QUARTOS disponíveis:', {
+            console.log('[DEBUG-SATISFACAO] Dados brutos da avaliaÃ§Ã£o:', data);
+            console.log('[DEBUG-SATISFACAO] Campos da avaliaÃ§Ã£o:', Object.keys(data));
+            console.log('[DEBUG-SATISFACAO] QUARTOS disponÃ­veis:', {
                 quarto: data.quarto,
                 numeroQuarto: data.numeroQuarto,
                 quartoSolicitacao: data.quartoSolicitacao,
@@ -7218,8 +7218,8 @@ async function abrirDashboardSatisfacao() {
             avaliacoes.push({ id: doc.id, ...data });
         });
         
-        console.log('[DEBUG-SATISFACAO] Total de avaliações encontradas:', avaliacoes.length);
-        console.log('[DEBUG-SATISFACAO] Primeira avaliação (se existir):', avaliacoes[0]);
+        console.log('[DEBUG-SATISFACAO] Total de avaliaÃ§Ãµes encontradas:', avaliacoes.length);
+        console.log('[DEBUG-SATISFACAO] Primeira avaliaÃ§Ã£o (se existir):', avaliacoes[0]);
         
         // Criar modal do dashboard
         const modalDashboard = document.createElement('div');
@@ -7271,32 +7271,32 @@ async function abrirDashboardSatisfacao() {
                     
                     <h2 style="margin: 0; font-size: 28px; font-weight: 600; display: flex; align-items: center; gap: 12px;">
                         <i class="fas fa-star"></i>
-                        Dashboard de Pesquisa de Satisfação
+                        Dashboard de Pesquisa de SatisfaÃ§Ã£o
                     </h2>
                     <p style="margin: 8px 0 0 0; opacity: 0.9; font-size: 16px;">
-                        Análise das avaliações de satisfação dos serviços
+                        AnÃ¡lise das avaliaÃ§Ãµes de satisfaÃ§Ã£o dos serviÃ§os
                     </p>
                 </div>
                 
                 <div style="padding: 24px;">
-                    <!-- Métricas Gerais -->
+                    <!-- MÃ©tricas Gerais -->
                     <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 20px; margin-bottom: 32px;">
                         <div style="background: linear-gradient(135deg, #10b981 0%, #059669 100%); color: white; padding: 20px; border-radius: 12px; text-align: center;">
                             <i class="fas fa-star" style="font-size: 32px; margin-bottom: 8px;"></i>
                             <div style="font-size: 28px; font-weight: bold;">${metricas.mediaGeral.toFixed(1)}</div>
-                            <div style="opacity: 0.9;">Média Geral</div>
+                            <div style="opacity: 0.9;">MÃ©dia Geral</div>
                         </div>
                         
                         <div style="background: linear-gradient(135deg, #3b82f6 0%, #1e40af 100%); color: white; padding: 20px; border-radius: 12px; text-align: center;">
                             <i class="fas fa-poll" style="font-size: 32px; margin-bottom: 8px;"></i>
                             <div style="font-size: 28px; font-weight: bold;">${avaliacoes.length}</div>
-                            <div style="opacity: 0.9;">Total Avaliações</div>
+                            <div style="opacity: 0.9;">Total AvaliaÃ§Ãµes</div>
                         </div>
                         
                         <div style="background: linear-gradient(135deg, #8b5cf6 0%, #7c3aed 100%); color: white; padding: 20px; border-radius: 12px; text-align: center;">
                             <i class="fas fa-thumbs-up" style="font-size: 32px; margin-bottom: 8px;"></i>
                             <div style="font-size: 28px; font-weight: bold;">${metricas.percentualPositivo}%</div>
-                            <div style="opacity: 0.9;">Satisfação Positiva</div>
+                            <div style="opacity: 0.9;">SatisfaÃ§Ã£o Positiva</div>
                         </div>
                         
                         <div style="background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%); color: white; padding: 20px; border-radius: 12px; text-align: center;">
@@ -7306,11 +7306,11 @@ async function abrirDashboardSatisfacao() {
                         </div>
                     </div>
                     
-                    <!-- Métricas por Equipe -->
+                    <!-- MÃ©tricas por Equipe -->
                     <div style="background: #f9fafb; padding: 20px; border-radius: 12px; margin-bottom: 24px;">
                         <h3 style="margin: 0 0 16px 0; color: #374151; display: flex; align-items: center; gap: 8px;">
                             <i class="fas fa-users"></i>
-                            Satisfação por Equipe
+                            SatisfaÃ§Ã£o por Equipe
                         </h3>
                         <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 16px;">
                             ${Object.entries(metricas.porEquipe).map(([equipe, dados]) => `
@@ -7319,13 +7319,13 @@ async function abrirDashboardSatisfacao() {
                                         ${equipe}
                                     </div>
                                     <div style="display: flex; justify-content: space-between; margin-bottom: 4px;">
-                                        <span>Média:</span>
+                                        <span>MÃ©dia:</span>
                                         <span style="font-weight: bold; color: ${dados.media >= 4 ? '#10b981' : dados.media >= 3 ? '#f59e0b' : '#ef4444'};">
-                                            ${dados.media.toFixed(1)} ⭐
+                                            ${dados.media.toFixed(1)} â­
                                         </span>
                                     </div>
                                     <div style="display: flex; justify-content: space-between;">
-                                        <span>Avaliações:</span>
+                                        <span>AvaliaÃ§Ãµes:</span>
                                         <span style="font-weight: bold;">${dados.total}</span>
                                     </div>
                                 </div>
@@ -7333,11 +7333,11 @@ async function abrirDashboardSatisfacao() {
                         </div>
                     </div>
                     
-                    <!-- Avaliações Recentes -->
+                    <!-- AvaliaÃ§Ãµes Recentes -->
                     <div style="background: #f9fafb; padding: 20px; border-radius: 12px;">
                         <h3 style="margin: 0 0 16px 0; color: #374151; display: flex; align-items: center; gap: 8px;">
                             <i class="fas fa-clock"></i>
-                            Avaliações Recentes
+                            AvaliaÃ§Ãµes Recentes
                         </h3>
                         <div style="max-height: 400px; overflow-y: auto;">
                             ${avaliacoes.slice(0, 20).map(avaliacao => {
@@ -7388,17 +7388,17 @@ async function abrirDashboardSatisfacao() {
                         </div>
                     </div>
                     
-                    <!-- Botão de Exclusão de Pesquisas -->
+                    <!-- BotÃ£o de ExclusÃ£o de Pesquisas -->
                     <div style="border-top: 1px solid #e5e7eb; margin-top: 32px; padding-top: 24px;">
                         <div style="display: flex; justify-content: center; align-items: center; gap: 12px;">
                             <button onclick="confirmarExclusaoPesquisasSatisfacao()" 
                                     style="background: #dc2626; color: white; border: none; padding: 12px 24px; border-radius: 8px; 
                                            font-weight: 600; cursor: pointer; transition: all 0.3s ease; display: flex; align-items: center; gap: 8px;">
                                 <i class="fas fa-trash-alt"></i>
-                                Excluir Todas as Pesquisas de Satisfação
+                                Excluir Todas as Pesquisas de SatisfaÃ§Ã£o
                             </button>
                             <div style="color: #6b7280; font-size: 14px; max-width: 300px; text-align: center;">
-                                Esta ação remove permanentemente todas as avaliações de satisfação do sistema
+                                Esta aÃ§Ã£o remove permanentemente todas as avaliaÃ§Ãµes de satisfaÃ§Ã£o do sistema
                             </div>
                         </div>
                     </div>
@@ -7409,38 +7409,38 @@ async function abrirDashboardSatisfacao() {
         document.body.appendChild(modalDashboard);
         
     } catch (error) {
-        console.error('Erro ao carregar dashboard de satisfação:', error);
-        showToast('Erro', 'Não foi possível carregar o dashboard de satisfação.', 'error');
+        console.error('Erro ao carregar dashboard de satisfaÃ§Ã£o:', error);
+        showToast('Erro', 'NÃ£o foi possÃ­vel carregar o dashboard de satisfaÃ§Ã£o.', 'error');
     }
 }
 
-// === FUNÇÃO PARA EXCLUIR PESQUISAS DE SATISFAÇÃO ===
+// === FUNÃ‡ÃƒO PARA EXCLUIR PESQUISAS DE SATISFAÃ‡ÃƒO ===
 async function confirmarExclusaoPesquisasSatisfacao() {
-    const confirmacao = confirm(`⚠️ ATENÇÃO: EXCLUSÃO DE PESQUISAS DE SATISFAÇÃO
+    const confirmacao = confirm(`âš ï¸ ATENÃ‡ÃƒO: EXCLUSÃƒO DE PESQUISAS DE SATISFAÃ‡ÃƒO
 
-Esta ação irá excluir PERMANENTEMENTE:
+Esta aÃ§Ã£o irÃ¡ excluir PERMANENTEMENTE:
 
-📊 Todas as avaliações de satisfação da coleção 'avaliacoes_satisfacao'
-📝 Todos os dados de avaliação em solicitações existentes
-📈 Todo o histórico de pesquisas de satisfação
+ðŸ“Š Todas as avaliaÃ§Ãµes de satisfaÃ§Ã£o da coleÃ§Ã£o 'avaliacoes_satisfacao'
+ðŸ“ Todos os dados de avaliaÃ§Ã£o em solicitaÃ§Ãµes existentes
+ðŸ“ˆ Todo o histÃ³rico de pesquisas de satisfaÃ§Ã£o
 
-❌ ESTA AÇÃO NÃO PODE SER DESFEITA!
+âŒ ESTA AÃ‡ÃƒO NÃƒO PODE SER DESFEITA!
 
 Tem certeza de que deseja continuar?`);
 
     if (!confirmacao) {
-        console.log('[SATISFACAO-CLEANUP] Operação cancelada pelo usuário');
+        console.log('[SATISFACAO-CLEANUP] OperaÃ§Ã£o cancelada pelo usuÃ¡rio');
         return;
     }
 
     try {
-        console.log('[SATISFACAO-CLEANUP] 🧹 Iniciando exclusão de pesquisas de satisfação...');
-        showToast('Info', 'Iniciando exclusão das pesquisas de satisfação...', 'info');
+        console.log('[SATISFACAO-CLEANUP] ðŸ§¹ Iniciando exclusÃ£o de pesquisas de satisfaÃ§Ã£o...');
+        showToast('Info', 'Iniciando exclusÃ£o das pesquisas de satisfaÃ§Ã£o...', 'info');
 
         let totalExcluidos = 0;
 
-        // 1. Excluir coleção avaliacoes_satisfacao
-        console.log('[SATISFACAO-CLEANUP] Buscando documentos da coleção avaliacoes_satisfacao...');
+        // 1. Excluir coleÃ§Ã£o avaliacoes_satisfacao
+        console.log('[SATISFACAO-CLEANUP] Buscando documentos da coleÃ§Ã£o avaliacoes_satisfacao...');
         const avaliacoesSnapshot = await window.db.collection('avaliacoes_satisfacao').get();
         
         if (!avaliacoesSnapshot.empty) {
@@ -7451,11 +7451,11 @@ Tem certeza de que deseja continuar?`);
             });
             
             await batch.commit();
-            console.log(`[SATISFACAO-CLEANUP] ✅ ${totalExcluidos} avaliações excluídas da coleção avaliacoes_satisfacao`);
+            console.log(`[SATISFACAO-CLEANUP] âœ… ${totalExcluidos} avaliaÃ§Ãµes excluÃ­das da coleÃ§Ã£o avaliacoes_satisfacao`);
         }
 
-        // 2. Limpar campos de avaliação das solicitações
-        console.log('[SATISFACAO-CLEANUP] Limpando dados de avaliação das solicitações...');
+        // 2. Limpar campos de avaliaÃ§Ã£o das solicitaÃ§Ãµes
+        console.log('[SATISFACAO-CLEANUP] Limpando dados de avaliaÃ§Ã£o das solicitaÃ§Ãµes...');
         const solicitacoesSnapshot = await window.db.collection('solicitacoes')
             .where('avaliacaoSolicitada', '==', true)
             .get();
@@ -7477,12 +7477,12 @@ Tem certeza de que deseja continuar?`);
             });
             
             await batchSolicitacoes.commit();
-            console.log(`[SATISFACAO-CLEANUP] ✅ ${solicitacoesAtualizadas} solicitações com dados de avaliação limpos`);
+            console.log(`[SATISFACAO-CLEANUP] âœ… ${solicitacoesAtualizadas} solicitaÃ§Ãµes com dados de avaliaÃ§Ã£o limpos`);
         }
 
-        console.log(`[SATISFACAO-CLEANUP] ✅ Limpeza concluída! Total de registros processados: ${totalExcluidos + (solicitacoesSnapshot?.size || 0)}`);
+        console.log(`[SATISFACAO-CLEANUP] âœ… Limpeza concluÃ­da! Total de registros processados: ${totalExcluidos + (solicitacoesSnapshot?.size || 0)}`);
         
-        showToast('Sucesso', `Pesquisas de satisfação excluídas com sucesso! ${totalExcluidos} avaliações removidas.`, 'success');
+        showToast('Sucesso', `Pesquisas de satisfaÃ§Ã£o excluÃ­das com sucesso! ${totalExcluidos} avaliaÃ§Ãµes removidas.`, 'success');
         
         // Fechar modal e reabrir para mostrar dados limpos
         document.querySelectorAll('.modal').forEach(modal => modal.remove());
@@ -7492,16 +7492,16 @@ Tem certeza de que deseja continuar?`);
         }, 1000);
 
     } catch (error) {
-        console.error('[SATISFACAO-CLEANUP] ❌ Erro durante a exclusão:', error);
+        console.error('[SATISFACAO-CLEANUP] âŒ Erro durante a exclusÃ£o:', error);
         showToast('Erro', `Erro ao excluir pesquisas: ${error.message}`, 'error');
     }
 }
 
 function calcularMetricasSatisfacao(avaliacoes) {
-    console.log('[DEBUG-METRICAS] Calculando métricas para:', avaliacoes.length, 'avaliações');
+    console.log('[DEBUG-METRICAS] Calculando mÃ©tricas para:', avaliacoes.length, 'avaliaÃ§Ãµes');
     
     if (!avaliacoes || avaliacoes.length === 0) {
-        console.log('[DEBUG-METRICAS] Nenhuma avaliação encontrada, retornando valores padrão');
+        console.log('[DEBUG-METRICAS] Nenhuma avaliaÃ§Ã£o encontrada, retornando valores padrÃ£o');
         return {
             mediaGeral: 0,
             percentualPositivo: 0,
@@ -7510,7 +7510,7 @@ function calcularMetricasSatisfacao(avaliacoes) {
         };
     }
     
-    // Filtrar avaliações válidas
+    // Filtrar avaliaÃ§Ãµes vÃ¡lidas
     const avaliacoesValidas = avaliacoes.filter(a => {
         // Tentar diferentes campos para a nota
         let nota = a.avaliacao || a.nota || a.rating || a.estrelas;
@@ -7520,7 +7520,7 @@ function calcularMetricasSatisfacao(avaliacoes) {
         
         const valida = !isNaN(nota) && nota >= 1 && nota <= 5;
         if (!valida) {
-            console.log('[DEBUG-METRICAS] Avaliação inválida encontrada:', {
+            console.log('[DEBUG-METRICAS] AvaliaÃ§Ã£o invÃ¡lida encontrada:', {
                 id: a.id,
                 notaOriginal: a.avaliacao,
                 notaProcessada: nota,
@@ -7530,7 +7530,7 @@ function calcularMetricasSatisfacao(avaliacoes) {
         return valida;
     });
     
-    console.log('[DEBUG-METRICAS] Avaliações válidas:', avaliacoesValidas.length);
+    console.log('[DEBUG-METRICAS] AvaliaÃ§Ãµes vÃ¡lidas:', avaliacoesValidas.length);
     
     if (avaliacoesValidas.length === 0) {
         return {
@@ -7541,7 +7541,7 @@ function calcularMetricasSatisfacao(avaliacoes) {
         };
     }
     
-    // Calcular média geral
+    // Calcular mÃ©dia geral
     const somaTotal = avaliacoesValidas.reduce((soma, avaliacao) => {
         let nota = avaliacao.avaliacao || avaliacao.nota || avaliacao.rating || avaliacao.estrelas;
         if (typeof nota === 'string') {
@@ -7551,7 +7551,7 @@ function calcularMetricasSatisfacao(avaliacoes) {
     }, 0);
     const mediaGeral = somaTotal / avaliacoesValidas.length;
     
-    console.log('[DEBUG-METRICAS] Soma total:', somaTotal, 'Média geral:', mediaGeral);
+    console.log('[DEBUG-METRICAS] Soma total:', somaTotal, 'MÃ©dia geral:', mediaGeral);
     
     // Calcular percentual positivo (4 e 5 estrelas)
     const avaliacoesPositivas = avaliacoesValidas.filter(a => {
@@ -7563,9 +7563,9 @@ function calcularMetricasSatisfacao(avaliacoes) {
     }).length;
     const percentualPositivo = Math.round((avaliacoesPositivas / avaliacoesValidas.length) * 100);
     
-    console.log('[DEBUG-METRICAS] Avaliações positivas:', avaliacoesPositivas, 'Percentual:', percentualPositivo);
+    console.log('[DEBUG-METRICAS] AvaliaÃ§Ãµes positivas:', avaliacoesPositivas, 'Percentual:', percentualPositivo);
     
-    // Calcular métricas por equipe
+    // Calcular mÃ©tricas por equipe
     const porEquipe = {};
     avaliacoesValidas.forEach(avaliacao => {
         const equipe = avaliacao.equipaAvaliada || avaliacao.equipe || avaliacao.equipeResponsavel;
@@ -7583,7 +7583,7 @@ function calcularMetricasSatisfacao(avaliacoes) {
         }
     });
     
-    // Calcular médias por equipe
+    // Calcular mÃ©dias por equipe
     Object.keys(porEquipe).forEach(equipe => {
         porEquipe[equipe].media = porEquipe[equipe].soma / porEquipe[equipe].total;
     });
@@ -7592,7 +7592,7 @@ function calcularMetricasSatisfacao(avaliacoes) {
     let melhorEquipe = 'N/A';
     let melhorMedia = 0;
     Object.entries(porEquipe).forEach(([equipe, dados]) => {
-        if (dados.media > melhorMedia && dados.total >= 3) { // Mínimo 3 avaliações
+        if (dados.media > melhorMedia && dados.total >= 3) { // MÃ­nimo 3 avaliaÃ§Ãµes
             melhorMedia = dados.media;
             melhorEquipe = equipe;
         }
@@ -7606,9 +7606,9 @@ function calcularMetricasSatisfacao(avaliacoes) {
     };
 }
 
-// === SISTEMA DE EVIDÊNCIAS ===
+// === SISTEMA DE EVIDÃŠNCIAS ===
 
-// Variável global para armazenar os arquivos selecionados
+// VariÃ¡vel global para armazenar os arquivos selecionados
 let arquivosEvidencias = [];
 
 function handleEvidenciasUpload(input) {
@@ -7616,9 +7616,9 @@ function handleEvidenciasUpload(input) {
     const maxFiles = 5;
     const maxSizePerFile = 10 * 1024 * 1024; // 10MB em bytes
     
-    // Validações
+    // ValidaÃ§Ãµes
     if (files.length > maxFiles) {
-        showToast('Erro', `Máximo de ${maxFiles} arquivos permitidos.`, 'error');
+        showToast('Erro', `MÃ¡ximo de ${maxFiles} arquivos permitidos.`, 'error');
         input.value = '';
         return;
     }
@@ -7640,7 +7640,7 @@ function handleEvidenciasUpload(input) {
         const isValidType = allowedTypes.some(type => file.type.startsWith(type));
         
         if (!isValidType) {
-            showToast('Erro', `Arquivo "${file.name}" não é um tipo válido.`, 'error');
+            showToast('Erro', `Arquivo "${file.name}" nÃ£o Ã© um tipo vÃ¡lido.`, 'error');
             continue;
         }
         
@@ -7660,13 +7660,13 @@ function handleEvidenciasUpload(input) {
         return;
     }
     
-    // Armazenar arquivos válidos
+    // Armazenar arquivos vÃ¡lidos
     arquivosEvidencias = validFiles;
     
     // Mostrar preview dos arquivos
     mostrarPreviewEvidencias(validFiles);
     
-    console.log(`[DEBUG] ${validFiles.length} arquivo(s) selecionado(s) para evidências`);
+    console.log(`[DEBUG] ${validFiles.length} arquivo(s) selecionado(s) para evidÃªncias`);
 }
 
 function mostrarPreviewEvidencias(files) {
@@ -7682,11 +7682,11 @@ function mostrarPreviewEvidencias(files) {
         const fileInfo = document.createElement('div');
         fileInfo.style.cssText = 'display: flex; align-items: center; flex-grow: 1;';
         
-        // Ícone baseado no tipo de arquivo
-        let icon = '📄';
-        if (file.type.startsWith('image/')) icon = '🖼️';
-        else if (file.type.includes('pdf')) icon = '📄';
-        else if (file.type.includes('word')) icon = '📝';
+        // Ãcone baseado no tipo de arquivo
+        let icon = 'ðŸ“„';
+        if (file.type.startsWith('image/')) icon = 'ðŸ–¼ï¸';
+        else if (file.type.includes('pdf')) icon = 'ðŸ“„';
+        else if (file.type.includes('word')) icon = 'ðŸ“';
         
         fileInfo.innerHTML = `
             <span style="margin-right: 8px; font-size: 16px;">${icon}</span>
@@ -7710,7 +7710,7 @@ function mostrarPreviewEvidencias(files) {
     const totalElement = document.createElement('div');
     totalElement.style.cssText = 'text-align: center; color: #059669; font-size: 12px; margin-top: 8px; font-weight: 500;';
     const totalSize = files.reduce((sum, file) => sum + file.size, 0);
-    totalElement.textContent = `${files.length} arquivo(s) • ${formatarTamanhoArquivo(totalSize)}`;
+    totalElement.textContent = `${files.length} arquivo(s) â€¢ ${formatarTamanhoArquivo(totalSize)}`;
     previewContainer.appendChild(totalElement);
 }
 
@@ -7724,7 +7724,7 @@ function removerEvidencia(index) {
         input.value = '';
     }
     
-    console.log(`[DEBUG] Evidência removida. Total: ${arquivosEvidencias.length} arquivo(s)`);
+    console.log(`[DEBUG] EvidÃªncia removida. Total: ${arquivosEvidencias.length} arquivo(s)`);
 }
 
 function formatarTamanhoArquivo(bytes) {
@@ -7737,48 +7737,48 @@ function formatarTamanhoArquivo(bytes) {
 
 async function uploadEvidenciasParaFirebase(solicitacaoId) {
     if (arquivosEvidencias.length === 0) {
-        return []; // Retorna array vazio se não há arquivos
+        return []; // Retorna array vazio se nÃ£o hÃ¡ arquivos
     }
     
-    console.log(`[DEBUG] Iniciando upload de ${arquivosEvidencias.length} evidência(s)...`);
+    console.log(`[DEBUG] Iniciando upload de ${arquivosEvidencias.length} evidÃªncia(s)...`);
     
-    // Para esta implementação, vamos usar uma simulação de upload
-    // Em produção, você integraria com Firebase Storage ou outro serviço
+    // Para esta implementaÃ§Ã£o, vamos usar uma simulaÃ§Ã£o de upload
+    // Em produÃ§Ã£o, vocÃª integraria com Firebase Storage ou outro serviÃ§o
     const evidenciasUploadadas = [];
     
     try {
         for (let i = 0; i < arquivosEvidencias.length; i++) {
             const file = arquivosEvidencias[i];
             
-            // Simular upload (substituir por integração real)
+            // Simular upload (substituir por integraÃ§Ã£o real)
             const evidencia = {
                 nome: file.name,
                 tamanho: file.size,
                 tipo: file.type,
                 uploadedAt: new Date().toISOString(),
-                // Em produção, adicionar:
+                // Em produÃ§Ã£o, adicionar:
                 // url: urlDoArquivoNoStorage,
                 // path: caminhoNoStorage
             };
             
             evidenciasUploadadas.push(evidencia);
-            console.log(`[DEBUG] Evidência ${i + 1}/${arquivosEvidencias.length} processada: ${file.name}`);
+            console.log(`[DEBUG] EvidÃªncia ${i + 1}/${arquivosEvidencias.length} processada: ${file.name}`);
         }
         
-        console.log(`[DEBUG] Upload concluído: ${evidenciasUploadadas.length} evidência(s)`);
+        console.log(`[DEBUG] Upload concluÃ­do: ${evidenciasUploadadas.length} evidÃªncia(s)`);
         return evidenciasUploadadas;
         
     } catch (error) {
-        console.error('[ERRO] Falha no upload das evidências:', error);
-        throw new Error('Falha no upload das evidências: ' + error.message);
+        console.error('[ERRO] Falha no upload das evidÃªncias:', error);
+        throw new Error('Falha no upload das evidÃªncias: ' + error.message);
     }
 }
 
-// Expor funções globalmente
+// Expor funÃ§Ãµes globalmente
 window.handleEvidenciasUpload = handleEvidenciasUpload;
 window.removerEvidencia = removerEvidencia;
 
-// Funções para gerenciar evidências
+// FunÃ§Ãµes para gerenciar evidÃªncias
 function gerarSecaoEvidencias(solicitacao) {
     if (!solicitacao.evidencias || solicitacao.evidencias.length === 0) {
         return '';
@@ -7788,7 +7788,7 @@ function gerarSecaoEvidencias(solicitacao) {
         <div style="margin-top: 16px; padding-top: 16px; border-top: 1px solid #e5e7eb;">
             <h4 style="color: #374151; margin-bottom: 12px; font-size: 14px; font-weight: 600; display: flex; align-items: center;">
                 <i class="fas fa-paperclip" style="margin-right: 8px; color: #6b7280;"></i>
-                Evidências Anexadas (${solicitacao.evidencias.length})
+                EvidÃªncias Anexadas (${solicitacao.evidencias.length})
             </h4>
             <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(120px, 1fr)); gap: 12px;">
     `;
@@ -7830,7 +7830,7 @@ function formatarTamanhoArquivo(bytes) {
 
 window.visualizarEvidencia = function(url, nome, tipo) {
     if (tipo.startsWith('image/')) {
-        // Para imagens, criar modal de visualização
+        // Para imagens, criar modal de visualizaÃ§Ã£o
         const modal = document.createElement('div');
         modal.style.cssText = `
             position: fixed; top: 0; left: 0; right: 0; bottom: 0; 
@@ -7879,14 +7879,14 @@ function getCorAvaliacao(nota) {
 }
 
 function getEstrelasVisuais(nota) {
-    return '⭐'.repeat(nota) + '☆'.repeat(5 - nota);
+    return 'â­'.repeat(nota) + 'â˜†'.repeat(5 - nota);
 }
 
 function formatarDataHora(dataISO) {
     try {
         if (!dataISO) {
-            console.warn('[FORMATACAO] Data não fornecida');
-            return 'Data não informada';
+            console.warn('[FORMATACAO] Data nÃ£o fornecida');
+            return 'Data nÃ£o informada';
         }
         
         console.log('[FORMATACAO] Processando data:', dataISO, 'Tipo:', typeof dataISO);
@@ -7898,14 +7898,14 @@ function formatarDataHora(dataISO) {
             console.log('[FORMATACAO] Timestamp Firestore detectado:', { seconds: dataISO.seconds, nanoseconds: dataISO.nanoseconds });
             data = new Date(dataISO.seconds * 1000 + (dataISO.nanoseconds || 0) / 1000000);
         }
-        // Se for um timestamp do Firestore com método toDate()
+        // Se for um timestamp do Firestore com mÃ©todo toDate()
         else if (dataISO && typeof dataISO === 'object' && dataISO.toDate) {
             console.log('[FORMATACAO] Timestamp Firestore com toDate() detectado');
             data = dataISO.toDate();
         }
-        // Se for um número (timestamp em milissegundos)
+        // Se for um nÃºmero (timestamp em milissegundos)
         else if (typeof dataISO === 'number') {
-            console.log('[FORMATACAO] Timestamp numérico detectado:', dataISO);
+            console.log('[FORMATACAO] Timestamp numÃ©rico detectado:', dataISO);
             data = new Date(dataISO);
         }
         // Se for string
@@ -7920,14 +7920,14 @@ function formatarDataHora(dataISO) {
         }
         // Outros casos
         else {
-            console.log('[FORMATACAO] Tentando conversão direta para Date');
+            console.log('[FORMATACAO] Tentando conversÃ£o direta para Date');
             data = new Date(dataISO);
         }
         
-        // Verificar se a data é válida
+        // Verificar se a data Ã© vÃ¡lida
         if (isNaN(data.getTime())) {
-            console.warn('[FORMATACAO] Data inválida após conversão:', dataISO);
-            return 'Data inválida';
+            console.warn('[FORMATACAO] Data invÃ¡lida apÃ³s conversÃ£o:', dataISO);
+            return 'Data invÃ¡lida';
         }
         
         const resultado = data.toLocaleDateString('pt-BR') + ' ' + data.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' });
@@ -7947,70 +7947,70 @@ function fecharDashboardSatisfacao() {
     }
 }
 
-// Expor função globalmente
+// Expor funÃ§Ã£o globalmente
 window.abrirDashboardSatisfacao = abrirDashboardSatisfacao;
 
-// Função para mostrar informações de visualização para administradores
+// FunÃ§Ã£o para mostrar informaÃ§Ãµes de visualizaÃ§Ã£o para administradores
 function mostrarInfoVisualizacao(solicitacaoId) {
     const usuarioAdmin = window.usuarioAdmin || JSON.parse(localStorage.getItem('usuarioAdmin') || '{}');
     
     if (usuarioAdmin.role === 'admin') {
-        showToast('Informação', 'Como administrador, você pode visualizar todas as solicitações, mas não pode interagir com elas. Apenas as equipes responsáveis podem dar atendimento às solicitações.', 'info', 5000);
+        showToast('InformaÃ§Ã£o', 'Como administrador, vocÃª pode visualizar todas as solicitaÃ§Ãµes, mas nÃ£o pode interagir com elas. Apenas as equipes responsÃ¡veis podem dar atendimento Ã s solicitaÃ§Ãµes.', 'info', 5000);
     } else {
-        showToast('Aviso', 'Você não tem permissão para interagir com esta solicitação.', 'warning');
+        showToast('Aviso', 'VocÃª nÃ£o tem permissÃ£o para interagir com esta solicitaÃ§Ã£o.', 'warning');
     }
 }
 
 window.mostrarInfoVisualizacao = mostrarInfoVisualizacao;
 window.fecharDashboardSatisfacao = fecharDashboardSatisfacao;
 
-// =============== SISTEMA DE RELATÓRIOS ===============
+// =============== SISTEMA DE RELATÃ“RIOS ===============
 
-// Função para gerar relatório visual/dashboard
+// FunÃ§Ã£o para gerar relatÃ³rio visual/dashboard
 async function gerarRelatorioAdmin() {
     try {
-        debugLog('[DEBUG] gerarRelatorioAdmin: iniciando geração de relatório...');
+        debugLog('[DEBUG] gerarRelatorioAdmin: iniciando geraÃ§Ã£o de relatÃ³rio...');
         
         if (!window.db) {
-            showToast('Erro', 'Firestore não inicializado!', 'error');
+            showToast('Erro', 'Firestore nÃ£o inicializado!', 'error');
             return;
         }
 
         // Mostrar loading
-        showToast('Gerando...', 'Coletando dados para o relatório...', 'info');
+        showToast('Gerando...', 'Coletando dados para o relatÃ³rio...', 'info');
 
-        // Coletar todas as solicitações
+        // Coletar todas as solicitaÃ§Ãµes
         const snapshot = await window.db.collection('solicitacoes').get();
         const solicitacoes = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
 
-        console.log(`[DEBUG] gerarRelatorioAdmin: ${solicitacoes.length} solicitações encontradas`);
+        console.log(`[DEBUG] gerarRelatorioAdmin: ${solicitacoes.length} solicitaÃ§Ãµes encontradas`);
 
         if (solicitacoes.length === 0) {
-            showToast('Aviso', 'Nenhuma solicitação encontrada para gerar relatório', 'warning');
+            showToast('Aviso', 'Nenhuma solicitaÃ§Ã£o encontrada para gerar relatÃ³rio', 'warning');
             return;
         }
 
-        // Gerar relatório HTML
+        // Gerar relatÃ³rio HTML
         gerarRelatorioHTML(solicitacoes);
         
-        showToast('Sucesso', 'Relatório gerado com sucesso!', 'success');
+        showToast('Sucesso', 'RelatÃ³rio gerado com sucesso!', 'success');
 
     } catch (error) {
         console.error('[ERRO] gerarRelatorioAdmin:', error);
-        showToast('Erro', `Falha ao gerar relatório: ${error.message}`, 'error');
+        showToast('Erro', `Falha ao gerar relatÃ³rio: ${error.message}`, 'error');
     }
 }
 
-// Função para gerar relatório visual em HTML
+// FunÃ§Ã£o para gerar relatÃ³rio visual em HTML
 function gerarRelatorioHTML(solicitacoes) {
     const agora = new Date();
     const dataRelatorio = agora.toLocaleDateString('pt-BR');
     const horaRelatorio = agora.toLocaleTimeString('pt-BR');
 
-    // Calcular estatísticas
+    // Calcular estatÃ­sticas
     const stats = calcularEstatisticas(solicitacoes);
 
-    // Criar modal de relatório
+    // Criar modal de relatÃ³rio
     const modalRelatorio = document.createElement('div');
     modalRelatorio.id = 'modal-relatorio';
     modalRelatorio.style.cssText = `
@@ -8023,8 +8023,8 @@ function gerarRelatorioHTML(solicitacoes) {
         <div style="background: white; border-radius: 12px; padding: 24px; max-width: 90vw; max-height: 90vh; overflow-y: auto; box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);">
             <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; border-bottom: 2px solid #e5e7eb; padding-bottom: 15px;">
                 <div>
-                    <h2 style="margin: 0; color: #1f2937;">📊 Relatório de Solicitações</h2>
-                    <p style="margin: 5px 0 0 0; color: #6b7280; font-size: 14px;">Gerado em ${dataRelatorio} às ${horaRelatorio}</p>
+                    <h2 style="margin: 0; color: #1f2937;">ðŸ“Š RelatÃ³rio de SolicitaÃ§Ãµes</h2>
+                    <p style="margin: 5px 0 0 0; color: #6b7280; font-size: 14px;">Gerado em ${dataRelatorio} Ã s ${horaRelatorio}</p>
                 </div>
                 <button onclick="document.getElementById('modal-relatorio').remove()" 
                         style="background: #ef4444; color: white; border: none; padding: 8px 12px; border-radius: 6px; cursor: pointer;">
@@ -8034,11 +8034,11 @@ function gerarRelatorioHTML(solicitacoes) {
 
             <!-- Resumo Executivo -->
             <div style="background: #f8fafc; padding: 20px; border-radius: 8px; margin-bottom: 20px;">
-                <h3 style="margin: 0 0 15px 0; color: #374151;">📈 Resumo Executivo</h3>
+                <h3 style="margin: 0 0 15px 0; color: #374151;">ðŸ“ˆ Resumo Executivo</h3>
                 <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px;">
                     <div style="background: white; padding: 15px; border-radius: 6px; border-left: 4px solid #3b82f6;">
                         <div style="font-size: 24px; font-weight: bold; color: #3b82f6;">${stats.total}</div>
-                        <div style="color: #6b7280;">Total de Solicitações</div>
+                        <div style="color: #6b7280;">Total de SolicitaÃ§Ãµes</div>
                     </div>
                     <div style="background: white; padding: 15px; border-radius: 6px; border-left: 4px solid #10b981;">
                         <div style="font-size: 24px; font-weight: bold; color: #10b981;">${stats.finalizadas}</div>
@@ -8055,9 +8055,9 @@ function gerarRelatorioHTML(solicitacoes) {
                 </div>
             </div>
 
-            <!-- Estatísticas por Equipe -->
+            <!-- EstatÃ­sticas por Equipe -->
             <div style="margin-bottom: 20px;">
-                <h3 style="margin: 0 0 15px 0; color: #374151;">👥 Desempenho por Equipe</h3>
+                <h3 style="margin: 0 0 15px 0; color: #374151;">ðŸ‘¥ Desempenho por Equipe</h3>
                 <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 15px;">
                     ${Object.entries(stats.porEquipe).map(([equipe, dados]) => `
                         <div style="background: #f8fafc; padding: 15px; border-radius: 8px; border: 1px solid #e5e7eb;">
@@ -8067,7 +8067,7 @@ function gerarRelatorioHTML(solicitacoes) {
                             <div style="font-size: 14px; color: #6b7280;">
                                 <div>Total: <strong>${dados.total}</strong></div>
                                 <div>Finalizadas: <strong style="color: #10b981;">${dados.finalizadas}</strong></div>
-                                <div>Taxa Conclusão: <strong>${dados.total > 0 ? Math.round((dados.finalizadas / dados.total) * 100) : 0}%</strong></div>
+                                <div>Taxa ConclusÃ£o: <strong>${dados.total > 0 ? Math.round((dados.finalizadas / dados.total) * 100) : 0}%</strong></div>
                                 <div>TMA: <strong>${dados.tmaMedia || '--'}</strong></div>
                             </div>
                         </div>
@@ -8075,13 +8075,13 @@ function gerarRelatorioHTML(solicitacoes) {
                 </div>
             </div>
 
-            <!-- Lista Detalhada de Solicitações por Equipe -->
+            <!-- Lista Detalhada de SolicitaÃ§Ãµes por Equipe -->
             <div style="margin-bottom: 20px;">
-                <h3 style="margin: 0 0 15px 0; color: #374151;">📋 Lista Completa de Solicitações por Equipe</h3>
+                <h3 style="margin: 0 0 15px 0; color: #374151;">ðŸ“‹ Lista Completa de SolicitaÃ§Ãµes por Equipe</h3>
                 ${gerarListaDetalhada(solicitacoes, stats)}
             </div>
 
-            <!-- Botões de Ação -->
+            <!-- BotÃµes de AÃ§Ã£o -->
             <div style="display: flex; gap: 10px; justify-content: center; border-top: 1px solid #e5e7eb; padding-top: 20px;">
                 <button onclick="imprimirRelatorio()" style="background: #6366f1; color: white; border: none; padding: 10px 20px; border-radius: 6px; cursor: pointer;">
                     <i class="fas fa-print"></i> Imprimir
@@ -8096,7 +8096,7 @@ function gerarRelatorioHTML(solicitacoes) {
     document.body.appendChild(modalRelatorio);
 }
 
-// Função para calcular estatísticas
+// FunÃ§Ã£o para calcular estatÃ­sticas
 function calcularEstatisticas(solicitacoes) {
     const stats = {
         total: solicitacoes.length,
@@ -8123,13 +8123,13 @@ function calcularEstatisticas(solicitacoes) {
             stats.porEquipe[equipe].finalizadas++;
         }
 
-        // Calcular TMA se disponível
+        // Calcular TMA se disponÃ­vel
         if (sol.tempoAtendimentoMinutos) {
             stats.porEquipe[equipe].tempos.push(sol.tempoAtendimentoMinutos);
         }
     });
 
-    // Calcular TMA médio por equipe
+    // Calcular TMA mÃ©dio por equipe
     Object.keys(stats.porEquipe).forEach(equipe => {
         const tempos = stats.porEquipe[equipe].tempos;
         if (tempos.length > 0) {
@@ -8141,11 +8141,11 @@ function calcularEstatisticas(solicitacoes) {
     return stats;
 }
 
-// Função para gerar lista detalhada por equipe
+// FunÃ§Ã£o para gerar lista detalhada por equipe
 function gerarListaDetalhada(solicitacoes, stats) {
     const solicitacoesPorEquipe = {};
     
-    // Agrupar solicitações por equipe
+    // Agrupar solicitaÃ§Ãµes por equipe
     solicitacoes.forEach(sol => {
         const equipe = sol.equipe || 'sem-equipe';
         if (!solicitacoesPorEquipe[equipe]) {
@@ -8167,7 +8167,7 @@ function gerarListaDetalhada(solicitacoes, stats) {
             <div style="margin-bottom: 25px; border: 1px solid #e5e7eb; border-radius: 8px; overflow: hidden;">
                 <div style="background: ${getCorEquipe(equipe)}; color: white; padding: 15px;">
                     <h4 style="margin: 0; text-transform: capitalize;">
-                        <i class="fas fa-users"></i> ${equipe} (${solicitacoesEquipe.length} solicitações)
+                        <i class="fas fa-users"></i> ${equipe} (${solicitacoesEquipe.length} solicitaÃ§Ãµes)
                     </h4>
                 </div>
                 <div style="max-height: 400px; overflow-y: auto;">
@@ -8176,7 +8176,7 @@ function gerarListaDetalhada(solicitacoes, stats) {
                             <tr>
                                 <th style="padding: 10px; border-bottom: 1px solid #e5e7eb; text-align: left; font-size: 12px;">Data</th>
                                 <th style="padding: 10px; border-bottom: 1px solid #e5e7eb; text-align: left; font-size: 12px;">Tipo</th>
-                                <th style="padding: 10px; border-bottom: 1px solid #e5e7eb; text-align: left; font-size: 12px;">Descrição</th>
+                                <th style="padding: 10px; border-bottom: 1px solid #e5e7eb; text-align: left; font-size: 12px;">DescriÃ§Ã£o</th>
                                 <th style="padding: 10px; border-bottom: 1px solid #e5e7eb; text-align: left; font-size: 12px;">Quarto</th>
                                 <th style="padding: 10px; border-bottom: 1px solid #e5e7eb; text-align: left; font-size: 12px;">Status</th>
                                 <th style="padding: 10px; border-bottom: 1px solid #e5e7eb; text-align: left; font-size: 12px;">Prioridade</th>
@@ -8217,13 +8217,13 @@ function gerarListaDetalhada(solicitacoes, stats) {
     }).join('');
 }
 
-// Funções auxiliares para formatação
+// FunÃ§Ãµes auxiliares para formataÃ§Ã£o
 function getCorEquipe(equipe) {
     const cores = {
         'manutencao': '#ef4444',
-        'nutrição': '#22c55e',
+        'nutriÃ§Ã£o': '#22c55e',
         'nutricao': '#22c55e',
-        'higienização': '#3b82f6',
+        'higienizaÃ§Ã£o': '#3b82f6',
         'higienizacao': '#3b82f6',
         'hotelaria': '#a855f7',
         'default': '#6b7280'
@@ -8261,31 +8261,31 @@ function getCorPrioridade(prioridade) {
     return cores[prioridade?.toLowerCase()] || cores.normal;
 }
 
-// Função para exportar dados para Excel
+// FunÃ§Ã£o para exportar dados para Excel
 async function exportarDados() {
     try {
-        debugLog('[DEBUG] exportarDados: iniciando exportação...');
+        debugLog('[DEBUG] exportarDados: iniciando exportaÃ§Ã£o...');
         
         if (!window.XLSX) {
-            showToast('Erro', 'Biblioteca XLSX não carregada!', 'error');
+            showToast('Erro', 'Biblioteca XLSX nÃ£o carregada!', 'error');
             return;
         }
 
-        showToast('Exportando...', 'Preparando dados para exportação...', 'info');
+        showToast('Exportando...', 'Preparando dados para exportaÃ§Ã£o...', 'info');
 
         // Coletar dados
         const snapshot = await window.db.collection('solicitacoes').get();
         const solicitacoes = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
 
         if (solicitacoes.length === 0) {
-            showToast('Aviso', 'Nenhuma solicitação para exportar', 'warning');
+            showToast('Aviso', 'Nenhuma solicitaÃ§Ã£o para exportar', 'warning');
             return;
         }
 
-        // Debug: Verificar campos de data disponíveis
+        // Debug: Verificar campos de data disponÃ­veis
         if (solicitacoes.length > 0) {
             const primeiroItem = solicitacoes[0];
-            console.log('[DEBUG] Campos de data disponíveis na primeira solicitação:', {
+            console.log('[DEBUG] Campos de data disponÃ­veis na primeira solicitaÃ§Ã£o:', {
                 dataAbertura: primeiroItem.dataAbertura,
                 criadoEm: primeiroItem.criadoEm,
                 dataCriacao: primeiroItem.dataCriacao,
@@ -8301,7 +8301,7 @@ async function exportarDados() {
 
         // Preparar dados para Excel
         const dadosExcel = solicitacoes.map(sol => {
-            // Função para extrair data/hora dos diferentes campos possíveis
+            // FunÃ§Ã£o para extrair data/hora dos diferentes campos possÃ­veis
             const extrairDataHora = (solicitacao) => {
                 // Tentar diferentes campos de data em ordem de prioridade
                 const camposData = [
@@ -8346,11 +8346,11 @@ async function exportarDados() {
                 'Status': sol.status || '--',
                 'Quarto': sol.quarto || '--',
                 'Solicitante': sol.usuarioNome || sol.nome || '--',
-                'Descrição': sol.descricao || '--',
-                'Responsável': sol.responsavel || '--',
-                'Solução': sol.solucao || '--',
+                'DescriÃ§Ã£o': sol.descricao || '--',
+                'ResponsÃ¡vel': sol.responsavel || '--',
+                'SoluÃ§Ã£o': sol.solucao || '--',
                 'TMA (min)': sol.tempoAtendimentoMinutos || '--',
-                'Avaliação': sol.avaliacaoNota ? `${sol.avaliacaoNota}/5 estrelas` : '--'
+                'AvaliaÃ§Ã£o': sol.avaliacaoNota ? `${sol.avaliacaoNota}/5 estrelas` : '--'
             };
         });
 
@@ -8367,16 +8367,16 @@ async function exportarDados() {
             { wch: 12 }, // Status
             { wch: 10 }, // Quarto
             { wch: 20 }, // Solicitante
-            { wch: 30 }, // Descrição
-            { wch: 20 }, // Responsável
-            { wch: 30 }, // Solução
+            { wch: 30 }, // DescriÃ§Ã£o
+            { wch: 20 }, // ResponsÃ¡vel
+            { wch: 30 }, // SoluÃ§Ã£o
             { wch: 12 }, // TMA
-            { wch: 15 }  // Avaliação
+            { wch: 15 }  // AvaliaÃ§Ã£o
         ];
         worksheet['!cols'] = colWidths;
 
         // Adicionar ao workbook
-        XLSX.utils.book_append_sheet(workbook, worksheet, 'Solicitações');
+        XLSX.utils.book_append_sheet(workbook, worksheet, 'SolicitaÃ§Ãµes');
 
         // Gerar nome do arquivo
         const agora = new Date();
@@ -8391,28 +8391,28 @@ async function exportarDados() {
 
     } catch (error) {
         console.error('[ERRO] exportarDados:', error);
-        showToast('Erro', `Falha na exportação: ${error.message}`, 'error');
+        showToast('Erro', `Falha na exportaÃ§Ã£o: ${error.message}`, 'error');
     }
 }
 
-// Função para imprimir relatório
+// FunÃ§Ã£o para imprimir relatÃ³rio
 function imprimirRelatorio() {
     const conteudoModal = document.querySelector('#modal-relatorio > div').cloneNode(true);
     
-    // Remover botão de fechar e botões de ação para impressão
+    // Remover botÃ£o de fechar e botÃµes de aÃ§Ã£o para impressÃ£o
     const botaoFechar = conteudoModal.querySelector('button');
     if (botaoFechar) botaoFechar.remove();
     
     const botoesAcao = conteudoModal.querySelector('div:last-child');
     if (botoesAcao) botoesAcao.remove();
 
-    // Criar janela de impressão
+    // Criar janela de impressÃ£o
     const janelaImpressao = window.open('', '_blank');
     janelaImpressao.document.write(`
         <!DOCTYPE html>
         <html>
         <head>
-            <title>Relatório de Solicitações - YUNA</title>
+            <title>RelatÃ³rio de SolicitaÃ§Ãµes - YUNA</title>
             <style>
                 body { font-family: Arial, sans-serif; margin: 20px; }
                 @media print { body { margin: 0; } }
@@ -8434,39 +8434,39 @@ function imprimirRelatorio() {
     }, 250);
 }
 
-// Expor funções globalmente
+// Expor funÃ§Ãµes globalmente
 window.gerarRelatorioAdmin = gerarRelatorioAdmin;
 window.exportarDados = exportarDados;
 window.imprimirRelatorio = imprimirRelatorio;
 
 // =============== SISTEMA DE ACOMPANHANTES ===============
 
-// Função para cadastrar acompanhante
+// FunÃ§Ã£o para cadastrar acompanhante
 async function cadastrarAcompanhante() {
     try {
         debugLog('[DEBUG] cadastrarAcompanhante: iniciando cadastro...');
         
         if (!window.db || !window.auth) {
-            showToast('Erro', 'Firebase não inicializado!', 'error');
+            showToast('Erro', 'Firebase nÃ£o inicializado!', 'error');
             return;
         }
 
-        // Verificar permissões
+        // Verificar permissÃµes
         const usuarioAdmin = window.usuarioAdmin || JSON.parse(localStorage.getItem('usuarioAdmin') || '{}');
         if (!usuarioAdmin.role || usuarioAdmin.role !== 'super_admin') {
             showToast('Erro', 'Acesso negado. Apenas super administradores podem cadastrar acompanhantes.', 'error');
             return;
         }
 
-        // Coletar dados do formulário
+        // Coletar dados do formulÃ¡rio
         const nome = document.getElementById('acomp-nome')?.value?.trim();
         const email = document.getElementById('acomp-email')?.value?.trim();
         const quarto = document.getElementById('acomp-quarto')?.value?.trim();
         const senha = document.getElementById('acomp-senha')?.value?.trim();
 
-        // Validações
+        // ValidaÃ§Ãµes
         if (!nome || !email || !quarto || !senha) {
-            showToast('Erro', 'Todos os campos são obrigatórios!', 'error');
+            showToast('Erro', 'Todos os campos sÃ£o obrigatÃ³rios!', 'error');
             return;
         }
 
@@ -8478,37 +8478,37 @@ async function cadastrarAcompanhante() {
         // Validar formato do email
         const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
         if (!emailRegex.test(email)) {
-            showToast('Erro', 'E-mail em formato inválido!', 'error');
+            showToast('Erro', 'E-mail em formato invÃ¡lido!', 'error');
             return;
         }
 
         // Mostrar loading
         showToast('Cadastrando...', 'Criando conta do acompanhante...', 'info');
 
-        // Verificar se o email já existe
+        // Verificar se o email jÃ¡ existe
         const emailExiste = await verificarEmailExistente(email);
         if (emailExiste) {
-            showToast('Erro', 'Este e-mail já está cadastrado no sistema!', 'error');
+            showToast('Erro', 'Este e-mail jÃ¡ estÃ¡ cadastrado no sistema!', 'error');
             return;
         }
 
-        // Verificar se o quarto já está ocupado
-        console.log(`[DEBUG] cadastrarAcompanhante: verificando ocupação do quarto ${quarto}...`);
+        // Verificar se o quarto jÃ¡ estÃ¡ ocupado
+        console.log(`[DEBUG] cadastrarAcompanhante: verificando ocupaÃ§Ã£o do quarto ${quarto}...`);
         const quartoOcupado = await verificarQuartoOcupado(quarto);
         console.log(`[DEBUG] cadastrarAcompanhante: quarto ${quarto} ocupado?`, quartoOcupado);
         
         if (quartoOcupado) {
             console.log(`[DEBUG] cadastrarAcompanhante: EXIBINDO TOAST DE ERRO para quarto ${quarto}`);
-            showToast('Erro', `O quarto ${quarto} já possui um acompanhante cadastrado!`, 'error');
+            showToast('Erro', `O quarto ${quarto} jÃ¡ possui um acompanhante cadastrado!`, 'error');
             console.warn(`[AVISO] cadastrarAcompanhante: tentativa de cadastro em quarto ocupado: ${quarto}`);
-            console.log(`[DEBUG] cadastrarAcompanhante: RETORNANDO após mostrar erro`);
+            console.log(`[DEBUG] cadastrarAcompanhante: RETORNANDO apÃ³s mostrar erro`);
             return;
         }
 
-        // SOLUÇÃO ALTERNATIVA: Criar apenas no Firestore, não no Firebase Auth
-        // O usuário criará sua conta quando fizer o primeiro login no portal dos acompanhantes
+        // SOLUÃ‡ÃƒO ALTERNATIVA: Criar apenas no Firestore, nÃ£o no Firebase Auth
+        // O usuÃ¡rio criarÃ¡ sua conta quando fizer o primeiro login no portal dos acompanhantes
         
-        // Gerar um ID único para o acompanhante
+        // Gerar um ID Ãºnico para o acompanhante
         const acompanhanteId = window.db.collection('usuarios_acompanhantes').doc().id;
         
         debugLog('[DEBUG] cadastrarAcompanhante: criando acompanhante com ID:', acompanhanteId);
@@ -8521,7 +8521,7 @@ async function cadastrarAcompanhante() {
             senha: senha, // Armazenar temporariamente para primeiro login
             tipo: 'acompanhante',
             ativo: true,
-            preCadastro: true, // Flag indicando que ainda não foi ativado no Firebase Auth
+            preCadastro: true, // Flag indicando que ainda nÃ£o foi ativado no Firebase Auth
             criadoEm: new Date().toISOString(),
             criadoPor: usuarioAdmin.nome,
             id: acompanhanteId
@@ -8529,7 +8529,7 @@ async function cadastrarAcompanhante() {
 
         await window.db.collection('usuarios_acompanhantes').doc(acompanhanteId).set(dadosAcompanhante);
 
-        // Registrar ocupação do quarto
+        // Registrar ocupaÃ§Ã£o do quarto
         await window.db.collection('quartos_ocupados').doc(quarto).set({
             acompanhanteId: acompanhanteId,
             acompanhanteNome: nome,
@@ -8539,7 +8539,7 @@ async function cadastrarAcompanhante() {
 
         debugLog('[DEBUG] cadastrarAcompanhante: acompanhante salvo no Firestore (pre-cadastro)');
 
-        // Limpar formulário
+        // Limpar formulÃ¡rio
         document.getElementById('form-cadastro-acompanhante').reset();
 
         // Recarregar lista
@@ -8553,13 +8553,13 @@ async function cadastrarAcompanhante() {
         let mensagem = 'Erro ao cadastrar acompanhante: ';
         switch (error.code) {
             case 'auth/email-already-in-use':
-                mensagem += 'Este e-mail já está em uso.';
+                mensagem += 'Este e-mail jÃ¡ estÃ¡ em uso.';
                 break;
             case 'auth/weak-password':
                 mensagem += 'Senha muito fraca. Use pelo menos 6 caracteres.';
                 break;
             case 'auth/invalid-email':
-                mensagem += 'E-mail em formato inválido.';
+                mensagem += 'E-mail em formato invÃ¡lido.';
                 break;
             default:
                 mensagem += error.message || 'Erro desconhecido.';
@@ -8569,7 +8569,7 @@ async function cadastrarAcompanhante() {
     }
 }
 
-// Função para verificar se email já existe
+// FunÃ§Ã£o para verificar se email jÃ¡ existe
 async function verificarEmailExistente(email) {
     try {
         // Verificar em acompanhantes
@@ -8590,29 +8590,29 @@ async function verificarEmailExistente(email) {
     }
 }
 
-// Função para verificar se quarto já está ocupado
+// FunÃ§Ã£o para verificar se quarto jÃ¡ estÃ¡ ocupado
 async function verificarQuartoOcupado(quarto) {
     try {
         console.log(`[DEBUG] verificarQuartoOcupado: verificando quarto ${quarto}...`);
         
         if (!quarto || !quarto.trim()) {
-            console.warn('[AVISO] verificarQuartoOcupado: quarto vazio ou inválido');
+            console.warn('[AVISO] verificarQuartoOcupado: quarto vazio ou invÃ¡lido');
             return false;
         }
         
-        // Verificar na coleção quartos_ocupados
+        // Verificar na coleÃ§Ã£o quartos_ocupados
         const quartoDoc = await window.db.collection('quartos_ocupados').doc(quarto.trim()).get();
         const quartoExiste = quartoDoc.exists;
         
-        console.log(`[DEBUG] verificarQuartoOcupado: quarto ${quarto} existe na coleção quartos_ocupados?`, quartoExiste);
+        console.log(`[DEBUG] verificarQuartoOcupado: quarto ${quarto} existe na coleÃ§Ã£o quartos_ocupados?`, quartoExiste);
         
         if (quartoExiste) {
             const dadosQuarto = quartoDoc.data();
             console.log(`[DEBUG] verificarQuartoOcupado: dados do quarto ocupado:`, dadosQuarto);
         }
         
-        // Verificar também na coleção de usuários acompanhantes como backup
-        // Mas somente se o usuário tiver permissão
+        // Verificar tambÃ©m na coleÃ§Ã£o de usuÃ¡rios acompanhantes como backup
+        // Mas somente se o usuÃ¡rio tiver permissÃ£o
         let temAcompanhante = false;
         const user = window.auth.currentUser;
         
@@ -8624,21 +8624,21 @@ async function verificarQuartoOcupado(quarto) {
                         .where('quarto', '==', quarto.trim()).get();
                     
                     temAcompanhante = !acompSnap.empty;
-                    console.log(`[DEBUG] verificarQuartoOcupado: quarto ${quarto} tem acompanhante na coleção usuarios_acompanhantes?`, temAcompanhante);
+                    console.log(`[DEBUG] verificarQuartoOcupado: quarto ${quarto} tem acompanhante na coleÃ§Ã£o usuarios_acompanhantes?`, temAcompanhante);
                     
                     if (temAcompanhante) {
                         const acompanhantes = acompSnap.docs.map(doc => doc.data());
                         console.log(`[DEBUG] verificarQuartoOcupado: acompanhantes encontrados no quarto:`, acompanhantes);
                     }
                 } else {
-                    console.log(`[DEBUG] verificarQuartoOcupado: usuário sem permissão para verificar usuarios_acompanhantes`);
+                    console.log(`[DEBUG] verificarQuartoOcupado: usuÃ¡rio sem permissÃ£o para verificar usuarios_acompanhantes`);
                 }
             } catch (permError) {
-                console.log(`[DEBUG] verificarQuartoOcupado: erro de permissão ao acessar usuarios_acompanhantes:`, permError.message);
+                console.log(`[DEBUG] verificarQuartoOcupado: erro de permissÃ£o ao acessar usuarios_acompanhantes:`, permError.message);
             }
         }
         
-        // Retornar true se encontrou em qualquer uma das verificações
+        // Retornar true se encontrou em qualquer uma das verificaÃ§Ãµes
         const ocupado = quartoExiste || temAcompanhante;
         console.log(`[DEBUG] verificarQuartoOcupado: resultado final para quarto ${quarto}:`, ocupado);
         
@@ -8646,38 +8646,38 @@ async function verificarQuartoOcupado(quarto) {
         
     } catch (error) {
         console.error(`[ERRO] verificarQuartoOcupado: erro ao verificar quarto ${quarto}:`, error);
-        // Em caso de erro, assumir que o quarto não está ocupado para não bloquear cadastros
+        // Em caso de erro, assumir que o quarto nÃ£o estÃ¡ ocupado para nÃ£o bloquear cadastros
         return false;
     }
 }
 
-// Listener para atualizações em tempo real dos acompanhantes
+// Listener para atualizaÃ§Ãµes em tempo real dos acompanhantes
 let acompanhantesListener = null;
 
-// Função para configurar listener em tempo real para acompanhantes
+// FunÃ§Ã£o para configurar listener em tempo real para acompanhantes
 async function configurarListenerAcompanhantes() {
     debugLog('[DEBUG] configurarListenerAcompanhantes: configurando listener...');
     
     if (!window.db) {
-        console.warn('[AVISO] configurarListenerAcompanhantes: Firestore não inicializado');
+        console.warn('[AVISO] configurarListenerAcompanhantes: Firestore nÃ£o inicializado');
         return;
     }
 
-    // Verificar se usuário tem permissão para acessar acompanhantes
+    // Verificar se usuÃ¡rio tem permissÃ£o para acessar acompanhantes
     const user = window.auth.currentUser;
     if (!user) {
-        debugLog('[DEBUG] configurarListenerAcompanhantes: usuário não autenticado');
+        debugLog('[DEBUG] configurarListenerAcompanhantes: usuÃ¡rio nÃ£o autenticado');
         return;
     }
 
     try {
         const userData = await window.verificarUsuarioAdminJS(user);
         if (!userData || (userData.role !== 'super_admin' && userData.role !== 'admin')) {
-            debugLog('[DEBUG] configurarListenerAcompanhantes: usuário sem permissão para acompanhantes');
+            debugLog('[DEBUG] configurarListenerAcompanhantes: usuÃ¡rio sem permissÃ£o para acompanhantes');
             return;
         }
     } catch (error) {
-        debugLog('[DEBUG] configurarListenerAcompanhantes: erro ao verificar permissões:', error);
+        debugLog('[DEBUG] configurarListenerAcompanhantes: erro ao verificar permissÃµes:', error);
         return;
     }
 
@@ -8690,7 +8690,7 @@ async function configurarListenerAcompanhantes() {
     // Configurar listener em tempo real
     acompanhantesListener = window.db.collection('usuarios_acompanhantes').onSnapshot((snapshot) => {
         try {
-            debugLog('[DEBUG] Listener acompanhantes: atualização detectada');
+            debugLog('[DEBUG] Listener acompanhantes: atualizaÃ§Ã£o detectada');
             const acompanhantes = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
             atualizarListaAcompanhantes(acompanhantes);
         } catch (error) {
@@ -8701,7 +8701,7 @@ async function configurarListenerAcompanhantes() {
     });
 }
 
-// Função para atualizar a exibição da lista de acompanhantes
+// FunÃ§Ã£o para atualizar a exibiÃ§Ã£o da lista de acompanhantes
 function atualizarListaAcompanhantes(acompanhantes) {
     try {
         const listaElement = document.getElementById('lista-acompanhantes');
@@ -8714,7 +8714,7 @@ function atualizarListaAcompanhantes(acompanhantes) {
 
         const htmlLista = acompanhantes.map(acomp => {
             const statusBadge = acomp.preCadastro ?
-                '<span style="background: #fbbf24; color: white; padding: 2px 6px; border-radius: 4px; font-size: 10px;">AGUARDANDO ATIVAÇÃO</span>' :
+                '<span style="background: #fbbf24; color: white; padding: 2px 6px; border-radius: 4px; font-size: 10px;">AGUARDANDO ATIVAÃ‡ÃƒO</span>' :
                 '<span style="background: #10b981; color: white; padding: 2px 6px; border-radius: 4px; font-size: 10px;">ATIVO</span>';
 
             const ativadoHtml = acomp.preCadastro ?
@@ -8770,17 +8770,17 @@ function atualizarListaAcompanhantes(acompanhantes) {
     }
 }
 
-// Função para carregar lista de acompanhantes
+// FunÃ§Ã£o para carregar lista de acompanhantes
 async function carregarAcompanhantes() {
     try {
         debugLog('[DEBUG] carregarAcompanhantes: iniciando...');
         
         if (!window.db) {
-            console.warn('[AVISO] carregarAcompanhantes: Firestore não inicializado');
+            console.warn('[AVISO] carregarAcompanhantes: Firestore nÃ£o inicializado');
             return;
         }
 
-        // Configurar listener em tempo real se ainda não foi configurado
+        // Configurar listener em tempo real se ainda nÃ£o foi configurado
         if (!acompanhantesListener) {
             await configurarListenerAcompanhantes();
         }
@@ -8791,10 +8791,10 @@ async function carregarAcompanhantes() {
     }
 }
 
-// Função para remover acompanhante
+// FunÃ§Ã£o para remover acompanhante
 async function removerAcompanhante(acompanhanteId, quarto) {
     try {
-        if (!confirm('Tem certeza que deseja remover este acompanhante? Esta ação não pode ser desfeita.')) {
+        if (!confirm('Tem certeza que deseja remover este acompanhante? Esta aÃ§Ã£o nÃ£o pode ser desfeita.')) {
             return;
         }
 
@@ -8818,21 +8818,21 @@ async function removerAcompanhante(acompanhanteId, quarto) {
             debugLog('[DEBUG] removerAcompanhante: quarto liberado');
         }
 
-        // Se tem UID (conta foi ativada), também remover registros órfãos
+        // Se tem UID (conta foi ativada), tambÃ©m remover registros Ã³rfÃ£os
         if (acompanhanteData && acompanhanteData.uid) {
-            debugLog('[DEBUG] removerAcompanhante: removendo registros órfãos com UID:', acompanhanteData.uid);
+            debugLog('[DEBUG] removerAcompanhante: removendo registros Ã³rfÃ£os com UID:', acompanhanteData.uid);
             
-            // Remover possível documento duplicado com UID
+            // Remover possÃ­vel documento duplicado com UID
             try {
                 await window.db.collection('usuarios_acompanhantes').doc(acompanhanteData.uid).delete();
                 debugLog('[DEBUG] removerAcompanhante: documento UID removido');
             } catch (error) {
-                debugLog('[DEBUG] removerAcompanhante: documento UID não existe (normal)');
+                debugLog('[DEBUG] removerAcompanhante: documento UID nÃ£o existe (normal)');
             }
             
-            // Nota: Remoção do Firebase Auth requer Admin SDK no backend
-            // Por enquanto, a conta Firebase Auth permanecerá ativa mas sem dados no Firestore
-            console.warn('[AVISO] removerAcompanhante: conta Firebase Auth não foi removida (requer backend Admin SDK)');
+            // Nota: RemoÃ§Ã£o do Firebase Auth requer Admin SDK no backend
+            // Por enquanto, a conta Firebase Auth permanecerÃ¡ ativa mas sem dados no Firestore
+            console.warn('[AVISO] removerAcompanhante: conta Firebase Auth nÃ£o foi removida (requer backend Admin SDK)');
         }
 
         // Recarregar lista
@@ -8846,7 +8846,7 @@ async function removerAcompanhante(acompanhanteId, quarto) {
     }
 }
 
-// Função de teste para modal
+// FunÃ§Ã£o de teste para modal
 window.testarModal = function() {
     console.log('[TEST] Testando modal...');
     const modal = document.getElementById('modal-editar-acompanhante');
@@ -8864,40 +8864,40 @@ window.testarModal = function() {
     }
 };
 
-// Função para editar acompanhante (placeholder para implementação futura)
-// Variável para controlar se o modal está sendo processado
+// FunÃ§Ã£o para editar acompanhante (placeholder para implementaÃ§Ã£o futura)
+// VariÃ¡vel para controlar se o modal estÃ¡ sendo processado
 let editandoAcompanhante = false;
 let ultimoClickEditar = 0;
 
-// Função para editar acompanhante
+// FunÃ§Ã£o para editar acompanhante
 async function editarAcompanhante(acompanhanteId) {
-    console.log('🔧 BOTÃO EDITAR CLICADO! ID:', acompanhanteId);
+    console.log('ðŸ”§ BOTÃƒO EDITAR CLICADO! ID:', acompanhanteId);
     debugLog('[DEBUG] === INICIANDO editarAcompanhante ===');
     debugLog('[DEBUG] acompanhanteId recebido:', acompanhanteId);
     debugLog('[DEBUG] typeof acompanhanteId:', typeof acompanhanteId);
     
     try {
-        // Debounce para evitar cliques duplos muito rápidos
+        // Debounce para evitar cliques duplos muito rÃ¡pidos
         const agora = Date.now();
         if (agora - ultimoClickEditar < 1000) { // Aumentei para 1 segundo
-            debugLog('[DEBUG] editarAcompanhante: clique muito rápido, ignorando');
+            debugLog('[DEBUG] editarAcompanhante: clique muito rÃ¡pido, ignorando');
             return;
         }
         ultimoClickEditar = agora;
         
-        // Prevenir múltiplas execuções simultâneas
+        // Prevenir mÃºltiplas execuÃ§Ãµes simultÃ¢neas
         if (editandoAcompanhante) {
-            debugLog('[DEBUG] editarAcompanhante: já está processando, ignorando chamada duplicada');
+            debugLog('[DEBUG] editarAcompanhante: jÃ¡ estÃ¡ processando, ignorando chamada duplicada');
             return;
         }
         
         editandoAcompanhante = true;
-        debugLog('[DEBUG] editarAcompanhante: iniciando edição para ID:', acompanhanteId);
+        debugLog('[DEBUG] editarAcompanhante: iniciando ediÃ§Ã£o para ID:', acompanhanteId);
         
         // Verificar se o modal existe no DOM
         const modalElement = document.getElementById('modal-editar-acompanhante');
         if (!modalElement) {
-            console.error('[ERRO] Modal modal-editar-acompanhante não encontrado no DOM');
+            console.error('[ERRO] Modal modal-editar-acompanhante nÃ£o encontrado no DOM');
             editandoAcompanhante = false;
             return;
         }
@@ -8911,7 +8911,7 @@ async function editarAcompanhante(acompanhanteId) {
         const doc = await window.db.collection('usuarios_acompanhantes').doc(acompanhanteId).get();
         
         if (!doc.exists) {
-            showToast('Erro', 'Acompanhante não encontrado', 'error');
+            showToast('Erro', 'Acompanhante nÃ£o encontrado', 'error');
             editandoAcompanhante = false;
             return;
         }
@@ -8924,21 +8924,21 @@ async function editarAcompanhante(acompanhanteId) {
         document.getElementById('edit-acomp-nome').value = acompanhante.nome || '';
         document.getElementById('edit-acomp-email').value = acompanhante.email || '';
         document.getElementById('edit-acomp-quarto').value = acompanhante.quarto || '';
-        document.getElementById('edit-acomp-senha').value = ''; // Sempre vazio por segurança
+        document.getElementById('edit-acomp-senha').value = ''; // Sempre vazio por seguranÃ§a
         
         // Mostrar o modal
         const modalToShow = document.getElementById('modal-editar-acompanhante');
         debugLog('[DEBUG] === MOSTRANDO MODAL ===');
         debugLog('[DEBUG] Modal antes de remover hidden:', modalToShow.classList.toString());
         
-        // Garantir que o modal esteja anexado ao body (não dentro de uma seção)
+        // Garantir que o modal esteja anexado ao body (nÃ£o dentro de uma seÃ§Ã£o)
         if (modalToShow.parentElement !== document.body) {
-            debugLog('[DEBUG] Modal não está no body, movendo...');
+            debugLog('[DEBUG] Modal nÃ£o estÃ¡ no body, movendo...');
             document.body.appendChild(modalToShow);
         }
         
         modalToShow.classList.remove('hidden');
-        debugLog('[DEBUG] Modal após remover hidden:', modalToShow.classList.toString());
+        debugLog('[DEBUG] Modal apÃ³s remover hidden:', modalToShow.classList.toString());
         
         modalToShow.style.display = 'flex';
         modalToShow.style.visibility = 'visible';
@@ -8957,7 +8957,7 @@ async function editarAcompanhante(acompanhanteId) {
             zIndex: modalToShow.style.zIndex
         });
         
-        // Verificar se o modal está realmente visível
+        // Verificar se o modal estÃ¡ realmente visÃ­vel
         const computed = window.getComputedStyle(modalToShow);
         debugLog('[DEBUG] Modal computed style:', {
             display: computed.display,
@@ -8969,7 +8969,7 @@ async function editarAcompanhante(acompanhanteId) {
             left: computed.left
         });
         
-        // Verificar se há elementos pai que podem estar interferindo
+        // Verificar se hÃ¡ elementos pai que podem estar interferindo
         let parent = modalToShow.parentElement;
         let level = 0;
         while (parent && level < 5) {
@@ -8985,7 +8985,7 @@ async function editarAcompanhante(acompanhanteId) {
             level++;
         }
         
-        // Verificar se o modal está realmente na viewport
+        // Verificar se o modal estÃ¡ realmente na viewport
         const rect = modalToShow.getBoundingClientRect();
         debugLog('[DEBUG] Modal getBoundingClientRect:', {
             top: rect.top,
@@ -8995,7 +8995,7 @@ async function editarAcompanhante(acompanhanteId) {
             visible: rect.width > 0 && rect.height > 0
         });
         
-        // Tentar forçar ainda mais a visibilidade
+        // Tentar forÃ§ar ainda mais a visibilidade
         modalToShow.style.position = 'fixed';
         modalToShow.style.top = '0';
         modalToShow.style.left = '0';
@@ -9004,8 +9004,8 @@ async function editarAcompanhante(acompanhanteId) {
         modalToShow.style.zIndex = '99999';
         modalToShow.style.backgroundColor = 'rgba(0, 0, 0, 0.8)';
         
-        debugLog('[DEBUG] Modal forçado com estilos inline');
-        debugLog('[DEBUG] Modal de edição configurado com sucesso');
+        debugLog('[DEBUG] Modal forÃ§ado com estilos inline');
+        debugLog('[DEBUG] Modal de ediÃ§Ã£o configurado com sucesso');
         debugLog('[DEBUG] === FIM MOSTRAR MODAL ===');
         
         // Foco no primeiro campo
@@ -9017,28 +9017,28 @@ async function editarAcompanhante(acompanhanteId) {
         console.error('[ERRO] editarAcompanhante:', error);
         showToast('Erro', 'Erro ao carregar dados do acompanhante', 'error');
     } finally {
-        // Sempre resetar a variável de controle
+        // Sempre resetar a variÃ¡vel de controle
         editandoAcompanhante = false;
     }
 }
 
-// Função para fechar modal de edição
+// FunÃ§Ã£o para fechar modal de ediÃ§Ã£o
 function fecharModalEditarAcompanhante() {
-    debugLog('[DEBUG] Fechando modal de edição');
+    debugLog('[DEBUG] Fechando modal de ediÃ§Ã£o');
     
     const modal = document.getElementById('modal-editar-acompanhante');
     modal.classList.add('hidden');
     modal.style.display = 'none';
     
-    // Limpar formulário
+    // Limpar formulÃ¡rio
     document.getElementById('form-editar-acompanhante').reset();
     document.getElementById('edit-acomp-id').value = '';
     
-    // Resetar variável de controle
+    // Resetar variÃ¡vel de controle
     editandoAcompanhante = false;
 }
 
-// Função para salvar edição do acompanhante
+// FunÃ§Ã£o para salvar ediÃ§Ã£o do acompanhante
 async function salvarEdicaoAcompanhante(event) {
     event.preventDefault();
     
@@ -9050,20 +9050,20 @@ async function salvarEdicaoAcompanhante(event) {
         const novaSenha = document.getElementById('edit-acomp-senha').value.trim();
         
         if (!nome || !email || !quarto) {
-            showToast('Erro', 'Todos os campos obrigatórios devem ser preenchidos', 'error');
+            showToast('Erro', 'Todos os campos obrigatÃ³rios devem ser preenchidos', 'error');
             return;
         }
         
-        debugLog('[DEBUG] Salvando edição do acompanhante:', { acompanhanteId, nome, email, quarto });
+        debugLog('[DEBUG] Salvando ediÃ§Ã£o do acompanhante:', { acompanhanteId, nome, email, quarto });
         
-        showToast('Atualizando...', 'Salvando alterações...', 'info');
+        showToast('Atualizando...', 'Salvando alteraÃ§Ãµes...', 'info');
         
         // Buscar dados atuais para comparar quarto
         const docAtual = await window.db.collection('usuarios_acompanhantes').doc(acompanhanteId).get();
         const dadosAtuais = docAtual.data();
         const quartoAtual = dadosAtuais.quarto;
         
-        // Preparar dados para atualização
+        // Preparar dados para atualizaÃ§Ã£o
         const updateData = {
             nome,
             email,
@@ -9073,32 +9073,32 @@ async function salvarEdicaoAcompanhante(event) {
         
         // Se uma nova senha foi fornecida, atualizar no Firebase Auth
         if (novaSenha) {
-            debugLog('[DEBUG] Nova senha fornecida, atualizando autenticação...');
-            // Nota: Para atualizar senha no Firebase Auth seria necessário Admin SDK no backend
+            debugLog('[DEBUG] Nova senha fornecida, atualizando autenticaÃ§Ã£o...');
+            // Nota: Para atualizar senha no Firebase Auth seria necessÃ¡rio Admin SDK no backend
             // Por enquanto, apenas log que a funcionalidade precisa ser implementada
-            console.warn('[AVISO] Atualização de senha requer implementação no backend');
-            showToast('Aviso', 'Senha não pode ser alterada nesta versão. Contate o administrador.', 'warning');
+            console.warn('[AVISO] AtualizaÃ§Ã£o de senha requer implementaÃ§Ã£o no backend');
+            showToast('Aviso', 'Senha nÃ£o pode ser alterada nesta versÃ£o. Contate o administrador.', 'warning');
         }
         
         // Verificar se o quarto mudou para atualizar a tabela de quartos ocupados
         if (quartoAtual !== quarto) {
             debugLog('[DEBUG] Quarto alterado de', quartoAtual, 'para', quarto);
             
-            // Verificar se o novo quarto já está ocupado
+            // Verificar se o novo quarto jÃ¡ estÃ¡ ocupado
             const quartoOcupado = await window.db.collection('quartos_ocupados').doc(quarto).get();
             if (quartoOcupado.exists) {
-                showToast('Erro', `Quarto ${quarto} já está ocupado por outro acompanhante`, 'error');
+                showToast('Erro', `Quarto ${quarto} jÃ¡ estÃ¡ ocupado por outro acompanhante`, 'error');
                 return;
             }
             
-            // Transação para atualizar quarto
+            // TransaÃ§Ã£o para atualizar quarto
             await window.db.runTransaction(async (transaction) => {
-                // Remover ocupação do quarto antigo
+                // Remover ocupaÃ§Ã£o do quarto antigo
                 if (quartoAtual) {
                     transaction.delete(window.db.collection('quartos_ocupados').doc(quartoAtual));
                 }
                 
-                // Adicionar ocupação do novo quarto
+                // Adicionar ocupaÃ§Ã£o do novo quarto
                 transaction.set(window.db.collection('quartos_ocupados').doc(quarto), {
                     acompanhanteId: acompanhanteId,
                     email: email,
@@ -9110,7 +9110,7 @@ async function salvarEdicaoAcompanhante(event) {
                 transaction.update(window.db.collection('usuarios_acompanhantes').doc(acompanhanteId), updateData);
             });
         } else {
-            // Apenas atualizar dados do acompanhante (quarto não mudou)
+            // Apenas atualizar dados do acompanhante (quarto nÃ£o mudou)
             await window.db.collection('usuarios_acompanhantes').doc(acompanhanteId).update(updateData);
         }
         
@@ -9122,11 +9122,11 @@ async function salvarEdicaoAcompanhante(event) {
         
     } catch (error) {
         console.error('[ERRO] salvarEdicaoAcompanhante:', error);
-        showToast('Erro', `Erro ao salvar alterações: ${error.message}`, 'error');
+        showToast('Erro', `Erro ao salvar alteraÃ§Ãµes: ${error.message}`, 'error');
     }
 }
 
-// Expor funções globalmente
+// Expor funÃ§Ãµes globalmente
 window.cadastrarAcompanhante = cadastrarAcompanhante;
 window.carregarAcompanhantes = carregarAcompanhantes;
 window.configurarListenerAcompanhantes = configurarListenerAcompanhantes;
@@ -9136,19 +9136,19 @@ window.editarAcompanhante = editarAcompanhante;
 window.fecharModalEditarAcompanhante = fecharModalEditarAcompanhante;
 window.salvarEdicaoAcompanhante = salvarEdicaoAcompanhante;
 
-// === FUNÇÕES DE LIMPEZA E MANUTENÇÃO ===
+// === FUNÃ‡Ã•ES DE LIMPEZA E MANUTENÃ‡ÃƒO ===
 
-// Função para limpar dados de teste
+// FunÃ§Ã£o para limpar dados de teste
 window.limparDadosTeste = async function() {
-    // Verificar permissões primeiro
+    // Verificar permissÃµes primeiro
     const usuarioAdmin = window.usuarioAdmin || JSON.parse(localStorage.getItem('usuarioAdmin') || '{}');
     if (!usuarioAdmin || usuarioAdmin.role !== 'super_admin') {
         showToast('Erro', 'Acesso negado! Apenas super administradores podem executar limpeza de dados.', 'error');
         return;
     }
     
-    // 1. Perguntar a data para exclusão
-    const dataInput = prompt('📅 LIMPEZA SELETIVA DE DADOS\n\nDigite a data limite para exclusão (formato: DD/MM/AAAA)\n\nSerão removidas todas as solicitações ANTES desta data.\n\nExemplo: 01/01/2024\n\nDeixe em branco para limpar TUDO:');
+    // 1. Perguntar a data para exclusÃ£o
+    const dataInput = prompt('ðŸ“… LIMPEZA SELETIVA DE DADOS\n\nDigite a data limite para exclusÃ£o (formato: DD/MM/AAAA)\n\nSerÃ£o removidas todas as solicitaÃ§Ãµes ANTES desta data.\n\nExemplo: 01/01/2024\n\nDeixe em branco para limpar TUDO:');
     
     let dataLimite = null;
     let textoConfirmacao = '';
@@ -9159,7 +9159,7 @@ window.limparDadosTeste = async function() {
         const match = dataInput.match(regex);
         
         if (!match) {
-            showToast('Erro', 'Formato de data inválido. Use DD/MM/AAAA', 'error');
+            showToast('Erro', 'Formato de data invÃ¡lido. Use DD/MM/AAAA', 'error');
             return;
         }
         
@@ -9167,26 +9167,26 @@ window.limparDadosTeste = async function() {
         dataLimite = new Date(ano, mes - 1, dia);
         
         if (isNaN(dataLimite.getTime())) {
-            showToast('Erro', 'Data inválida.', 'error');
+            showToast('Erro', 'Data invÃ¡lida.', 'error');
             return;
         }
         
-        textoConfirmacao = `solicitações ANTES de ${dataInput}`;
+        textoConfirmacao = `solicitaÃ§Ãµes ANTES de ${dataInput}`;
     } else {
-        textoConfirmacao = 'TODAS as solicitações e pesquisas de satisfação';
+        textoConfirmacao = 'TODAS as solicitaÃ§Ãµes e pesquisas de satisfaÃ§Ã£o';
         dataLimite = null;
     }
     
-    // 2. Primeira confirmação
-    if (!confirm(`⚠️ ATENÇÃO: Esta ação irá remover ${textoConfirmacao} do sistema.\n\nEsta ação é IRREVERSÍVEL!\n\nDeseja continuar?`)) {
+    // 2. Primeira confirmaÃ§Ã£o
+    if (!confirm(`âš ï¸ ATENÃ‡ÃƒO: Esta aÃ§Ã£o irÃ¡ remover ${textoConfirmacao} do sistema.\n\nEsta aÃ§Ã£o Ã© IRREVERSÃVEL!\n\nDeseja continuar?`)) {
         return;
     }
     
-    // 3. Segunda confirmação com entrada de texto
-    const confirmacao = prompt(`⚠️ CONFIRMAÇÃO FINAL\n\nPara confirmar que deseja limpar ${textoConfirmacao}, digite exatamente: CONFIRMAR LIMPEZA\n\n(Digite "CONFIRMAR LIMPEZA" sem aspas)`);
+    // 3. Segunda confirmaÃ§Ã£o com entrada de texto
+    const confirmacao = prompt(`âš ï¸ CONFIRMAÃ‡ÃƒO FINAL\n\nPara confirmar que deseja limpar ${textoConfirmacao}, digite exatamente: CONFIRMAR LIMPEZA\n\n(Digite "CONFIRMAR LIMPEZA" sem aspas)`);
     
     if (confirmacao !== 'CONFIRMAR LIMPEZA') {
-        showToast('Info', 'Operação cancelada. Texto de confirmação incorreto.', 'info');
+        showToast('Info', 'OperaÃ§Ã£o cancelada. Texto de confirmaÃ§Ã£o incorreto.', 'info');
         return;
     }
     
@@ -9195,8 +9195,8 @@ window.limparDadosTeste = async function() {
         
         let totalRemovido = 0;
         
-        // 1. Buscar e remover solicitações (com ou sem filtro de data)
-        console.log('[LIMPEZA] Buscando solicitações...');
+        // 1. Buscar e remover solicitaÃ§Ãµes (com ou sem filtro de data)
+        console.log('[LIMPEZA] Buscando solicitaÃ§Ãµes...');
         
         let query = window.db.collection('solicitacoes');
         
@@ -9208,7 +9208,7 @@ window.limparDadosTeste = async function() {
         const solicitacoesSnapshot = await query.get();
         
         if (!solicitacoesSnapshot.empty) {
-            console.log(`[LIMPEZA] Encontradas ${solicitacoesSnapshot.size} solicitações para remover`);
+            console.log(`[LIMPEZA] Encontradas ${solicitacoesSnapshot.size} solicitaÃ§Ãµes para remover`);
             
             // Remover em lotes para melhor performance
             const batch = window.db.batch();
@@ -9219,22 +9219,22 @@ window.limparDadosTeste = async function() {
                 batchCount++;
                 totalRemovido++;
                 
-                // Firestore permite máximo 500 operações por batch
+                // Firestore permite mÃ¡ximo 500 operaÃ§Ãµes por batch
                 if (batchCount >= 500) {
                     batch.commit();
                     batchCount = 0;
                 }
             });
             
-            // Commit do último batch se houver operações pendentes
+            // Commit do Ãºltimo batch se houver operaÃ§Ãµes pendentes
             if (batchCount > 0) {
                 await batch.commit();
             }
             
-            console.log(`[LIMPEZA] ${solicitacoesSnapshot.size} solicitações removidas`);
+            console.log(`[LIMPEZA] ${solicitacoesSnapshot.size} solicitaÃ§Ãµes removidas`);
         }
         
-        // 2. Buscar e remover quartos ocupados órfãos
+        // 2. Buscar e remover quartos ocupados Ã³rfÃ£os
         console.log('[LIMPEZA] Verificando quartos ocupados...');
         const quartosSnapshot = await window.db.collection('quartos_ocupados').get();
         
@@ -9251,18 +9251,18 @@ window.limparDadosTeste = async function() {
             console.log(`[LIMPEZA] ${quartosSnapshot.size} registros de quartos removidos`);
         }
         
-        // 3. Limpar dados de satisfação incorporados nas solicitações (já removidos com as solicitações)
+        // 3. Limpar dados de satisfaÃ§Ã£o incorporados nas solicitaÃ§Ãµes (jÃ¡ removidos com as solicitaÃ§Ãµes)
         
-        console.log(`[LIMPEZA] ✅ Limpeza concluída! Total de ${totalRemovido} registros removidos.`);
+        console.log(`[LIMPEZA] âœ… Limpeza concluÃ­da! Total de ${totalRemovido} registros removidos.`);
         
-        // Mostrar resultado com informação da data
-        const dataInfo = dataLimite ? `\n📅 Dados removidos: anteriores a ${dataInput}` : '\n📅 Dados removidos: TODOS os registros';
-        const successMessage = `✅ Limpeza concluída com sucesso!${dataInfo}\n\n📊 Resumo:\n- Solicitações removidas: ${solicitacoesSnapshot.size || 0}\n- Quartos liberados: ${quartosSnapshot.size || 0}\n- Total de registros: ${totalRemovido}\n\n${dataLimite ? 'Limpeza seletiva' : 'Limpeza completa'} realizada!`;
+        // Mostrar resultado com informaÃ§Ã£o da data
+        const dataInfo = dataLimite ? `\nðŸ“… Dados removidos: anteriores a ${dataInput}` : '\nðŸ“… Dados removidos: TODOS os registros';
+        const successMessage = `âœ… Limpeza concluÃ­da com sucesso!${dataInfo}\n\nðŸ“Š Resumo:\n- SolicitaÃ§Ãµes removidas: ${solicitacoesSnapshot.size || 0}\n- Quartos liberados: ${quartosSnapshot.size || 0}\n- Total de registros: ${totalRemovido}\n\n${dataLimite ? 'Limpeza seletiva' : 'Limpeza completa'} realizada!`;
         
-        showToast('Sucesso', 'Limpeza concluída com sucesso!', 'success');
+        showToast('Sucesso', 'Limpeza concluÃ­da com sucesso!', 'success');
         alert(successMessage);
         
-        // Recarregar relatórios se estiver na tela de relatórios
+        // Recarregar relatÃ³rios se estiver na tela de relatÃ³rios
         if (typeof window.carregarSolicitacoes === 'function') {
             console.log('[LIMPEZA] Recarregando interface...');
             setTimeout(() => {
@@ -9276,12 +9276,12 @@ window.limparDadosTeste = async function() {
     }
 };
 
-// Função para verificar estatísticas dos dados
+// FunÃ§Ã£o para verificar estatÃ­sticas dos dados
 window.verificarEstatisticas = async function() {
     try {
-        console.log('[STATS] Coletando estatísticas dos dados...');
+        console.log('[STATS] Coletando estatÃ­sticas dos dados...');
         
-        // Contar solicitações por status
+        // Contar solicitaÃ§Ãµes por status
         const solicitacoesSnapshot = await window.db.collection('solicitacoes').get();
         const stats = {
             total: solicitacoesSnapshot.size,
@@ -9319,11 +9319,11 @@ window.verificarEstatisticas = async function() {
         const quartosSnapshot = await window.db.collection('quartos_ocupados').get();
         stats.quartosOcupados = quartosSnapshot.size;
         
-        // Contar usuários
+        // Contar usuÃ¡rios
         const adminSnapshot = await window.db.collection('usuarios_admin').get();
         const equipeSnapshot = await window.db.collection('usuarios_equipe').get();
         
-        // Verificar permissões antes de acessar usuarios_acompanhantes
+        // Verificar permissÃµes antes de acessar usuarios_acompanhantes
         let acompanhantesCount = 0;
         const user = window.auth.currentUser;
         if (user) {
@@ -9333,10 +9333,10 @@ window.verificarEstatisticas = async function() {
                     const acompanhantesSnapshot = await window.db.collection('usuarios_acompanhantes').get();
                     acompanhantesCount = acompanhantesSnapshot.size;
                 } else {
-                    console.log('[STATS] Usuário sem permissão para contar acompanhantes');
+                    console.log('[STATS] UsuÃ¡rio sem permissÃ£o para contar acompanhantes');
                 }
             } catch (permError) {
-                console.log('[STATS] Erro de permissão ao acessar acompanhantes:', permError.message);
+                console.log('[STATS] Erro de permissÃ£o ao acessar acompanhantes:', permError.message);
             }
         }
         
@@ -9346,31 +9346,31 @@ window.verificarEstatisticas = async function() {
             acompanhantes: acompanhantesCount
         };
         
-        console.log('[STATS] Estatísticas coletadas:', stats);
+        console.log('[STATS] EstatÃ­sticas coletadas:', stats);
         
         const relatorio = `
-📊 ESTATÍSTICAS DO SISTEMA YUNA
+ðŸ“Š ESTATÃSTICAS DO SISTEMA YUNA
 ===============================
 
-📋 SOLICITAÇÕES:
-  • Total: ${stats.total}
-  • Pendentes: ${stats.pendente}
-  • Em Andamento: ${stats.emAndamento}
-  • Finalizadas: ${stats.finalizada}
-  • Avaliadas: ${stats.avaliada}
+ðŸ“‹ SOLICITAÃ‡Ã•ES:
+  â€¢ Total: ${stats.total}
+  â€¢ Pendentes: ${stats.pendente}
+  â€¢ Em Andamento: ${stats.emAndamento}
+  â€¢ Finalizadas: ${stats.finalizada}
+  â€¢ Avaliadas: ${stats.avaliada}
 
-🏢 POR DEPARTAMENTO:
-  • Manutenção: ${stats.porEquipe.manutencao}
-  • Nutrição: ${stats.porEquipe.nutricao}
-  • Higienização: ${stats.porEquipe.higienizacao}
-  • Hotelaria: ${stats.porEquipe.hotelaria}
+ðŸ¢ POR DEPARTAMENTO:
+  â€¢ ManutenÃ§Ã£o: ${stats.porEquipe.manutencao}
+  â€¢ NutriÃ§Ã£o: ${stats.porEquipe.nutricao}
+  â€¢ HigienizaÃ§Ã£o: ${stats.porEquipe.higienizacao}
+  â€¢ Hotelaria: ${stats.porEquipe.hotelaria}
 
-🏠 QUARTOS OCUPADOS: ${stats.quartosOcupados}
+ðŸ  QUARTOS OCUPADOS: ${stats.quartosOcupados}
 
-👥 USUÁRIOS:
-  • Administradores: ${stats.usuarios.admins}
-  • Equipe: ${stats.usuarios.equipe}
-  • Acompanhantes: ${stats.usuarios.acompanhantes}
+ðŸ‘¥ USUÃRIOS:
+  â€¢ Administradores: ${stats.usuarios.admins}
+  â€¢ Equipe: ${stats.usuarios.equipe}
+  â€¢ Acompanhantes: ${stats.usuarios.acompanhantes}
         `;
         
         alert(relatorio);
@@ -9379,45 +9379,45 @@ window.verificarEstatisticas = async function() {
         return stats;
         
     } catch (error) {
-        console.error('[ERRO] Falha ao verificar estatísticas:', error);
-        alert(`❌ Erro ao coletar estatísticas: ${error.message}`);
+        console.error('[ERRO] Falha ao verificar estatÃ­sticas:', error);
+        alert(`âŒ Erro ao coletar estatÃ­sticas: ${error.message}`);
     }
 };
 
-// Função para adicionar painel de manutenção no relatórios
+// FunÃ§Ã£o para adicionar painel de manutenÃ§Ã£o no relatÃ³rios
 window.adicionarPainelManutencao = function() {
     try {
-        // Verificar se já foi adicionado
+        // Verificar se jÃ¡ foi adicionado
         const existente = document.querySelector('.maintenance-panel');
         if (existente) {
-            console.log('[MANUTENCAO] Painel já existe, não adicionando novamente');
+            console.log('[MANUTENCAO] Painel jÃ¡ existe, nÃ£o adicionando novamente');
             return;
         }
         
-        // Encontrar o container de relatórios
+        // Encontrar o container de relatÃ³rios
         const relatoriosContainer = document.querySelector('#relatorios .container-fluid') || 
                                    document.querySelector('#relatorios .section-content') ||
                                    document.querySelector('#relatorios');
         
         if (!relatoriosContainer) {
-            console.warn('[MANUTENCAO] Container de relatórios não encontrado');
+            console.warn('[MANUTENCAO] Container de relatÃ³rios nÃ£o encontrado');
             return;
         }
         
-        // Criar o painel de manutenção
+        // Criar o painel de manutenÃ§Ã£o
         const painelManutencao = document.createElement('div');
         painelManutencao.innerHTML = `
             <div class="maintenance-panel" style="background: linear-gradient(135deg, #ff6b6b, #ee5a52); margin: 20px 0; padding: 20px; border-radius: 12px; border: 1px solid #e74c3c; box-shadow: 0 4px 12px rgba(0,0,0,0.15);">
                 <h3 style="color: white; margin: 0 0 15px 0; font-size: 18px; display: flex; align-items: center;">
                     <i class="fas fa-tools" style="margin-right: 10px;"></i>
-                    Ferramentas de Manutenção do Sistema
+                    Ferramentas de ManutenÃ§Ã£o do Sistema
                 </h3>
                 <p style="color: #fff; margin: 0 0 15px 0; font-size: 14px; opacity: 0.9;">
-                    ⚠️ <strong>Apenas para Super Administradores</strong> - Use com extrema cautela
+                    âš ï¸ <strong>Apenas para Super Administradores</strong> - Use com extrema cautela
                 </p>
                 <div style="display: flex; gap: 15px; flex-wrap: wrap;">
                     <button onclick="verificarEstatisticas()" style="background: rgba(255,255,255,0.2); color: white; border: 1px solid rgba(255,255,255,0.3); padding: 12px 24px; border-radius: 6px; cursor: pointer; font-size: 14px; transition: all 0.3s ease; display: flex; align-items: center; gap: 8px;">
-                        <i class="fas fa-chart-bar"></i> Verificar Estatísticas
+                        <i class="fas fa-chart-bar"></i> Verificar EstatÃ­sticas
                     </button>
                     <button onclick="limparDadosTeste()" style="background: rgba(255,255,255,0.2); color: white; border: 1px solid rgba(255,255,255,0.3); padding: 12px 24px; border-radius: 6px; cursor: pointer; font-size: 14px; transition: all 0.3s ease; display: flex; align-items: center; gap: 8px;">
                         <i class="fas fa-trash-alt"></i> Limpar Dados de Teste
@@ -9425,7 +9425,7 @@ window.adicionarPainelManutencao = function() {
                 </div>
                 <div style="margin-top: 15px; padding-top: 15px; border-top: 1px solid rgba(255,255,255,0.2);">
                     <small style="color: rgba(255,255,255,0.8); font-size: 12px;">
-                        💡 <strong>Dica:</strong> Use "Verificar Estatísticas" antes de limpar para conferir o que será removido
+                        ðŸ’¡ <strong>Dica:</strong> Use "Verificar EstatÃ­sticas" antes de limpar para conferir o que serÃ¡ removido
                     </small>
                 </div>
             </div>
@@ -9448,7 +9448,7 @@ window.adicionarPainelManutencao = function() {
             document.head.appendChild(style);
         }
         
-        // Inserir no início do container (logo após o título)
+        // Inserir no inÃ­cio do container (logo apÃ³s o tÃ­tulo)
         const primeiroElemento = relatoriosContainer.querySelector('.row') || relatoriosContainer.firstElementChild;
         if (primeiroElemento) {
             primeiroElemento.parentNode.insertBefore(painelManutencao, primeiroElemento);
@@ -9456,17 +9456,17 @@ window.adicionarPainelManutencao = function() {
             relatoriosContainer.appendChild(painelManutencao);
         }
         
-        console.log('[MANUTENCAO] Painel de manutenção adicionado com sucesso');
+        console.log('[MANUTENCAO] Painel de manutenÃ§Ã£o adicionado com sucesso');
         
     } catch (error) {
-        console.error('[ERRO] Falha ao adicionar painel de manutenção:', error);
+        console.error('[ERRO] Falha ao adicionar painel de manutenÃ§Ã£o:', error);
     }
 };
 
-// Função para debug completo do estado da aplicação
+// FunÃ§Ã£o para debug completo do estado da aplicaÃ§Ã£o
 window.debugEstadoApp = function() {
-    console.log('===== DEBUG ESTADO DA APLICAÇÃO =====');
-    console.log('1. Variáveis globais:', {
+    console.log('===== DEBUG ESTADO DA APLICAÃ‡ÃƒO =====');
+    console.log('1. VariÃ¡veis globais:', {
         userRole: window.userRole,
         usuarioAdmin: window.usuarioAdmin,
         auth: !!window.auth,
@@ -9489,7 +9489,7 @@ window.debugEstadoApp = function() {
         adminPanel: !!document.getElementById('admin-panel')
     });
     
-    console.log('5. Funções disponíveis:', {
+    console.log('5. FunÃ§Ãµes disponÃ­veis:', {
         mostrarRelatorios: typeof window.mostrarRelatorios,
         mostrarSecaoPainel: typeof mostrarSecaoPainel,
         carregarSolicitacoes: typeof carregarSolicitacoes
@@ -9498,7 +9498,7 @@ window.debugEstadoApp = function() {
     console.log('===== FIM DEBUG =====');
 };
 
-// Função melhorada para logout com limpeza completa
+// FunÃ§Ã£o melhorada para logout com limpeza completa
 window.logout = async function() {
     try {
         debugLog('[DEBUG] Iniciando processo de logout...');
@@ -9509,7 +9509,7 @@ window.logout = async function() {
         // 2. Limpar dados do localStorage
         localStorage.removeItem('usuarioAdmin');
         
-        // 3. Limpar variáveis globais
+        // 3. Limpar variÃ¡veis globais
         window.usuarioAdmin = null;
         window.userEmail = null;
         window.userRole = null;
@@ -9526,7 +9526,7 @@ window.logout = async function() {
         if (emailInput) emailInput.value = '';
         if (passwordInput) passwordInput.value = '';
         
-        // 5. Ocultar seção de departamento
+        // 5. Ocultar seÃ§Ã£o de departamento
         if (departamentoSection) {
             departamentoSection.classList.add('hidden');
         }
@@ -9534,7 +9534,7 @@ window.logout = async function() {
         // 6. Limpar interface completamente
         limparInterfaceCompleta();
         
-        debugLog('[DEBUG] Logout concluído com sucesso');
+        debugLog('[DEBUG] Logout concluÃ­do com sucesso');
         showToast('Sucesso', 'Logout realizado com sucesso!', 'success');
         
     } catch (error) {
@@ -9546,25 +9546,25 @@ window.logout = async function() {
     }
 };
 
-// === VERIFICAÇÃO FINAL - FORÇAR BOTÃO LIMPEZA ===
+// === VERIFICAÃ‡ÃƒO FINAL - FORÃ‡AR BOTÃƒO LIMPEZA ===
 (function verificacaoFinal() {
     setTimeout(() => {
         const usuarioAdmin = window.usuarioAdmin || JSON.parse(localStorage.getItem('usuarioAdmin') || '{}');
         if (usuarioAdmin?.role === 'super_admin') {
             const btnLimpeza = document.getElementById('limpeza-btn');
             if (btnLimpeza) {
-                console.log('[FINAL-CHECK] Forçando visibilidade do botão limpeza para super_admin');
+                console.log('[FINAL-CHECK] ForÃ§ando visibilidade do botÃ£o limpeza para super_admin');
                 btnLimpeza.classList.remove('btn-hide', 'hidden');
                 btnLimpeza.style.cssText = 'display: inline-flex !important; visibility: visible !important;';
-                btnLimpeza.title = 'Limpar dados de teste e pesquisas de satisfação';
+                btnLimpeza.title = 'Limpar dados de teste e pesquisas de satisfaÃ§Ã£o';
             } else {
-                console.warn('[FINAL-CHECK] Botão limpeza não encontrado no DOM');
+                console.warn('[FINAL-CHECK] BotÃ£o limpeza nÃ£o encontrado no DOM');
             }
         }
     }, 2000);
 })();
 
-// === FUNÇÃO PARA REMOÇÃO FORÇADA DE BOTÕES DEBUG ===
+// === FUNÃ‡ÃƒO PARA REMOÃ‡ÃƒO FORÃ‡ADA DE BOTÃ•ES DEBUG ===
 window.forceRemoveDebugButtons = function() {
     const debugSelectors = [
         'button[onclick*="showUsersDireto"]',
@@ -9575,10 +9575,10 @@ window.forceRemoveDebugButtons = function() {
         '#relatorios-direto-btn'
     ];
     
-    const debugTexts = ['usuários direto', 'debug', 'relatórios direto', 'usuario direto', 'relatorio direto'];
+    const debugTexts = ['usuÃ¡rios direto', 'debug', 'relatÃ³rios direto', 'usuario direto', 'relatorio direto'];
     let removed = 0;
     
-    // Remoção por seletores
+    // RemoÃ§Ã£o por seletores
     debugSelectors.forEach(selector => {
         const elements = document.querySelectorAll(selector);
         elements.forEach(el => {
@@ -9588,14 +9588,14 @@ window.forceRemoveDebugButtons = function() {
         });
     });
     
-    // Remoção por texto (busca em TODOS os elementos)
+    // RemoÃ§Ã£o por texto (busca em TODOS os elementos)
     const allElements = document.querySelectorAll('*');
     allElements.forEach(el => {
         if (el.tagName === 'BUTTON' || el.getAttribute('onclick') || el.classList.contains('button')) {
             const text = (el.textContent || '').trim().toLowerCase();
             if (debugTexts.some(debugText => text.includes(debugText))) {
                 debugLog(`[FORCE-REMOVE] Removendo elemento por texto: "${el.textContent}"`);
-                // Múltiplas formas de remoção
+                // MÃºltiplas formas de remoÃ§Ã£o
                 el.style.display = 'none !important';
                 el.style.visibility = 'hidden !important';
                 el.remove();
@@ -9604,17 +9604,17 @@ window.forceRemoveDebugButtons = function() {
         }
     });
     
-    // Interceptar criação dinâmica de botões
+    // Interceptar criaÃ§Ã£o dinÃ¢mica de botÃµes
     const originalCreateElement = document.createElement;
     document.createElement = function(tagName) {
         const element = originalCreateElement.call(document, tagName);
         
         if (tagName.toLowerCase() === 'button') {
-            // Observar mudanças de texto
+            // Observar mudanÃ§as de texto
             const observer = new MutationObserver(() => {
                 const text = (element.textContent || '').trim().toLowerCase();
                 if (debugTexts.some(debugText => text.includes(debugText))) {
-                    debugLog('[INTERCEPT] Bloqueando criação de botão debug:', text);
+                    debugLog('[INTERCEPT] Bloqueando criaÃ§Ã£o de botÃ£o debug:', text);
                     element.style.display = 'none !important';
                     element.remove();
                 }
@@ -9637,9 +9637,9 @@ window.forceRemoveDebugButtons = function() {
     return removed;
 };
 
-// === FUNÇÕES DE FILTRO DAS SOLICITAÇÕES ===
+// === FUNÃ‡Ã•ES DE FILTRO DAS SOLICITAÃ‡Ã•ES ===
 
-// Filtrar solicitações por status
+// Filtrar solicitaÃ§Ãµes por status
 window.filtrarSolicitacoesPorStatus = function(equipe, status) {
     console.log(`[FILTRO] Filtrando equipe ${equipe} por status: ${status}`);
     
@@ -9667,11 +9667,11 @@ window.filtrarSolicitacoesPorStatus = function(equipe, status) {
         badge.textContent = status === 'todos' ? cards.length : visibleCount;
     }
     
-    // Mostrar empty state se necessário
+    // Mostrar empty state se necessÃ¡rio
     atualizarEmptyState(equipe, visibleCount);
 };
 
-// Filtrar solicitações por prioridade
+// Filtrar solicitaÃ§Ãµes por prioridade
 window.filtrarSolicitacoesPorPrioridade = function(equipe, prioridade) {
     console.log(`[FILTRO] Filtrando equipe ${equipe} por prioridade: ${prioridade}`);
     
@@ -9699,7 +9699,7 @@ window.filtrarSolicitacoesPorPrioridade = function(equipe, prioridade) {
         badge.textContent = prioridade === 'todos' ? cards.length : visibleCount;
     }
     
-    // Mostrar empty state se necessário
+    // Mostrar empty state se necessÃ¡rio
     atualizarEmptyState(equipe, visibleCount);
 };
 
@@ -9732,7 +9732,7 @@ window.limparFiltrosSolicitacoes = function(equipe) {
     }
 };
 
-// Função auxiliar para mostrar/esconder empty state
+// FunÃ§Ã£o auxiliar para mostrar/esconder empty state
 function atualizarEmptyState(equipe, visibleCount) {
     const content = document.getElementById(`content-${equipe}`);
     if (!content) return;
@@ -9749,9 +9749,9 @@ function atualizarEmptyState(equipe, visibleCount) {
             };
             
             const equipesNomes = {
-                'manutencao': 'Manutenção',
-                'nutricao': 'Nutrição',
-                'higienizacao': 'Higienização',
+                'manutencao': 'ManutenÃ§Ã£o',
+                'nutricao': 'NutriÃ§Ã£o',
+                'higienizacao': 'HigienizaÃ§Ã£o',
                 'hotelaria': 'Hotelaria'
             };
             
@@ -9759,7 +9759,7 @@ function atualizarEmptyState(equipe, visibleCount) {
             emptyState.className = 'empty-state filter-empty';
             emptyState.innerHTML = `
                 <i class="fas fa-${icones[equipe]}"></i>
-                <p>Nenhuma solicitação encontrada com os filtros aplicados</p>
+                <p>Nenhuma solicitaÃ§Ã£o encontrada com os filtros aplicados</p>
             `;
             content.appendChild(emptyState);
         }
@@ -9856,12 +9856,12 @@ if (!document.getElementById('filter-styles')) {
     document.head.appendChild(styleSheet);
 }
 
-// === APLICAR CSS FORCE-HIDE PARA PRODUÇÃO ===
+// === APLICAR CSS FORCE-HIDE PARA PRODUÃ‡ÃƒO ===
 (function applyProductionCSS() {
     if (MODO_PRODUCAO) {
         const style = document.createElement('style');
         style.textContent = `
-            /* CSS para esconder elementos de debug em produção */
+            /* CSS para esconder elementos de debug em produÃ§Ã£o */
             button[onclick*="showUsersDireto"],
             button[onclick*="debugFuncs"],
             button[onclick*="mostrarRelatoriosDirectly"],
@@ -9879,31 +9879,31 @@ if (!document.getElementById('filter-styles')) {
                 left: -9999px !important;
             }
             
-            /* Esconder qualquer botão que contenha textos de debug */
-            button:contains("usuários direto"),
+            /* Esconder qualquer botÃ£o que contenha textos de debug */
+            button:contains("usuÃ¡rios direto"),
             button:contains("debug"), 
-            button:contains("relatórios direto"),
+            button:contains("relatÃ³rios direto"),
             button:contains("usuario direto"),
             button:contains("relatorio direto") {
                 display: none !important;
             }
         `;
         document.head.appendChild(style);
-        debugLog('[PRODUCTION] CSS de ocultação aplicado');
+        debugLog('[PRODUCTION] CSS de ocultaÃ§Ã£o aplicado');
     }
 })();
 
-// ===== FUNÇÕES DE GRÁFICOS E ALERTAS INTELIGENTES =====
+// ===== FUNÃ‡Ã•ES DE GRÃFICOS E ALERTAS INTELIGENTES =====
 
 function renderizarGraficos(metricas) {
-    console.log('🎨 Renderizando gráficos com dados:', metricas);
+    console.log('ðŸŽ¨ Renderizando grÃ¡ficos com dados:', metricas);
     
-    // Inicializar objeto global para armazenar instâncias dos gráficos
+    // Inicializar objeto global para armazenar instÃ¢ncias dos grÃ¡ficos
     if (!window.chartInstances) {
         window.chartInstances = {};
     }
     
-    // Renderizar cada gráfico
+    // Renderizar cada grÃ¡fico
     renderizarGraficoStatus(metricas.statusDistribution);
     renderizarGraficoEquipes(metricas.porEquipe);
     renderizarGraficoTendencias(metricas.tendencias);
@@ -9914,7 +9914,7 @@ function renderizarGraficoStatus(statusData) {
     const ctx = document.getElementById('grafico-status');
     if (!ctx) return;
     
-    // Destruir gráfico anterior se existir
+    // Destruir grÃ¡fico anterior se existir
     if (window.chartInstances.status) {
         window.chartInstances.status.destroy();
     }
@@ -9957,15 +9957,15 @@ function renderizarGraficoEquipes(equipesData) {
     const ctx = document.getElementById('grafico-equipes');
     if (!ctx) return;
     
-    // Destruir gráfico anterior se existir
+    // Destruir grÃ¡fico anterior se existir
     if (window.chartInstances.equipes) {
         window.chartInstances.equipes.destroy();
     }
     
     const equipesNomes = {
-        manutencao: 'Manutenção',
-        nutricao: 'Nutrição', 
-        higienizacao: 'Higienização',
+        manutencao: 'ManutenÃ§Ã£o',
+        nutricao: 'NutriÃ§Ã£o', 
+        higienizacao: 'HigienizaÃ§Ã£o',
         hotelaria: 'Hotelaria'
     };
     
@@ -9977,7 +9977,7 @@ function renderizarGraficoEquipes(equipesData) {
         labels: labels,
         datasets: [
             {
-                label: 'Total Solicitações',
+                label: 'Total SolicitaÃ§Ãµes',
                 data: totals,
                 backgroundColor: 'rgba(59, 130, 246, 0.8)',
                 borderColor: 'rgba(59, 130, 246, 1)',
@@ -10008,7 +10008,7 @@ function renderizarGraficoEquipes(equipesData) {
                     position: 'left',
                     title: {
                         display: true,
-                        text: 'Solicitações'
+                        text: 'SolicitaÃ§Ãµes'
                     }
                 },
                 y1: {
@@ -10033,7 +10033,7 @@ function renderizarGraficoTendencias(tendenciasData) {
     const ctx = document.getElementById('grafico-tendencias');
     if (!ctx) return;
     
-    // Destruir gráfico anterior se existir
+    // Destruir grÃ¡fico anterior se existir
     if (window.chartInstances.tendencias) {
         window.chartInstances.tendencias.destroy();
     }
@@ -10044,7 +10044,7 @@ function renderizarGraficoTendencias(tendenciasData) {
     const data = {
         labels: labels,
         datasets: [{
-            label: 'Solicitações por Dia',
+            label: 'SolicitaÃ§Ãµes por Dia',
             data: dados,
             fill: true,
             backgroundColor: 'rgba(139, 92, 246, 0.1)',
@@ -10068,7 +10068,7 @@ function renderizarGraficoTendencias(tendenciasData) {
                     beginAtZero: true,
                     title: {
                         display: true,
-                        text: 'Número de Solicitações'
+                        text: 'NÃºmero de SolicitaÃ§Ãµes'
                     }
                 }
             },
@@ -10085,7 +10085,7 @@ function renderizarGraficoPicos(picosData) {
     const ctx = document.getElementById('grafico-picos');
     if (!ctx) return;
     
-    // Destruir gráfico anterior se existir
+    // Destruir grÃ¡fico anterior se existir
     if (window.chartInstances.picos) {
         window.chartInstances.picos.destroy();
     }
@@ -10098,7 +10098,7 @@ function renderizarGraficoPicos(picosData) {
     const data = {
         labels: horasLabels,
         datasets: [{
-            label: 'Solicitações por Hora',
+            label: 'SolicitaÃ§Ãµes por Hora',
             data: picosData.porHora,
             backgroundColor: 'rgba(245, 158, 11, 0.8)',
             borderColor: 'rgba(245, 158, 11, 1)',
@@ -10136,15 +10136,15 @@ function renderizarGraficoPicos(picosData) {
 }
 
 function configurarAlertasInteligentes(metricas) {
-    console.log('🚨 Configurando alertas inteligentes:', metricas.alertas);
+    console.log('ðŸš¨ Configurando alertas inteligentes:', metricas.alertas);
     
     // Atualizar contador de alertas na interface principal
     atualizarContadorAlertas(metricas.alertas.length);
     
-    // Configurar notificações automáticas para alertas críticos
+    // Configurar notificaÃ§Ãµes automÃ¡ticas para alertas crÃ­ticos
     metricas.alertas.forEach(alerta => {
         if (alerta.urgencia === 'critica') {
-            showToast('Alerta Crítico!', `SLA ${alerta.percentual}% na equipe ${alerta.equipe}`, 'error');
+            showToast('Alerta CrÃ­tico!', `SLA ${alerta.percentual}% na equipe ${alerta.equipe}`, 'error');
         }
     });
 }
@@ -10153,7 +10153,7 @@ function atualizarContadorAlertas(quantidade) {
     // Verificar se existe elemento para mostrar alertas na interface principal
     let alertaBadge = document.getElementById('alertas-badge');
     if (!alertaBadge && quantidade > 0) {
-        // Criar badge de alertas no botão de métricas
+        // Criar badge de alertas no botÃ£o de mÃ©tricas
         const metricasBtn = document.getElementById('metricas-btn');
         if (metricasBtn) {
             alertaBadge = document.createElement('span');
@@ -10187,3 +10187,4 @@ function atualizarContadorAlertas(quantidade) {
         }
     }
 }
+

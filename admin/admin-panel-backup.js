@@ -1,6 +1,6 @@
-// admin-panel.js - Painel Administrativo YUNA
+﻿// admin-panel.js - Painel Administrativo YUNA
 
-// Função para alterar tipo de acesso (precisa estar disponível imediatamente)
+// FunÃ§Ã£o para alterar tipo de acesso (precisa estar disponÃ­vel imediatamente)
 window.alterarTipoAcesso = function() {
     var tipo = document.getElementById('tipo-acesso')?.value;
     var departamentoSection = document.getElementById('departamento-section');
@@ -15,17 +15,17 @@ window.alterarTipoAcesso = function() {
     }
 };
 
-// Função de emergência para resetar o sistema
+// FunÃ§Ã£o de emergÃªncia para resetar o sistema
 window.emergencyReset = function() {
-    console.log('🚨 EMERGENCY RESET INICIADO');
+    console.log('ðŸš¨ EMERGENCY RESET INICIADO');
     
     // Limpar localStorage
     localStorage.clear();
     
-    // Forçar logout
+    // ForÃ§ar logout
     if (window.auth) {
         window.auth.signOut().then(() => {
-            console.log('✅ Logout forçado realizado');
+            console.log('âœ… Logout forÃ§ado realizado');
             window.location.reload();
         }).catch(error => {
             console.error('Erro no logout:', error);
@@ -36,19 +36,19 @@ window.emergencyReset = function() {
     }
 };
 
-// Função para criação rápida de super admin (desenvolvimento)
+// FunÃ§Ã£o para criaÃ§Ã£o rÃ¡pida de super admin (desenvolvimento)
 window.criarSuperAdminDev = async function(email, senha) {
     if (!window.auth || !window.db) {
-        console.error('Firebase não inicializado');
+        console.error('Firebase nÃ£o inicializado');
         return;
     }
     
     try {
-        // Criar usuário no Firebase Auth
+        // Criar usuÃ¡rio no Firebase Auth
         const userCredential = await window.auth.createUserWithEmailAndPassword(email, senha);
         const user = userCredential.user;
         
-        // Criar documento na coleção usuarios_admin
+        // Criar documento na coleÃ§Ã£o usuarios_admin
         await window.db.collection('usuarios_admin').doc(user.uid).set({
             nome: 'Super Admin Dev',
             email: email,
@@ -63,8 +63,8 @@ window.criarSuperAdminDev = async function(email, senha) {
             }
         });
         
-        console.log('✅ Super admin criado:', email);
-        alert('Super admin criado com sucesso! Faça login agora.');
+        console.log('âœ… Super admin criado:', email);
+        alert('Super admin criado com sucesso! FaÃ§a login agora.');
         
     } catch (error) {
         console.error('Erro ao criar super admin:', error);
@@ -79,8 +79,8 @@ function firebaseReady() {
 
 async function initFirebaseApp() {
     if (!firebaseReady()) {
-        console.error('[ERRO] Firebase SDK não carregado');
-        alert('Erro: Firebase SDK não carregado. Verifique a conexão ou o script.');
+        console.error('[ERRO] Firebase SDK nÃ£o carregado');
+        alert('Erro: Firebase SDK nÃ£o carregado. Verifique a conexÃ£o ou o script.');
         return false;
     }
     
@@ -88,30 +88,30 @@ async function initFirebaseApp() {
         if (!firebase.apps.length) {
             const firebaseConfig = {
                 apiKey: "AIzaSyAogGkN5N24Puss4-kF9Z6npPYyEzVei3M",
-                authDomain: "studio-5526632052-23813.firebaseapp.com",
-                projectId: "studio-5526632052-23813",
-                storageBucket: "studio-5526632052-23813.firebasestorage.app",
+                authDomain: "app-pedidos-4656c.firebaseapp.com",
+                projectId: "app-pedidos-4656c",
+                storageBucket: "app-pedidos-4656c.firebasestorage.app",
                 messagingSenderId: "251931417472",
                 appId: "1:251931417472:web:4b955052a184d114f57f65"
             };
             
             console.log('[DEBUG] Inicializando Firebase com config:', firebaseConfig.projectId);
             firebase.initializeApp(firebaseConfig);
-            console.log('✅ Firebase inicializado com sucesso');
+            console.log('âœ… Firebase inicializado com sucesso');
         }
         
         window.auth = firebase.auth();
         window.db = firebase.firestore();
         
-        // Configurar settings do Firestore apenas se necessário
-        // Verificar se ainda não foi configurado
+        // Configurar settings do Firestore apenas se necessÃ¡rio
+        // Verificar se ainda nÃ£o foi configurado
         let settingsConfigured = false;
         try {
-            // Tentar uma operação simples para verificar se já foi configurado
+            // Tentar uma operaÃ§Ã£o simples para verificar se jÃ¡ foi configurado
             const testQuery = window.db.collection('_test').limit(1);
-            settingsConfigured = true; // Se chegou aqui, Firestore já está ativo
+            settingsConfigured = true; // Se chegou aqui, Firestore jÃ¡ estÃ¡ ativo
         } catch (e) {
-            // Firestore ainda não foi usado, podemos configurar settings
+            // Firestore ainda nÃ£o foi usado, podemos configurar settings
             settingsConfigured = false;
         }
         
@@ -120,39 +120,39 @@ async function initFirebaseApp() {
                 window.db.settings({
                     ignoreUndefinedProperties: true
                 });
-                console.log('✅ Settings do Firestore configuradas');
+                console.log('âœ… Settings do Firestore configuradas');
             } catch (settingsError) {
-                // Ignorar erro silenciosamente se já foi configurado
+                // Ignorar erro silenciosamente se jÃ¡ foi configurado
                 if (settingsError.code !== 'failed-precondition') {
-                    console.warn('⚠️ Aviso settings:', settingsError.code);
+                    console.warn('âš ï¸ Aviso settings:', settingsError.code);
                 }
             }
         }
         
-        // Configurar persistência offline
+        // Configurar persistÃªncia offline
         try {
             await window.db.enablePersistence({ synchronizeTabs: true });
-            console.log('✅ Persistência offline habilitada');
+            console.log('âœ… PersistÃªncia offline habilitada');
         } catch (err) {
-            // Apenas avisar, não é erro crítico
+            // Apenas avisar, nÃ£o Ã© erro crÃ­tico
             if (err.code === 'failed-precondition') {
-                console.log('ℹ️ Persistência não ativada: múltiplas abas abertas');
+                console.log('â„¹ï¸ PersistÃªncia nÃ£o ativada: mÃºltiplas abas abertas');
             } else if (err.code === 'unimplemented') {
-                console.log('ℹ️ Persistência não suportada neste navegador');
+                console.log('â„¹ï¸ PersistÃªncia nÃ£o suportada neste navegador');
             }
         }
         
         return true;
         
     } catch (error) {
-        console.error('[ERRO] Falha na inicialização do Firebase:', error);
-        showToast('Erro', 'Falha na conexão com Firebase. Modo offline ativado.', 'error');
+        console.error('[ERRO] Falha na inicializaÃ§Ã£o do Firebase:', error);
+        showToast('Erro', 'Falha na conexÃ£o com Firebase. Modo offline ativado.', 'error');
         return false;
     }
 }
 
-// --- Permissões centralizadas ---
-// Funções importadas do admin-permissions.js
+// --- PermissÃµes centralizadas ---
+// FunÃ§Ãµes importadas do admin-permissions.js
 // window.verificarUsuarioAdminJS, window.temPermissaoJS, window.podeVerSolicitacaoJS
 function showToast(titulo, mensagem, tipo) {
     var toast = document.createElement('div');
@@ -182,7 +182,7 @@ function ocultarSecoesPrincipais() {
             el.classList.add('hidden');
             console.log(`[DEBUG] ocultarSecoesPrincipais: ocultando ${id}`);
         } else {
-            console.warn(`[AVISO] ocultarSecoesPrincipais: elemento não encontrado: ${id}`);
+            console.warn(`[AVISO] ocultarSecoesPrincipais: elemento nÃ£o encontrado: ${id}`);
         }
     });
     if (document.querySelector('.teams-grid')) {
@@ -195,8 +195,8 @@ function ocultarSecoesPrincipais() {
 
 function mostrarSecaoPainel(secao) {
     try {
-        console.log(`[DEBUG] mostrarSecaoPainel: navegação para '${secao}'`);
-        // Oculta todas as seções principais
+        console.log(`[DEBUG] mostrarSecaoPainel: navegaÃ§Ã£o para '${secao}'`);
+        // Oculta todas as seÃ§Ãµes principais
         const secoes = [
             'admin-panel',
             'acompanhantes-section',
@@ -210,7 +210,7 @@ function mostrarSecaoPainel(secao) {
             const el = document.getElementById(id) || document.querySelector('.' + id);
             if (el) el.classList.add('hidden');
         });
-        // Exibe apenas a seção desejada
+        // Exibe apenas a seÃ§Ã£o desejada
         if (secao === 'painel') {
             document.getElementById('admin-panel')?.classList.remove('hidden');
             document.getElementById('metricas-gerais')?.classList.remove('hidden');
@@ -242,27 +242,27 @@ function mostrarSecaoPainel(secao) {
             document.getElementById('manage-users-modal').style.display = 'flex';
             console.log('[DEBUG] mostrarSecaoPainel: exibindo manage-users-modal');
         } else {
-            console.warn(`[AVISO] mostrarSecaoPainel: seção desconhecida: ${secao}`);
+            console.warn(`[AVISO] mostrarSecaoPainel: seÃ§Ã£o desconhecida: ${secao}`);
         }
     } catch (err) {
-        console.error('[ERRO] mostrarSecaoPainel: falha ao exibir seção:', err);
+        console.error('[ERRO] mostrarSecaoPainel: falha ao exibir seÃ§Ã£o:', err);
     }
 }
 
-// --- Autenticação e Acesso ---
-// Oculta campo departamento corretamente na inicialização
+// --- AutenticaÃ§Ã£o e Acesso ---
+// Oculta campo departamento corretamente na inicializaÃ§Ã£o
 window.addEventListener('DOMContentLoaded', async function() {
-    console.log('[DEBUG] DOMContentLoaded: iniciando configuração...');
+    console.log('[DEBUG] DOMContentLoaded: iniciando configuraÃ§Ã£o...');
     
-    // Primeiro, configurar os botões ANTES de qualquer coisa relacionada ao Firebase
-    console.log('[DEBUG] DOMContentLoaded: configurando eventos dos botões ANTES do Firebase...');
+    // Primeiro, configurar os botÃµes ANTES de qualquer coisa relacionada ao Firebase
+    console.log('[DEBUG] DOMContentLoaded: configurando eventos dos botÃµes ANTES do Firebase...');
     
-    // Garantir que as funções dos modais estão disponíveis
+    // Garantir que as funÃ§Ãµes dos modais estÃ£o disponÃ­veis
     if (typeof window.showCreateUserModal !== 'function') {
-        console.error('[ERRO] showCreateUserModal não definida durante DOMContentLoaded!');
+        console.error('[ERRO] showCreateUserModal nÃ£o definida durante DOMContentLoaded!');
     }
     if (typeof window.showManageUsersModal !== 'function') {
-        console.error('[ERRO] showManageUsersModal não definida durante DOMContentLoaded!');
+        console.error('[ERRO] showManageUsersModal nÃ£o definida durante DOMContentLoaded!');
     }
     
     // Configurar eventos imediatamente
@@ -273,8 +273,8 @@ window.addEventListener('DOMContentLoaded', async function() {
         const firebaseOk = await initFirebaseApp();
         
         if (!firebaseOk) {
-            console.warn('[AVISO] Firebase falhou na inicialização - continuando em modo offline');
-            // Em caso de falha do Firebase, ativar modo offline básico
+            console.warn('[AVISO] Firebase falhou na inicializaÃ§Ã£o - continuando em modo offline');
+            // Em caso de falha do Firebase, ativar modo offline bÃ¡sico
             setTimeout(() => {
                 // Simular login offline para admins
                 window.userRole = 'admin';
@@ -293,27 +293,27 @@ window.addEventListener('DOMContentLoaded', async function() {
             return;
         }
     } catch (error) {
-        console.error('[ERRO] Erro crítico na inicialização do Firebase:', error);
+        console.error('[ERRO] Erro crÃ­tico na inicializaÃ§Ã£o do Firebase:', error);
     }
     
-    // FORÇAR ocultação de todos os painéis administrativos na inicialização
+    // FORÃ‡AR ocultaÃ§Ã£o de todos os painÃ©is administrativos na inicializaÃ§Ã£o
     const adminPanel = document.getElementById('admin-panel');
     if (adminPanel) adminPanel.classList.add('hidden');
     
     const teamsGrid = document.querySelector('.teams-grid');
     if (teamsGrid) teamsGrid.classList.add('hidden');
     
-    // Ocultar TODOS os painéis administrativos na inicialização
+    // Ocultar TODOS os painÃ©is administrativos na inicializaÃ§Ã£o
     const allPanels = document.querySelectorAll('.team-panel, .department-card, [class*="card"]');
     allPanels.forEach(panel => {
         if (panel.classList) panel.classList.add('hidden');
     });
     
-    // Garantir que a seção de autenticação esteja visível
+    // Garantir que a seÃ§Ã£o de autenticaÃ§Ã£o esteja visÃ­vel
     const authSection = document.getElementById('auth-section');
     if (authSection) authSection.classList.remove('hidden');
     
-    // Ocultar campo departamento corretamente na inicialização
+    // Ocultar campo departamento corretamente na inicializaÃ§Ã£o
     var tipoSelect = document.getElementById('tipo-acesso');
     var tipo = tipoSelect ? tipoSelect.value : null;
     var departamentoSection = document.getElementById('departamento-section');
@@ -321,19 +321,19 @@ window.addEventListener('DOMContentLoaded', async function() {
         departamentoSection.classList.add('hidden');
         var departamentoSelect = document.getElementById('departamento');
         if (departamentoSelect) departamentoSelect.value = '';
-        console.log('[DEBUG] Inicialização: ocultando departamento-section');
+        console.log('[DEBUG] InicializaÃ§Ã£o: ocultando departamento-section');
     }
     
-    // Listener de autenticação persistente (apenas se Firebase OK)
+    // Listener de autenticaÃ§Ã£o persistente (apenas se Firebase OK)
     if (window.auth) {
         window.auth.onAuthStateChanged(async function(user) {
             try {
                 if (user) {
-                    console.log('[DEBUG] Usuário autenticado:', user.email);
-                    console.log('[DEBUG] UID do usuário:', user.uid);
+                    console.log('[DEBUG] UsuÃ¡rio autenticado:', user.email);
+                    console.log('[DEBUG] UID do usuÃ¡rio:', user.uid);
                     
                     // Verifica admin via Firestore
-                    console.log('[DEBUG] Verificando permissões do usuário...');
+                    console.log('[DEBUG] Verificando permissÃµes do usuÃ¡rio...');
                     const dadosAdmin = await window.verificarUsuarioAdminJS(user);
                     
                     if (dadosAdmin) {
@@ -352,10 +352,10 @@ window.addEventListener('DOMContentLoaded', async function() {
                             equipe: dadosAdmin.equipe
                         });
                         
-                        // Configurar interface baseada no tipo de usuário
+                        // Configurar interface baseada no tipo de usuÃ¡rio
                         if (dadosAdmin.role === 'super_admin' || dadosAdmin.isSuperAdmin) {
-                            console.log('[DEBUG] Usuário SUPER ADMIN - mostrando painel completo');
-                            // Super admin vê tudo
+                            console.log('[DEBUG] UsuÃ¡rio SUPER ADMIN - mostrando painel completo');
+                            // Super admin vÃª tudo
                             document.getElementById('auth-section')?.classList.add('hidden');
                             document.getElementById('admin-panel')?.classList.remove('hidden');
                             
@@ -364,102 +364,102 @@ window.addEventListener('DOMContentLoaded', async function() {
                             if (teamsGrid) teamsGrid.classList.remove('hidden');
                             
                         } else if (dadosAdmin.isEquipe && dadosAdmin.equipe) {
-                            console.log('[DEBUG] Usuário EQUIPE - mostrando apenas cards do departamento:', dadosAdmin.equipe);
-                            // Usuário de equipe vê apenas seu departamento
+                            console.log('[DEBUG] UsuÃ¡rio EQUIPE - mostrando apenas cards do departamento:', dadosAdmin.equipe);
+                            // UsuÃ¡rio de equipe vÃª apenas seu departamento
                             document.getElementById('auth-section')?.classList.add('hidden');
                             document.getElementById('admin-panel')?.classList.remove('hidden');
                             
-                            // Mostrar apenas cards do departamento específico
+                            // Mostrar apenas cards do departamento especÃ­fico
                             const teamsGrid = document.querySelector('.teams-grid');
                             if (teamsGrid) teamsGrid.classList.remove('hidden');
                             
-                            // Ocultar todos os painéis primeiro
+                            // Ocultar todos os painÃ©is primeiro
                             const allPanels = document.querySelectorAll('.team-panel, .department-card, [class*="card"]');
                             allPanels.forEach(panel => {
                                 if (panel.classList) panel.classList.add('hidden');
                             });
                             
-                            // Mostrar apenas o painel do departamento do usuário
+                            // Mostrar apenas o painel do departamento do usuÃ¡rio
                             const departmentPanel = document.querySelector(`[data-department="${dadosAdmin.equipe}"]`);
                             if (departmentPanel) {
                                 departmentPanel.classList.remove('hidden');
                                 console.log('[DEBUG] Mostrando painel do departamento:', dadosAdmin.equipe);
                             } else {
-                                console.warn('[AVISO] Painel não encontrado para departamento:', dadosAdmin.equipe);
+                                console.warn('[AVISO] Painel nÃ£o encontrado para departamento:', dadosAdmin.equipe);
                             }
                             
                         } else {
-                            console.log('[DEBUG] Usuário sem permissões específicas - mantendo na tela de login');
+                            console.log('[DEBUG] UsuÃ¡rio sem permissÃµes especÃ­ficas - mantendo na tela de login');
                             document.getElementById('auth-section')?.classList.remove('hidden');
                             document.getElementById('admin-panel')?.classList.add('hidden');
-                            showToast('Erro', 'Usuário sem permissões definidas', 'error');
+                            showToast('Erro', 'UsuÃ¡rio sem permissÃµes definidas', 'error');
                             setTimeout(() => window.auth.signOut(), 2000);
                             return;
                         }
                         
-                        // Atualizar botões imediatamente após login
+                        // Atualizar botÃµes imediatamente apÃ³s login
                         setTimeout(() => {
-                            console.log('[DEBUG] Inicializando botões após login...');
+                            console.log('[DEBUG] Inicializando botÃµes apÃ³s login...');
                             atualizarVisibilidadeBotoes();
                             configurarEventosBotoes();
                             
-                            // Garantir que as funções estão disponíveis globalmente
+                            // Garantir que as funÃ§Ãµes estÃ£o disponÃ­veis globalmente
                             if (typeof window.showCreateUserModal !== 'function') {
-                                console.error('[ERRO] showCreateUserModal não está definida!');
+                                console.error('[ERRO] showCreateUserModal nÃ£o estÃ¡ definida!');
                             }
                             if (typeof window.showManageUsersModal !== 'function') {
-                                console.error('[ERRO] showManageUsersModal não está definida!');
+                                console.error('[ERRO] showManageUsersModal nÃ£o estÃ¡ definida!');
                             }
                             
-                            console.log('[DEBUG] Estado dos botões após login:', {
+                            console.log('[DEBUG] Estado dos botÃµes apÃ³s login:', {
                                 userRole: window.userRole,
                                 usuarioAdmin: window.usuarioAdmin,
                                 showCreateUserModal: typeof window.showCreateUserModal,
                                 showManageUsersModal: typeof window.showManageUsersModal
                             });
                             
-                            // Chamar função de teste para debug
+                            // Chamar funÃ§Ã£o de teste para debug
                             if (typeof window.testarBotoes === 'function') {
                                 window.testarBotoes();
                             }
                             
                         }, 300);
                         
-                        // Segunda verificação para garantir configuração
+                        // Segunda verificaÃ§Ã£o para garantir configuraÃ§Ã£o
                         setTimeout(() => {
-                            console.log('[DEBUG] Segunda verificação dos botões...');
+                            console.log('[DEBUG] Segunda verificaÃ§Ã£o dos botÃµes...');
                             if (window.reconfigurarBotoes) {
                                 window.reconfigurarBotoes();
                             }
                         }, 1000);
                         
-                        // Carregar dados da aplicação
+                        // Carregar dados da aplicaÃ§Ã£o
                         await carregarSolicitacoes();
                         
                     } else {
-                        console.log('[DEBUG] Usuário sem permissões - mantendo na tela de login');
-                        // Usuário autenticado mas sem permissões - manter na tela de login
+                        console.log('[DEBUG] UsuÃ¡rio sem permissÃµes - mantendo na tela de login');
+                        // UsuÃ¡rio autenticado mas sem permissÃµes - manter na tela de login
                         const authSection = document.getElementById('auth-section');
                         const adminPanel = document.getElementById('admin-panel');
                         if (authSection) authSection.classList.remove('hidden');
                         if (adminPanel) adminPanel.classList.add('hidden');
                         
-                        // Fazer logout automático do usuário não autorizado
+                        // Fazer logout automÃ¡tico do usuÃ¡rio nÃ£o autorizado
                         setTimeout(() => {
                             window.auth.signOut();
                         }, 2000);
                     }
                 } else {
-                    console.log('[DEBUG] Usuário não autenticado - resetando interface completa');
-                    // Usuário não autenticado - resetar interface completamente
+                    console.log('[DEBUG] UsuÃ¡rio nÃ£o autenticado - resetando interface completa');
+                    // UsuÃ¡rio nÃ£o autenticado - resetar interface completamente
                     
-                    // Ocultar painéis administrativos
+                    // Ocultar painÃ©is administrativos
                     const authSection2 = document.getElementById('auth-section');
                     const adminPanel2 = document.getElementById('admin-panel');
                     if (authSection2) authSection2.classList.remove('hidden');
                     if (adminPanel2) adminPanel2.classList.add('hidden');
                     
-                    // Ocultar TODOS os painéis de departamento
+                    // Ocultar TODOS os painÃ©is de departamento
                     const teamsGrid = document.querySelector('.teams-grid');
                     if (teamsGrid) teamsGrid.classList.add('hidden');
                     
@@ -468,23 +468,23 @@ window.addEventListener('DOMContentLoaded', async function() {
                         if (panel.classList) panel.classList.add('hidden');
                     });
                     
-                    // Limpar dados do usuário
+                    // Limpar dados do usuÃ¡rio
                     window.usuarioAdmin = null;
                     window.userRole = null;
                     window.userEmail = null;
                     localStorage.removeItem('usuarioAdmin');
                     
-                    // Resetar formulário de login
+                    // Resetar formulÃ¡rio de login
                     const loginForm = document.getElementById('login-form');
                     if (loginForm) loginForm.reset();
                 }
             } catch (authError) {
-                console.error('[ERRO] Erro no listener de autenticação:', authError);
-                showToast('Erro', 'Erro na autenticação. Tentando modo offline...', 'error');
+                console.error('[ERRO] Erro no listener de autenticaÃ§Ã£o:', authError);
+                showToast('Erro', 'Erro na autenticaÃ§Ã£o. Tentando modo offline...', 'error');
             }
         });
     }
-    // Corrige botão de logout
+    // Corrige botÃ£o de logout
     const logoutBtn = document.getElementById('logout-btn');
     if (logoutBtn) {
         logoutBtn.onclick = async function() {
@@ -510,16 +510,16 @@ window.handleLogin = async function(event) {
         
         if (!email || !senha) {
             showToast('Erro', 'Preencha email e senha.', 'error');
-            console.warn('[AVISO] handleLogin: email ou senha não preenchidos!');
+            console.warn('[AVISO] handleLogin: email ou senha nÃ£o preenchidos!');
             return;
         }
         
         console.log('[DEBUG] Tentando login com email:', email);
         
-        // Verificar se Firebase está disponível
+        // Verificar se Firebase estÃ¡ disponÃ­vel
         if (!window.auth) {
-            console.error('[ERRO] Firebase Auth não disponível');
-            showToast('Erro', 'Sistema de autenticação não disponível. Ativando modo desenvolvimento...', 'warning');
+            console.error('[ERRO] Firebase Auth nÃ£o disponÃ­vel');
+            showToast('Erro', 'Sistema de autenticaÃ§Ã£o nÃ£o disponÃ­vel. Ativando modo desenvolvimento...', 'warning');
             // Ativar modo desenvolvimento
             setTimeout(() => {
                 window.loginDesenvolvimento(email);
@@ -537,7 +537,7 @@ window.handleLogin = async function(event) {
         // Atualiza badge do menu imediatamente
         const badge = document.getElementById('user-role-badge');
         if (badge) {
-            // Exibe o papel correto do usuário
+            // Exibe o papel correto do usuÃ¡rio
             if (window.usuarioAdmin && window.usuarioAdmin.role === 'super_admin') {
                 badge.textContent = 'Super Administrador';
             } else if (window.usuarioAdmin && window.usuarioAdmin.role === 'admin') {
@@ -560,7 +560,7 @@ window.handleLogin = async function(event) {
     } catch (error) {
         console.error('[ERRO] handleLogin: falha no login:', error);
         
-        // Tratamento específico de diferentes tipos de erro
+        // Tratamento especÃ­fico de diferentes tipos de erro
         let mensagemErro = 'Erro desconhecido no login';
         let mostrarModoDesenvolvimento = false;
         
@@ -571,14 +571,14 @@ window.handleLogin = async function(event) {
                     mostrarModoDesenvolvimento = true;
                     break;
                 case 'auth/user-not-found':
-                    mensagemErro = 'Usuário não encontrado. Verifique o email.';
+                    mensagemErro = 'UsuÃ¡rio nÃ£o encontrado. Verifique o email.';
                     mostrarModoDesenvolvimento = true;
                     break;
                 case 'auth/wrong-password':
                     mensagemErro = 'Senha incorreta.';
                     break;
                 case 'auth/invalid-email':
-                    mensagemErro = 'Email inválido.';
+                    mensagemErro = 'Email invÃ¡lido.';
                     break;
                 case 'auth/user-disabled':
                     mensagemErro = 'Conta desabilitada. Entre em contato com o administrador.';
@@ -587,11 +587,11 @@ window.handleLogin = async function(event) {
                     mensagemErro = 'Muitas tentativas de login. Tente novamente mais tarde.';
                     break;
                 case 'auth/network-request-failed':
-                    mensagemErro = 'Erro de rede. Verifique sua conexão.';
+                    mensagemErro = 'Erro de rede. Verifique sua conexÃ£o.';
                     mostrarModoDesenvolvimento = true;
                     break;
                 default:
-                    mensagemErro = `Erro de autenticação: ${error.code}`;
+                    mensagemErro = `Erro de autenticaÃ§Ã£o: ${error.code}`;
                     mostrarModoDesenvolvimento = true;
             }
         } else if (error.message) {
@@ -601,11 +601,11 @@ window.handleLogin = async function(event) {
         
         showToast('Erro', mensagemErro, 'error');
         
-        // Se há problemas de conectividade ou credenciais, oferecer modo desenvolvimento
+        // Se hÃ¡ problemas de conectividade ou credenciais, oferecer modo desenvolvimento
         if (mostrarModoDesenvolvimento) {
             setTimeout(() => {
                 const email = document.getElementById('login-email').value;
-                if (email && confirm('Erro de autenticação detectado. Deseja ativar o modo desenvolvimento? (Funcionalidade limitada)')) {
+                if (email && confirm('Erro de autenticaÃ§Ã£o detectado. Deseja ativar o modo desenvolvimento? (Funcionalidade limitada)')) {
                     window.loginDesenvolvimento(email);
                 }
             }, 2000);
@@ -613,7 +613,7 @@ window.handleLogin = async function(event) {
     }
 }
 window.carregarSolicitacoesAgrupadas = async function() {
-    // Chama a função que atualiza os cards de métricas e equipes
+    // Chama a funÃ§Ã£o que atualiza os cards de mÃ©tricas e equipes
     await carregarSolicitacoes();
 }
 
@@ -623,7 +623,7 @@ window.showCreateUserModal = function() {
     // Debug completo do estado atual
     window.debugModals();
     
-    // Verifica se o usuário está autenticado e tem permissões
+    // Verifica se o usuÃ¡rio estÃ¡ autenticado e tem permissÃµes
     const usuarioAdmin = window.usuarioAdmin || JSON.parse(localStorage.getItem('usuarioAdmin') || '{}');
     const userRole = window.userRole || usuarioAdmin.role;
     
@@ -632,7 +632,7 @@ window.showCreateUserModal = function() {
     
     // Permite APENAS para super_admin
     if (!userRole || userRole !== 'super_admin') {
-        showToast('Erro', 'Acesso negado. Apenas super administradores podem criar usuários.', 'error');
+        showToast('Erro', 'Acesso negado. Apenas super administradores podem criar usuÃ¡rios.', 'error');
         console.warn('[AVISO] showCreateUserModal: acesso negado, role:', userRole);
         return;
     }
@@ -661,7 +661,7 @@ window.showCreateUserModal = function() {
         modal.style.alignItems = 'center';
         modal.style.justifyContent = 'center';
         
-        // Focar no primeiro campo após um delay
+        // Focar no primeiro campo apÃ³s um delay
         setTimeout(() => {
             const nomeField = document.getElementById('usuario-nome');
             if (nomeField) {
@@ -672,8 +672,8 @@ window.showCreateUserModal = function() {
         
         console.log('[DEBUG] showCreateUserModal: modal exibido com sucesso');
     } else {
-        console.error('[ERRO] Modal de criação de usuário não encontrado no DOM!');
-        alert('Erro: Modal de criação de usuário não encontrado!');
+        console.error('[ERRO] Modal de criaÃ§Ã£o de usuÃ¡rio nÃ£o encontrado no DOM!');
+        alert('Erro: Modal de criaÃ§Ã£o de usuÃ¡rio nÃ£o encontrado!');
     }
 };
 
@@ -683,7 +683,7 @@ window.showManageUsersModal = async function() {
     // Debug completo do estado atual
     window.debugModals();
     
-    // Verifica se o usuário está autenticado e tem permissões
+    // Verifica se o usuÃ¡rio estÃ¡ autenticado e tem permissÃµes
     const usuarioAdmin = window.usuarioAdmin || JSON.parse(localStorage.getItem('usuarioAdmin') || '{}');
     const userRole = window.userRole || usuarioAdmin.role;
     
@@ -692,7 +692,7 @@ window.showManageUsersModal = async function() {
     
     // Permite APENAS para super_admin
     if (!userRole || userRole !== 'super_admin') {
-        showToast('Erro', 'Acesso negado. Apenas super administradores podem gerenciar usuários.', 'error');
+        showToast('Erro', 'Acesso negado. Apenas super administradores podem gerenciar usuÃ¡rios.', 'error');
         console.warn('[AVISO] showManageUsersModal: acesso negado, role:', userRole);
         return;
     }
@@ -721,36 +721,36 @@ window.showManageUsersModal = async function() {
         modal.style.alignItems = 'center';
         modal.style.justifyContent = 'center';
         
-        // Focar no modal após um delay
+        // Focar no modal apÃ³s um delay
         setTimeout(() => {
             modal.focus();
             console.log('[DEBUG] showManageUsersModal: foco definido no modal');
         }, 200);
         
-        // Carregar os usuários após exibir o modal
+        // Carregar os usuÃ¡rios apÃ³s exibir o modal
         try {
-            console.log('[DEBUG] showManageUsersModal: carregando usuários...');
+            console.log('[DEBUG] showManageUsersModal: carregando usuÃ¡rios...');
             await carregarUsuarios();
-            console.log('[DEBUG] showManageUsersModal: usuários carregados com sucesso');
+            console.log('[DEBUG] showManageUsersModal: usuÃ¡rios carregados com sucesso');
         } catch (error) {
-            console.error('[ERRO] showManageUsersModal: erro ao carregar usuários:', error);
-            showToast('Erro', 'Erro ao carregar usuários.', 'error');
+            console.error('[ERRO] showManageUsersModal: erro ao carregar usuÃ¡rios:', error);
+            showToast('Erro', 'Erro ao carregar usuÃ¡rios.', 'error');
         }
         
         console.log('[DEBUG] showManageUsersModal: modal exibido com sucesso');
     } else {
-        console.error('[ERRO] Modal de gerenciamento de usuários não encontrado no DOM!');
-        alert('Erro: Modal de gerenciamento de usuários não encontrado!');
+        console.error('[ERRO] Modal de gerenciamento de usuÃ¡rios nÃ£o encontrado no DOM!');
+        alert('Erro: Modal de gerenciamento de usuÃ¡rios nÃ£o encontrado!');
     }
 };
 
 window.mostrarRelatorios = function() {
-    // Verificar se é super_admin
+    // Verificar se Ã© super_admin
     const usuarioAdmin = window.usuarioAdmin || JSON.parse(localStorage.getItem('usuarioAdmin') || '{}');
     const userRole = window.userRole || usuarioAdmin.role;
     
     if (!userRole || userRole !== 'super_admin') {
-        showToast('Erro', 'Acesso negado. Apenas super administradores podem acessar relatórios.', 'error');
+        showToast('Erro', 'Acesso negado. Apenas super administradores podem acessar relatÃ³rios.', 'error');
         console.warn('[AVISO] mostrarRelatorios: acesso negado, role:', userRole);
         return;
     }
@@ -765,19 +765,19 @@ window.mostrarRelatorios = function() {
         });
         filtroPeriodo.dataset.listenerAdded = 'true';
     }
-    // Carrega solicitações do Firestore ao abrir relatórios
+    // Carrega solicitaÃ§Ãµes do Firestore ao abrir relatÃ³rios
     carregarSolicitacoes();
     
-    // Garantir que os botões estejam configurados corretamente
+    // Garantir que os botÃµes estejam configurados corretamente
     setTimeout(() => {
-        console.log('[DEBUG] mostrarRelatorios: reconfigurando botões...');
+        console.log('[DEBUG] mostrarRelatorios: reconfigurando botÃµes...');
         atualizarVisibilidadeBotoes();
         configurarEventosBotoes();
     }, 100);
 };
 
 window.abrirAcompanhantesSection = function() {
-    // Verificar se é super_admin
+    // Verificar se Ã© super_admin
     const usuarioAdmin = window.usuarioAdmin || JSON.parse(localStorage.getItem('usuarioAdmin') || '{}');
     const userRole = window.userRole || usuarioAdmin.role;
     
@@ -794,21 +794,21 @@ window.abrirAcompanhantesSection = function() {
 window.voltarPainelPrincipal = function() {
     mostrarSecaoPainel('painel');
     
-    // Garantir que os botões estejam configurados ao voltar ao painel
+    // Garantir que os botÃµes estejam configurados ao voltar ao painel
     setTimeout(() => {
-        console.log('[DEBUG] voltarPainelPrincipal: reconfigurando botões...');
+        console.log('[DEBUG] voltarPainelPrincipal: reconfigurando botÃµes...');
         atualizarVisibilidadeBotoes();
         configurarEventosBotoes();
     }, 100);
 };
 
-// --- Firestore: Usuários ---
+// --- Firestore: UsuÃ¡rios ---
 function preencherTabelaUsuarios(listaUsuarios) {
     const usersList = document.getElementById('users-list');
     const totalCount = document.getElementById('total-users-count');
     if (!usersList) return;
     if (listaUsuarios.length === 0) {
-        usersList.innerHTML = `<div style='text-align:center; color:#6b7280; padding:2rem;'>Nenhum usuário cadastrado.</div>`;
+        usersList.innerHTML = `<div style='text-align:center; color:#6b7280; padding:2rem;'>Nenhum usuÃ¡rio cadastrado.</div>`;
         if (totalCount) totalCount.textContent = '0';
         return;
     }
@@ -826,17 +826,17 @@ function preencherTabelaUsuarios(listaUsuarios) {
 }
 async function carregarUsuarios() {
     if (!window.db) {
-        showToast('Erro', 'Firestore não inicializado!', 'error');
+        showToast('Erro', 'Firestore nÃ£o inicializado!', 'error');
         return;
     }
     try {
-        // Busca usuários de equipe
+        // Busca usuÃ¡rios de equipe
         const equipeSnap = await window.db.collection('usuarios_equipe').get();
         const listaEquipe = [];
         equipeSnap.forEach(doc => {
             listaEquipe.push({ id: doc.id, ...doc.data(), tipo: 'Equipe' });
         });
-        // Busca usuários acompanhantes
+        // Busca usuÃ¡rios acompanhantes
         const acompSnap = await window.db.collection('usuarios_acompanhantes').get();
         const listaAcompanhantes = [];
         acompSnap.forEach(doc => {
@@ -845,33 +845,33 @@ async function carregarUsuarios() {
         // Junta tudo para exibir
         const listaUsuarios = [...listaEquipe, ...listaAcompanhantes];
         preencherTabelaUsuarios(listaUsuarios);
-        console.log('Usuários carregados do Firestore:', listaUsuarios);
+        console.log('UsuÃ¡rios carregados do Firestore:', listaUsuarios);
     } catch (error) {
-        console.error('Erro ao buscar usuários:', error);
-        showToast('Erro', 'Não foi possível carregar os usuários.', 'error');
+        console.error('Erro ao buscar usuÃ¡rios:', error);
+        showToast('Erro', 'NÃ£o foi possÃ­vel carregar os usuÃ¡rios.', 'error');
     }
 }
 
-// --- Firestore: Solicitações & Renderização dos Cards ---
+// --- Firestore: SolicitaÃ§Ãµes & RenderizaÃ§Ã£o dos Cards ---
 async function carregarSolicitacoes() {
     if (!window.db) {
-        showToast('Erro', 'Firestore não inicializado!', 'error');
-        console.error('Firestore não inicializado!');
+        showToast('Erro', 'Firestore nÃ£o inicializado!', 'error');
+        console.error('Firestore nÃ£o inicializado!');
         return;
     }
     
     try {
-        console.log('[DEBUG] Buscando solicitações da coleção "solicitacoes"...');
+        console.log('[DEBUG] Buscando solicitaÃ§Ãµes da coleÃ§Ã£o "solicitacoes"...');
         
         // Mostrar indicador de carregamento
         mostrarIndicadorCarregamento();
         
-        // Obter dados do usuário atual
+        // Obter dados do usuÃ¡rio atual
         const usuarioAdmin = window.usuarioAdmin || JSON.parse(localStorage.getItem('usuarioAdmin') || '{}');
         const isEquipe = usuarioAdmin && (usuarioAdmin.role === 'equipe' || usuarioAdmin.isEquipe);
         const isSuperAdmin = usuarioAdmin && usuarioAdmin.role === 'super_admin';
         
-        console.log('[DEBUG] Carregando para usuário:', { 
+        console.log('[DEBUG] Carregando para usuÃ¡rio:', { 
             role: usuarioAdmin?.role, 
             isEquipe, 
             isSuperAdmin, 
@@ -900,41 +900,41 @@ async function carregarSolicitacoes() {
             const data = doc.data();
             const item = { id: doc.id, ...data };
             
-            // FILTRO RIGOROSO USANDO A FUNÇÃO DE PERMISSÕES
+            // FILTRO RIGOROSO USANDO A FUNÃ‡ÃƒO DE PERMISSÃ•ES
             if (!podeVerSolicitacaoJS(usuarioAdmin, data)) {
-                // Pular esta solicitação se o usuário não tem permissão para vê-la
-                console.log(`[DEBUG] Solicitação filtrada (sem permissão):`, item.titulo || item.tipo, 'equipe:', data.equipe);
+                // Pular esta solicitaÃ§Ã£o se o usuÃ¡rio nÃ£o tem permissÃ£o para vÃª-la
+                console.log(`[DEBUG] SolicitaÃ§Ã£o filtrada (sem permissÃ£o):`, item.titulo || item.tipo, 'equipe:', data.equipe);
                 return;
             }
             
             totalDocs++;
             solicitacoes.push(item);
             
-            console.log(`[DEBUG] Solicitação incluída:`, item.titulo || item.tipo, 'equipe:', data.equipe);
+            console.log(`[DEBUG] SolicitaÃ§Ã£o incluÃ­da:`, item.titulo || item.tipo, 'equipe:', data.equipe);
             
             if (data.status === 'pendente') pendentes++;
             if (data.status === 'finalizada' && data.dataFinalizacao?.slice(0,10) === hoje) finalizadasHoje++;
             if (data.quarto) quartosAtivos.add(data.quarto);
             
-            // Agrupar por equipe apenas se necessário
+            // Agrupar por equipe apenas se necessÃ¡rio
             if (data.equipe && equipes[data.equipe] !== undefined) {
                 equipes[data.equipe].push(item);
             }
         });
         
-        console.log(`[DEBUG] Total de solicitações processadas: ${totalDocs}`);
-        console.log(`[DEBUG] Solicitações por equipe:`, Object.keys(equipes).map(e => `${e}: ${equipes[e].length}`));
+        console.log(`[DEBUG] Total de solicitaÃ§Ãµes processadas: ${totalDocs}`);
+        console.log(`[DEBUG] SolicitaÃ§Ãµes por equipe:`, Object.keys(equipes).map(e => `${e}: ${equipes[e].length}`));
         
-        // RENDERIZAÇÃO BASEADA NO TIPO DE USUÁRIO
+        // RENDERIZAÃ‡ÃƒO BASEADA NO TIPO DE USUÃRIO
         if (isEquipe && usuarioAdmin.equipe) {
-            // Usuário de equipe: mostrar APENAS sua equipe
+            // UsuÃ¡rio de equipe: mostrar APENAS sua equipe
             const equipeFiltrada = {};
             equipeFiltrada[usuarioAdmin.equipe] = equipes[usuarioAdmin.equipe] || [];
             
-            console.log(`[DEBUG] Renderizando apenas equipe: ${usuarioAdmin.equipe} com ${equipeFiltrada[usuarioAdmin.equipe].length} solicitações`);
+            console.log(`[DEBUG] Renderizando apenas equipe: ${usuarioAdmin.equipe} com ${equipeFiltrada[usuarioAdmin.equipe].length} solicitaÃ§Ãµes`);
             renderizarCardsEquipe(equipeFiltrada);
             
-            // Ajustar visibilidade dos painéis (mostrar apenas o da equipe)
+            // Ajustar visibilidade dos painÃ©is (mostrar apenas o da equipe)
             setTimeout(() => {
                 const allPanels = document.querySelectorAll('.team-panel');
                 allPanels.forEach(panel => {
@@ -954,7 +954,7 @@ async function carregarSolicitacoes() {
             console.log('[DEBUG] Renderizando todas as equipes para super admin');
             renderizarCardsEquipe(equipes);
             
-            // Mostrar todos os painéis
+            // Mostrar todos os painÃ©is
             setTimeout(() => {
                 const allPanels = document.querySelectorAll('.team-panel');
                 allPanels.forEach(panel => {
@@ -964,31 +964,31 @@ async function carregarSolicitacoes() {
             }, 100);
             
         } else {
-            // Usuário sem permissões claras
-            console.warn('[AVISO] Usuário sem permissões claras - não exibindo solicitações');
+            // UsuÃ¡rio sem permissÃµes claras
+            console.warn('[AVISO] UsuÃ¡rio sem permissÃµes claras - nÃ£o exibindo solicitaÃ§Ãµes');
             renderizarCardsEquipe({});
         }
         
-        // Atualizar métricas do painel
+        // Atualizar mÃ©tricas do painel
         atualizarMetricasPainel(totalDocs, pendentes, finalizadasHoje, quartosAtivos.size);
         
-        // Se não há dados, mostrar dados simulados para teste
+        // Se nÃ£o hÃ¡ dados, mostrar dados simulados para teste
         if (totalDocs === 0) {
-            console.log('[DEBUG] Nenhuma solicitação encontrada, criando dados de exemplo');
+            console.log('[DEBUG] Nenhuma solicitaÃ§Ã£o encontrada, criando dados de exemplo');
             criarDadosExemplo();
         }
         
         ocultarIndicadorCarregamento();
         
     } catch (error) {
-        console.error('Erro ao buscar solicitações:', error);
+        console.error('Erro ao buscar solicitaÃ§Ãµes:', error);
         ocultarIndicadorCarregamento();
         
         if (error.code === 'unavailable' || error.message.includes('offline')) {
             showToast('Aviso', 'Modo offline - Carregando dados locais', 'success');
             carregarDadosOffline();
         } else {
-            showToast('Erro', 'Não foi possível carregar as solicitações: ' + (error.message || error), 'error');
+            showToast('Erro', 'NÃ£o foi possÃ­vel carregar as solicitaÃ§Ãµes: ' + (error.message || error), 'error');
             // Carregar dados simulados como fallback
             criarDadosExemplo();
         }
@@ -1001,14 +1001,14 @@ function mostrarIndicadorCarregamento() {
         teamsGrid.innerHTML = `
             <div style="grid-column: 1 / -1; text-align: center; padding: 2rem;">
                 <i class="fas fa-spinner fa-spin" style="font-size: 2rem; color: #3b82f6; margin-bottom: 1rem;"></i>
-                <p>Carregando solicitações...</p>
+                <p>Carregando solicitaÃ§Ãµes...</p>
             </div>
         `;
     }
 }
 
 function ocultarIndicadorCarregamento() {
-    // O indicador será substituído pelo conteúdo real
+    // O indicador serÃ¡ substituÃ­do pelo conteÃºdo real
 }
 
 function carregarDadosOffline() {
@@ -1033,15 +1033,15 @@ function carregarDadosOffline() {
 }
 
 function criarDadosExemplo() {
-    console.log('[DEBUG] Criando dados de exemplo para demonstração');
+    console.log('[DEBUG] Criando dados de exemplo para demonstraÃ§Ã£o');
     
     const dadosExemplo = {
         manutencao: [
-            { id: 'ex1', status: 'pendente', titulo: 'Reparo elétrico', quarto: '201A', dataCriacao: new Date().toISOString().slice(0,10), nome: 'João Silva' },
-            { id: 'ex2', status: 'em-andamento', titulo: 'Manutenção AC', quarto: '205B', dataCriacao: new Date().toISOString().slice(0,10), nome: 'Maria Santos' }
+            { id: 'ex1', status: 'pendente', titulo: 'Reparo elÃ©trico', quarto: '201A', dataCriacao: new Date().toISOString().slice(0,10), nome: 'JoÃ£o Silva' },
+            { id: 'ex2', status: 'em-andamento', titulo: 'ManutenÃ§Ã£o AC', quarto: '205B', dataCriacao: new Date().toISOString().slice(0,10), nome: 'Maria Santos' }
         ],
         nutricao: [
-            { id: 'ex3', status: 'pendente', titulo: 'Dieta sem glúten', quarto: '103C', dataCriacao: new Date().toISOString().slice(0,10), nome: 'Pedro Costa' }
+            { id: 'ex3', status: 'pendente', titulo: 'Dieta sem glÃºten', quarto: '103C', dataCriacao: new Date().toISOString().slice(0,10), nome: 'Pedro Costa' }
         ],
         higienizacao: [
             { id: 'ex4', status: 'finalizada', titulo: 'Limpeza completa', quarto: '107A', dataCriacao: new Date().toISOString().slice(0,10), nome: 'Ana Paula' }
@@ -1054,11 +1054,11 @@ function criarDadosExemplo() {
     atualizarMetricasPainel(5, 3, 1, 5);
     renderizarCardsEquipe(dadosExemplo);
     
-    showToast('Info', 'Dados de exemplo carregados para demonstração', 'success');
+    showToast('Info', 'Dados de exemplo carregados para demonstraÃ§Ã£o', 'success');
 }
 
 function atualizarMetricasPainel(total, pendentes, finalizadasHoje, quartosAtivos) {
-    // Atualiza badge do menu para mostrar o papel do usuário
+    // Atualiza badge do menu para mostrar o papel do usuÃ¡rio
     const badge = document.getElementById('user-role-badge');
     if (badge) {
         const usuario = window.usuarioAdmin || JSON.parse(localStorage.getItem('usuarioAdmin') || '{}');
@@ -1074,17 +1074,17 @@ function atualizarMetricasPainel(total, pendentes, finalizadasHoje, quartosAtivo
         }
     }
     
-    // Atualizar visibilidade dos botões
+    // Atualizar visibilidade dos botÃµes
     atualizarVisibilidadeBotoes();
     
-    // Remove loader visual (reforçado)
+    // Remove loader visual (reforÃ§ado)
     setTimeout(() => {
         if (window._mainLoader) {
             window._mainLoader.remove();
             window._mainLoader = null;
         }
     }, 100);
-    // Renderiza bloco de métricas centralizado
+    // Renderiza bloco de mÃ©tricas centralizado
     let metricasEl = document.getElementById('metricas-painel');
     if (!metricasEl) {
         metricasEl = document.createElement('div');
@@ -1103,7 +1103,7 @@ function atualizarMetricasPainel(total, pendentes, finalizadasHoje, quartosAtivo
     if (quartosEl) quartosEl.textContent = quartosAtivos;
 }
 
-// Nova função para atualizar visibilidade dos botões
+// Nova funÃ§Ã£o para atualizar visibilidade dos botÃµes
 function atualizarVisibilidadeBotoes() {
     const usuarioAdmin = window.usuarioAdmin || JSON.parse(localStorage.getItem('usuarioAdmin') || '{}');
     const btnNovoUsuario = document.getElementById('btn-novo-usuario');
@@ -1114,14 +1114,14 @@ function atualizarVisibilidadeBotoes() {
     const userRoleBadge = document.getElementById('user-role-badge');
     const panelTitle = document.getElementById('panel-title');
     
-    console.log('[DEBUG] Atualizando botões para usuário:', usuarioAdmin);
+    console.log('[DEBUG] Atualizando botÃµes para usuÃ¡rio:', usuarioAdmin);
     
-    // Verificar tipo de usuário baseado nas coleções Firestore
+    // Verificar tipo de usuÃ¡rio baseado nas coleÃ§Ãµes Firestore
     const isSuperAdmin = usuarioAdmin && usuarioAdmin.role === 'super_admin';
     const isEquipe = usuarioAdmin && (usuarioAdmin.role === 'equipe' || usuarioAdmin.isEquipe);
     const isAdmin = usuarioAdmin && usuarioAdmin.role === 'admin';
     
-    console.log('[DEBUG] Tipo de usuário:', { 
+    console.log('[DEBUG] Tipo de usuÃ¡rio:', { 
         isSuperAdmin, 
         isEquipe, 
         isAdmin, 
@@ -1129,20 +1129,20 @@ function atualizarVisibilidadeBotoes() {
         equipe: usuarioAdmin?.equipe 
     });
     
-    // Configurar título e badge baseado no tipo de usuário
+    // Configurar tÃ­tulo e badge baseado no tipo de usuÃ¡rio
     if (panelTitle) {
         if (isSuperAdmin) {
-            panelTitle.textContent = '🏥 Painel Administrativo - Super Admin';
+            panelTitle.textContent = 'ðŸ¥ Painel Administrativo - Super Admin';
         } else if (isEquipe && usuarioAdmin.equipe) {
             const nomeEquipe = {
-                'manutencao': 'Manutenção',
-                'nutricao': 'Nutrição', 
-                'higienizacao': 'Higienização',
+                'manutencao': 'ManutenÃ§Ã£o',
+                'nutricao': 'NutriÃ§Ã£o', 
+                'higienizacao': 'HigienizaÃ§Ã£o',
                 'hotelaria': 'Hotelaria'
             }[usuarioAdmin.equipe] || usuarioAdmin.equipe;
-            panelTitle.textContent = `🏥 Painel ${nomeEquipe}`;
+            panelTitle.textContent = `ðŸ¥ Painel ${nomeEquipe}`;
         } else if (isAdmin) {
-            panelTitle.textContent = '🏥 Painel Administrativo';
+            panelTitle.textContent = 'ðŸ¥ Painel Administrativo';
         }
     }
     
@@ -1152,9 +1152,9 @@ function atualizarVisibilidadeBotoes() {
             userRoleBadge.className = 'priority-badge priority-alta';
         } else if (isEquipe && usuarioAdmin.equipe) {
             const nomeEquipe = {
-                'manutencao': 'Equipe Manutenção',
-                'nutricao': 'Equipe Nutrição',
-                'higienizacao': 'Equipe Higienização', 
+                'manutencao': 'Equipe ManutenÃ§Ã£o',
+                'nutricao': 'Equipe NutriÃ§Ã£o',
+                'higienizacao': 'Equipe HigienizaÃ§Ã£o', 
                 'hotelaria': 'Equipe Hotelaria'
             }[usuarioAdmin.equipe] || `Equipe ${usuarioAdmin.equipe}`;
             userRoleBadge.textContent = nomeEquipe;
@@ -1165,75 +1165,75 @@ function atualizarVisibilidadeBotoes() {
         }
     }
     
-    // Botão Criar Usuário - APENAS super_admin
+    // BotÃ£o Criar UsuÃ¡rio - APENAS super_admin
     if (btnNovoUsuario) {
         if (isSuperAdmin) {
             btnNovoUsuario.classList.remove('btn-hide');
             btnNovoUsuario.style.display = 'inline-flex';
-            console.log('[DEBUG] Botão Criar Usuário exibido para super_admin');
+            console.log('[DEBUG] BotÃ£o Criar UsuÃ¡rio exibido para super_admin');
         } else {
             btnNovoUsuario.classList.add('btn-hide');
             btnNovoUsuario.style.display = 'none';
-            console.log('[DEBUG] Botão Criar Usuário ocultado para usuário não super_admin');
+            console.log('[DEBUG] BotÃ£o Criar UsuÃ¡rio ocultado para usuÃ¡rio nÃ£o super_admin');
         }
     }
     
-    // Botão Gerenciar Usuários - APENAS super_admin
+    // BotÃ£o Gerenciar UsuÃ¡rios - APENAS super_admin
     if (btnGerenciarUsuarios) {
         if (isSuperAdmin) {
             btnGerenciarUsuarios.classList.remove('btn-hide');
             btnGerenciarUsuarios.style.display = 'inline-flex';
-            console.log('[DEBUG] Botão Gerenciar Usuários exibido para super_admin');
+            console.log('[DEBUG] BotÃ£o Gerenciar UsuÃ¡rios exibido para super_admin');
         } else {
             btnGerenciarUsuarios.classList.add('btn-hide');
             btnGerenciarUsuarios.style.display = 'none';
-            console.log('[DEBUG] Botão Gerenciar Usuários ocultado para usuário não super_admin');
+            console.log('[DEBUG] BotÃ£o Gerenciar UsuÃ¡rios ocultado para usuÃ¡rio nÃ£o super_admin');
         }
     }
     
-    // Botão Acompanhantes - APENAS super_admin
+    // BotÃ£o Acompanhantes - APENAS super_admin
     if (btnAcompanhantes) {
         if (isSuperAdmin) {
             btnAcompanhantes.classList.remove('btn-hide');
             btnAcompanhantes.style.display = 'inline-flex';
-            console.log('[DEBUG] Botão Acompanhantes exibido para super_admin');
+            console.log('[DEBUG] BotÃ£o Acompanhantes exibido para super_admin');
         } else {
             btnAcompanhantes.classList.add('btn-hide');
             btnAcompanhantes.style.display = 'none';
-            console.log('[DEBUG] Botão Acompanhantes ocultado para usuário não super_admin');
+            console.log('[DEBUG] BotÃ£o Acompanhantes ocultado para usuÃ¡rio nÃ£o super_admin');
         }
     }
     
-    // Botão Relatórios - APENAS super_admin
+    // BotÃ£o RelatÃ³rios - APENAS super_admin
     if (btnRelatorios) {
         if (isSuperAdmin) {
             btnRelatorios.classList.remove('btn-hide');
             btnRelatorios.style.display = 'inline-flex';
-            console.log('[DEBUG] Botão Relatórios exibido para super_admin');
+            console.log('[DEBUG] BotÃ£o RelatÃ³rios exibido para super_admin');
         } else {
             btnRelatorios.classList.add('btn-hide');
             btnRelatorios.style.display = 'none';
-            console.log('[DEBUG] Botão Relatórios ocultado para usuário não super_admin');
+            console.log('[DEBUG] BotÃ£o RelatÃ³rios ocultado para usuÃ¡rio nÃ£o super_admin');
         }
     }
     
-    // Mensagem de permissão
+    // Mensagem de permissÃ£o
     if (msgPermissao) {
         if (isEquipe && usuarioAdmin.equipe) {
             const nomeEquipe = {
-                'manutencao': 'Manutenção',
-                'nutricao': 'Nutrição',
-                'higienizacao': 'Higienização',
+                'manutencao': 'ManutenÃ§Ã£o',
+                'nutricao': 'NutriÃ§Ã£o',
+                'higienizacao': 'HigienizaÃ§Ã£o',
                 'hotelaria': 'Hotelaria'
             }[usuarioAdmin.equipe] || usuarioAdmin.equipe;
             
-            msgPermissao.textContent = `Acesso da equipe: Visualização e gerenciamento de solicitações de ${nomeEquipe}`;
+            msgPermissao.textContent = `Acesso da equipe: VisualizaÃ§Ã£o e gerenciamento de solicitaÃ§Ãµes de ${nomeEquipe}`;
             msgPermissao.classList.remove('msg-permissao-hide');
             msgPermissao.style.display = 'block';
             msgPermissao.style.color = '#059669';
             msgPermissao.style.fontWeight = '500';
         } else if (!isSuperAdmin) {
-            msgPermissao.textContent = 'Sem permissões administrativas';
+            msgPermissao.textContent = 'Sem permissÃµes administrativas';
             msgPermissao.classList.remove('msg-permissao-hide');
             msgPermissao.style.display = 'block';
             msgPermissao.style.color = '#dc2626';
@@ -1243,28 +1243,28 @@ function atualizarVisibilidadeBotoes() {
         }
     }
     
-    // Log final do estado dos botões
-    console.log('[DEBUG] Estado final dos botões:', {
+    // Log final do estado dos botÃµes
+    console.log('[DEBUG] Estado final dos botÃµes:', {
         role: usuarioAdmin?.role,
         equipe: usuarioAdmin?.equipe,
         isSuperAdmin,
         isEquipe,
         isAdmin,
-        btnNovoUsuario: btnNovoUsuario ? !btnNovoUsuario.classList.contains('btn-hide') : 'não encontrado',
-        btnGerenciarUsuarios: btnGerenciarUsuarios ? !btnGerenciarUsuarios.classList.contains('btn-hide') : 'não encontrado',
-        btnAcompanhantes: btnAcompanhantes ? !btnAcompanhantes.classList.contains('btn-hide') : 'não encontrado',
-        btnRelatorios: btnRelatorios ? !btnRelatorios.classList.contains('btn-hide') : 'não encontrado'
+        btnNovoUsuario: btnNovoUsuario ? !btnNovoUsuario.classList.contains('btn-hide') : 'nÃ£o encontrado',
+        btnGerenciarUsuarios: btnGerenciarUsuarios ? !btnGerenciarUsuarios.classList.contains('btn-hide') : 'nÃ£o encontrado',
+        btnAcompanhantes: btnAcompanhantes ? !btnAcompanhantes.classList.contains('btn-hide') : 'nÃ£o encontrado',
+        btnRelatorios: btnRelatorios ? !btnRelatorios.classList.contains('btn-hide') : 'nÃ£o encontrado'
     });
 }
 
-// Função para configurar eventos dos botões
+// FunÃ§Ã£o para configurar eventos dos botÃµes
 function configurarEventosBotoes() {
-    console.log('[DEBUG] configurarEventosBotoes: iniciando configuração...');
+    console.log('[DEBUG] configurarEventosBotoes: iniciando configuraÃ§Ã£o...');
     
     const btnNovoUsuario = document.getElementById('btn-novo-usuario');
     const btnGerenciarUsuarios = document.getElementById('manage-users-btn');
     
-    console.log('[DEBUG] configurarEventosBotoes: botões encontrados:', {
+    console.log('[DEBUG] configurarEventosBotoes: botÃµes encontrados:', {
         btnNovoUsuario: !!btnNovoUsuario,
         btnGerenciarUsuarios: !!btnGerenciarUsuarios,
         btnNovoUsuarioVisible: btnNovoUsuario ? !btnNovoUsuario.classList.contains('btn-hide') : false,
@@ -1276,16 +1276,16 @@ function configurarEventosBotoes() {
         btnNovoUsuario.onclick = null;
         
         btnNovoUsuario.onclick = function(e) {
-            console.log('[LOG] CLIQUE no botão Criar Usuário detectado');
+            console.log('[LOG] CLIQUE no botÃ£o Criar UsuÃ¡rio detectado');
             e.preventDefault();
             e.stopPropagation();
             
             try {
-                console.log('[DEBUG] Verificando função showCreateUserModal...');
+                console.log('[DEBUG] Verificando funÃ§Ã£o showCreateUserModal...');
                 
                 if (typeof window.showCreateUserModal !== 'function') {
-                    console.error('[ERRO] showCreateUserModal não está definida!');
-                    alert('Erro: Função showCreateUserModal não encontrada!');
+                    console.error('[ERRO] showCreateUserModal nÃ£o estÃ¡ definida!');
+                    alert('Erro: FunÃ§Ã£o showCreateUserModal nÃ£o encontrada!');
                     return;
                 }
                 
@@ -1293,18 +1293,18 @@ function configurarEventosBotoes() {
                 window.showCreateUserModal();
                 
             } catch (err) {
-                console.error('[ERRO] Falha ao abrir modal Criar Usuário:', err);
-                alert('Erro ao abrir modal Criar Usuário: ' + err.message);
+                console.error('[ERRO] Falha ao abrir modal Criar UsuÃ¡rio:', err);
+                alert('Erro ao abrir modal Criar UsuÃ¡rio: ' + err.message);
             }
         };
         
-        // Garantir que o botão é sempre clicável
+        // Garantir que o botÃ£o Ã© sempre clicÃ¡vel
         btnNovoUsuario.style.pointerEvents = 'auto';
         btnNovoUsuario.style.cursor = 'pointer';
         
-        console.log('[DEBUG] Evento configurado para Criar Usuário');
+        console.log('[DEBUG] Evento configurado para Criar UsuÃ¡rio');
     } else {
-        console.warn('[AVISO] Botão Criar Usuário não encontrado!');
+        console.warn('[AVISO] BotÃ£o Criar UsuÃ¡rio nÃ£o encontrado!');
     }
     
     if (btnGerenciarUsuarios) {
@@ -1312,16 +1312,16 @@ function configurarEventosBotoes() {
         btnGerenciarUsuarios.onclick = null;
         
         btnGerenciarUsuarios.onclick = function(e) {
-            console.log('[LOG] CLIQUE no botão Gerenciar Usuários detectado');
+            console.log('[LOG] CLIQUE no botÃ£o Gerenciar UsuÃ¡rios detectado');
             e.preventDefault();
             e.stopPropagation();
             
             try {
-                console.log('[DEBUG] Verificando função showManageUsersModal...');
+                console.log('[DEBUG] Verificando funÃ§Ã£o showManageUsersModal...');
                 
                 if (typeof window.showManageUsersModal !== 'function') {
-                    console.error('[ERRO] showManageUsersModal não está definida!');
-                    alert('Erro: Função showManageUsersModal não encontrada!');
+                    console.error('[ERRO] showManageUsersModal nÃ£o estÃ¡ definida!');
+                    alert('Erro: FunÃ§Ã£o showManageUsersModal nÃ£o encontrada!');
                     return;
                 }
                 
@@ -1329,23 +1329,23 @@ function configurarEventosBotoes() {
                 window.showManageUsersModal();
                 
             } catch (err) {
-                console.error('[ERRO] Falha ao abrir modal Gerenciar Usuários:', err);
-                alert('Erro ao abrir modal Gerenciar Usuários: ' + err.message);
+                console.error('[ERRO] Falha ao abrir modal Gerenciar UsuÃ¡rios:', err);
+                alert('Erro ao abrir modal Gerenciar UsuÃ¡rios: ' + err.message);
             }
         };
         
-        // Garantir que o botão é sempre clicável
+        // Garantir que o botÃ£o Ã© sempre clicÃ¡vel
         btnGerenciarUsuarios.style.pointerEvents = 'auto';
         btnGerenciarUsuarios.style.cursor = 'pointer';
         
-        console.log('[DEBUG] Evento configurado para Gerenciar Usuários');
+        console.log('[DEBUG] Evento configurado para Gerenciar UsuÃ¡rios');
     } else {
-        console.warn('[AVISO] Botão Gerenciar Usuários não encontrado!');
+        console.warn('[AVISO] BotÃ£o Gerenciar UsuÃ¡rios nÃ£o encontrado!');
     }
     
-    console.log('[DEBUG] configurarEventosBotoes: configuração finalizada');
+    console.log('[DEBUG] configurarEventosBotoes: configuraÃ§Ã£o finalizada');
     
-    // Forçar exibição dos botões se usuário tem permissão
+    // ForÃ§ar exibiÃ§Ã£o dos botÃµes se usuÃ¡rio tem permissÃ£o
     setTimeout(() => {
         if (window.userRole === 'admin' || window.userRole === 'super_admin') {
             if (btnNovoUsuario) {
@@ -1356,16 +1356,16 @@ function configurarEventosBotoes() {
                 btnGerenciarUsuarios.classList.remove('btn-hide');
                 btnGerenciarUsuarios.style.display = 'inline-flex';
             }
-            console.log('[DEBUG] Botões forçados a exibir para admin');
+            console.log('[DEBUG] BotÃµes forÃ§ados a exibir para admin');
         }
     }, 100);
 }
 
-// Função auxiliar para reconfigurar botões quando necessário
+// FunÃ§Ã£o auxiliar para reconfigurar botÃµes quando necessÃ¡rio
 window.reconfigurarBotoes = function() {
-    console.log('[DEBUG] reconfigurarBotoes: forçando reconfiguração...');
+    console.log('[DEBUG] reconfigurarBotoes: forÃ§ando reconfiguraÃ§Ã£o...');
     
-    // Remove flags de configuração para forçar reconfiguração
+    // Remove flags de configuraÃ§Ã£o para forÃ§ar reconfiguraÃ§Ã£o
     const btnNovoUsuario = document.getElementById('btn-novo-usuario');
     const btnGerenciarUsuarios = document.getElementById('manage-users-btn');
     
@@ -1376,14 +1376,14 @@ window.reconfigurarBotoes = function() {
         delete btnGerenciarUsuarios.dataset.configured;
     }
     
-    // Reconfigura os botões
+    // Reconfigura os botÃµes
     atualizarVisibilidadeBotoes();
     configurarEventosBotoes();
     
-    console.log('[DEBUG] reconfigurarBotoes: reconfiguração concluída');
+    console.log('[DEBUG] reconfigurarBotoes: reconfiguraÃ§Ã£o concluÃ­da');
 };
 
-// Função de debug para verificar estado dos modais
+// FunÃ§Ã£o de debug para verificar estado dos modais
 window.debugModals = function() {
     const modalCriar = document.getElementById('modal-novo-usuario');
     const modalGerenciar = document.getElementById('manage-users-modal');
@@ -1415,28 +1415,28 @@ window.debugModals = function() {
     };
 };
 
-// Função de teste para os botões
+// FunÃ§Ã£o de teste para os botÃµes
 window.testarBotoes = function() {
-    console.log('=== TESTE DOS BOTÕES ===');
+    console.log('=== TESTE DOS BOTÃ•ES ===');
     
     const btnCriar = document.getElementById('btn-novo-usuario');
     const btnGerenciar = document.getElementById('manage-users-btn');
     
-    console.log('Botão Criar Usuário:', {
+    console.log('BotÃ£o Criar UsuÃ¡rio:', {
         existe: !!btnCriar,
         visivel: btnCriar ? !btnCriar.classList.contains('btn-hide') : false,
         display: btnCriar ? btnCriar.style.display : 'N/A',
         onclick: btnCriar ? !!btnCriar.onclick : false
     });
     
-    console.log('Botão Gerenciar Usuários:', {
+    console.log('BotÃ£o Gerenciar UsuÃ¡rios:', {
         existe: !!btnGerenciar,
         visivel: btnGerenciar ? !btnGerenciar.classList.contains('btn-hide') : false,
         display: btnGerenciar ? btnGerenciar.style.display : 'N/A',
         onclick: btnGerenciar ? !!btnGerenciar.onclick : false
     });
     
-    console.log('Funções disponíveis:', {
+    console.log('FunÃ§Ãµes disponÃ­veis:', {
         showCreateUserModal: typeof window.showCreateUserModal,
         showManageUsersModal: typeof window.showManageUsersModal,
         userRole: window.userRole,
@@ -1444,47 +1444,47 @@ window.testarBotoes = function() {
     });
     
     // Teste manual dos modals
-    console.log('Testando função showCreateUserModal...');
+    console.log('Testando funÃ§Ã£o showCreateUserModal...');
     try {
         if (typeof window.showCreateUserModal === 'function') {
-            console.log('✅ showCreateUserModal está disponível');
+            console.log('âœ… showCreateUserModal estÃ¡ disponÃ­vel');
         } else {
-            console.error('❌ showCreateUserModal NÃO está disponível');
+            console.error('âŒ showCreateUserModal NÃƒO estÃ¡ disponÃ­vel');
         }
     } catch (e) {
-        console.error('❌ Erro ao verificar showCreateUserModal:', e);
+        console.error('âŒ Erro ao verificar showCreateUserModal:', e);
     }
     
-    console.log('Testando função showManageUsersModal...');
+    console.log('Testando funÃ§Ã£o showManageUsersModal...');
     try {
         if (typeof window.showManageUsersModal === 'function') {
-            console.log('✅ showManageUsersModal está disponível');
+            console.log('âœ… showManageUsersModal estÃ¡ disponÃ­vel');
         } else {
-            console.error('❌ showManageUsersModal NÃO está disponível');
+            console.error('âŒ showManageUsersModal NÃƒO estÃ¡ disponÃ­vel');
         }
     } catch (e) {
-        console.error('❌ Erro ao verificar showManageUsersModal:', e);
+        console.error('âŒ Erro ao verificar showManageUsersModal:', e);
     }
     
     console.log('=== FIM DO TESTE ===');
 };
 
-// Função para forçar inicialização completa dos botões
+// FunÃ§Ã£o para forÃ§ar inicializaÃ§Ã£o completa dos botÃµes
 window.forcarInicializacao = function() {
-    console.log('[FORCE] Forçando inicialização completa...');
+    console.log('[FORCE] ForÃ§ando inicializaÃ§Ã£o completa...');
     
-    // Garantir que todas as funções estão definidas
+    // Garantir que todas as funÃ§Ãµes estÃ£o definidas
     if (typeof window.showCreateUserModal !== 'function') {
-        console.error('[FORCE] showCreateUserModal não está definida - redefinindo...');
-        // A função já está definida acima no código
+        console.error('[FORCE] showCreateUserModal nÃ£o estÃ¡ definida - redefinindo...');
+        // A funÃ§Ã£o jÃ¡ estÃ¡ definida acima no cÃ³digo
     }
     
     if (typeof window.showManageUsersModal !== 'function') {
-        console.error('[FORCE] showManageUsersModal não está definida - redefinindo...');
-        // A função já está definida acima no código
+        console.error('[FORCE] showManageUsersModal nÃ£o estÃ¡ definida - redefinindo...');
+        // A funÃ§Ã£o jÃ¡ estÃ¡ definida acima no cÃ³digo
     }
     
-    // Forçar atualização de visibilidade
+    // ForÃ§ar atualizaÃ§Ã£o de visibilidade
     atualizarVisibilidadeBotoes();
     
     // Reconfigurar eventos
@@ -1493,18 +1493,18 @@ window.forcarInicializacao = function() {
     // Teste final
     window.testarBotoes();
     
-    console.log('[FORCE] Inicialização forçada concluída');
+    console.log('[FORCE] InicializaÃ§Ã£o forÃ§ada concluÃ­da');
 };
 
-// Função de inicialização de emergência para quando Firebase falha
+// FunÃ§Ã£o de inicializaÃ§Ã£o de emergÃªncia para quando Firebase falha
 window.inicializacaoEmergencia = function() {
-    console.log('[EMERGENCY] Iniciando modo de emergência...');
+    console.log('[EMERGENCY] Iniciando modo de emergÃªncia...');
     
-    // Definir usuário admin de emergência
+    // Definir usuÃ¡rio admin de emergÃªncia
     window.userRole = 'admin';
     window.usuarioAdmin = { 
         role: 'admin', 
-        nome: 'Admin Emergência', 
+        nome: 'Admin EmergÃªncia', 
         email: 'admin@emergencia.local',
         isAdmin: true
     };
@@ -1513,7 +1513,7 @@ window.inicializacaoEmergencia = function() {
     document.getElementById('auth-section')?.classList.add('hidden');
     document.getElementById('admin-panel')?.classList.remove('hidden');
     
-    // Forçar visibilidade dos botões
+    // ForÃ§ar visibilidade dos botÃµes
     const btnNovoUsuario = document.getElementById('btn-novo-usuario');
     const btnGerenciarUsuarios = document.getElementById('manage-users-btn');
     
@@ -1532,12 +1532,12 @@ window.inicializacaoEmergencia = function() {
     // Configurar eventos
     configurarEventosBotoes();
     
-    showToast('Modo Emergência', 'Sistema iniciado em modo de emergência - funcionalidade limitada', 'warning');
+    showToast('Modo EmergÃªncia', 'Sistema iniciado em modo de emergÃªncia - funcionalidade limitada', 'warning');
     
-    console.log('[EMERGENCY] Modo de emergência ativo');
+    console.log('[EMERGENCY] Modo de emergÃªncia ativo');
 };
 
-// Expor função para debug direto no console
+// Expor funÃ§Ã£o para debug direto no console
 window.debug = {
     testarBotoes: window.testarBotoes,
     debugModals: window.debugModals,
@@ -1547,25 +1547,25 @@ window.debug = {
     loginDev: window.loginDesenvolvimento
 };
 
-// ========== FUNÇÕES DE ACESSO RÁPIDO ==========
-// Para usar no console quando há problemas de login:
+// ========== FUNÃ‡Ã•ES DE ACESSO RÃPIDO ==========
+// Para usar no console quando hÃ¡ problemas de login:
 
-// 1. Login rápido de desenvolvimento
+// 1. Login rÃ¡pido de desenvolvimento
 window.loginRapido = function() {
-    console.log('🚀 ATIVANDO LOGIN RÁPIDO...');
+    console.log('ðŸš€ ATIVANDO LOGIN RÃPIDO...');
     window.loginDesenvolvimento('admin@rapido.local');
-    console.log('✅ Login rápido ativado!');
+    console.log('âœ… Login rÃ¡pido ativado!');
     return 'Login realizado em modo desenvolvimento';
 };
 
 // 2. Corrigir tudo de uma vez
 window.corrigirTudo = function() {
-    console.log('🔧 CORRIGINDO TODOS OS PROBLEMAS...');
+    console.log('ðŸ”§ CORRIGINDO TODOS OS PROBLEMAS...');
     
     // 1. Login de desenvolvimento
     window.loginDesenvolvimento('admin@corrigir.local');
     
-    // 2. Configurar botões
+    // 2. Configurar botÃµes
     setTimeout(() => {
         window.solucionarBotoes();
     }, 500);
@@ -1575,26 +1575,26 @@ window.corrigirTudo = function() {
         mostrarSecaoPainel('painel');
     }, 1000);
     
-    console.log('🎉 TUDO CORRIGIDO!');
+    console.log('ðŸŽ‰ TUDO CORRIGIDO!');
     return 'Sistema totalmente funcional em modo desenvolvimento';
 };
 
-// 3. Criar usuário admin de teste (se Firebase estiver funcionando)
+// 3. Criar usuÃ¡rio admin de teste (se Firebase estiver funcionando)
 window.criarUsuarioTeste = async function() {
-    console.log('👤 CRIANDO USUÁRIO DE TESTE...');
+    console.log('ðŸ‘¤ CRIANDO USUÃRIO DE TESTE...');
     
     if (!window.auth) {
-        console.error('Firebase Auth não disponível');
-        return 'Firebase não disponível';
+        console.error('Firebase Auth nÃ£o disponÃ­vel');
+        return 'Firebase nÃ£o disponÃ­vel';
     }
     
     const emailTeste = 'admin@teste.com';
     const senhaTeste = '123456';
     
     try {
-        // Tentar criar o usuário
+        // Tentar criar o usuÃ¡rio
         const userCredential = await window.auth.createUserWithEmailAndPassword(emailTeste, senhaTeste);
-        console.log('✅ Usuário de teste criado:', emailTeste);
+        console.log('âœ… UsuÃ¡rio de teste criado:', emailTeste);
         
         // Adicionar aos admins no Firestore
         if (window.db) {
@@ -1605,21 +1605,21 @@ window.criarUsuarioTeste = async function() {
                 criadoEm: new Date().toISOString(),
                 ativo: true
             });
-            console.log('✅ Usuário adicionado como admin no Firestore');
+            console.log('âœ… UsuÃ¡rio adicionado como admin no Firestore');
         }
         
-        showToast('Sucesso', `Usuário criado: ${emailTeste} / 123456`, 'success');
-        return `Usuário criado: ${emailTeste} / senha: ${senhaTeste}`;
+        showToast('Sucesso', `UsuÃ¡rio criado: ${emailTeste} / 123456`, 'success');
+        return `UsuÃ¡rio criado: ${emailTeste} / senha: ${senhaTeste}`;
         
     } catch (error) {
         if (error.code === 'auth/email-already-in-use') {
-            console.log('✅ Usuário já existe:', emailTeste);
-            showToast('Info', `Usuário já existe: ${emailTeste} / 123456`, 'warning');
-            return `Usuário já existe: ${emailTeste} / senha: ${senhaTeste}`;
+            console.log('âœ… UsuÃ¡rio jÃ¡ existe:', emailTeste);
+            showToast('Info', `UsuÃ¡rio jÃ¡ existe: ${emailTeste} / 123456`, 'warning');
+            return `UsuÃ¡rio jÃ¡ existe: ${emailTeste} / senha: ${senhaTeste}`;
         } else {
-            console.error('❌ Erro ao criar usuário:', error);
-            showToast('Erro', 'Erro ao criar usuário de teste', 'error');
-            return 'Erro ao criar usuário: ' + error.message;
+            console.error('âŒ Erro ao criar usuÃ¡rio:', error);
+            showToast('Erro', 'Erro ao criar usuÃ¡rio de teste', 'error');
+            return 'Erro ao criar usuÃ¡rio: ' + error.message;
         }
     }
 };
@@ -1629,41 +1629,41 @@ window.mostrarAjudaDev = function() {
     const devHelp = document.getElementById('dev-help');
     if (devHelp) {
         devHelp.style.display = 'block';
-        console.log('ℹ️ Ajuda de desenvolvimento exibida');
+        console.log('â„¹ï¸ Ajuda de desenvolvimento exibida');
     }
 };
 
-// 5. Função para mostrar todas as opções disponíveis
+// 5. FunÃ§Ã£o para mostrar todas as opÃ§Ãµes disponÃ­veis
 window.ajuda = function() {
     console.log(`
-🆘 === FUNÇÕES DE AJUDA DISPONÍVEIS ===
+ðŸ†˜ === FUNÃ‡Ã•ES DE AJUDA DISPONÃVEIS ===
 
 PARA PROBLEMAS DE LOGIN:
-• loginRapido() - Login rápido em modo desenvolvimento
-• corrigirTudo() - Corrige todos os problemas de uma vez
-• criarUsuarioTeste() - Cria usuário admin@teste.com / 123456
+â€¢ loginRapido() - Login rÃ¡pido em modo desenvolvimento
+â€¢ corrigirTudo() - Corrige todos os problemas de uma vez
+â€¢ criarUsuarioTeste() - Cria usuÃ¡rio admin@teste.com / 123456
 
-PARA PROBLEMAS DE BOTÕES:
-• solucionarBotoes() - Força funcionamento dos botões
-• debug.testarBotoes() - Testa estado dos botões
-• debug.forcarInicializacao() - Força reinicialização
+PARA PROBLEMAS DE BOTÃ•ES:
+â€¢ solucionarBotoes() - ForÃ§a funcionamento dos botÃµes
+â€¢ debug.testarBotoes() - Testa estado dos botÃµes
+â€¢ debug.forcarInicializacao() - ForÃ§a reinicializaÃ§Ã£o
 
 PARA DEBUG:
-• debug.debugModals() - Verifica estado dos modais
-• debug.inicializacaoEmergencia() - Modo emergência completo
-• mostrarAjudaDev() - Mostra ajuda na tela
+â€¢ debug.debugModals() - Verifica estado dos modais
+â€¢ debug.inicializacaoEmergencia() - Modo emergÃªncia completo
+â€¢ mostrarAjudaDev() - Mostra ajuda na tela
 
 EXEMPLO DE USO:
-Se os botões não funcionam após login, execute:
+Se os botÃµes nÃ£o funcionam apÃ³s login, execute:
 corrigirTudo()
 
 ==========================================
     `);
     
-    return 'Veja o console para lista completa de funções';
+    return 'Veja o console para lista completa de funÃ§Ãµes';
 };
 
-// Funções para fechar modais
+// FunÃ§Ãµes para fechar modais
 window.closeCreateUserModal = function() {
     console.log('[DEBUG] closeCreateUserModal: fechando modal...');
     const modal = document.getElementById('modal-novo-usuario');
@@ -1674,11 +1674,11 @@ window.closeCreateUserModal = function() {
     }
 };
 
-// Função de teste para verificar as melhorias nos cards
+// FunÃ§Ã£o de teste para verificar as melhorias nos cards
 function testarMelhoriasCards() {
     console.log('[TESTE] Verificando melhorias nos cards...');
     
-    // Log das funções existentes
+    // Log das funÃ§Ãµes existentes
     console.log('[TESTE] abrirSolicitacaoModal:', typeof abrirSolicitacaoModal);
     console.log('[TESTE] fecharSolicitacaoModal:', typeof fecharSolicitacaoModal);
     console.log('[TESTE] window.fecharSolicitacaoModal:', typeof window.fecharSolicitacaoModal);
@@ -1703,40 +1703,40 @@ function testarMelhoriasCards() {
     };
 }
 
-// Funções para gerenciar status das solicitações (para equipes)
+// FunÃ§Ãµes para gerenciar status das solicitaÃ§Ãµes (para equipes)
 async function alterarStatusSolicitacao(solicitacaoId, novoStatus) {
     if (!window.db || !solicitacaoId) {
-        showToast('Erro', 'Parâmetros inválidos', 'error');
+        showToast('Erro', 'ParÃ¢metros invÃ¡lidos', 'error');
         return;
     }
 
     try {
         const usuarioAdmin = window.usuarioAdmin || JSON.parse(localStorage.getItem('usuarioAdmin') || '{}');
         
-        // Verificar se o usuário pode alterar esta solicitação
+        // Verificar se o usuÃ¡rio pode alterar esta solicitaÃ§Ã£o
         const solicitacaoDoc = await window.db.collection('solicitacoes').doc(solicitacaoId).get();
         if (!solicitacaoDoc.exists) {
-            showToast('Erro', 'Solicitação não encontrada', 'error');
+            showToast('Erro', 'SolicitaÃ§Ã£o nÃ£o encontrada', 'error');
             return;
         }
         
         const solicitacaoData = solicitacaoDoc.data();
         
-        // Verificar permissões usando a função de filtro
+        // Verificar permissÃµes usando a funÃ§Ã£o de filtro
         if (!podeVerSolicitacaoJS(usuarioAdmin, solicitacaoData)) {
-            showToast('Erro', 'Você não tem permissão para alterar esta solicitação', 'error');
-            console.warn('[AVISO] alterarStatusSolicitacao: acesso negado para equipe:', usuarioAdmin.equipe, 'solicitação equipe:', solicitacaoData.equipe);
+            showToast('Erro', 'VocÃª nÃ£o tem permissÃ£o para alterar esta solicitaÃ§Ã£o', 'error');
+            console.warn('[AVISO] alterarStatusSolicitacao: acesso negado para equipe:', usuarioAdmin.equipe, 'solicitaÃ§Ã£o equipe:', solicitacaoData.equipe);
             return;
         }
         
-        console.log(`[DEBUG] Alterando status da solicitação ${solicitacaoId} para ${novoStatus}`);
+        console.log(`[DEBUG] Alterando status da solicitaÃ§Ã£o ${solicitacaoId} para ${novoStatus}`);
         
         const updateData = {
             status: novoStatus,
             dataAtualizacao: new Date().toISOString()
         };
 
-        // Se está iniciando atendimento, adicionar responsável
+        // Se estÃ¡ iniciando atendimento, adicionar responsÃ¡vel
         if (novoStatus === 'em-andamento' && usuarioAdmin.nome) {
             updateData.responsavel = usuarioAdmin.nome;
             updateData.dataInicioAtendimento = new Date().toISOString();
@@ -1752,39 +1752,39 @@ async function alterarStatusSolicitacao(solicitacaoId, novoStatus) {
         
     } catch (error) {
         console.error('Erro ao alterar status:', error);
-        showToast('Erro', 'Não foi possível alterar o status: ' + (error.message || error), 'error');
+        showToast('Erro', 'NÃ£o foi possÃ­vel alterar o status: ' + (error.message || error), 'error');
     }
 }
 
 async function finalizarSolicitacao(solicitacaoId) {
     if (!window.db || !solicitacaoId) {
-        showToast('Erro', 'Parâmetros inválidos', 'error');
+        showToast('Erro', 'ParÃ¢metros invÃ¡lidos', 'error');
         return;
     }
 
     try {
         const usuarioAdmin = window.usuarioAdmin || JSON.parse(localStorage.getItem('usuarioAdmin') || '{}');
         
-        // Verificar se o usuário pode finalizar esta solicitação
+        // Verificar se o usuÃ¡rio pode finalizar esta solicitaÃ§Ã£o
         const solicitacaoDoc = await window.db.collection('solicitacoes').doc(solicitacaoId).get();
         if (!solicitacaoDoc.exists) {
-            showToast('Erro', 'Solicitação não encontrada', 'error');
+            showToast('Erro', 'SolicitaÃ§Ã£o nÃ£o encontrada', 'error');
             return;
         }
         
         const solicitacaoData = solicitacaoDoc.data();
         
-        // Verificar permissões usando a função de filtro
+        // Verificar permissÃµes usando a funÃ§Ã£o de filtro
         if (!podeVerSolicitacaoJS(usuarioAdmin, solicitacaoData)) {
-            showToast('Erro', 'Você não tem permissão para finalizar esta solicitação', 'error');
-            console.warn('[AVISO] finalizarSolicitacao: acesso negado para equipe:', usuarioAdmin.equipe, 'solicitação equipe:', solicitacaoData.equipe);
+            showToast('Erro', 'VocÃª nÃ£o tem permissÃ£o para finalizar esta solicitaÃ§Ã£o', 'error');
+            console.warn('[AVISO] finalizarSolicitacao: acesso negado para equipe:', usuarioAdmin.equipe, 'solicitaÃ§Ã£o equipe:', solicitacaoData.equipe);
             return;
         }
 
-        // Solicitar descrição da solução
-        const solucao = prompt('Descreva brevemente a solução aplicada (opcional):');
+        // Solicitar descriÃ§Ã£o da soluÃ§Ã£o
+        const solucao = prompt('Descreva brevemente a soluÃ§Ã£o aplicada (opcional):');
         
-        console.log(`[DEBUG] Finalizando solicitação ${solicitacaoId}`);
+        console.log(`[DEBUG] Finalizando solicitaÃ§Ã£o ${solicitacaoId}`);
         
         const updateData = {
             status: 'finalizada',
@@ -1802,19 +1802,19 @@ async function finalizarSolicitacao(solicitacaoId) {
 
         await window.db.collection('solicitacoes').doc(solicitacaoId).update(updateData);
         
-        showToast('Sucesso', 'Solicitação finalizada com sucesso!', 'success');
+        showToast('Sucesso', 'SolicitaÃ§Ã£o finalizada com sucesso!', 'success');
         
         // Fechar modal e recarregar dados
         fecharSolicitacaoModal();
         carregarSolicitacoes();
         
     } catch (error) {
-        console.error('Erro ao finalizar solicitação:', error);
-        showToast('Erro', 'Não foi possível finalizar a solicitação: ' + (error.message || error), 'error');
+        console.error('Erro ao finalizar solicitaÃ§Ã£o:', error);
+        showToast('Erro', 'NÃ£o foi possÃ­vel finalizar a solicitaÃ§Ã£o: ' + (error.message || error), 'error');
     }
 }
 
-// Expor funções globalmente para uso nos modais
+// Expor funÃ§Ãµes globalmente para uso nos modais
 window.alterarStatusSolicitacao = alterarStatusSolicitacao;
 window.finalizarSolicitacao = finalizarSolicitacao;
 window.testarMelhoriasCards = testarMelhoriasCards;
@@ -1829,15 +1829,15 @@ window.closeManageUsersModal = function() {
     }
 };
 
-// ========== FUNÇÃO DE SOLUÇÃO RÁPIDA ==========
+// ========== FUNÃ‡ÃƒO DE SOLUÃ‡ÃƒO RÃPIDA ==========
 // Execute no console: solucionarBotoes()
 window.solucionarBotoes = function() {
-    console.log('🔧 SOLUCIONANDO PROBLEMA DOS BOTÕES...');
+    console.log('ðŸ”§ SOLUCIONANDO PROBLEMA DOS BOTÃ•ES...');
     
-    // 1. Garantir que o usuário tem permissão
+    // 1. Garantir que o usuÃ¡rio tem permissÃ£o
     if (!window.userRole) {
         window.userRole = 'admin';
-        console.log('✅ UserRole definido como admin');
+        console.log('âœ… UserRole definido como admin');
     }
     
     if (!window.usuarioAdmin) {
@@ -1847,10 +1847,10 @@ window.solucionarBotoes = function() {
             email: 'admin@yuna.com.br',
             isAdmin: true
         };
-        console.log('✅ UsuarioAdmin definido');
+        console.log('âœ… UsuarioAdmin definido');
     }
     
-    // 2. Forçar exibição dos botões
+    // 2. ForÃ§ar exibiÃ§Ã£o dos botÃµes
     const btnNovoUsuario = document.getElementById('btn-novo-usuario');
     const btnGerenciarUsuarios = document.getElementById('manage-users-btn');
     
@@ -1859,7 +1859,7 @@ window.solucionarBotoes = function() {
         btnNovoUsuario.style.display = 'inline-flex';
         btnNovoUsuario.style.visibility = 'visible';
         btnNovoUsuario.style.pointerEvents = 'auto';
-        console.log('✅ Botão Criar Usuário exibido');
+        console.log('âœ… BotÃ£o Criar UsuÃ¡rio exibido');
     }
     
     if (btnGerenciarUsuarios) {
@@ -1867,27 +1867,27 @@ window.solucionarBotoes = function() {
         btnGerenciarUsuarios.style.display = 'inline-flex';
         btnGerenciarUsuarios.style.visibility = 'visible';
         btnGerenciarUsuarios.style.pointerEvents = 'auto';
-        console.log('✅ Botão Gerenciar Usuários exibido');
+        console.log('âœ… BotÃ£o Gerenciar UsuÃ¡rios exibido');
     }
     
-    // 3. Configurar eventos dos botões
+    // 3. Configurar eventos dos botÃµes
     configurarEventosBotoes();
-    console.log('✅ Eventos dos botões configurados');
+    console.log('âœ… Eventos dos botÃµes configurados');
     
-    // 4. Testar botões
+    // 4. Testar botÃµes
     window.testarBotoes();
     
-    console.log('🎉 PROBLEMA RESOLVIDO! Os botões devem funcionar agora.');
-    showToast('Sucesso', 'Botões corrigidos com sucesso!', 'success');
+    console.log('ðŸŽ‰ PROBLEMA RESOLVIDO! Os botÃµes devem funcionar agora.');
+    showToast('Sucesso', 'BotÃµes corrigidos com sucesso!', 'success');
     
-    return 'Solução aplicada com sucesso!';
+    return 'SoluÃ§Ã£o aplicada com sucesso!';
 };
 
 // ========== MODO DESENVOLVIMENTO ==========
 window.loginDesenvolvimento = function(email = 'admin@dev.local') {
     console.log('[DEV] Ativando modo desenvolvimento...');
     
-    // Simular usuário admin
+    // Simular usuÃ¡rio admin
     window.userRole = 'admin';
     window.usuarioAdmin = {
         role: 'admin',
@@ -1911,12 +1911,12 @@ window.loginDesenvolvimento = function(email = 'admin@dev.local') {
         badge.style.backgroundColor = '#f59e0b'; // Cor diferente para modo dev
     }
     
-    // Configurar botões
+    // Configurar botÃµes
     setTimeout(() => {
         atualizarVisibilidadeBotoes();
         configurarEventosBotoes();
         
-        // Forçar exibição dos botões
+        // ForÃ§ar exibiÃ§Ã£o dos botÃµes
         const btnNovoUsuario = document.getElementById('btn-novo-usuario');
         const btnGerenciarUsuarios = document.getElementById('manage-users-btn');
         
@@ -1930,13 +1930,13 @@ window.loginDesenvolvimento = function(email = 'admin@dev.local') {
             btnGerenciarUsuarios.style.display = 'inline-flex';
         }
         
-        console.log('[DEV] Botões configurados em modo desenvolvimento');
+        console.log('[DEV] BotÃµes configurados em modo desenvolvimento');
     }, 100);
     
     // Mostrar painel principal
     mostrarSecaoPainel('painel');
     
-    // Mostrar dados de desenvolvimento nas métricas
+    // Mostrar dados de desenvolvimento nas mÃ©tricas
     setTimeout(() => {
         carregarDadosDesenvolvimento();
     }, 500);
@@ -1945,11 +1945,11 @@ window.loginDesenvolvimento = function(email = 'admin@dev.local') {
     console.log('[DEV] Modo desenvolvimento ativo');
 };
 
-// Função para carregar dados simulados no modo desenvolvimento
+// FunÃ§Ã£o para carregar dados simulados no modo desenvolvimento
 window.carregarDadosDesenvolvimento = function() {
     console.log('[DEV] Carregando dados simulados...');
     
-    // Simular métricas
+    // Simular mÃ©tricas
     const stats = [
         { id: 'total-solicitacoes', value: '42' },
         { id: 'pendentes', value: '12' },
@@ -1969,9 +1969,9 @@ window.carregarDadosDesenvolvimento = function() {
     if (teamsGrid) {
         teamsGrid.innerHTML = `
             <div class="team-card" onclick="verSolicitacoesEquipe('manutencao')">
-                <div class="team-icon">🔧</div>
+                <div class="team-icon">ðŸ”§</div>
                 <div class="team-info">
-                    <h3>Manutenção</h3>
+                    <h3>ManutenÃ§Ã£o</h3>
                     <div class="team-stats">
                         <span class="pendentes">3 pendentes</span>
                         <span class="andamento">2 em andamento</span>
@@ -1980,9 +1980,9 @@ window.carregarDadosDesenvolvimento = function() {
                 </div>
             </div>
             <div class="team-card" onclick="verSolicitacoesEquipe('nutricao')">
-                <div class="team-icon">🍽️</div>
+                <div class="team-icon">ðŸ½ï¸</div>
                 <div class="team-info">
-                    <h3>Nutrição</h3>
+                    <h3>NutriÃ§Ã£o</h3>
                     <div class="team-stats">
                         <span class="pendentes">2 pendentes</span>
                         <span class="andamento">4 em andamento</span>
@@ -1991,9 +1991,9 @@ window.carregarDadosDesenvolvimento = function() {
                 </div>
             </div>
             <div class="team-card" onclick="verSolicitacoesEquipe('higienizacao')">
-                <div class="team-icon">🧽</div>
+                <div class="team-icon">ðŸ§½</div>
                 <div class="team-info">
-                    <h3>Higienização</h3>
+                    <h3>HigienizaÃ§Ã£o</h3>
                     <div class="team-stats">
                         <span class="pendentes">4 pendentes</span>
                         <span class="andamento">6 em andamento</span>
@@ -2002,7 +2002,7 @@ window.carregarDadosDesenvolvimento = function() {
                 </div>
             </div>
             <div class="team-card" onclick="verSolicitacoesEquipe('hotelaria')">
-                <div class="team-icon">🏨</div>
+                <div class="team-icon">ðŸ¨</div>
                 <div class="team-info">
                     <h3>Hotelaria</h3>
                     <div class="team-stats">
@@ -2020,7 +2020,7 @@ window.carregarDadosDesenvolvimento = function() {
 };
 
 function renderizarCardsEquipe(equipes) {
-    // Remove loader visual ao finalizar renderização dos cards
+    // Remove loader visual ao finalizar renderizaÃ§Ã£o dos cards
     if (window._mainLoader) {
         window._mainLoader.remove();
         window._mainLoader = null;
@@ -2034,15 +2034,15 @@ function renderizarCardsEquipe(equipes) {
     };
     
     const equipesNomes = {
-        manutencao: 'Manutenção',
-        nutricao: 'Nutrição',
-        higienizacao: 'Higienização',
+        manutencao: 'ManutenÃ§Ã£o',
+        nutricao: 'NutriÃ§Ã£o',
+        higienizacao: 'HigienizaÃ§Ã£o',
         hotelaria: 'Hotelaria'
     };
     
-    // Função para formatar data e hora
+    // FunÃ§Ã£o para formatar data e hora
     function formatarDataHora(timestamp) {
-        if (!timestamp) return 'Não informado';
+        if (!timestamp) return 'NÃ£o informado';
         try {
             const data = new Date(timestamp);
             const hoje = new Date();
@@ -2052,25 +2052,25 @@ function renderizarCardsEquipe(equipes) {
             const diffMinutes = Math.floor(diffTime / (1000 * 60));
             
             if (diffDays > 0) {
-                return `há ${diffDays} dia${diffDays > 1 ? 's' : ''}`;
+                return `hÃ¡ ${diffDays} dia${diffDays > 1 ? 's' : ''}`;
             } else if (diffHours > 0) {
-                return `há ${diffHours} hora${diffHours > 1 ? 's' : ''}`;
+                return `hÃ¡ ${diffHours} hora${diffHours > 1 ? 's' : ''}`;
             } else if (diffMinutes > 0) {
-                return `há ${diffMinutes} minuto${diffMinutes > 1 ? 's' : ''}`;
+                return `hÃ¡ ${diffMinutes} minuto${diffMinutes > 1 ? 's' : ''}`;
             } else {
                 return 'agora mesmo';
             }
         } catch (error) {
-            return 'Tempo inválido';
+            return 'Tempo invÃ¡lido';
         }
     }
     
-    // Função para obter prioridade visual baseada no status e tempo
+    // FunÃ§Ã£o para obter prioridade visual baseada no status e tempo
     function obterPrioridade(solicitacao) {
         if (solicitacao.status === 'finalizada') return 'baixa';
         if (solicitacao.status === 'em-andamento') return 'media';
         
-        // Para solicitações pendentes, verificar tempo
+        // Para solicitaÃ§Ãµes pendentes, verificar tempo
         const agora = new Date();
         const criacao = new Date(solicitacao.dataCriacao);
         const diffHoras = (agora - criacao) / (1000 * 60 * 60);
@@ -2086,7 +2086,7 @@ function renderizarCardsEquipe(equipes) {
     // Limpar container
     gridContainer.innerHTML = '';
     
-    // Verificar se há equipes para mostrar
+    // Verificar se hÃ¡ equipes para mostrar
     const equipesParaMostrar = Object.keys(equipes).filter(equipe => 
         equipes[equipe] && Array.isArray(equipes[equipe])
     );
@@ -2095,8 +2095,8 @@ function renderizarCardsEquipe(equipes) {
         gridContainer.innerHTML = `
             <div class="empty-state" style="grid-column: 1 / -1; text-align: center; padding: 3rem;">
                 <i class="fas fa-inbox" style="font-size: 3rem; color: #cbd5e1; margin-bottom: 1rem;"></i>
-                <h3 style="color: #64748b; margin-bottom: 0.5rem;">Nenhuma solicitação encontrada</h3>
-                <p style="color: #94a3b8;">Não há solicitações para exibir no momento.</p>
+                <h3 style="color: #64748b; margin-bottom: 0.5rem;">Nenhuma solicitaÃ§Ã£o encontrada</h3>
+                <p style="color: #94a3b8;">NÃ£o hÃ¡ solicitaÃ§Ãµes para exibir no momento.</p>
             </div>
         `;
         return;
@@ -2106,7 +2106,7 @@ function renderizarCardsEquipe(equipes) {
     equipesParaMostrar.forEach(equipe => {
         const solicitacoes = equipes[equipe] || [];
         
-        // Ordenar solicitações por prioridade e data
+        // Ordenar solicitaÃ§Ãµes por prioridade e data
         const solicitacoesOrdenadas = [...solicitacoes].sort((a, b) => {
             const prioridadeA = obterPrioridade(a);
             const prioridadeB = obterPrioridade(b);
@@ -2135,7 +2135,7 @@ function renderizarCardsEquipe(equipes) {
                 ${solicitacoes.length === 0 ? `
                     <div class="empty-state">
                         <i class="fas fa-${icones[equipe]}"></i>
-                        <p>Nenhuma solicitação de ${equipesNomes[equipe].toLowerCase()}</p>
+                        <p>Nenhuma solicitaÃ§Ã£o de ${equipesNomes[equipe].toLowerCase()}</p>
                     </div>
                 ` : `
                     ${solicitacoesOrdenadas.map((solicitacao, index) => `
@@ -2158,7 +2158,7 @@ function renderizarCardsEquipe(equipes) {
                             </div>
                             
                             <div class="card-title">
-                                ${solicitacao.titulo || solicitacao.tipo || solicitacao.descricao || solicitacao.nome || 'Solicitação sem título'}
+                                ${solicitacao.titulo || solicitacao.tipo || solicitacao.descricao || solicitacao.nome || 'SolicitaÃ§Ã£o sem tÃ­tulo'}
                             </div>
                             
                             <div class="card-details">
@@ -2199,9 +2199,9 @@ function renderizarCardsEquipe(equipes) {
                                     <span>${formatarDataHora(solicitacao.dataCriacao)}</span>
                                 </div>
                                 <div class="card-priority priority-${obterPrioridade(solicitacao)}">
-                                    ${obterPrioridade(solicitacao) === 'alta' ? '🔴' : 
-                                      obterPrioridade(solicitacao) === 'media' ? '🟡' : 
-                                      obterPrioridade(solicitacao) === 'normal' ? '🟢' : '⚪'}
+                                    ${obterPrioridade(solicitacao) === 'alta' ? 'ðŸ”´' : 
+                                      obterPrioridade(solicitacao) === 'media' ? 'ðŸŸ¡' : 
+                                      obterPrioridade(solicitacao) === 'normal' ? 'ðŸŸ¢' : 'âšª'}
                                 </div>
                             </div>
                         </div>
@@ -2213,20 +2213,20 @@ function renderizarCardsEquipe(equipes) {
         gridContainer.appendChild(panel);
     });
     
-    // Adicionar eventos aos cards após renderização
+    // Adicionar eventos aos cards apÃ³s renderizaÃ§Ã£o
     adicionarEventosSolicitacoes();
     
     console.log(`[DEBUG] Cards renderizados para ${equipesParaMostrar.length} equipe(s)`);
 }
 
-// === MODAL DE SOLICITAÇÃO (VERSÃO LIMPA) ===
+// === MODAL DE SOLICITAÃ‡ÃƒO (VERSÃƒO LIMPA) ===
 function abrirSolicitacaoModal(solicitacao) {
     console.log('[DEBUG] Abrindo modal para:', solicitacao.id, 'Status:', solicitacao.status);
     mostrarModal(solicitacao);
 }
 
 function mostrarModal(solicitacao) {
-    // Criar modal se não existir
+    // Criar modal se nÃ£o existir
     let modal = document.getElementById('solicitacao-modal');
     if (!modal) {
         modal = document.createElement('div');
@@ -2236,7 +2236,7 @@ function mostrarModal(solicitacao) {
         modal.innerHTML = `
             <div class="modal-content" style="max-width: 600px; max-height: 80vh; overflow-y: auto; position: relative; background: white; border-radius: 12px; padding: 24px;">
                 <span onclick="fecharSolicitacaoModal()" style="position: absolute; top: 15px; right: 20px; font-size: 24px; cursor: pointer; color: #6b7280;">&times;</span>
-                <h2 style="margin-bottom: 20px; color: #374151; border-bottom: 2px solid #e5e7eb; padding-bottom: 10px;">Detalhes da Solicitação</h2>
+                <h2 style="margin-bottom: 20px; color: #374151; border-bottom: 2px solid #e5e7eb; padding-bottom: 10px;">Detalhes da SolicitaÃ§Ã£o</h2>
                 <div id="modal-detalhes"></div>
                 <div style="margin-top: 20px; text-align: right;">
                     <button onclick="fecharSolicitacaoModal()" style="background: #6b7280; color: white; border: none; padding: 8px 16px; border-radius: 4px; cursor: pointer;">Fechar</button>
@@ -2263,11 +2263,11 @@ function mostrarModal(solicitacao) {
                     <i class="fas fa-${info.icone}" style="color: ${info.cor}; margin-right: 8px; font-size: 18px;"></i>
                     <span style="font-weight: 600; color: ${info.cor}; font-size: 16px;">${info.texto}</span>
                 </div>
-                <div style="font-size: 18px; font-weight: 600; color: #374151;">${solicitacao.titulo || solicitacao.tipo || solicitacao.descricao || 'Solicitação'}</div>
+                <div style="font-size: 18px; font-weight: 600; color: #374151;">${solicitacao.titulo || solicitacao.tipo || solicitacao.descricao || 'SolicitaÃ§Ã£o'}</div>
             </div>
             <div><strong>ID:</strong> ${solicitacao.id || 'N/A'}</div>
             <div><strong>Equipe:</strong> ${solicitacao.equipe || 'N/A'}</div>
-            <div><strong>Descrição:</strong> ${solicitacao.descricao || 'N/A'}</div>
+            <div><strong>DescriÃ§Ã£o:</strong> ${solicitacao.descricao || 'N/A'}</div>
             <div><strong>Quarto:</strong> ${solicitacao.quarto || 'N/A'}</div>
             <div><strong>Solicitante:</strong> ${solicitacao.nome || 'N/A'}</div>
         `;
@@ -2297,10 +2297,11 @@ function adicionarEventosSolicitacoes() {
                     const solicitacao = JSON.parse(card.dataset.solicitacao.replace(/&apos;/g, "'"));
                     abrirSolicitacaoModal(solicitacao);
                 } catch (error) {
-                    console.error('Erro ao parsear solicitação:', error);
+                    console.error('Erro ao parsear solicitaÃ§Ã£o:', error);
                 }
             }
         };
     });
 }
+
 

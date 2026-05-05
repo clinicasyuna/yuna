@@ -1,8 +1,8 @@
-# ⚡ OPÇÃO 4: Atualizar Senhas Diretamente (NOVA!)
+﻿# âš¡ OPÃ‡ÃƒO 4: Atualizar Senhas Diretamente (NOVA!)
 
-## 🎯 Quando Usar
+## ðŸŽ¯ Quando Usar
 
-Para emails **fictícios** que não recebem mensagens:
+Para emails **fictÃ­cios** que nÃ£o recebem mensagens:
 - nutricao.jardins@yuna.com.br
 - manutencao.jardins@yuna.com.br
 - hotelaria.jardins@yuna.com.br
@@ -11,20 +11,20 @@ Para emails **fictícios** que não recebem mensagens:
 - amanda.braga@yuna.com.br
 - caroline.chinaglia@yuna.com.br
 
-## 🚀 Como Fazer em 3 Passos
+## ðŸš€ Como Fazer em 3 Passos
 
 ### 1. Baixar Chave do Firebase (5 min)
 
 ```
 https://console.firebase.google.com
-  → studio-5526632052-23813
-  → ⚙️ Configurações
-  → Contas de Serviço
-  → Gerar nova chave privada
-  → Salvar em: e:\APP\deploy\firebase-service-account.json
+  â†’ app-pedidos-4656c
+  â†’ âš™ï¸ ConfiguraÃ§Ãµes
+  â†’ Contas de ServiÃ§o
+  â†’ Gerar nova chave privada
+  â†’ Salvar em: e:\APP\deploy\firebase-service-account.json
 ```
 
-### 2. Instalar Dependências (2 min)
+### 2. Instalar DependÃªncias (2 min)
 
 ```powershell
 cd e:\APP\deploy
@@ -40,12 +40,13 @@ node scripts\atualizar-senhas-direto.js
 
 Digite `confirmo` quando solicitado.
 
-## ✅ Pronto!
+## âœ… Pronto!
 
 As 7 senhas foram atualizadas **diretamente no Firebase** sem enviar emails!
 
 ---
 
-**Total**: 10 minutos desde o início até ter tudo funcionando
+**Total**: 10 minutos desde o inÃ­cio atÃ© ter tudo funcionando
 
 Leia o arquivo [ATUALIZAR-SENHAS-DIRETO.md](ATUALIZAR-SENHAS-DIRETO.md) para mais detalhes.
+

@@ -1,9 +1,9 @@
-#!/usr/bin/env node
+﻿#!/usr/bin/env node
 
 /**
- * ⚡ Script para Atualizar Senhas Diretamente (sem emails)
+ * âš¡ Script para Atualizar Senhas Diretamente (sem emails)
  * 
- * Para emails fictícios que não recebem mensagens,
+ * Para emails fictÃ­cios que nÃ£o recebem mensagens,
  * este script atualiza as senhas diretamente no Firebase
  * sem tentar enviar emails.
  * 
@@ -14,16 +14,16 @@ const admin = require('firebase-admin');
 const fs = require('fs');
 const path = require('path');
 
-// Configuração do Firebase Admin SDK
+// ConfiguraÃ§Ã£o do Firebase Admin SDK
 const serviceAccountPath = path.join(__dirname, '../firebase-service-account.json');
 
 if (!fs.existsSync(serviceAccountPath)) {
-    console.error('❌ ERRO: Arquivo firebase-service-account.json não encontrado!');
-    console.error(`📍 Esperado em: ${serviceAccountPath}`);
-    console.error('\n📋 INSTRUÇÕES:');
+    console.error('âŒ ERRO: Arquivo firebase-service-account.json nÃ£o encontrado!');
+    console.error(`ðŸ“ Esperado em: ${serviceAccountPath}`);
+    console.error('\nðŸ“‹ INSTRUÃ‡Ã•ES:');
     console.error('1. Acesse: https://console.firebase.google.com');
-    console.error('2. Projeto: studio-5526632052-23813');
-    console.error('3. ⚙️ Configurações do Projeto → Contas de Serviço → Firebase Admin SDK');
+    console.error('2. Projeto: app-pedidos-4656c');
+    console.error('3. âš™ï¸ ConfiguraÃ§Ãµes do Projeto â†’ Contas de ServiÃ§o â†’ Firebase Admin SDK');
     console.error('4. Clique em "Gerar nova chave privada"');
     console.error('5. Salve o arquivo JSON em: scripts/firebase-service-account.json');
     process.exit(1);
@@ -39,7 +39,7 @@ const auth = admin.auth();
 const db = admin.firestore();
 
 // ============================================
-// DADOS DOS USUÁRIOS
+// DADOS DOS USUÃRIOS
 // ============================================
 
 const USUARIOS_EQUIPES = [
@@ -54,7 +54,7 @@ const USUARIOS_EQUIPES = [
     {
         email: 'manutencao.jardins@yuna.com.br',
         senha: 'Manu@123456',
-        nome: 'Manutenção Jardins',
+        nome: 'ManutenÃ§Ã£o Jardins',
         departamento: 'manutencao',
         equipe: 'manutencao',
         tipo: 'equipe'
@@ -70,7 +70,7 @@ const USUARIOS_EQUIPES = [
     {
         email: 'recepcao.jardins@yuna.com.br',
         senha: 'Recep@123456',
-        nome: 'Recepção Jardins',
+        nome: 'RecepÃ§Ã£o Jardins',
         departamento: 'higienizacao',
         equipe: 'higienizacao',
         tipo: 'equipe'
@@ -81,7 +81,7 @@ const USUARIOS_ADMIN = [
     {
         email: 'edinar.leao@yuna.com.br',
         senha: 'Edi@123456',
-        nome: 'Edinar Leão',
+        nome: 'Edinar LeÃ£o',
         role: 'admin',
         tipo: 'admin'
     },
@@ -102,7 +102,7 @@ const USUARIOS_ADMIN = [
 ];
 
 // ============================================
-// FUNÇÕES
+// FUNÃ‡Ã•ES
 // ============================================
 
 async function obterUidPorEmail(email) {
@@ -122,7 +122,7 @@ async function atualizarSenha(email, novaSenha) {
         const uid = await obterUidPorEmail(email);
         
         if (!uid) {
-            console.log(`   ❌ Usuário não encontrado: ${email}`);
+            console.log(`   âŒ UsuÃ¡rio nÃ£o encontrado: ${email}`);
             return false;
         }
         
@@ -131,10 +131,10 @@ async function atualizarSenha(email, novaSenha) {
             emailVerified: true
         });
         
-        console.log(`   ✅ Senha atualizada: ${email} → ${novaSenha}`);
+        console.log(`   âœ… Senha atualizada: ${email} â†’ ${novaSenha}`);
         return true;
     } catch (error) {
-        console.error(`   ❌ Erro ao atualizar senha: ${error.message}`);
+        console.error(`   âŒ Erro ao atualizar senha: ${error.message}`);
         return false;
     }
 }
@@ -144,13 +144,13 @@ async function atualizarSenha(email, novaSenha) {
 // ============================================
 
 async function processar() {
-    console.log('\n╔══════════════════════════════════════════════════════════╗');
-    console.log('║  🔐 ATUALIZAR SENHAS DIRETAMENTE (Sem Emails)            ║');
-    console.log('╚══════════════════════════════════════════════════════════╝\n');
+    console.log('\nâ•”â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•—');
+    console.log('â•‘  ðŸ” ATUALIZAR SENHAS DIRETAMENTE (Sem Emails)            â•‘');
+    console.log('â•šâ•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•\n');
 
     const confirmacao = await new Promise(resolve => {
-        process.stdout.write('⚠️  ATENÇÃO: Este script vai atualizar as senhas DIRETAMENTE.\n');
-        process.stdout.write('Não serão enviados emails.\n');
+        process.stdout.write('âš ï¸  ATENÃ‡ÃƒO: Este script vai atualizar as senhas DIRETAMENTE.\n');
+        process.stdout.write('NÃ£o serÃ£o enviados emails.\n');
         process.stdout.write('Digite "confirmo" para prosseguir: ');
         
         process.stdin.on('data', (data) => {
@@ -159,7 +159,7 @@ async function processar() {
                 resolve(true);
                 process.stdin.removeAllListeners();
             } else {
-                process.stdout.write('\n❌ Operação cancelada.\n');
+                process.stdout.write('\nâŒ OperaÃ§Ã£o cancelada.\n');
                 resolve(false);
                 process.stdin.removeAllListeners();
             }
@@ -177,10 +177,10 @@ async function processar() {
         // ====================================
         // EQUIPES
         // ====================================
-        console.log('\n📌 ATUALIZANDO EQUIPES...\n');
+        console.log('\nðŸ“Œ ATUALIZANDO EQUIPES...\n');
 
         for (const equipe of USUARIOS_EQUIPES) {
-            console.log(`🔄 ${equipe.nome} (${equipe.email})`);
+            console.log(`ðŸ”„ ${equipe.nome} (${equipe.email})`);
             
             const resultado = await atualizarSenha(equipe.email, equipe.senha);
             
@@ -196,10 +196,10 @@ async function processar() {
         // ====================================
         // ADMINISTRADORES
         // ====================================
-        console.log('\n📌 ATUALIZANDO ADMINISTRADORES...\n');
+        console.log('\nðŸ“Œ ATUALIZANDO ADMINISTRADORES...\n');
 
         for (const admin_user of USUARIOS_ADMIN) {
-            console.log(`🔄 ${admin_user.nome} (${admin_user.email})`);
+            console.log(`ðŸ”„ ${admin_user.nome} (${admin_user.email})`);
             
             const resultado = await atualizarSenha(admin_user.email, admin_user.senha);
             
@@ -212,31 +212,31 @@ async function processar() {
             console.log('');
         }
 
-        console.log('\n╔══════════════════════════════════════════════════════════╗');
-        console.log(`║  ✅ CONCLUÍDO! (${sucessos} sucessos, ${falhas} falhas)                ║`);
-        console.log('╚══════════════════════════════════════════════════════════╝\n');
+        console.log('\nâ•”â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•—');
+        console.log(`â•‘  âœ… CONCLUÃDO! (${sucessos} sucessos, ${falhas} falhas)                â•‘`);
+        console.log('â•šâ•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•\n');
         
         if (sucessos === 7 && falhas === 0) {
-            console.log('🎉 TODAS AS SENHAS FORAM ATUALIZADAS COM SUCESSO!\n');
-            console.log('📋 RESUMO DOS LOGINS:');
-            console.log('\n🏢 EQUIPES:');
+            console.log('ðŸŽ‰ TODAS AS SENHAS FORAM ATUALIZADAS COM SUCESSO!\n');
+            console.log('ðŸ“‹ RESUMO DOS LOGINS:');
+            console.log('\nðŸ¢ EQUIPES:');
             USUARIOS_EQUIPES.forEach(u => {
-                console.log(`   • ${u.nome}: ${u.email} / ${u.senha}`);
+                console.log(`   â€¢ ${u.nome}: ${u.email} / ${u.senha}`);
             });
             
-            console.log('\n👤 ADMINISTRADORES:');
+            console.log('\nðŸ‘¤ ADMINISTRADORES:');
             USUARIOS_ADMIN.forEach(u => {
-                console.log(`   • ${u.nome}: ${u.email} / ${u.senha}`);
+                console.log(`   â€¢ ${u.nome}: ${u.email} / ${u.senha}`);
             });
         } else {
-            console.log(`⚠️  ${falhas} senha(s) não foi(ram) atualizada(s).`);
+            console.log(`âš ï¸  ${falhas} senha(s) nÃ£o foi(ram) atualizada(s).`);
             console.log('   Verifique os erros acima.\n');
         }
         
-        console.log('✨ Os usuários já podem fazer login com as novas senhas!\n');
+        console.log('âœ¨ Os usuÃ¡rios jÃ¡ podem fazer login com as novas senhas!\n');
 
     } catch (error) {
-        console.error('\n❌ ERRO DURANTE PROCESSAMENTO:');
+        console.error('\nâŒ ERRO DURANTE PROCESSAMENTO:');
         console.error(error);
         process.exit(1);
     } finally {
@@ -247,6 +247,7 @@ async function processar() {
 
 // Iniciar o processo
 processar().catch(error => {
-    console.error('❌ ERRO FATAL:', error);
+    console.error('âŒ ERRO FATAL:', error);
     process.exit(1);
 });
+
