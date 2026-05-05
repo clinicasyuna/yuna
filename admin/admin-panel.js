@@ -12491,13 +12491,16 @@ async function salvarEdicaoAcompanhante(event) {
             atualizadoEm: firebase.firestore.Timestamp.now()
         };
         
-        // Se uma nova senha foi fornecida, atualizar no Firebase Auth
+        // Se uma nova senha foi fornecida, enviar email de redefinição para o acompanhante
         if (novaSenha) {
-            debugLog('[DEBUG] Nova senha fornecida, atualizando autenticação...');
-            // Nota: Para atualizar senha no Firebase Auth seria necessário Admin SDK no backend
-            // Por enquanto, apenas log que a funcionalidade precisa ser implementada
-            console.warn('[AVISO] Atualização de senha requer implementação no backend');
-            showToast('Aviso', 'Senha não pode ser alterada nesta versão. Contate o administrador.', 'warning');
+            debugLog('[DEBUG] Nova senha solicitada, enviando email de redefinição...');
+            try {
+                await firebase.auth().sendPasswordResetEmail(email);
+                showToast('Email enviado', `Email de redefinição de senha enviado para ${email}. O acompanhante deve verificar a caixa de entrada.`, 'info', 7000);
+            } catch (emailError) {
+                console.warn('[AVISO] Erro ao enviar email de redefinição:', emailError);
+                showToast('Aviso', `Não foi possível enviar email de redefinição para ${email}: ${emailError.message}`, 'warning');
+            }
         }
         
         // Verificar se o quarto mudou para atualizar a tabela de quartos ocupados
@@ -12542,7 +12545,7 @@ async function salvarEdicaoAcompanhante(event) {
                 resourceId: acompanhanteId,
                 success: true,
                 details: {
-                    before: acompanhanteAnterior,
+                    before: dadosAtuais,
                     after: updateData,
                     changes: Object.keys(updateData)
                 }
