@@ -2,7 +2,7 @@ const fs = require('fs');
 const path = require('path');
 const admin = require('firebase-admin');
 
-const TARGET_PROJECT_ID = 'app-pedidos-4656c';
+const TARGET_PROJECT_ID = 'studio-5526632052-23813';
 
 function resolveCredentialPath() {
     const envPath = process.env.FIREBASE_SERVICE_ACCOUNT_PATH;
@@ -13,8 +13,8 @@ function resolveCredentialPath() {
     }
 
     const candidates = [
-        path.resolve(__dirname, '../.secrets/firebase-service-account.json'),
-        path.resolve(__dirname, '../firebase-service-account.json')
+        path.resolve(__dirname, '../firebase-service-account.json'),
+        path.resolve(__dirname, '../.secrets/firebase-service-account.json')
     ];
 
     const found = candidates.find((candidate) => fs.existsSync(candidate));
