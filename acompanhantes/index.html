@@ -280,7 +280,8 @@
             flex-direction: column;
             align-items: center;
             justify-content: center;
-            min-height: 180px;
+            min-height: 160px;
+            padding: 1.5rem 1rem;
         }
 
         .service-card::before {
@@ -302,9 +303,16 @@
 
         .services-grid {
             display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 1.5rem;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 1.25rem;
             margin-bottom: 2.5rem;
+        }
+
+        @media (max-width: 639px) {
+            .services-grid {
+                grid-template-columns: 1fr;
+                gap: 1rem;
+            }
         }
 
         .service-card:hover {
