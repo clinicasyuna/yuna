@@ -144,7 +144,6 @@ async function corrigirLogins() {
         
         // Verificar usuários de equipe (emails com departamento)
         const usuariosEquipe = [
-            'nutricao.jardins@yuna.com.br',
             'hotelaria.jardins@yuna.com.br',
             'recepcao.jardins@yuna.com.br',
             'manutencao.jardins@yuna.com.br'

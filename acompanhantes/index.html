@@ -371,16 +371,6 @@
             box-shadow: 0 18px 40px rgba(37, 99, 235, 0.18);
         }
 
-        .service-card.nutricao {
-            --accent: #7c3aed;
-            background: linear-gradient(135deg, #f3e8ff 0%, #ede9fe 100%);
-            box-shadow: 0 10px 30px rgba(124, 58, 237, 0.12);
-        }
-
-        .service-card.nutricao:hover {
-            box-shadow: 0 18px 40px rgba(124, 58, 237, 0.18);
-        }
-
         .service-card.higienizacao {
             --accent: #059669;
             background: linear-gradient(135deg, #e8f7f0 0%, #d1fae5 100%);
@@ -1586,12 +1576,6 @@
                         <p>Problemas elétricos, hidráulicos, ar condicionado</p>
                     </div>
 
-                    <div class="service-card nutricao" onclick="abrirSolicitacao('nutricao')">
-                        <div class="icon">🍽️</div>
-                        <h3>Nutrição</h3>
-                        <p>Refeições, lanches, dietas especiais</p>
-                    </div>
-
                     <div class="service-card higienizacao" onclick="abrirSolicitacao('higienizacao')">
                         <div class="icon">🧽</div>
                         <h3>Higienização</h3>
@@ -2480,7 +2464,6 @@
         function getTipoIcon(tipo) {
             const tipoMap = {
                 'manutencao': '🔧',
-                'nutricao': '🍽️',
                 'higienizacao': '🧽',
                 'hotelaria': '🏨',
                 'eletrico': '⚡',
@@ -3283,27 +3266,6 @@
                     `;
                     break;
                     
-                case 'nutricao':
-                    tituloTexto = '🍽️ Solicitação para Nutrição';
-                    formularioHTML = `
-                        <div class="form-group">
-                            <label class="form-label">Tipo de Solicitação</label>
-                            <select id="tipo-nutricao" class="form-input" required>
-                                <option value="">Selecione o tipo</option>
-                                <option value="refeicao-extra">🍽️ Refeição Extra</option>
-                                <option value="lanche">🍎 Lanche</option>
-                                <option value="dieta-especial">🥗 Dieta Especial</option>
-                                <option value="bebidas">🥤 Bebidas</option>
-                            </select>
-                        </div>
-                        <div class="form-group">
-                            <label class="form-label">Detalhes da Solicitação</label>
-                            <textarea id="detalhes-nutricao" class="form-input" rows="3" placeholder="Especifique sua necessidade..." required></textarea>
-                        </div>
-                        ${camposComuns}
-                    `;
-                    break;
-                    
                 case 'higienizacao':
                     tituloTexto = '🧽 Solicitação para Higienização';
                     formularioHTML = `
@@ -3363,9 +3325,6 @@
                 case 'manutencao':
                     horarios = ['08:00', '09:00', '10:00', '14:00', '15:00', '16:00'];
                     break;
-                case 'nutricao':
-                    horarios = ['07:00', '12:00', '15:00', '18:00', '20:00', '22:00'];
-                    break;
                 case 'higienizacao':
                     horarios = ['09:00', '11:00', '13:00', '15:00', '17:00', '19:00'];
                     break;
@@ -3412,7 +3371,7 @@
 
             // Padronizar equipe (minúsculo, sem acento)
             let equipePadronizada = (equipeSelecionada || '').toLowerCase().normalize('NFD').replace(/\p{Diacritic}/gu, '');
-            const equipesValidas = ['manutencao', 'nutricao', 'higienizacao', 'hotelaria'];
+            const equipesValidas = ['manutencao', 'higienizacao', 'hotelaria'];
             if (!equipesValidas.includes(equipePadronizada)) {
                 showToast('Erro', 'Equipe selecionada inválida!', 'error');
                 console.error('[ENVIAR SOLICITACAO] Equipe inválida:', equipePadronizada);
@@ -3556,22 +3515,6 @@
                         
                // Adiciona tipoServico para todas as solicitações criadas
                dadosSolicitacao.tipoServico = equipePadronizada;
-                    case 'nutricao':
-                        const tipoNutricao = document.getElementById('tipo-nutricao').value;
-                        const detalhesNutricao = document.getElementById('detalhes-nutricao').value;
-                        
-                        if (!tipoNutricao || !detalhesNutricao) {
-                            showToast('Erro', 'Preencha todos os campos obrigatórios!', 'error');
-                            return;
-                        }
-                        
-                        dadosSolicitacao = {
-                            ...dadosSolicitacao,
-                            tipo: tipoNutricao,
-                            detalhes: detalhesNutricao
-                        };
-                        break;
-                        
                     case 'higienizacao':
                         const tipoHigienizacao = document.getElementById('tipo-higienizacao').value;
                         const observacoesHigienizacao = document.getElementById('observacoes-higienizacao').value;

@@ -26,13 +26,6 @@ const auth = admin.auth();
 
 const USUARIOS_EQUIPES = [
     {
-        email: 'nutricao.jardins@yuna.com.br',
-        senha: 'Nuti@123456',
-        nome: 'Nutricao Jardins',
-        departamento: 'nutricao',
-        equipe: 'nutricao'
-    },
-    {
         email: 'manutencao.jardins@yuna.com.br',
         senha: 'Manu@123456',
         nome: 'ManutenÃ§Ã£o Jardins',

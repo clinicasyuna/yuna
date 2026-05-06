@@ -23,12 +23,6 @@ const FIREBASE_REST_ENDPOINT = 'https://identitytoolkit.googleapis.com/v1';
 
 const USUARIOS_PARA_RESETAR = [
     {
-        email: 'nutricao.jardins@yuna.com.br',
-        senha: 'Nuti@123456',
-        nome: 'Nutricao Jardins',
-        departamento: 'nutricao'
-    },
-    {
         email: 'manutencao.jardins@yuna.com.br',
         senha: 'Manu@123456',
         nome: 'Manutenção Jardins',

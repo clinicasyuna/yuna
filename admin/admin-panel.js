@@ -3312,7 +3312,6 @@ function calcularMetricasDashboard(solicitacoes) {
         finalizadas: 0,
         departamentos: {
             manutencao: { total: 0, pendentes: 0, andamento: 0, finalizadas: 0 },
-            nutricao: { total: 0, pendentes: 0, andamento: 0, finalizadas: 0 },
             higienizacao: { total: 0, pendentes: 0, andamento: 0, finalizadas: 0 },
             hotelaria: { total: 0, pendentes: 0, andamento: 0, finalizadas: 0 }
         },
@@ -3449,7 +3448,6 @@ function renderizarGraficoDepartamentos(solicitacoes) {
     // Contar solicitações por departamento
     const departamentos = {
         'Manutenção': 0,
-        'Nutrição': 0,
         'Higienização': 0,
         'Hotelaria': 0
     };
@@ -3457,8 +3455,7 @@ function renderizarGraficoDepartamentos(solicitacoes) {
     solicitacoes.forEach(sol => {
         const tipo = sol.tipo_servico || sol.departamento || '';
         if (tipo.includes('manutencao')) departamentos['Manutenção']++;
-        else if (tipo.includes('nutricao')) departamentos['Nutrição']++;
-        else if (tipo.includes('higienizacao')) departamentos['Higienização']++;
+        else if (tipo.includes('higienizacao')) departamentos['Higienização']++;;
         else if (tipo.includes('hotelaria')) departamentos['Hotelaria']++;
     });
     
@@ -3517,14 +3514,12 @@ function atualizarTabelaDepartamentos(metricas) {
     
     const departamentoNomes = {
         manutencao: '🔧 Manutenção',
-        nutricao: '🍽️ Nutrição',
         higienizacao: '🧽 Higienização',
         hotelaria: '🏨 Hotelaria'
     };
     
     const departamentoCores = {
         manutencao: '#f6b86b',
-        nutricao: '#f9a07d',
         higienizacao: '#f4768c',
         hotelaria: '#f05c8d'
     };
@@ -3978,7 +3973,6 @@ window.editarUsuario = async function(userId) {
                     <label style="display: block; margin-bottom: 4px; color: #374151; font-weight: 500;">Departamento:</label>
                     <select id="edit-departamento" style="width: 100%; padding: 8px 12px; border: 1px solid #d1d5db; border-radius: 6px;">
                         <option value="manutencao" ${userData.departamento === 'manutencao' ? 'selected' : ''}>Manutenção</option>
-                        <option value="nutricao" ${userData.departamento === 'nutricao' ? 'selected' : ''}>Nutrição</option>
                         <option value="higienizacao" ${userData.departamento === 'higienizacao' ? 'selected' : ''}>Higienização</option>
                         <option value="hotelaria" ${userData.departamento === 'hotelaria' ? 'selected' : ''}>Hotelaria</option>
                     </select>
@@ -5021,7 +5015,6 @@ async function carregarSolicitacoes() {
         // Contadores por equipe
         const equipes = {
             manutencao: [],
-            nutricao: [],
             higienizacao: [],
             hotelaria: []
         };
@@ -5353,8 +5346,6 @@ function obterConfiguracaoSLAEquipe(equipe) {
     const slaConfig = {
         'manutencao': { slaMinutos: 240, nome: 'Manutenção' },
         'manutenção': { slaMinutos: 240, nome: 'Manutenção' },
-        'nutricao': { slaMinutos: 60, nome: 'Nutrição' },
-        'nutrição': { slaMinutos: 60, nome: 'Nutrição' },
         'higienizacao': { slaMinutos: 120, nome: 'Higienização' },
         'higienização': { slaMinutos: 120, nome: 'Higienização' },
         'hotelaria': { slaMinutos: 180, nome: 'Hotelaria' }
@@ -5677,11 +5668,6 @@ function exibirPopupNotificacao(solicitacao, dadosAcompanhante) {
                 emoji = '🔧';
                 tipoServico = 'Manutenção';
                 break;
-            case 'nutricao':
-            case 'nutrição':
-                emoji = '🍽️';
-                tipoServico = 'Nutrição';
-                break;
             case 'higienizacao':
             case 'higienização':
                 emoji = '🧹';
@@ -5802,9 +5788,6 @@ function carregarDadosOffline() {
     const dadosOffline = {
         manutencao: [
             { id: 'offline1', status: 'pendente', titulo: 'Ar condicionado', quarto: '101', dataCriacao: new Date().toISOString().slice(0,10) }
-        ],
-        nutricao: [
-            { id: 'offline2', status: 'pendente', titulo: 'Dieta especial', quarto: '102', dataCriacao: new Date().toISOString().slice(0,10) }
         ],
         higienizacao: [
             { id: 'offline3', status: 'em-andamento', titulo: 'Limpeza extra', quarto: '103', dataCriacao: new Date().toISOString().slice(0,10) }
@@ -6096,7 +6079,6 @@ function atualizarVisibilidadeBotoes() {
         } else if (isEquipe && usuarioAdmin.equipe) {
             const nomeEquipe = {
                 'manutencao': 'Manutenção',
-                'nutricao': 'Nutrição', 
                 'higienizacao': 'Higienização',
                 'hotelaria': 'Hotelaria'
             }[usuarioAdmin.equipe] || usuarioAdmin.equipe;

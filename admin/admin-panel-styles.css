@@ -791,7 +791,6 @@
 
 /* Paleta baseada no logo (peach > coral > pink) */
 .team-panel[data-department="manutencao"] { border-top: 4px solid #f6b86b; }
-.team-panel[data-department="nutricao"]   { border-top: 4px solid #f9a07d; }
 .team-panel[data-department="higienizacao"] { border-top: 4px solid #f4768c; }
 .team-panel[data-department="hotelaria"]  { border-top: 4px solid #f05c8d; }
 
@@ -802,20 +801,6 @@
 .team-header.manutencao h3 { color: #fff !important; text-shadow: 0 2px 4px rgba(0,0,0,0.15); }
 .team-header.manutencao h3 i { color: #fff; filter: drop-shadow(0 2px 4px rgba(0,0,0,0.2)); }
 .team-header.manutencao .badge {
-  background: rgba(255,255,255,0.25);
-  color: #fff;
-  box-shadow: 0 2px 8px rgba(0,0,0,0.15);
-  -webkit-backdrop-filter: blur(10px);
-  backdrop-filter: blur(10px);
-}
-
-.team-header.nutricao {
-  background: linear-gradient(135deg, #f9a07d 0%, #f4768c 50%, #f05c8d 100%);
-  border-bottom-color: #f9a07d;
-}
-.team-header.nutricao h3 { color: #fff !important; text-shadow: 0 2px 4px rgba(0,0,0,0.15); }
-.team-header.nutricao h3 i { color: #fff; filter: drop-shadow(0 2px 4px rgba(0,0,0,0.2)); }
-.team-header.nutricao .badge {
   background: rgba(255,255,255,0.25);
   color: #fff;
   box-shadow: 0 2px 8px rgba(0,0,0,0.15);
