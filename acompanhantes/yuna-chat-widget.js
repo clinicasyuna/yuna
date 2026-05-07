@@ -13,7 +13,7 @@
 
   const root = document.createElement("div");
   root.id = "yuna-chat-root";
-  root.innerHTML = "\n    <button id=\"yuna-fab\" aria-label=\"Abrir assistente Yuna\">\n      <svg id=\"yuna-fab-icon\" width=\"26\" height=\"26\" viewBox=\"0 0 24 24\" fill=\"none\">\n        <path d=\"M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z\" stroke=\"#fff\" stroke-width=\"1.8\" stroke-linecap=\"round\" stroke-linejoin=\"round\"></path>\n      </svg>\n      <svg id=\"yuna-fab-close\" width=\"22\" height=\"22\" viewBox=\"0 0 24 24\" fill=\"none\" style=\"display:none\">\n        <path d=\"M18 6L6 18M6 6l12 12\" stroke=\"#fff\" stroke-width=\"2\" stroke-linecap=\"round\"></path>\n      </svg>\n    </button>\n    <span id=\"yuna-badge\">1</span>\n    <div id=\"yuna-chat-window\">\n      <div class=\"yuna-chat-header\">\n        <div class=\"yuna-avatar\">\n          <svg width=\"20\" height=\"20\" viewBox=\"0 0 24 24\" fill=\"none\">\n            <circle cx=\"12\" cy=\"12\" r=\"10\" fill=\"rgba(255,255,255,0.25)\"></circle>\n            <path d=\"M8 13.5C8.5 15 10 16 12 16s3.5-1 4-2.5\" stroke=\"#fff\" stroke-width=\"1.6\" stroke-linecap=\"round\"></path>\n            <circle cx=\"9.5\" cy=\"10.5\" r=\"1\" fill=\"#fff\"></circle>\n            <circle cx=\"14.5\" cy=\"10.5\" r=\"1\" fill=\"#fff\"></circle>\n          </svg>\n        </div>\n        <div class=\"yuna-header-text\">\n          <div class=\"yuna-title\">Yuna Assistente</div>\n          <div class=\"yuna-status\"><span class=\"yuna-dot\"></span>Online agora</div>\n        </div>\n        <button id=\"yuna-close\" type=\"button\">x</button>\n      </div>\n      <div id=\"yuna-msgs\"></div>\n      <div id=\"yuna-quick\">\n        <button type=\"button\" data-quick=\"Qual o status da minha solicitacao?\">Minhas solicitacoes</button>\n        <button type=\"button\" data-quick=\"Quero pedir uma refeicao especial\">Pedir refeicao</button>\n        <button type=\"button\" data-quick=\"Preciso de ajuda com o quarto\">Ajuda com o quarto</button>\n        <button type=\"button\" data-quick=\"Quero falar com a equipe\">Falar com equipe</button>\n      </div>\n      <div class=\"yuna-input-wrap\">\n        <textarea id=\"yuna-input\" placeholder=\"Digite sua mensagem...\" rows=\"1\"></textarea>\n        <button id=\"yuna-send-btn\" type=\"button\" aria-label=\"Enviar mensagem\">\n          <svg width=\"16\" height=\"16\" viewBox=\"0 0 24 24\" fill=\"#fff\">\n            <path d=\"M22 2L11 13M22 2L15 22l-4-9-9-4 20-7z\"></path>\n          </svg>\n        </button>\n      </div>\n    </div>\n  ";
+  root.innerHTML = "\n    <button id=\"yuna-fab\" aria-label=\"Abrir assistente Yuna\">\n      <svg id=\"yuna-fab-icon\" width=\"26\" height=\"26\" viewBox=\"0 0 24 24\" fill=\"none\">\n        <path d=\"M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z\" stroke=\"#fff\" stroke-width=\"1.8\" stroke-linecap=\"round\" stroke-linejoin=\"round\"></path>\n      </svg>\n      <svg id=\"yuna-fab-close\" width=\"22\" height=\"22\" viewBox=\"0 0 24 24\" fill=\"none\" style=\"display:none\">\n        <path d=\"M18 6L6 18M6 6l12 12\" stroke=\"#fff\" stroke-width=\"2\" stroke-linecap=\"round\"></path>\n      </svg>\n    </button>\n    <span id=\"yuna-badge\">1</span>\n    <div id=\"yuna-chat-window\">\n      <div class=\"yuna-chat-header\">\n        <div class=\"yuna-avatar\">\n          <svg width=\"20\" height=\"20\" viewBox=\"0 0 24 24\" fill=\"none\">\n            <circle cx=\"12\" cy=\"12\" r=\"10\" fill=\"rgba(255,255,255,0.25)\"></circle>\n            <path d=\"M8 13.5C8.5 15 10 16 12 16s3.5-1 4-2.5\" stroke=\"#fff\" stroke-width=\"1.6\" stroke-linecap=\"round\"></path>\n            <circle cx=\"9.5\" cy=\"10.5\" r=\"1\" fill=\"#fff\"></circle>\n            <circle cx=\"14.5\" cy=\"10.5\" r=\"1\" fill=\"#fff\"></circle>\n          </svg>\n        </div>\n        <div class=\"yuna-header-text\">\n          <div class=\"yuna-title\">Yuna Assistente</div>\n          <div class=\"yuna-status\"><span class=\"yuna-dot\"></span>Online agora</div>\n        </div>\n        <button id=\"yuna-close\" type=\"button\">x</button>\n      </div>\n      <div id=\"yuna-msgs\"></div>\n      <div id=\"yuna-quick\">\n        <button type=\"button\" data-quick=\"Qual o status da minha solicitacao?\">Minhas solicitacoes</button>\n        <button type=\"button\" data-quick=\"Preciso de itens de conforto ou amenidades\">Hotelaria</button>\n        <button type=\"button\" data-quick=\"Preciso de ajuda com o quarto\">Ajuda com o quarto</button>\n        <button type=\"button\" data-quick=\"Quero falar com a equipe\">Falar com equipe</button>\n      </div>\n      <div class=\"yuna-input-wrap\">\n        <textarea id=\"yuna-input\" placeholder=\"Digite sua mensagem...\" rows=\"1\"></textarea>\n        <button id=\"yuna-send-btn\" type=\"button\" aria-label=\"Enviar mensagem\">\n          <svg width=\"16\" height=\"16\" viewBox=\"0 0 24 24\" fill=\"#fff\">\n            <path d=\"M22 2L11 13M22 2L15 22l-4-9-9-4 20-7z\"></path>\n          </svg>\n        </button>\n      </div>\n    </div>\n  ";
 
   document.body.appendChild(root);
 
@@ -42,12 +42,9 @@
 
   function getUserContext() {
     try {
-      const user = JSON.parse(localStorage.getItem("yunaUser") || localStorage.getItem("currentUser") || "{}");
-      return {
-        nome: (user.name || user.nome || user.displayName || "Acompanhante").toString(),
-        quarto: (user.room || user.quarto || user.roomNumber || "---").toString(),
-        email: (user.email || "").toString()
-      };
+      // Lê do contexto global exposto pelo portal após login
+      if (window.yunaUserContext) return window.yunaUserContext;
+      return { nome: "Acompanhante", quarto: "---", email: "" };
     } catch (error) {
       return { nome: "Acompanhante", quarto: "---", email: "" };
     }
@@ -56,7 +53,7 @@
   function getSystemPrompt() {
     const u = getUserContext();
     const firstName = u.nome.split(" ")[0] || "Acompanhante";
-    return "Você é a Yuna Assistente, um chatbot de suporte humanizado para acompanhantes e familiares de pacientes internados nas Clínicas Yuna.\n\nDados do acompanhante logado:\n- Nome: " + u.nome + "\n- Quarto/Leito: " + u.quarto + "\n\nSuas responsabilidades:\n- Responder dúvidas sobre o funcionamento do hospital e do portal Yuna Solicite\n- Ajudar o acompanhante a entender como abrir uma solicitação (Manutenção, Nutrição, Higienização, Hotelaria)\n- Explicar o status das solicitações quando perguntado\n- Orientar sobre horários de visita, regras gerais e serviços disponíveis\n- Acolher acompanhantes que estejam ansiosos ou com dúvidas\n\nRegras importantes:\n- Responda SEMPRE em português do Brasil, de forma calorosa e empática\n- Seja conciso: respostas curtas, parágrafos de no máximo 2-3 frases\n- Para urgências médicas: encaminhe IMEDIATAMENTE para a enfermagem (ramal 190)\n- Nunca dê diagnósticos ou opiniões médicas\n- Para abrir solicitações, oriente o acompanhante a usar os cards na tela principal do portal\n- Se não souber algo específico do hospital, diga que vai verificar com a equipe\n- Trate o acompanhante pelo primeiro nome sempre que possível";
+    return "Você é a Yuna Assistente, um chatbot de suporte humanizado para acompanhantes e familiares de pacientes internados nas Clínicas Yuna.\n\nDados do acompanhante logado:\n- Nome: " + u.nome + "\n- Quarto/Leito: " + u.quarto + "\n\nSuas responsabilidades:\n- Responder dúvidas sobre o funcionamento do hospital e do portal Yuna Solicite\n- Ajudar o acompanhante a entender como abrir uma solicitação (Manutenção, Higienização, Hotelaria)\n- Explicar o status das solicitações quando perguntado\n- Orientar sobre horários de visita, regras gerais e serviços disponíveis\n- Acolher acompanhantes que estejam ansiosos ou com dúvidas\n\nRegras importantes:\n- Responda SEMPRE em português do Brasil, de forma calorosa e empática\n- Seja conciso: respostas curtas, parágrafos de no máximo 2-3 frases\n- Para urgências médicas: encaminhe IMEDIATAMENTE para a enfermagem (ramal 190)\n- Nunca dê diagnósticos ou opiniões médicas\n- Para abrir solicitações, oriente o acompanhante a usar os cards na tela principal do portal\n- Se não souber algo específico do hospital, diga que vai verificar com a equipe\n- Trate o acompanhante pelo primeiro nome sempre que possível";
   }
 
   function addMessage(role, text) {
@@ -100,8 +97,8 @@
       return "Para verificar o status, abra a secao Historico no portal. La voce ve se a solicitacao esta pendente, em andamento ou finalizada.";
     }
 
-    if (msg.includes("refe") || msg.includes("nutri") || msg.includes("aliment")) {
-      return "Para pedidos de refeicao, use o card de Nutricao na tela principal e descreva a necessidade. Se for urgencia clinica, acione a enfermagem.";
+    if (msg.includes("aliment") || msg.includes("nutri") || msg.includes("refe")) {
+      return "Para necessidades alimentares ou dieteticas, informe a equipe de enfermagem diretamente. O portal oferece solicitacoes de Hotelaria, Higienizacao e Manutencao.";
     }
 
     if (msg.includes("quarto") || msg.includes("hotel") || msg.includes("higien")) {
@@ -116,34 +113,64 @@
   }
 
   async function sendToServer(message) {
-    if (!HAS_ANTHROPIC_KEY) {
+    // Tenta usar a Netlify Function (seguro — chave fica no servidor)
+    const u = getUserContext();
+    const historyWithoutLast = history.slice(0, -1); // Remove a mensagem atual (função a adiciona)
+
+    try {
+      const response = await fetch("/.netlify/functions/yuna-chat", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          message: message,
+          history: historyWithoutLast,
+          userContext: {
+            firstName: u.nome.split(" ")[0],
+            room: u.quarto
+          }
+        })
+      });
+
+      if (response.ok) {
+        const data = await response.json();
+        const reply = data.reply || "Desculpe, não consegui processar. Tente novamente.";
+        history.push({ role: "assistant", content: reply });
+        return reply;
+      }
+
+      // Se a Function retornar 500 (sem chave configurada), usa fallback local
+      if (response.status === 500) {
+        return getLocalReply(message);
+      }
+
+      throw new Error("chat-request-failed-" + response.status);
+    } catch (fetchError) {
+      // Rede indisponível ou Function não deployada → fallback local
+      if (HAS_ANTHROPIC_KEY) {
+        // Tentativa direta (apenas se chave estiver configurada no widget)
+        const resp2 = await fetch("https://api.anthropic.com/v1/messages", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            "x-api-key": ANTHROPIC_API_KEY,
+            "anthropic-version": "2023-06-01",
+            "anthropic-dangerous-direct-browser-access": "true"
+          },
+          body: JSON.stringify({
+            model: "claude-haiku-4-5-20251001",
+            max_tokens: 600,
+            system: getSystemPrompt(),
+            messages: history
+          })
+        });
+        if (!resp2.ok) throw new Error("chat-request-failed");
+        const data2 = await resp2.json();
+        const reply2 = (data2.content || []).map(function(b) { return b.text || ""; }).join("") || "Desculpe, não consegui processar.";
+        history.push({ role: "assistant", content: reply2 });
+        return reply2;
+      }
       return getLocalReply(message);
     }
-
-    const response = await fetch("https://api.anthropic.com/v1/messages", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        "x-api-key": ANTHROPIC_API_KEY,
-        "anthropic-version": "2023-06-01",
-        "anthropic-dangerous-direct-browser-access": "true"
-      },
-      body: JSON.stringify({
-        model: "claude-haiku-4-5-20251001",
-        max_tokens: 600,
-        system: getSystemPrompt(),
-        messages: history
-      })
-    });
-
-    if (!response.ok) {
-      throw new Error("chat-request-failed");
-    }
-
-    const data = await response.json();
-    const reply = (data.content || []).map(function(b) { return b.text || ""; }).join("") || "Desculpe, não consegui processar. Tente novamente.";
-    history.push({ role: "assistant", content: reply });
-    return reply;
   }
 
   function setOpen(value) {
