@@ -2935,8 +2935,24 @@
                         console.log('[DEBUG] handleLogin: mensagem da falha:', createError.message);
                         
                         if (createError.code === 'auth/email-already-in-use') {
-                            // Email já tem conta no Firebase Auth, mas as credenciais estão incorretas
-                            console.log('[DEBUG] handleLogin: email já tem conta no Firebase Auth, mas credenciais incorretas');
+                            // Email já tem conta no Firebase Auth, mas as credenciais estão incorretas.
+                            // Verificar se ainda tem preCadastro pendente no Firestore — se sim, conta foi
+                            // criada em tentativa anterior sem completar a ativação. Enviar reset de senha.
+                            console.log('[DEBUG] handleLogin: email já tem conta no Firebase Auth, verificando preCadastro pendente...');
+                            try {
+                                const preCadastroCheck = await window.db.collection('usuarios_acompanhantes')
+                                    .where('email', '==', email)
+                                    .where('preCadastro', '==', true)
+                                    .get();
+                                if (!preCadastroCheck.empty) {
+                                    console.log('[DEBUG] handleLogin: preCadastro pendente encontrado, enviando reset de senha...');
+                                    await firebase.auth().sendPasswordResetEmail(email);
+                                    throw new Error('RESET_ENVIADO');
+                                }
+                            } catch (checkErr) {
+                                if (checkErr.message === 'RESET_ENVIADO') throw checkErr;
+                                console.warn('[DEBUG] handleLogin: erro ao verificar preCadastro:', checkErr);
+                            }
                             throw new Error('CREDENCIAIS_INCORRETAS');
                         } else if (createError.code === 'auth/weak-password') {
                             throw new Error('SENHA_FRACA');
@@ -2956,6 +2972,9 @@
                         break;
                     case 'SENHA_INCORRETA_PRECADASTRO':
                         mensagem = 'Senha incorreta. Utilize a senha fornecida pela equipe administrativa.';
+                        break;
+                    case 'RESET_ENVIADO':
+                        mensagem = 'Sua conta precisa ser redefinida. Um e-mail de recuperação de senha foi enviado para ' + email + '. Acesse seu e-mail, redefina a senha e tente novamente.';
                         break;
                     case 'CREDENCIAIS_INCORRETAS':
                     case 'auth/wrong-password':
