@@ -2852,8 +2852,38 @@
                 console.log('[DEBUG] handleLogin: senha limpa (sem espaços):', password.trim() === password);
                 
                 try {
-                    await firebase.auth().signInWithEmailAndPassword(email, password);
+                    const loginCredential = await firebase.auth().signInWithEmailAndPassword(email, password);
                     console.log('[SUCCESS] handleLogin: login direto realizado com sucesso');
+
+                    // Verificar se ainda existe preCadastro pendente no Firestore para esse usuário
+                    // (acontece quando o usuário redefiniu a senha via email mas não ativou pelo fluxo normal)
+                    try {
+                        const preCadQuery = await window.db.collection('usuarios_acompanhantes')
+                            .where('email', '==', email)
+                            .where('preCadastro', '==', true)
+                            .get();
+                        if (!preCadQuery.empty) {
+                            const doc = preCadQuery.docs[0];
+                            const uid = loginCredential.user.uid;
+                            console.log('[DEBUG] handleLogin: ativando preCadastro pendente para UID:', uid);
+                            await window.db.collection('usuarios_acompanhantes').doc(doc.id).update({
+                                uid: uid,
+                                preCadastro: false,
+                                ativadoEm: new Date().toISOString()
+                            });
+                            // Atualizar quartos_ocupados com o UID real
+                            const quarto = doc.data().quarto;
+                            if (quarto) {
+                                await window.db.collection('quartos_ocupados').doc(quarto).update({
+                                    acompanhanteId: uid
+                                });
+                            }
+                            console.log('[SUCCESS] handleLogin: preCadastro ativado com sucesso');
+                        }
+                    } catch (activationErr) {
+                        console.warn('[DEBUG] handleLogin: erro ao verificar/ativar preCadastro:', activationErr);
+                    }
+
                     showToast('Sucesso!', 'Login realizado com sucesso!', 'success');
                     return; // Login bem-sucedido, sair da função
                 } catch (authError) {
