@@ -1,6 +1,6 @@
 (function () {
     const PUSH_CONFIG = {
-        vapidKey: window.YUNA_PUSH_VAPID_KEY || 'BG_KlAN6MzrDS4ptLlFwukjfC2oGnWqXtzWCgk2DinzvQX0DkzSNaZ9f-rcNiNUVreRrwTIrDGbIwd4p4kmC9SY',
+        vapidKey: window.YUNA_PUSH_VAPID_KEY || 'BEY2BY-et1I5wVwRVW-Zl43r6PRRPBqGQ8vQ7cKOwh5OolY3F2AC7TBezwZM5jWUg-aIizJdOaYM2uYa4ewl8X4',
         tokenCollection: 'admin_push_tokens',
         serviceWorkerPath: '../firebase-messaging-sw.js',
         storage: {
