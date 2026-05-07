@@ -3455,7 +3455,7 @@ function renderizarGraficoDepartamentos(solicitacoes) {
     solicitacoes.forEach(sol => {
         const tipo = sol.tipo_servico || sol.departamento || '';
         if (tipo.includes('manutencao')) departamentos['Manutenção']++;
-        else if (tipo.includes('higienizacao')) departamentos['Higienização']++;;
+        else if (tipo.includes('higienizacao')) departamentos['Higienização']++;
         else if (tipo.includes('hotelaria')) departamentos['Hotelaria']++;
     });
     
