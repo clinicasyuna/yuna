@@ -167,17 +167,17 @@
     }
 
     async function ativarNotificacoesPush() {
-        if (!isVapidConfigured()) {
-            notificarUsuario('Configuração pendente', 'Defina a chave pública VAPID para concluir a ativação das notificações push.', 'warning');
-            return null;
-        }
-
         const permissao = Notification.permission === 'granted'
             ? 'granted'
             : await Notification.requestPermission();
 
         if (permissao !== 'granted') {
             notificarUsuario('Notificações', 'Permissão de notificações não concedida.', 'warning');
+            return null;
+        }
+
+        if (!isVapidConfigured()) {
+            notificarUsuario('Configuração pendente', 'Permissão concedida, mas a chave VAPID ainda não está configurada para concluir a ativação push.', 'warning');
             return null;
         }
 
@@ -223,11 +223,31 @@
         document.body.appendChild(permissionBanner);
 
         permissionBanner.querySelector('#push-enable-btn')?.addEventListener('click', async () => {
+            const enableBtn = permissionBanner?.querySelector('#push-enable-btn');
+            if (enableBtn) {
+                enableBtn.disabled = true;
+                enableBtn.textContent = 'Ativando...';
+                enableBtn.style.opacity = '0.75';
+            }
+
             try {
                 await ativarNotificacoesPush();
+
+                // Se o usuário decidiu (granted/denied), remove banner para não travar a UI.
+                if (Notification.permission !== 'default') {
+                    localStorage.setItem(PUSH_CONFIG.storage.bannerDismissed, '1');
+                    removerBannerPermissao();
+                }
             } catch (error) {
                 console.error('[PUSH] Falha ao ativar notificações:', error);
                 notificarUsuario('Erro', 'Não foi possível ativar as notificações push.', 'error');
+            } finally {
+                const refreshBtn = permissionBanner?.querySelector('#push-enable-btn');
+                if (refreshBtn) {
+                    refreshBtn.disabled = false;
+                    refreshBtn.textContent = 'Ativar agora';
+                    refreshBtn.style.opacity = '1';
+                }
             }
         });
 
@@ -241,6 +261,12 @@
         if (!user) {
             removerBannerPermissao();
             await removerTokenPushRegistrado();
+            return;
+        }
+
+        if (Notification.permission === 'denied') {
+            removerBannerPermissao();
+            localStorage.setItem(PUSH_CONFIG.storage.bannerDismissed, '1');
             return;
         }
 
