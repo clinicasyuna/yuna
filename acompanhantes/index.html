@@ -2055,7 +2055,6 @@
             // Realizar logout
             setTimeout(() => {
                 if (window.auth) {
-                    window.yunaUserContext = null; // Limpa contexto do chatbot
                     window.auth.signOut().then(() => {
                         window.location.reload();
                     }).catch(() => {
@@ -2677,13 +2676,6 @@
                     document.getElementById('user-name').textContent = userData.nome || user.displayName || 'Usuário';
                     document.getElementById('user-room').textContent = userData.quarto || '---';
                     console.log('[SUCCESS] carregarDadosUsuario: interface atualizada com sucesso');
-                    
-                    // Expor contexto do usuário para o chatbot
-                    window.yunaUserContext = {
-                        nome: userData.nome || user.displayName || 'Acompanhante',
-                        quarto: userData.quarto || '---',
-                        email: user.email || ''
-                    };
                     
                     // Verificar avaliações pendentes após carregar dados
                     setTimeout(() => verificarAvaliacoesPendentes(user.uid), 3000);
@@ -4622,6 +4614,5 @@ if ('serviceWorker' in navigator) {
     });
 }
 </script>
-    <script src="./yuna-chat-widget.js?v=20260505-001"></script>
 </body>
 </html>
