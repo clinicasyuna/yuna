@@ -91,11 +91,30 @@
             return null;
         }
 
-        const serviceWorkerRegistration = await navigator.serviceWorker.register(PUSH_CONFIG.serviceWorkerPath);
-        const token = await messaging.getToken({
-            vapidKey: PUSH_CONFIG.vapidKey,
-            serviceWorkerRegistration
-        });
+        let serviceWorkerRegistration = null;
+        let token = null;
+
+        try {
+            serviceWorkerRegistration = await navigator.serviceWorker.register(PUSH_CONFIG.serviceWorkerPath);
+            token = await messaging.getToken({
+                vapidKey: PUSH_CONFIG.vapidKey,
+                serviceWorkerRegistration
+            });
+        } catch (error) {
+            const errorCode = error?.code || '';
+            const errorMessage = (error?.message || '').toLowerCase();
+            const isAuthIssue = errorCode.includes('token-subscribe-failed')
+                || errorMessage.includes('401')
+                || errorMessage.includes('authentication credential');
+
+            if (isAuthIssue) {
+                console.warn('[PUSH] FCM recusou o registro do token (401/autenticação). Verifique Web Push certificates (VAPID) e APIs do projeto Firebase.', error);
+                notificarUsuario('Push indisponível', 'Não foi possível ativar notificações neste ambiente. Verifique configuração do Firebase Cloud Messaging.', 'warning');
+                return null;
+            }
+
+            throw error;
+        }
 
         if (!token) {
             logPush('Firebase Messaging não retornou token.');
