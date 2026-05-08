@@ -3000,14 +3000,7 @@ window.showManageUsersModal = async function() {
             showToast('Erro', 'Erro ao carregar usuários.', 'error');
         }
         
-        // TORNAR O MODAL ARRASTÁVEL E REDIMENSIONÁVEL
-        setTimeout(() => {
-            console.log('[DRAG] 🎯 Iniciando configuração de modal arrastável...');
-            window.tornarModalArrastavel('manage-users-modal');
-            
-            console.log('[RESIZE] 📐 Iniciando configuração de modal redimensionável...');
-            window.tornarModalRedimensionavel('manage-users-modal');
-        }, 300);
+        // Manter layout estável para evitar cortes e rolagem horizontal no modal de usuários
         
         debugLog('[DEBUG] showManageUsersModal: modal exibido com sucesso');
     } else {
