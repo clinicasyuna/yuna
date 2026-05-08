@@ -2052,16 +2052,12 @@
             // Mostrar notificação
             showToast('Sessão Expirada', 'Você foi desconectado por inatividade.', 'warning');
             
-            // Realizar logout
+            // Realizar logout — o onAuthStateChanged cuida de mostrar a tela de login
             setTimeout(() => {
                 if (window.auth) {
-                    window.auth.signOut().then(() => {
-                        window.location.reload();
-                    }).catch(() => {
-                        window.location.reload();
-                    });
-                } else {
-                    window.location.reload();
+                    window.auth.signOut().catch(err => console.warn('[TIMEOUT] erro ao signOut:', err));
+                } else if (firebase && firebase.auth) {
+                    firebase.auth().signOut().catch(err => console.warn('[TIMEOUT] erro ao signOut:', err));
                 }
             }, 2000);
         }
@@ -3260,6 +3256,7 @@
         async function logout() {
             try {
                 await firebase.auth().signOut();
+                // onAuthStateChanged chama showAuthSection() automaticamente
                 showToast('Sucesso!', 'Logout realizado com sucesso!', 'success');
             } catch (error) {
                 console.error('Erro no logout:', error);
