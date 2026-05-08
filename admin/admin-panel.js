@@ -8812,6 +8812,7 @@ function renderizarCardsEquipe(equipes) {
                         <option value="todos">Todos</option>
                         <option value="pendente">Pendente</option>
                         <option value="em-andamento">Em Andamento</option>
+                        <option value="em-pausa">Pausado</option>
                         <option value="finalizada">Finalizada</option>
                     </select>
                 </div>
@@ -8867,6 +8868,7 @@ function renderizarCardsEquipe(equipes) {
                              data-equipe="${equipe}" 
                              data-index="${index}" 
                              data-status="${solicitacao.status || 'pendente'}"
+                             data-sla-pausa="${solicitacao.slaEmPausa ? 'true' : 'false'}"
                              data-prioridade="${solicitacao.prioridade || 'normal'}"
                              onclick="${podeInteragir ? `abrirSolicitacaoModal(${JSON.stringify(solicitacao).replace(/'/g, '&apos;')})` : `mostrarInfoVisualizacao('${solicitacao.id}')`}"
                              style="${apenasVisualizar ? 'opacity: 0.8; cursor: help;' : 'cursor: pointer;'}">
@@ -13038,7 +13040,18 @@ window.filtrarSolicitacoesPorStatus = function(equipe, status) {
     
     cards.forEach(card => {
         const cardStatus = card.getAttribute('data-status') || 'pendente';
-        const shouldShow = status === 'todos' || cardStatus === status;
+        const cardSlaEmPausa = card.getAttribute('data-sla-pausa') === 'true';
+
+        let shouldShow = false;
+        if (status === 'todos') {
+            shouldShow = true;
+        } else if (status === 'em-pausa') {
+            shouldShow = cardStatus === 'em-andamento' && cardSlaEmPausa;
+        } else if (status === 'em-andamento') {
+            shouldShow = cardStatus === 'em-andamento' && !cardSlaEmPausa;
+        } else {
+            shouldShow = cardStatus === status;
+        }
         
         if (shouldShow) {
             card.style.display = 'block';
