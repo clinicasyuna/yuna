@@ -193,7 +193,7 @@ function verificarBotoesSuperAdmin() {
 function verificarPaineisPorEquipe() {
     console.log('🏢 Verificando visibilidade dos painéis de equipe...');
     
-    const equipes = ['manutencao', 'nutricao', 'higienizacao', 'hotelaria'];
+    const equipes = ['manutencao', 'higienizacao', 'hotelaria'];
     const usuarioAtual = window.usuarioAdmin || {};
     const isSuperAdmin = usuarioAtual.role === 'super_admin';
     const isEquipe = usuarioAtual.role === 'equipe';

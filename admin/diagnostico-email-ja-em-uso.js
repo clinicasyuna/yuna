@@ -115,8 +115,8 @@ async function tentarRecuperarUsuarioOrfao(email) {
             
             let equipeNome = null;
             if (tipo === 'equipe') {
-                equipeNome = prompt('Digite a equipe (manutencao/nutricao/higienizacao/hotelaria):');
-                if (!equipeNome || !['manutencao', 'nutricao', 'higienizacao', 'hotelaria'].includes(equipeNome)) {
+                equipeNome = prompt('Digite a equipe (manutencao/higienizacao/hotelaria):');
+                if (!equipeNome || !['manutencao', 'higienizacao', 'hotelaria'].includes(equipeNome)) {
                     console.log('âŒ Equipe invÃ¡lida');
                     return;
                 }
