@@ -281,19 +281,16 @@ function performAutoLogout() {
     // Mostrar notificação
     showToast('Sessão Expirada', 'Você foi desconectado por inatividade.', 'warning');
     
-    // Realizar logout e redirecionar para página de login
+    // Realizar logout no próprio admin e exibir tela de login local
     setTimeout(() => {
         if (window.auth && typeof window.auth.signOut === 'function') {
             window.auth.signOut().then(() => {
-                // Redirecionar para página de login em vez de reload
-                window.location.href = window.location.origin + window.location.pathname.replace('/admin/', '/');
+                limparInterfaceCompleta();
             }).catch(() => {
-                // Fallback: redirecionar mesmo com erro
-                window.location.href = window.location.origin + window.location.pathname.replace('/admin/', '/');
+                limparInterfaceCompleta();
             });
         } else {
-            // Fallback: redirecionar mesmo sem auth
-            window.location.href = window.location.origin + window.location.pathname.replace('/admin/', '/');
+            limparInterfaceCompleta();
         }
     }, 2000);
 }
@@ -888,16 +885,13 @@ window.emergencyReset = function() {
     if (window.auth) {
         window.auth.signOut().then(() => {
             console.log('✅ Logout forçado realizado');
-            // Redirecionar para página de login em vez de reload
-            window.location.href = window.location.origin + window.location.pathname.replace('/admin/', '/');
+            limparInterfaceCompleta();
         }).catch(error => {
             console.error('Erro no logout:', error);
-            // Redirecionar mesmo com erro
-            window.location.href = window.location.origin + window.location.pathname.replace('/admin/', '/');
+            limparInterfaceCompleta();
         });
     } else {
-        // Redirecionar se auth não estiver disponível
-        window.location.href = window.location.origin + window.location.pathname.replace('/admin/', '/');
+        limparInterfaceCompleta();
     }
 };
 
@@ -2065,12 +2059,6 @@ window.addEventListener('DOMContentLoaded', async function() {
                 
                 debugLog('[DEBUG] Iniciando processo de logout...');
                 
-                // Remover listener de autenticação ANTES do signOut
-                if (unsubscribeAuthListener) {
-                    unsubscribeAuthListener();
-                    unsubscribeAuthListener = null;
-                }
-                
                 // ========== AUDITORIA: Registrar logout ==========
                 const tempoSessao = window.currentSessionId ? 
                     Math.floor((Date.now() - parseInt(window.currentSessionId.split('_')[1])) / 1000) : 0;
@@ -2105,11 +2093,7 @@ window.addEventListener('DOMContentLoaded', async function() {
                 
                 // Resetar variáveis de estado
                 sistemaInicializado = false;
-                
-                // Forçar recarregamento da página para limpeza completa
-                setTimeout(() => {
-                    window.location.reload(true);
-                }, 500);
+                limparInterfaceCompleta();
                 
                 // Limpar campos de login
                 const emailField = document.getElementById('login-email');
@@ -2128,11 +2112,7 @@ window.addEventListener('DOMContentLoaded', async function() {
             } catch (err) {
                 console.error('[ERRO] Falha no logout:', err);
                 showToast('Erro', 'Erro ao fazer logout: ' + err.message, 'error');
-                
-                // Em caso de erro, forçar reload da página
-                setTimeout(() => {
-                    window.location.reload();
-                }, 2000);
+                limparInterfaceCompleta();
             }
         };
     }
