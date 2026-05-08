@@ -7404,7 +7404,10 @@ async function confirmarFinalizacao(solicitacaoId) {
             finalizadoEm: firebase.firestore.FieldValue.serverTimestamp(), // Para o listener detectar
             tempoFinalizacao: firebase.firestore.FieldValue.serverTimestamp(),
             dataAtualizacao: agora.toISOString(),
-            avaliada: false // Marca que ainda não foi avaliada pelo acompanhante
+            avaliada: false, // Marca que ainda não foi avaliada pelo acompanhante
+            slaEmPausa: false,
+            pausaAtiva: null,
+            motivoPausa: null
         };
 
         if (usuarioAdmin.nome) {
@@ -8859,9 +8862,10 @@ function renderizarCardsEquipe(equipes) {
                         const podeInteragir = usuarioAdmin.role === 'super_admin' || 
                                             (usuarioAdmin.isEquipe && usuarioAdmin.equipe === solicitacao.equipe);
                         const apenasVisualizar = usuarioAdmin.role === 'admin' && !usuarioAdmin.isEquipe;
-                            const solicitacaoEmPausa = Boolean(solicitacao.slaEmPausa || solicitacao.pausaAtiva);
-                            const statusVisual = solicitacaoEmPausa ? 'em-pausa' : (solicitacao.status || 'pendente');
-                            const statusTexto = solicitacaoEmPausa ? 'Pausa no atendimento' : (solicitacao.status || 'pendente');
+                        const statusBase = solicitacao.status || 'pendente';
+                        const solicitacaoEmPausa = statusBase !== 'finalizada' && Boolean(solicitacao.slaEmPausa || solicitacao.pausaAtiva);
+                        const statusVisual = statusBase === 'finalizada' ? 'finalizada' : (solicitacaoEmPausa ? 'em-pausa' : statusBase);
+                        const statusTexto = statusBase === 'finalizada' ? 'Atendimento Finalizado' : (solicitacaoEmPausa ? 'Pausa no atendimento' : statusBase);
                         
                             return `<div class="solicitacao-card ${apenasVisualizar ? 'visualizacao-apenas' : ''}" 
                              data-id="${solicitacao.id}"
