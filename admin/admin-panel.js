@@ -7463,7 +7463,6 @@ async function confirmarFinalizacao(solicitacaoId) {
                 // Calcular SLA e definir prioridades baseadas no tipo de serviço
                 const slaConfig = {
                     'manutencao': { slaMinutos: 240, prioridade: 'alta' },     // 4 horas
-                    'nutricao': { slaMinutos: 60, prioridade: 'critica' },     // 1 hora
                     'higienizacao': { slaMinutos: 120, prioridade: 'media' },  // 2 horas
                     'hotelaria': { slaMinutos: 180, prioridade: 'media' }      // 3 horas
                 };
@@ -7834,7 +7833,7 @@ function calcularAlertas(solicitacoes) {
     
     // SLA próximo do limite
     const slaConfig = {
-        'manutencao': 240, 'nutricao': 60, 'higienizacao': 120, 'hotelaria': 180
+        'manutencao': 240, 'higienizacao': 120, 'hotelaria': 180
     };
     
     solicitacoes.forEach(sol => {
@@ -7886,7 +7885,6 @@ function calcularSatisfacaoPorEquipe(solicitacoes) {
         mediaGeral: 4.2,
         porEquipe: {
             manutencao: 4.1,
-            nutricao: 4.5,
             higienizacao: 4.0,
             hotelaria: 4.3
         }
@@ -7902,7 +7900,7 @@ function calcularSLACompliance(tempos, equipe) {
     
     // Fallback: versão original (sem pausa)
     const limites = {
-        'manutencao': 240, 'nutricao': 60, 'higienizacao': 120, 'hotelaria': 180
+        'manutencao': 240, 'higienizacao': 120, 'hotelaria': 180
     };
     
     const limite = limites[equipe] || 240;
@@ -8044,7 +8042,6 @@ function gerarCardsKPI(metricas) {
 function gerarCardsEquipes(equipesMetricas) {
     const equipesNomes = {
         manutencao: 'Manutenção',
-        nutricao: 'Nutrição', 
         higienizacao: 'Higienização',
         hotelaria: 'Hotelaria'
     };
@@ -8163,7 +8160,7 @@ function calcularMetricasGerais(solicitacoes) {
                     
                     // Verificar SLA básico
                     const slaConfig = {
-                        'manutencao': 240, 'nutricao': 60, 'higienizacao': 120, 'hotelaria': 180
+                        'manutencao': 240, 'higienizacao': 120, 'hotelaria': 180
                     };
                     const slaLimite = slaConfig[equipe] || 240;
                     
@@ -8224,7 +8221,6 @@ function gerarHTMLDashboard(metricas, opcoes = {}) {
         // Nome amigável da equipe
         const nomeEquipe = {
             'manutencao': 'Manutenção',
-            'nutricao': 'Nutrição', 
             'higienizacao': 'Higienização',
             'hotelaria': 'Hotelaria'
         }[equipe] || equipe.charAt(0).toUpperCase() + equipe.slice(1);
@@ -8232,7 +8228,6 @@ function gerarHTMLDashboard(metricas, opcoes = {}) {
         // Ícone da equipe
         const iconeEquipe = {
             'manutencao': '🔧',
-            'nutricao': '🍽️',
             'higienizacao': '🧽',
             'hotelaria': '🛏️'
         }[equipe] || '⚙️';
@@ -8259,7 +8254,6 @@ function gerarHTMLDashboard(metricas, opcoes = {}) {
     if (!isSuperAdmin && equipesParaExibir.length === 0 && equipeUsuario) {
         const nomeEquipe = {
             'manutencao': 'Manutenção',
-            'nutricao': 'Nutrição', 
             'higienizacao': 'Higienização',
             'hotelaria': 'Hotelaria'
         }[equipeUsuario] || equipeUsuario.charAt(0).toUpperCase() + equipeUsuario.slice(1);
@@ -8326,13 +8320,11 @@ function gerarHTMLDashboard(metricas, opcoes = {}) {
                 <h4 style="margin: 0 0 8px 0; color: #374151;">📋 Definições SLA ${!isSuperAdmin && equipeUsuario ? `- ${equipeUsuario.charAt(0).toUpperCase() + equipeUsuario.slice(1)}` : 'por Equipe'}</h4>
                 <div style="font-size: 14px; color: #6b7280; display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 8px;">
                     ${isSuperAdmin ? `
-                        <div><strong>Nutrição:</strong> 60 min (Crítico)</div>
                         <div><strong>Higienização:</strong> 120 min (Médio)</div>
                         <div><strong>Hotelaria:</strong> 180 min (Médio)</div>
                         <div><strong>Manutenção:</strong> 240 min (Alto)</div>
                     ` : `
-                        <div><strong>${equipeUsuario === 'nutricao' ? 'Nutrição: 60 min (Crítico)' : 
-                                       equipeUsuario === 'higienizacao' ? 'Higienização: 120 min (Médio)' :
+                        <div><strong>${equipeUsuario === 'higienizacao' ? 'Higienização: 120 min (Médio)' :
                                        equipeUsuario === 'hotelaria' ? 'Hotelaria: 180 min (Médio)' :
                                        'Manutenção: 240 min (Alto)'}</strong></div>
                         <div>Meta: Cumprir SLA em pelo menos 90% das solicitações</div>
@@ -8516,17 +8508,7 @@ window.carregarDadosDesenvolvimento = function() {
                     </div>
                 </div>
             </div>
-            <div class="team-card" onclick="verSolicitacoesEquipe('nutricao')">
-                <div class="team-icon">🍽️</div>
-                <div class="team-info">
-                    <h3>Nutrição</h3>
-                    <div class="team-stats">
-                        <span class="pendentes">2 pendentes</span>
-                        <span class="andamento">4 em andamento</span>
-                        <span class="finalizadas">1 finalizadas</span>
-                    </div>
-                </div>
-            </div>
+
             <div class="team-card" onclick="verSolicitacoesEquipe('higienizacao')">
                 <div class="team-icon">🧽</div>
                 <div class="team-info">
@@ -8627,14 +8609,12 @@ function renderizarCardsEquipe(equipes) {
     
     const icones = {
         manutencao: 'tools',
-        nutricao: 'utensils',
         higienizacao: 'broom',
         hotelaria: 'bed'
     };
     
     const equipesNomes = {
         manutencao: 'Manutenção',
-        nutricao: 'Nutrição',
         higienizacao: 'Higienização',
         hotelaria: 'Hotelaria'
     };
@@ -8942,7 +8922,7 @@ function renderizarCardsEquipe(equipes) {
                                     if (solicitacao.descricao && solicitacao.descricao !== solicitacao.titulo) {
                                         descricaoTexto = solicitacao.descricao; // Manutenção
                                     } else if (solicitacao.detalhes) {
-                                        descricaoTexto = solicitacao.detalhes; // Nutrição e Hotelaria
+                                        descricaoTexto = solicitacao.detalhes; // Hotelaria
                                     } else if (solicitacao.observacoes) {
                                         descricaoTexto = solicitacao.observacoes; // Higienização
                                     }
@@ -9374,7 +9354,7 @@ function preencherDetalhesModal(solicitacao, dadosAcompanhante) {
             if (solicitacao.status === 'finalizada' && solicitacao.metricas) {
                 const m = solicitacao.metricas;
                 const slaConfig = {
-                    'manutencao': 240, 'nutricao': 60, 'higienizacao': 120, 'hotelaria': 180
+                    'manutencao': 240, 'higienizacao': 120, 'hotelaria': 180
                 };
                 const slaLimite = slaConfig[solicitacao.equipe] || 240;
                 const slaStatus = m.statusSLA || (m.tempoTotal <= slaLimite ? 'cumprido' : 'violado');
@@ -9391,7 +9371,7 @@ function preencherDetalhesModal(solicitacao, dadosAcompanhante) {
             // SLA em tempo real para solicitações não finalizadas
             if (solicitacao.status !== 'finalizada') {
                 const slaConfig = {
-                    'manutencao': 240, 'nutricao': 60, 'higienizacao': 120, 'hotelaria': 180
+                    'manutencao': 240, 'higienizacao': 120, 'hotelaria': 180
                 };
                 const slaLimite = slaConfig[solicitacao.equipe] || 240;
                 const tempoRestante = slaLimite - tempoDesdeAbertura;
@@ -10740,7 +10720,6 @@ window.visualizarEvidencia = function(url, nome, tipo) {
 function getCorEquipe(equipe) {
     const cores = {
         'manutencao': '#f6b86b',
-        'nutricao': '#f9a07d',
         'higienizacao': '#f4768c',
         'hotelaria': '#f05c8d'
     };
@@ -11013,7 +10992,6 @@ function abrirFiltrosSatisfacao() {
                 <select id="filtro-equipe" style="width: 100%; padding: 10px; border: 1px solid #d1d5db; border-radius: 6px;">
                     <option value="">Todas as equipes</option>
                     <option value="manutencao">Manutenção</option>
-                    <option value="nutricao">Nutrição</option>
                     <option value="higienizacao">Higienização</option>
                     <option value="hotelaria">Hotelaria</option>
                 </select>
@@ -11401,8 +11379,6 @@ function gerarListaDetalhada(solicitacoes, stats) {
 function getCorEquipe(equipe) {
     const cores = {
         'manutencao': '#f6b86b',
-        'nutrição': '#f9a07d',
-        'nutricao': '#f9a07d',
         'higienização': '#f4768c',
         'higienizacao': '#f4768c',
         'hotelaria': '#f05c8d',
@@ -11544,7 +11520,6 @@ async function exportarDados() {
             const extrairDescricao = (sol) => {
                 // Cada equipe usa um campo diferente:
                 // - Manutenção: descricao
-                // - Nutrição: detalhes
                 // - Higienização: observacoes
                 // - Hotelaria: detalhes
                 return sol.descricao || sol.detalhes || sol.observacoes || '--';
@@ -12684,7 +12659,6 @@ window.verificarEstatisticas = async function() {
             avaliada: 0,
             porEquipe: {
                 manutencao: 0,
-                nutricao: 0,
                 higienizacao: 0,
                 hotelaria: 0
             }
@@ -12754,7 +12728,6 @@ window.verificarEstatisticas = async function() {
 
 🏢 POR DEPARTAMENTO:
   • Manutenção: ${stats.porEquipe.manutencao}
-  • Nutrição: ${stats.porEquipe.nutricao}
   • Higienização: ${stats.porEquipe.higienizacao}
   • Hotelaria: ${stats.porEquipe.hotelaria}
 
@@ -13139,14 +13112,12 @@ function atualizarEmptyState(equipe, visibleCount) {
         if (!emptyState) {
             const icones = {
                 'manutencao': 'tools',
-                'nutricao': 'utensils',
                 'higienizacao': 'spray-can',
                 'hotelaria': 'bed'
             };
             
             const equipesNomes = {
                 'manutencao': 'Manutenção',
-                'nutricao': 'Nutrição',
                 'higienizacao': 'Higienização',
                 'hotelaria': 'Hotelaria'
             };
@@ -13361,7 +13332,6 @@ function renderizarGraficoEquipes(equipesData) {
     
     const equipesNomes = {
         manutencao: 'Manutenção',
-        nutricao: 'Nutrição', 
         higienizacao: 'Higienização',
         hotelaria: 'Hotelaria'
     };
