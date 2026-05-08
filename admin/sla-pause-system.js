@@ -67,18 +67,24 @@ async function pausarSLA(solicitacaoId, motivo, usuario) {
 
         await window.db.collection('solicitacoes').doc(solicitacaoId).update(updateData);
 
-        // Registrar auditoria
-        await registrarAcaoAuditoria({
-            action: 'pause_sla',
-            resource: 'solicitacoes',
-            resourceId: solicitacaoId,
-            success: true,
-            details: {
-                motivo: motivo,
-                equipe: solicitacao.equipe,
-                usuario: usuario.email || usuario.uid
+        // Registrar auditoria (se disponível)
+        try {
+            if (window.registrarAcaoAuditoria) {
+                await registrarAcaoAuditoria({
+                    action: 'pause_sla',
+                    resource: 'solicitacoes',
+                    resourceId: solicitacaoId,
+                    success: true,
+                    details: {
+                        motivo: motivo,
+                        equipe: solicitacao.equipe,
+                        usuario: usuario.email || usuario.uid
+                    }
+                });
             }
-        });
+        } catch (auditError) {
+            console.warn('[SLA] Auditoria não disponível:', auditError.message);
+        }
 
         console.log('[SLA] ⏸️ SLA pausado:', {
             id: solicitacaoId,
@@ -153,19 +159,25 @@ async function retomarSLA(solicitacaoId, usuario) {
 
         await window.db.collection('solicitacoes').doc(solicitacaoId).update(updateData);
 
-        // Registrar auditoria
-        await registrarAcaoAuditoria({
-            action: 'resume_sla',
-            resource: 'solicitacoes',
-            resourceId: solicitacaoId,
-            success: true,
-            details: {
-                duracao: duracaoMinutos,
-                motivo: solicitacao.pausaAtiva.motivo,
-                equipe: solicitacao.equipe,
-                usuario: usuario.email || usuario.uid
+        // Registrar auditoria (se disponível)
+        try {
+            if (window.registrarAcaoAuditoria) {
+                await registrarAcaoAuditoria({
+                    action: 'resume_sla',
+                    resource: 'solicitacoes',
+                    resourceId: solicitacaoId,
+                    success: true,
+                    details: {
+                        duracao: duracaoMinutos,
+                        motivo: solicitacao.pausaAtiva.motivo,
+                        equipe: solicitacao.equipe,
+                        usuario: usuario.email || usuario.uid
+                    }
+                });
             }
-        });
+        } catch (auditError) {
+            console.warn('[SLA] Auditoria não disponível:', auditError.message);
+        }
 
         console.log('[SLA] ▶️ SLA retomado:', {
             id: solicitacaoId,
@@ -323,6 +335,7 @@ function gerarHTMLStatusPausa(solicitacao) {
  */
 function abrirModalPausarSLA(solicitacaoId, equipe) {
     const modal = document.createElement('div');
+    modal.id = 'modal-pausar-sla';
     modal.className = 'modal';
     modal.style.display = 'flex';
     modal.innerHTML = `
@@ -384,8 +397,11 @@ async function executarPausarSLA(solicitacaoId, equipe) {
 
         showToast('Sucesso', 'SLA pausado com sucesso! ⏸️', 'success');
 
-        // Fechar modal
-        document.querySelector('.modal')?.remove();
+        // Fechar modal de pausa específico
+        const modalPausa = document.getElementById('modal-pausar-sla');
+        if (modalPausa) {
+            modalPausa.remove();
+        }
 
         // Recarregar dados (se implementado refresh de solicitação)
         if (typeof carregarSolicitacoes === 'function') {
