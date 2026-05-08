@@ -9418,6 +9418,7 @@ function preencherDetalhesModal(solicitacao, dadosAcompanhante) {
             ${solicitacao.solucao ? `<div><strong>Solução:</strong> ${solicitacao.solucao}</div>` : ''}
             ${gerarSecaoEvidencias(solicitacao)}
             ${metricas}
+            ${gerarHTMLStatusPausa(solicitacao)}
         `;
         
         // Verificar permissões e criar botões de ação
@@ -9452,6 +9453,21 @@ function preencherDetalhesModal(solicitacao, dadosAcompanhante) {
                             style="background: #dc2626; color: white; border: none; padding: 6px 12px; border-radius: 4px; cursor: pointer;">
                         <i class="fas fa-pause" style="margin-right: 4px;"></i>Pausar
                     </button>`;
+                
+                // Botões de SLA
+                if (solicitacao.slaEmPausa) {
+                    botoesHTML += `
+                        <button onclick="executarRetomarSLA('${solicitacao.id}')" 
+                                style="background: #0891b2; color: white; border: none; padding: 6px 12px; border-radius: 4px; cursor: pointer;">
+                            <i class="fas fa-play" style="margin-right: 4px;"></i>Retomar SLA
+                        </button>`;
+                } else {
+                    botoesHTML += `
+                        <button onclick="abrirModalPausarSLA('${solicitacao.id}', '${solicitacao.equipe}')" 
+                                style="background: #f59e0b; color: white; border: none; padding: 6px 12px; border-radius: 4px; cursor: pointer;">
+                            <i class="fas fa-pause-circle" style="margin-right: 4px;"></i>Pausar SLA
+                        </button>`;
+                }
             }
             
             if (solicitacao.status === 'pendente' || solicitacao.status === 'em-andamento') {
