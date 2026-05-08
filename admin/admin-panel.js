@@ -8858,8 +8858,10 @@ function renderizarCardsEquipe(equipes) {
                         const podeInteragir = usuarioAdmin.role === 'super_admin' || 
                                             (usuarioAdmin.isEquipe && usuarioAdmin.equipe === solicitacao.equipe);
                         const apenasVisualizar = usuarioAdmin.role === 'admin' && !usuarioAdmin.isEquipe;
+                            const statusVisual = solicitacao.slaEmPausa ? 'em-pausa' : (solicitacao.status || 'pendente');
+                            const statusTexto = solicitacao.slaEmPausa ? 'Pausa no atendimento' : (solicitacao.status || 'pendente');
                         
-                        return `<div class="solicitacao-card ${apenasVisualizar ? 'visualizacao-apenas' : ''}" 
+                            return `<div class="solicitacao-card ${apenasVisualizar ? 'visualizacao-apenas' : ''}" 
                              data-id="${solicitacao.id}"
                              data-solicitacao='${JSON.stringify(solicitacao).replace(/'/g, '&apos;')}' 
                              data-equipe="${equipe}" 
@@ -8874,8 +8876,8 @@ function renderizarCardsEquipe(equipes) {
                             <div class="card-header">
                                 <div class="card-order-info">
                                     <span class="card-order">#${index + 1}</span>
-                                    <span class="card-status status-${solicitacao.status || 'pendente'}">
-                                        ${solicitacao.status || 'pendente'}
+                                    <span class="card-status status-${statusVisual}">
+                                        ${statusTexto}
                                     </span>
                                 </div>
                                 <div class="card-actions">
