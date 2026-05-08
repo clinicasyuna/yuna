@@ -8859,8 +8859,9 @@ function renderizarCardsEquipe(equipes) {
                         const podeInteragir = usuarioAdmin.role === 'super_admin' || 
                                             (usuarioAdmin.isEquipe && usuarioAdmin.equipe === solicitacao.equipe);
                         const apenasVisualizar = usuarioAdmin.role === 'admin' && !usuarioAdmin.isEquipe;
-                            const statusVisual = solicitacao.slaEmPausa ? 'em-pausa' : (solicitacao.status || 'pendente');
-                            const statusTexto = solicitacao.slaEmPausa ? 'Pausa no atendimento' : (solicitacao.status || 'pendente');
+                            const solicitacaoEmPausa = Boolean(solicitacao.slaEmPausa || solicitacao.pausaAtiva);
+                            const statusVisual = solicitacaoEmPausa ? 'em-pausa' : (solicitacao.status || 'pendente');
+                            const statusTexto = solicitacaoEmPausa ? 'Pausa no atendimento' : (solicitacao.status || 'pendente');
                         
                             return `<div class="solicitacao-card ${apenasVisualizar ? 'visualizacao-apenas' : ''}" 
                              data-id="${solicitacao.id}"
@@ -8868,7 +8869,7 @@ function renderizarCardsEquipe(equipes) {
                              data-equipe="${equipe}" 
                              data-index="${index}" 
                              data-status="${solicitacao.status || 'pendente'}"
-                             data-sla-pausa="${solicitacao.slaEmPausa ? 'true' : 'false'}"
+                             data-sla-pausa="${solicitacaoEmPausa ? 'true' : 'false'}"
                              data-prioridade="${solicitacao.prioridade || 'normal'}"
                              onclick="${podeInteragir ? `abrirSolicitacaoModal(${JSON.stringify(solicitacao).replace(/'/g, '&apos;')})` : `mostrarInfoVisualizacao('${solicitacao.id}')`}"
                              style="${apenasVisualizar ? 'opacity: 0.8; cursor: help;' : 'cursor: pointer;'}">
