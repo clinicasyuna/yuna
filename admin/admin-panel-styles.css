@@ -501,10 +501,10 @@
   align-items: center;
 }
 .modal-gerenciar-usuarios-list {
-  max-height: calc(70vh - 200px);
+  max-height: calc(90vh - 230px);
   min-height: 300px;
   overflow-y: auto;
-  overflow-x: hidden;
+  overflow-x: auto;
   padding: 1rem 1.5rem;
   flex: 1;
   box-sizing: border-box;
@@ -574,7 +574,7 @@
   }
   
   .users-list-grid {
-    min-width: 0;
+    min-width: 920px;
   }
 }
 
@@ -587,18 +587,11 @@
   }
   .modal-gerenciar-usuarios-list {
     max-height: calc(80vh - 250px);
-    overflow-x: hidden;
+    overflow-x: auto;
   }
   
   .users-list-grid {
-    min-width: 0;
-  }
-  
-  .user-row {
-    grid-template-columns: 1fr auto auto;
-    gap: 0.5rem;
-    padding: 0.5rem;
-    font-size: 0.85rem;
+    min-width: 880px;
   }
 }
 
@@ -2774,7 +2767,7 @@ h2.finalizar-solicitacao {
   flex-direction: column;
   gap: 1rem;
   width: 100%;
-  min-width: 0;
+  min-width: 980px;
 }
 
 /* User row responsivo */
@@ -2790,6 +2783,7 @@ h2.finalizar-solicitacao {
   word-break: break-word;
   overflow-wrap: break-word;
   width: 100%;
+  min-width: 980px;
   box-sizing: border-box;
 }
 
@@ -2852,14 +2846,11 @@ h2.finalizar-solicitacao {
 
 @media (max-width: 1000px) {
   .user-row {
-    grid-template-columns: minmax(120px, 1fr) minmax(100px, 0.9fr) minmax(80px, 0.7fr) minmax(160px, 1.2fr) auto;
+    grid-template-columns: minmax(120px, 1fr) minmax(100px, 0.85fr) minmax(80px, 0.7fr) minmax(180px, 1.2fr) auto auto;
     gap: 0.5rem;
     padding: 0.5rem 0.75rem;
     font-size: 0.9rem;
-  }
-
-  .user-row .btn-remover {
-    display: none;
+    min-width: 900px;
   }
   
   .user-row .btn-editar,
