@@ -1,147 +1,333 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Manual do Usuario - Portal dos Acompanhantes (YUNA)</title>
-  <style>
-    @page { size: A4; margin: 2cm; }
-    body {
-      font-family: "Segoe UI", Arial, sans-serif;
-      color: #1f2937;
-      line-height: 1.55;
-      font-size: 12pt;
-      margin: 0;
-      padding: 0;
-    }
-    .cover {
-      background: linear-gradient(135deg, #1d4ed8, #4338ca);
-      color: #fff;
-      padding: 28px;
-      border-radius: 14px;
-      margin-bottom: 20px;
-    }
-    .cover h1 {
-      margin: 0 0 10px 0;
-      font-size: 24pt;
-    }
-    .cover p {
-      margin: 4px 0;
-      opacity: 0.95;
-    }
-    h2 {
-      color: #1d4ed8;
-      border-bottom: 2px solid #dbeafe;
-      padding-bottom: 6px;
-      margin-top: 24px;
-      font-size: 16pt;
-    }
-    ul, ol { margin-top: 8px; }
-    li { margin: 6px 0; }
-    .box {
-      background: #f8fafc;
-      border: 1px solid #e2e8f0;
-      border-left: 4px solid #2563eb;
-      padding: 12px 14px;
-      border-radius: 8px;
-      margin: 10px 0;
-    }
-    .footer {
-      margin-top: 28px;
-      font-size: 10pt;
-      color: #64748b;
-      border-top: 1px solid #e2e8f0;
-      padding-top: 10px;
-    }
-    code {
-      background: #f1f5f9;
-      padding: 1px 5px;
-      border-radius: 4px;
-      font-family: Consolas, monospace;
-      font-size: 10pt;
-    }
-  </style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Manual do Usuário - Portal dos Acompanhantes (YUNA) - v2.0</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            line-height: 1.6;
+            color: #333;
+            background: #f5f5f5;
+        }
+        
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+            background: white;
+            padding: 40px;
+            box-shadow: 0 0 20px rgba(0,0,0,0.1);
+        }
+        
+        h1 {
+            color: #2c5aa0;
+            margin-bottom: 10px;
+            font-size: 28px;
+        }
+        
+        .subtitle {
+            color: #666;
+            font-size: 16px;
+            font-weight: 500;
+            margin-bottom: 30px;
+            padding-bottom: 20px;
+            border-bottom: 2px solid #e0e0e0;
+        }
+        
+        h2 {
+            color: #1a3f7a;
+            margin-top: 30px;
+            margin-bottom: 15px;
+            font-size: 22px;
+            border-left: 4px solid #2c5aa0;
+            padding-left: 15px;
+        }
+        
+        h3 {
+            color: #2c5aa0;
+            margin-top: 20px;
+            margin-bottom: 10px;
+            font-size: 18px;
+        }
+        
+        h4 {
+            color: #555;
+            margin-top: 15px;
+            margin-bottom: 8px;
+            font-size: 16px;
+        }
+        
+        p {
+            margin-bottom: 12px;
+        }
+        
+        ul, ol {
+            margin-left: 20px;
+            margin-bottom: 15px;
+        }
+        
+        li {
+            margin-bottom: 8px;
+        }
+        
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 20px 0;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        
+        th {
+            background: #2c5aa0;
+            color: white;
+            padding: 12px;
+            text-align: left;
+            font-weight: 600;
+        }
+        
+        td {
+            border: 1px solid #ddd;
+            padding: 12px;
+        }
+        
+        tr:nth-child(even) {
+            background: #f9f9f9;
+        }
+        
+        code {
+            background: #f5f5f5;
+            padding: 2px 6px;
+            border-radius: 3px;
+            font-family: 'Courier New', monospace;
+            color: #d63384;
+        }
+        
+        .highlight {
+            background: #fff3cd;
+            border-left: 4px solid #ffc107;
+            padding: 15px;
+            margin: 15px 0;
+            border-radius: 4px;
+        }
+        
+        .success {
+            background: #d4edda;
+            border-left: 4px solid #28a745;
+            padding: 15px;
+            margin: 15px 0;
+            border-radius: 4px;
+        }
+        
+        .info {
+            background: #d1ecf1;
+            border-left: 4px solid #17a2b8;
+            padding: 15px;
+            margin: 15px 0;
+            border-radius: 4px;
+        }
+        
+        hr {
+            border: none;
+            height: 2px;
+            background: #e0e0e0;
+            margin: 30px 0;
+        }
+        
+        .footer {
+            margin-top: 50px;
+            padding-top: 20px;
+            border-top: 2px solid #e0e0e0;
+            color: #666;
+            font-size: 12px;
+        }
+        
+        .quick-summary {
+            background: #e8f4f8;
+            border: 2px solid #2c5aa0;
+            padding: 20px;
+            border-radius: 5px;
+            margin: 20px 0;
+        }
+        
+        @media print {
+            body {
+                background: white;
+            }
+            
+            .container {
+                box-shadow: none;
+            }
+        }
+    </style>
 </head>
 <body>
-  <section class="cover">
-    <h1>Manual do Usuario</h1>
-    <p><strong>Portal dos Acompanhantes - Sistema YUNA</strong></p>
-    <p>Versao 1.0 | Data: 08/05/2026</p>
-  </section>
-
-  <h2>1. Objetivo</h2>
-  <p>Este manual orienta acompanhantes sobre como acessar e usar o Portal de Solicitacoes da YUNA de forma simples e segura.</p>
-
-  <h2>2. Acesso ao portal</h2>
-  <ol>
-    <li>Abra o navegador (preferencialmente Google Chrome ou Microsoft Edge).</li>
-    <li>Acesse: <code>https://clinicasyuna.github.io/yuna/acompanhantes/</code></li>
-    <li>Informe e-mail e senha recebidos da equipe administrativa.</li>
-    <li>Clique em <strong>Entrar</strong>.</li>
-  </ol>
-
-  <h2>3. Primeiro acesso e senha</h2>
-  <ul>
-    <li>Se esquecer a senha, clique em <strong>Esqueci minha senha</strong>.</li>
-    <li>Siga o link recebido no e-mail para redefinir.</li>
-    <li>Retorne ao portal e entre com a nova senha.</li>
-  </ul>
-
-  <h2>4. Tipos de solicitacao disponiveis</h2>
-  <ul>
-    <li><strong>Manutencao:</strong> problemas de equipamento, eletrica, hidraulica, ar-condicionado etc.</li>
-    <li><strong>Higienizacao:</strong> limpeza do quarto, troca de enxoval e higienizacao do ambiente.</li>
-    <li><strong>Hotelaria:</strong> conforto, itens de apoio e servicos de hotelaria.</li>
-  </ul>
-
-  <h2>5. Como abrir uma nova solicitacao</h2>
-  <ol>
-    <li>Clique no card do servico desejado.</li>
-    <li>Preencha os campos solicitados (descricao, prioridade e horario, quando aplicavel).</li>
-    <li>Revise as informacoes.</li>
-    <li>Clique em <strong>Enviar solicitacao</strong>.</li>
-  </ol>
-
-  <h2>6. Como acompanhar o andamento</h2>
-  <div class="box">
-    <p><strong>Status:</strong></p>
-    <ul>
-      <li><strong>Pendente:</strong> solicitacao registrada e aguardando inicio.</li>
-      <li><strong>Em andamento:</strong> equipe atendendo a solicitacao.</li>
-      <li><strong>Finalizada:</strong> atendimento concluido.</li>
-      <li><strong>Cancelada:</strong> solicitacao encerrada sem execucao.</li>
-    </ul>
-  </div>
-
-  <h2>7. Avaliacao do atendimento</h2>
-  <ol>
-    <li>Abra a solicitacao finalizada.</li>
-    <li>Informe a nota (estrelas).</li>
-    <li>Escreva comentario (opcional).</li>
-    <li>Confirme a avaliacao.</li>
-  </ol>
-
-  <h2>8. Sessao e seguranca</h2>
-  <ul>
-    <li>O sistema encerra automaticamente por inatividade.</li>
-    <li>Em caso de logout automatico, faca login novamente.</li>
-    <li>Nunca compartilhe sua senha.</li>
-    <li>Use sempre o botao de sair ao finalizar em dispositivo compartilhado.</li>
-  </ul>
-
-  <h2>9. Solucao de problemas rapida</h2>
-  <ul>
-    <li><strong>Nao consigo entrar:</strong> confira e-mail/senha, use Esqueci minha senha e atualize a pagina (Ctrl + F5).</li>
-    <li><strong>Solicitacao nao aparece:</strong> aguarde sincronizacao e atualize a pagina.</li>
-    <li><strong>Erro de pagina:</strong> use o link correto <code>https://clinicasyuna.github.io/yuna/acompanhantes/</code>.</li>
-  </ul>
-
-  <h2>10. Suporte</h2>
-  <p>Em caso de duvidas, procure a equipe administrativa da unidade.</p>
-
-  <div class="footer">
-    Sistema YUNA - Portal dos Acompanhantes<br>
-    Documento gerado para orientacao de uso.
-  </div>
+    <div class="container">
+        <h1>Manual do Usuário - Portal dos Acompanhantes (YUNA)</h1>
+        <div class="subtitle">
+            <strong>Versão 2.0 - Com Funcionalidades PWA (Offline, Notificações e Instalação)</strong>
+        </div>
+        
+        <div class="info">
+            <strong>ℹ️ Informação Importante:</strong><br>
+            Este manual foi atualizado em <strong>11/05/2026</strong> com as novas funcionalidades PWA (Progressive Web App) que tornam o portal muito mais rápido, funcional e prático de usar.
+        </div>
+        
+        <h2>1. Objetivo</h2>
+        <p>Este manual orienta acompanhantes sobre como acessar, instalar e usar o Portal de Solicitações da YUNA de forma simples, segura e moderna.</p>
+        <p><strong>O portal agora pode ser instalado como um app nativo em seu dispositivo, funcionar sem internet e enviar notificações push em tempo real!</strong></p>
+        
+        <h2>2. Acesso ao Portal</h2>
+        <h3>2.1 Primeiro Acesso (Web)</h3>
+        <ol>
+            <li>Abra o navegador (preferencialmente <strong>Google Chrome</strong>, Microsoft Edge ou Safari)</li>
+            <li>Acesse: <code>https://clinicasyuna.github.io/yuna/acompanhantes/</code></li>
+            <li>Informe e-mail e senha recebidos da equipe administrativa</li>
+            <li>Clique em <strong>Entrar</strong></li>
+        </ol>
+        
+        <h3>2.2 Acessos Seguintes (Recomendado: Instale como App)</h3>
+        <p>Após fazer login pela primeira vez, você verá um botão <strong>"📲 Instalar App"</strong> na tela.</p>
+        <ul>
+            <li>Clique para instalar na tela inicial do seu dispositivo</li>
+            <li>Você terá um atalho como qualquer outro app</li>
+            <li>Carrega muito mais rápido nas próximas vezes</li>
+        </ul>
+        
+        <h2>3. Instalando o Portal como App (NOVO!)</h2>
+        <h3>3.1 Por Que Instalar?</h3>
+        <ul>
+            <li>✅ Abre muito mais rápido</li>
+            <li>✅ Funciona completamente sem internet</li>
+            <li>✅ Ícone na tela inicial (como qualquer app)</li>
+            <li>✅ Recebe notificações push automáticas</li>
+            <li>✅ Usa menos dados de internet</li>
+            <li>✅ Experiência mais fluida</li>
+        </ul>
+        
+        <h3>3.2 Como Instalar</h3>
+        <h4>🖥️ Desktop (Windows/Mac/Linux)</h4>
+        <ol>
+            <li>Após fazer login, procure o botão <strong>"Instalar"</strong> na página</li>
+            <li>Clique em <strong>"Instalar"</strong></li>
+            <li>Um atalho será criado na sua desktop ou menu</li>
+            <li>Próximas vezes: clique no atalho para abrir</li>
+        </ol>
+        
+        <h4>📱 Android (Google Chrome)</h4>
+        <ol>
+            <li>Após fazer login, procure pelo botão <strong>"Instalar app"</strong> (ou menu ⋮)</li>
+            <li>Selecione <strong>"Instalar app"</strong> ou <strong>"Adicionar à tela inicial"</strong></li>
+            <li>O app será adicionado à sua tela inicial</li>
+            <li>Próximas vezes: toque no ícone para abrir</li>
+        </ol>
+        
+        <h4>🍎 iPhone/iPad (Safari)</h4>
+        <ol>
+            <li>Após fazer login, toque no botão <strong>Compartilhar</strong> (↑)</li>
+            <li>Selecione <strong>"Adicionar à Tela de Início"</strong></li>
+            <li>Nomeie como "YUNA" e clique <strong>"Adicionar"</strong></li>
+            <li>O app aparecerá na sua tela inicial</li>
+        </ol>
+        
+        <h2>5. Funcionalidades Novas (PWA 2.0)</h2>
+        
+        <h3>5.1 🔌 Funcionar Offline (Sem Internet)</h3>
+        <p><strong>O portal agora funciona mesmo sem internet!</strong></p>
+        <h4>O Que Você Pode Fazer Offline:</h4>
+        <ul>
+            <li>✅ Visualizar suas solicitações anteriores</li>
+            <li>✅ Acompanhar o status (última sincronização)</li>
+            <li>✅ <strong>Criar NOVAS solicitações</strong> (serão enviadas ao reconectar)</li>
+            <li>✅ Ler notificações já recebidas</li>
+        </ul>
+        
+        <h3>5.2 🔔 Notificações Push (NOVO!)</h3>
+        <p><strong>Receba notificações em tempo real quando sua solicitação muda de status!</strong></p>
+        <p>Não precisa ficar verificando o portal o tempo todo. O sistema avisa você automaticamente!</p>
+        
+        <h3>5.3 🔄 Sincronização Automática (NOVO!)</h3>
+        <p>O portal sincroniza automaticamente com o servidor quando você conecta à internet.</p>
+        
+        <div class="success">
+            <strong>ℹ️ Informação Importante:</strong><br>
+            Você não precisa fazer absolutamente NADA! O sistema funciona 100% automático. Basta reconectar à internet que tudo é sincronizado.
+        </div>
+        
+        <h2>6. Tipos de Solicitação Disponíveis</h2>
+        <p>No portal, você verá 3 opções de serviços. Selecione o tipo correto para agilizar o atendimento:</p>
+        <h3>🔧 Manutenção</h3>
+        <p>Problemas de equipamento, elétrica, hidráulica, ar-condicionado, tomadas, lâmpadas, vazamentos, etc.</p>
+        <h3>🧹 Higienização</h3>
+        <p>Limpeza do quarto, troca de enxoval (lençol, toalha), higienização do ambiente, desinfecção, etc.</p>
+        <h3>🛏️ Hotelaria</h3>
+        <p>Conforto, itens de apoio (travesseiro extra, cobertor, etc.), serviços diversos de hotelaria, etc.</p>
+        
+        <h2>7. Como Abrir uma Nova Solicitação</h2>
+        <h3>Passo a Passo Completo:</h3>
+        <ol>
+            <li>Clique no <strong>card do serviço desejado</strong></li>
+            <li>Preencha os campos com suas informações</li>
+            <li>Revise as informações digitadas</li>
+            <li>Clique em <strong>"Enviar Solicitação"</strong></li>
+            <li>Pronto! Você receberá confirmação</li>
+        </ol>
+        
+        <h2>12. FAQ - Perguntas Frequentes</h2>
+        
+        <table>
+            <thead>
+                <tr>
+                    <th>Problema</th>
+                    <th>Solução</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>Não consigo entrar</td>
+                    <td>Email/senha corretos? → "Esqueci minha senha" → Atualize (Ctrl+F5)</td>
+                </tr>
+                <tr>
+                    <td>App não instala</td>
+                    <td>Chrome/Edge/Safari? → Faça login → Procure "Instalar"</td>
+                </tr>
+                <tr>
+                    <td>Não recebo notificações</td>
+                    <td>Permitiu notificações? → Verificar configurações do app</td>
+                </tr>
+                <tr>
+                    <td>App lento/travado</td>
+                    <td>Limpe cache (Ctrl+Shift+Del) → Feche e reabra</td>
+                </tr>
+            </tbody>
+        </table>
+        
+        <div class="quick-summary">
+            <h3>📋 Resumo Rápido</h3>
+            <h4>✅ Para Começar:</h4>
+            <ol>
+                <li>Acesse: https://clinicasyuna.github.io/yuna/acompanhantes/</li>
+                <li>Faça login (e-mail e senha)</li>
+                <li>Clique em "Instalar" ← <strong>Recomendado!</strong></li>
+                <li>Permita notificações ← <strong>Recomendado!</strong></li>
+            </ol>
+        </div>
+        
+        <hr>
+        
+        <div class="footer">
+            <strong>Informações do Manual</strong><br><br>
+            <strong>Versão:</strong> 2.0 (PWA Edition)<br>
+            <strong>Data de Atualização:</strong> 11/05/2026<br>
+            <strong>Sistema:</strong> YUNA - Portal dos Acompanhantes<br>
+            <strong>URL do Portal:</strong> https://clinicasyuna.github.io/yuna/acompanhantes/
+        </div>
+    </div>
 </body>
 </html>
