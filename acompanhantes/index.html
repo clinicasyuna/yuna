@@ -1859,6 +1859,9 @@
     
     <!-- Push Notifications: Real-time status updates -->
     <script src="./pwa-push-notifications.js?v=20260511-001"></script>
+
+    <!-- Push Token Management: Store tokens in Firestore for Cloud Functions -->
+    <script src="./pwa-push-token-management.js?v=20260511-001"></script>
     
     <!-- Deep Linking: Open specific requests via URL -->
     <script src="./pwa-deep-linking.js?v=20260511-001"></script>
@@ -2183,7 +2186,17 @@
                   }
                 }
                 
-                // 2. Inicializar push notifications (com Firestore listeners)
+                // 2. Inicializar gerenciador de tokens push (Phase 3)
+                if (window.initYunaPushTokenManager && window.db) {
+                  try {
+                    const messaging = firebase.messaging?.();
+                    await initYunaPushTokenManager(messaging, window.db);
+                  } catch (error) {
+                    console.warn('[PWA] Token manager erro:', error);
+                  }
+                }
+
+                // 3. Inicializar push notifications (com Firestore listeners)
                 if (window.initYunaPushNotifications && window.db) {
                   try {
                     const messaging = firebase.messaging?.();
@@ -2193,23 +2206,23 @@
                   }
                 }
                 
-                // 3. Inicializar deep linking
+                // 4. Inicializar deep linking
                 if (window.initYunaDeepLinking) {
                   await initYunaDeepLinking();
                 }
 
-                // 4. Inicializar offline sync (Fase 2)
+                // 5. Inicializar offline sync (Fase 2)
                 if (window.initYunaOfflineSync) {
                   await initYunaOfflineSync();
                   console.log('[PWA] ✅ Offline sync ativo - pode criar solicitações offline');
                 }
                 
-                // 5. Engagement já auto-inicializa, mas notificar que estamos prontos
+                // 6. Engagement já auto-inicializa, mas notificar que estamos prontos
                 if (window.yunaEngagement) {
                   window.yunaEngagement.trackUsage('app_opened', { userEmail: user.email });
                 }
                 
-                console.log('[PWA] ✅ Todos os módulos PWA inicializados (offline sync ativo)');
+                console.log('[PWA] ✅ Todos os módulos PWA inicializados (Phase 3 ativo)');
             } else {
                 console.warn('👤 Usuário não logado (onAuthStateChanged)');
                 showAuthSection();

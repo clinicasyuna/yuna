@@ -205,6 +205,337 @@ exports.notifyImminentSlaBreaches = functions
                     data: {
                         url: PUSH_CONFIG.adminUrl,
                         tag: `sla-${solicitacao.id}`,
+                        requireInteraction: 'true'
+                    }
+                });
+
+                console.log(`[PUSH] Notificações de SLA enviadas: ${response.successCount} sucesso, ${response.failureCount} falhas`);
+
+                // Remover tokens inválidos
+                response.responses.forEach((resp, idx) => {
+                    if (!resp.success && isInvalidTokenError(resp.error?.code)) {
+                        invalidTokens.push(destinatarios[idx].id);
+                    }
+                });
+            } catch (error) {
+                console.error('[PUSH] Erro ao enviar notificações:', error);
+            }
+
+            // Limpar tokens inválidos
+            for (const tokenId of invalidTokens) {
+                try {
+                    await db.collection('admin_push_tokens').doc(tokenId).delete();
+                } catch (error) {
+                    console.warn('[PUSH] Erro ao deletar token:', error);
+                }
+            }
+        }
+
+        return null;
+    });
+
+/**
+ * 🚀 PHASE 3: NOTIFICAÇÕES DE STATUS CHANGE
+ * 
+ * Monitorar mudanças de status em solicitações e notificar acompanhantes
+ * Estados monitorados: pendente → em-andamento → finalizada
+ */
+exports.notifyStatusChange = functions
+    .region('southamerica-east1')
+    .firestore
+    .document('solicitacoes/{solicitacaoId}')
+    .onUpdate(async (change, context) => {
+        try {
+            const before = change.before.data();
+            const after = change.after.data();
+            const solicitacaoId = context.params.solicitacaoId;
+
+            // Verificar se status mudou
+            if (before.status === after.status) {
+                return null;
+            }
+
+            console.log(`[NOTIFY] Status mudou: ${before.status} → ${after.status} (${solicitacaoId})`);
+
+            // Obter token do acompanhante
+            const userEmail = after.usuarioEmail || after.userEmail;
+            if (!userEmail) {
+                console.warn('[NOTIFY] Email do usuário não encontrado');
+                return null;
+            }
+
+            // Buscar documentos push token do acompanhante
+            const tokensSnapshot = await db
+                .collection('acompanhantes_push_tokens')
+                .where('email', '==', userEmail)
+                .where('enabled', '==', true)
+                .get();
+
+            if (tokensSnapshot.empty) {
+                console.log('[NOTIFY] Nenhum token encontrado para:', userEmail);
+                return null;
+            }
+
+            const tokens = tokensSnapshot.docs
+                .map(doc => doc.data().token)
+                .filter(Boolean);
+
+            if (!tokens.length) {
+                return null;
+            }
+
+            // Montar notificação baseada no novo status
+            let notification = {};
+            let notificationData = {
+                solicitacaoId: solicitacaoId,
+                statusAnterior: before.status,
+                statusNovo: after.status,
+                url: `/?solicitacao=${solicitacaoId}`
+            };
+
+            switch (after.status) {
+                case 'em-andamento':
+                    notification = {
+                        title: '👷 Equipe começou a atender',
+                        body: `Sua solicitação de ${after.tipo || 'serviço'} está sendo atendida.`
+                    };
+                    notificationData.action = 'view_status';
+                    break;
+
+                case 'finalizada':
+                    notification = {
+                        title: '✅ Serviço Finalizado!',
+                        body: `Sua solicitação de ${after.tipo || 'serviço'} foi concluída. Clique para avaliar.`,
+                        requireInteraction: 'true'
+                    };
+                    notificationData.action = 'avaliar';
+                    break;
+
+                case 'cancelada':
+                    notification = {
+                        title: '❌ Solicitação Cancelada',
+                        body: `Sua solicitação de ${after.tipo || 'serviço'} foi cancelada.`
+                    };
+                    break;
+
+                default:
+                    return null;
+            }
+
+            // Enviar notificações
+            const response = await admin.messaging().sendEachForMulticast({
+                tokens,
+                notification,
+                data: notificationData,
+                webpush: {
+                    fcmOptions: {
+                        link: notificationData.url
+                    }
+                }
+            });
+
+            console.log(`[NOTIFY] Status ${after.status}: ${response.successCount} enviadas, ${response.failureCount} falhas`);
+
+            // Limpar tokens inválidos
+            response.responses.forEach((resp, idx) => {
+                if (!resp.success && isInvalidTokenError(resp.error?.code)) {
+                    tokensSnapshot.docs[idx].ref.delete().catch(err => {
+                        console.warn('[NOTIFY] Erro ao deletar token:', err);
+                    });
+                }
+            });
+
+            return null;
+
+        } catch (error) {
+            console.error('[NOTIFY] Erro ao processar mudança de status:', error);
+            return null;
+        }
+    });
+
+/**
+ * 🚀 PHASE 3: NOTIFICAÇÕES DE PAUSA DE SLA
+ * 
+ * Notificar acompanhantes quando SLA é pausado ou retomado
+ */
+exports.notifySLAPause = functions
+    .region('southamerica-east1')
+    .firestore
+    .document('solicitacoes/{solicitacaoId}')
+    .onUpdate(async (change, context) => {
+        try {
+            const before = change.before.data();
+            const after = change.after.data();
+            const solicitacaoId = context.params.solicitacaoId;
+
+            // Verificar se slaEmPausa mudou
+            const pausouAgora = !before.slaEmPausa && after.slaEmPausa;
+            const retomouAgora = before.slaEmPausa && !after.slaEmPausa;
+
+            if (!pausouAgora && !retomouAgora) {
+                return null;
+            }
+
+            console.log(`[PAUSE-NOTIFY] SLA ${pausouAgora ? 'pausado' : 'retomado'}: ${solicitacaoId}`);
+
+            // Obter email do acompanhante
+            const userEmail = after.usuarioEmail || after.userEmail;
+            if (!userEmail) {
+                console.warn('[PAUSE-NOTIFY] Email do usuário não encontrado');
+                return null;
+            }
+
+            // Buscar tokens do acompanhante
+            const tokensSnapshot = await db
+                .collection('acompanhantes_push_tokens')
+                .where('email', '==', userEmail)
+                .where('enabled', '==', true)
+                .get();
+
+            if (tokensSnapshot.empty) {
+                return null;
+            }
+
+            const tokens = tokensSnapshot.docs
+                .map(doc => doc.data().token)
+                .filter(Boolean);
+
+            if (!tokens.length) {
+                return null;
+            }
+
+            // Montar notificação
+            let notification = {};
+            let notificationData = {
+                solicitacaoId: solicitacaoId,
+                url: `/?solicitacao=${solicitacaoId}`
+            };
+
+            if (pausouAgora) {
+                const motivo = after.pausaAtiva?.motivo || 'Ajuste operacional';
+                notification = {
+                    title: '⏸️ Atendimento em Pausa',
+                    body: `Motivo: ${motivo.substring(0, 60)}...`,
+                    requireInteraction: 'true'
+                };
+                notificationData.action = 'view_pause';
+            } else {
+                notification = {
+                    title: '▶️ Atendimento Retomado',
+                    body: 'Sua solicitação voltou à fila de atendimento.'
+                };
+                notificationData.action = 'view_status';
+            }
+
+            // Enviar notificações
+            const response = await admin.messaging().sendEachForMulticast({
+                tokens,
+                notification,
+                data: notificationData
+            });
+
+            console.log(`[PAUSE-NOTIFY] Notificações enviadas: ${response.successCount} sucesso, ${response.failureCount} falhas`);
+
+            // Limpar tokens inválidos
+            response.responses.forEach((resp, idx) => {
+                if (!resp.success && isInvalidTokenError(resp.error?.code)) {
+                    tokensSnapshot.docs[idx].ref.delete().catch(err => {
+                        console.warn('[PAUSE-NOTIFY] Erro ao deletar token:', err);
+                    });
+                }
+            });
+
+            return null;
+
+        } catch (error) {
+            console.error('[PAUSE-NOTIFY] Erro ao processar pausa de SLA:', error);
+            return null;
+        }
+    });
+
+/**
+ * 🚀 PHASE 3: NOTIFICAÇÕES DE PESQUISA DE SATISFAÇÃO
+ * 
+ * Notificar acompanhantes 7 dias após solicitação finalizada para avaliar
+ */
+exports.notifySatisfactionSurvey = functions
+    .region('southamerica-east1')
+    .pubsub
+    .schedule('every 24 hours')
+    .timeZone('America/Sao_Paulo')
+    .onRun(async () => {
+        try {
+            const agora = new Date();
+            const seteDialsAtras = new Date(agora.getTime() - 7 * 24 * 60 * 60 * 1000);
+
+            // Buscar solicitações finalizadas há ~7 dias e ainda não avaliadas
+            const solicitacoesSnapshot = await db
+                .collection('solicitacoes')
+                .where('status', '==', 'finalizada')
+                .where('avaliada', '==', false)
+                .where('finalizadoEm', '<=', admin.firestore.Timestamp.fromDate(agora))
+                .where('finalizadoEm', '>=', admin.firestore.Timestamp.fromDate(seteDialsAtras))
+                .get();
+
+            console.log(`[SURVEY-NOTIFY] Encontradas ${solicitacoesSnapshot.size} solicitações para avaliar`);
+
+            for (const solicitacaoDoc of solicitacoesSnapshot.docs) {
+                const solicitacao = { id: solicitacaoDoc.id, ...solicitacaoDoc.data() };
+                const userEmail = solicitacao.usuarioEmail || solicitacao.userEmail;
+
+                if (!userEmail) {
+                    continue;
+                }
+
+                try {
+                    // Buscar tokens do acompanhante
+                    const tokensSnapshot = await db
+                        .collection('acompanhantes_push_tokens')
+                        .where('email', '==', userEmail)
+                        .where('enabled', '==', true)
+                        .get();
+
+                    if (tokensSnapshot.empty) {
+                        continue;
+                    }
+
+                    const tokens = tokensSnapshot.docs
+                        .map(doc => doc.data().token)
+                        .filter(Boolean);
+
+                    if (!tokens.length) {
+                        continue;
+                    }
+
+                    // Enviar notificação de pesquisa
+                    const response = await admin.messaging().sendEachForMulticast({
+                        tokens,
+                        notification: {
+                            title: '⭐ Sua opinião é importante!',
+                            body: 'Como foi sua experiência? Avalie o serviço em menos de 1 minuto.',
+                            requireInteraction: 'true'
+                        },
+                        data: {
+                            solicitacaoId: solicitacao.id,
+                            action: 'avaliar',
+                            url: `/?solicitacao=${solicitacao.id}&avaliar=true`
+                        }
+                    });
+
+                    console.log(`[SURVEY-NOTIFY] Pesquisa enviada para ${solicitacao.id}: ${response.successCount} sucesso`);
+
+                } catch (error) {
+                    console.error(`[SURVEY-NOTIFY] Erro ao notificar ${userEmail}:`, error);
+                }
+            }
+
+            return null;
+
+        } catch (error) {
+            console.error('[SURVEY-NOTIFY] Erro geral:', error);
+            return null;
+        }
+    });
                         equipe: String(solicitacao.equipe || slaConfig.nome),
                         solicitacaoId: String(solicitacao.id),
                         minutosRestantes: String(Math.max(0, Math.ceil(minutosRestantes)))
