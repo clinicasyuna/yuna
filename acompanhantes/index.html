@@ -1624,12 +1624,6 @@
             </div>
 
             <!-- Quick Actions -->
-            <div class="quick-actions">
-                <button class="quick-action-btn secondary" onclick="showHistorico()">
-                    <i class="fas fa-history"></i>
-                    <span>Histórico</span>
-                </button>
-            </div>
         </div>
     </div>
 
@@ -2404,26 +2398,27 @@
                     return;
                 }
                 
-                // Buscar solicitações do usuário (sem orderBy para evitar índice composto)
-                const query = window.db.collection('solicitacoes')
-                    .where('usuarioId', '==', window.auth.currentUser.uid);
+                    // Dupla query para garantir retrocompatibilidade (usuarioId e userId)
+                    const uid = window.auth.currentUser.uid;
+                    const [snap1, snap2] = await Promise.all([
+                        window.db.collection('solicitacoes').where('usuarioId', '==', uid).limit(50).get(),
+                        window.db.collection('solicitacoes').where('userId', '==', uid).limit(50).get()
+                    ]);
                 
-                const snapshot = await query.get();
-                let solicitacoes = [];
-                
-                snapshot.forEach(doc => {
-                    const data = doc.data();
-                    solicitacoes.push({
-                        id: doc.id,
-                        ...data
+                    const solicitacoesMap = new Map();
+                    [snap1, snap2].forEach(snapshot => {
+                        snapshot.forEach(doc => {
+                            solicitacoesMap.set(doc.id, { id: doc.id, ...doc.data() });
                     });
                 });
                 
-                // Ordenar por data no cliente
+                    let solicitacoes = Array.from(solicitacoesMap.values());
+                
+                    // Ordenar por data (criadoEm prioritário, fallback para dataAbertura)
                 solicitacoes.sort((a, b) => {
-                    const dataA = a.dataAbertura ? a.dataAbertura.seconds : 0;
-                    const dataB = b.dataAbertura ? b.dataAbertura.seconds : 0;
-                    return dataB - dataA; // Mais recente primeiro
+                        const dataA = a.criadoEm ? (a.criadoEm.seconds || 0) : (a.dataAbertura ? (a.dataAbertura.seconds || 0) : 0);
+                        const dataB = b.criadoEm ? (b.criadoEm.seconds || 0) : (b.dataAbertura ? (b.dataAbertura.seconds || 0) : 0);
+                        return dataB - dataA;
                 });
                 
                 // Filtrar por status
