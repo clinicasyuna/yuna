@@ -9457,12 +9457,6 @@ function preencherDetalhesModal(solicitacao, dadosAcompanhante) {
             }
             
             if (solicitacao.status === 'em-andamento') {
-                botoesHTML += `
-                    <button onclick="alterarStatusSolicitacao('${solicitacao.id}', 'pendente')" 
-                            style="background: #dc2626; color: white; border: none; padding: 6px 12px; border-radius: 4px; cursor: pointer;">
-                        <i class="fas fa-pause" style="margin-right: 4px;"></i>Pausar
-                    </button>`;
-                
                 // Botões de SLA
                 if (solicitacao.slaEmPausa) {
                     botoesHTML += `
