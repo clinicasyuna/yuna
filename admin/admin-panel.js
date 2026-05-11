@@ -8890,8 +8890,9 @@ function renderizarCardsEquipe(equipes) {
                         // Verificar se usuário pode interagir com esta solicitação ou apenas visualizar
                         const usuarioAdmin = window.usuarioAdmin || JSON.parse(localStorage.getItem('usuarioAdmin') || '{}');
                         const podeInteragir = usuarioAdmin.role === 'super_admin' || 
+                                            usuarioAdmin.role === 'admin' ||
                                             (usuarioAdmin.isEquipe && usuarioAdmin.equipe === solicitacao.equipe);
-                        const apenasVisualizar = usuarioAdmin.role === 'admin' && !usuarioAdmin.isEquipe;
+                        const apenasVisualizar = false;
                         const statusBase = solicitacao.status || 'pendente';
                         const solicitacaoEmPausa = statusBase !== 'finalizada' && Boolean(solicitacao.slaEmPausa || solicitacao.pausaAtiva);
                         const statusVisual = statusBase === 'finalizada' ? 'finalizada' : (solicitacaoEmPausa ? 'em-pausa' : statusBase);
@@ -9464,7 +9465,8 @@ function preencherDetalhesModal(solicitacao, dadosAcompanhante) {
         const usuarioAdmin = window.usuarioAdmin || JSON.parse(localStorage.getItem('usuarioAdmin') || '{}');
         const isEquipe = usuarioAdmin && (usuarioAdmin.role === 'equipe' || usuarioAdmin.isEquipe);
         const isSuperAdmin = usuarioAdmin && usuarioAdmin.role === 'super_admin';
-        const podeAlterar = (isEquipe && usuarioAdmin.equipe === solicitacao.equipe) || isSuperAdmin;
+        const isAdmin = usuarioAdmin && usuarioAdmin.role === 'admin';
+        const podeAlterar = (isEquipe && usuarioAdmin.equipe === solicitacao.equipe) || isSuperAdmin || isAdmin;
         
         console.log('🎯 MODAL DEBUG:', {
             usuarioAdmin: usuarioAdmin,
@@ -11116,13 +11118,7 @@ window.aplicarFiltrosSatisfacao = aplicarFiltrosSatisfacao;
 
 // Função para mostrar informações de visualização para administradores
 function mostrarInfoVisualizacao(solicitacaoId) {
-    const usuarioAdmin = window.usuarioAdmin || JSON.parse(localStorage.getItem('usuarioAdmin') || '{}');
-    
-    if (usuarioAdmin.role === 'admin') {
-        showToast('Informação', 'Como administrador, você pode visualizar todas as solicitações, mas não pode interagir com elas. Apenas as equipes responsáveis podem dar atendimento às solicitações.', 'info', 5000);
-    } else {
-        showToast('Aviso', 'Você não tem permissão para interagir com esta solicitação.', 'warning');
-    }
+    showToast('Aviso', 'Você não tem permissão para interagir com esta solicitação.', 'warning');
 }
 
 window.mostrarInfoVisualizacao = mostrarInfoVisualizacao;
