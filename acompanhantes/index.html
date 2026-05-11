@@ -1850,9 +1850,57 @@
     <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-messaging-compat.js"></script>
     <script src="../security-audit.js"></script>
 
+    <!-- 🚀 PWA Enhancement Module v2 (11/05/2026) -->
+    <!-- Persistence Layer: Offline data storage -->
+    <script src="./pwa-persistence.js?v=20260511-001"></script>
+    
+    <!-- Push Notifications: Real-time status updates -->
+    <script src="./pwa-push-notifications.js?v=20260511-001"></script>
+    
+    <!-- Deep Linking: Open specific requests via URL -->
+    <script src="./pwa-deep-linking.js?v=20260511-001"></script>
+    
+    <!-- Engagement: Install prompts, badges, sharing -->
+    <script src="./pwa-engagement.js?v=20260511-001"></script>
+
     <script>
+        // === 🚀 PWA INITIALIZATION (11/05/2026) ===
+        // Registrar Service Worker para offline-first caching
+        if ('serviceWorker' in navigator) {
+          window.addEventListener('load', async () => {
+            try {
+              const registration = await navigator.serviceWorker.register('./service-worker.js', {
+                scope: '/acompanhantes/'
+              });
+              console.log('[PWA] ✅ Service Worker registrado:', registration);
+              
+              // Check for updates a cada 1 hora
+              setInterval(() => {
+                registration.update();
+              }, 60 * 60 * 1000);
+              
+              // Notificar se nova versão está disponível
+              registration.addEventListener('updatefound', () => {
+                const newWorker = registration.installing;
+                newWorker.addEventListener('statechange', () => {
+                  if (newWorker.state === 'activated') {
+                    console.log('[PWA] Nova versão disponível!');
+                    if (window.yunaEngagement) {
+                      window.yunaEngagement.trackUsage('pwa_update_available');
+                    }
+                  }
+                });
+              });
+              
+            } catch (error) {
+              console.warn('[PWA] Erro ao registrar Service Worker:', error);
+            }
+          });
+        }
+
         // === SISTEMA DE TIMEOUT DE SESSÃO ===
         let sessionTimeout;
         let warningTimeout;
@@ -2115,6 +2163,44 @@
                 
                 // Inicializar sistema de timeout de sessão
                 initializeSessionTimeout();
+
+                // 🚀 === PWA INITIALIZATION AFTER LOGIN ===
+                console.log('[PWA] Inicializando módulos PWA após login...');
+                
+                // 1. Inicializar persistência offline
+                if (window.initYunaPersistence) {
+                  const persistence = await initYunaPersistence();
+                  if (persistence && user.uid) {
+                    // Salvar dados do usuário
+                    await persistence.saveUsuario({
+                      uid: user.uid,
+                      email: user.email,
+                      lastLogin: new Date().toISOString()
+                    });
+                  }
+                }
+                
+                // 2. Inicializar push notifications (com Firestore listeners)
+                if (window.initYunaPushNotifications && window.db) {
+                  try {
+                    const messaging = firebase.messaging?.();
+                    await initYunaPushNotifications(messaging, window.db, user.uid);
+                  } catch (error) {
+                    console.warn('[PWA] Push notifications não disponível:', error);
+                  }
+                }
+                
+                // 3. Inicializar deep linking
+                if (window.initYunaDeepLinking) {
+                  await initYunaDeepLinking();
+                }
+                
+                // 4. Engagement já auto-inicializa, mas notificar que estamos prontos
+                if (window.yunaEngagement) {
+                  window.yunaEngagement.trackUsage('app_opened', { userEmail: user.email });
+                }
+                
+                console.log('[PWA] ✅ Todos os módulos PWA inicializados');
             } else {
                 console.warn('👤 Usuário não logado (onAuthStateChanged)');
                 showAuthSection();
