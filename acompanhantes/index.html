@@ -1866,6 +1866,9 @@
     <!-- Engagement: Install prompts, badges, sharing -->
     <script src="./pwa-engagement.js?v=20260511-001"></script>
 
+    <!-- Phase 2: Offline Sync - Create requests offline & auto-sync -->
+    <script src="./pwa-offline-sync.js?v=20260511-002"></script>
+
     <script>
         // === 🚀 PWA INITIALIZATION (11/05/2026) ===
         // Registrar Service Worker para offline-first caching
@@ -2194,13 +2197,19 @@
                 if (window.initYunaDeepLinking) {
                   await initYunaDeepLinking();
                 }
+
+                // 4. Inicializar offline sync (Fase 2)
+                if (window.initYunaOfflineSync) {
+                  await initYunaOfflineSync();
+                  console.log('[PWA] ✅ Offline sync ativo - pode criar solicitações offline');
+                }
                 
-                // 4. Engagement já auto-inicializa, mas notificar que estamos prontos
+                // 5. Engagement já auto-inicializa, mas notificar que estamos prontos
                 if (window.yunaEngagement) {
                   window.yunaEngagement.trackUsage('app_opened', { userEmail: user.email });
                 }
                 
-                console.log('[PWA] ✅ Todos os módulos PWA inicializados');
+                console.log('[PWA] ✅ Todos os módulos PWA inicializados (offline sync ativo)');
             } else {
                 console.warn('👤 Usuário não logado (onAuthStateChanged)');
                 showAuthSection();
