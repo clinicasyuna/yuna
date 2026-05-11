@@ -1872,6 +1872,9 @@
     <!-- Phase 2: Offline Sync - Create requests offline & auto-sync -->
     <script src="./pwa-offline-sync.js?v=20260511-002"></script>
 
+    <!-- Phase 4: Analytics & Engagement Metrics -->
+    <script src="./pwa-analytics.js?v=20260511-001"></script>
+
     <script>
         // === 🚀 PWA INITIALIZATION (11/05/2026) ===
         // Registrar Service Worker para offline-first caching
@@ -2216,13 +2219,19 @@
                   await initYunaOfflineSync();
                   console.log('[PWA] ✅ Offline sync ativo - pode criar solicitações offline');
                 }
+
+                // 6. Inicializar analytics (Phase 4)
+                if (window.initYunaAnalytics && window.db) {
+                  await initYunaAnalytics(window.db);
+                  console.log('[PWA] ✅ Analytics ativo - rastreando eventos');
+                }
                 
-                // 6. Engagement já auto-inicializa, mas notificar que estamos prontos
+                // 7. Engagement já auto-inicializa, mas notificar que estamos prontos
                 if (window.yunaEngagement) {
                   window.yunaEngagement.trackUsage('app_opened', { userEmail: user.email });
                 }
                 
-                console.log('[PWA] ✅ Todos os módulos PWA inicializados (Phase 3 ativo)');
+                console.log('[PWA] ✅ Todos os módulos PWA inicializados (Phase 4 - Analytics ativo)');
             } else {
                 console.warn('👤 Usuário não logado (onAuthStateChanged)');
                 showAuthSection();
