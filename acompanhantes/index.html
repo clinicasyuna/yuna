@@ -2440,8 +2440,8 @@
                     corHeader = '#3b82f6';
                     iconeHeader = '📊';
                 } else if (status === 'pendente') {
-                    solicitacoesFiltradas = solicitacoes.filter(s => s.status === 'pendente');
-                    tituloModal = 'Solicitações Pendentes';
+                    solicitacoesFiltradas = solicitacoes.filter(s => s.status === 'pendente' || s.status === 'em-andamento');
+                    tituloModal = 'Solicitações em Andamento';
                     corHeader = '#f59e0b';
                     iconeHeader = '⏰';
                 } else if (status === 'finalizada') {
@@ -2496,7 +2496,9 @@
                             new Date(sol.dataAbertura.seconds * 1000).toLocaleString('pt-BR') : 
                             'Data não disponível';
                         
-                        const statusInfo = getStatusInfo(sol.status);
+                        const statusInfo = sol.slaEmPausa 
+                            ? { texto: '⏸️ SLA em Pausa', cor: '#8b5cf6' } 
+                            : getStatusInfo(sol.status);
                         const tipoIcon = getTipoIcon(sol.tipo || sol.equipe);
                         
                         return `
@@ -2524,6 +2526,14 @@
                                     <div style="background: #f9fafb; padding: 12px; border-radius: 8px; margin-bottom: 12px;">
                                         <p style="margin: 0; font-size: 14px; color: #374151; line-height: 1.4;">
                                             ${sol.descricao}
+                                        </p>
+                                    </div>
+                                ` : ''}
+                                
+                                ${sol.slaEmPausa && sol.motivoPausa ? `
+                                    <div style="background: #f3e8ff; padding: 10px 12px; border-radius: 8px; margin-bottom: 12px; border-left: 3px solid #8b5cf6;">
+                                        <p style="margin: 0; font-size: 13px; color: #7c3aed; line-height: 1.4;">
+                                            <strong>⏸️ Motivo da pausa:</strong> ${sol.motivoPausa}
                                         </p>
                                     </div>
                                 ` : ''}
@@ -2578,7 +2588,8 @@
         function getStatusInfo(status) {
             const statusMap = {
                 'pendente': { texto: 'Pendente', cor: '#f59e0b' },
-                'em-andamento': { texto: 'Em Andamento', cor: '#3b82f6' },
+                'em-andamento': { texto: 'Em Atendimento', cor: '#3b82f6' },
+                'em-pausa': { texto: '⏸️ SLA em Pausa', cor: '#8b5cf6' },
                 'finalizada': { texto: 'Concluída', cor: '#10b981' },
                 'cancelada': { texto: 'Cancelada', cor: '#6b7280' }
             };
@@ -3918,16 +3929,17 @@
                     console.log('[DEBUG-HISTORICO] Processando:', data.id, data.titulo, data.status);
                     
                     const criadoEm = data.criadoEm && data.criadoEm.toDate ? data.criadoEm.toDate() : new Date(data.criadoEm);
+                    const statusEmPausa = data.slaEmPausa === true;
                     const statusClass = {
                         'pendente': 'warning',
-                        'em-andamento': 'info',  // CORRETO: com hífen
+                        'em-andamento': statusEmPausa ? 'pausa' : 'info',
                         'finalizada': 'success',
                         'cancelada': 'danger'
                     };
 
                     const statusTexto = {
                         'pendente': 'Pendente',
-                        'em-andamento': 'Em Andamento',  // CORRETO: com hífen
+                        'em-andamento': statusEmPausa ? '⏸️ SLA em Pausa' : 'Em Atendimento',
                         'finalizada': 'Finalizada',
                         'cancelada': 'Cancelada'
                     };
@@ -3955,15 +3967,25 @@
                     const tipoServico = data.equipe || data.tipoServico || 'manutencao';
                     const tituloDisplay = data.titulo || tipoServicoTexto[tipoServico] || tipoServico;
 
+                    const badgeCorMap = {
+                        'pendente': '#f59e0b',
+                        'em-andamento': statusEmPausa ? '#8b5cf6' : '#3b82f6',
+                        'finalizada': '#10b981',
+                        'cancelada': '#6b7280'
+                    };
+                    const badgeCor = badgeCorMap[data.status] || '#f59e0b';
+                    const borderCor = statusEmPausa && data.status === 'em-andamento' ? '#8b5cf6' : (badgeCorMap[data.status] || '#f59e0b');
+
                     historicoItens += `
-                        <div class="historico-item" style="border: 1px solid #e5e7eb; border-radius: 8px; padding: 16px; margin-bottom: 12px; background: white;">
+                        <div class="historico-item" style="border: 1px solid #e5e7eb; border-left: 4px solid ${borderCor}; border-radius: 8px; padding: 16px; margin-bottom: 12px; background: white;">
                             <div style="display: flex; justify-content: space-between; margin-bottom: 8px;">
                                 <strong style="color: #374151;">${tituloDisplay}</strong>
-                                <span class="status-badge status-${statusClass[data.status] || 'warning'}" style="padding: 4px 8px; border-radius: 12px; font-size: 12px; font-weight: bold;">
+                                <span style="background: ${badgeCor}; color: white; padding: 4px 8px; border-radius: 12px; font-size: 12px; font-weight: bold;">
                                     ${statusTexto[data.status] || data.status}
                                 </span>
                             </div>
                             <p style="margin: 8px 0; color: #6b7280;"><strong>Descrição:</strong> ${descricaoTexto}</p>
+                            ${statusEmPausa && data.motivoPausa ? `<p style="margin: 8px 0; color: #7c3aed; background: #f3e8ff; padding: 8px 12px; border-radius: 6px; font-size: 13px;"><strong>⏸️ Motivo da pausa:</strong> ${data.motivoPausa}</p>` : ''}
                             <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-top: 12px;">
                                 <small style="color: #9ca3af;"><strong>Criado em:</strong> ${criadoEm.toLocaleDateString('pt-BR')} às ${criadoEm.toLocaleTimeString('pt-BR')}</small>
                                 ${data.finalizadoEm ? `<small style="color: #9ca3af;"><strong>Finalizado em:</strong> ${data.finalizadoEm.toDate ? data.finalizadoEm.toDate().toLocaleDateString('pt-BR') + ' às ' + data.finalizadoEm.toDate().toLocaleTimeString('pt-BR') : new Date(data.finalizadoEm).toLocaleDateString('pt-BR')}</small>` : ''}
