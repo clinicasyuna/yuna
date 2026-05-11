@@ -3202,7 +3202,7 @@ async function carregarDadosDashboard() {
     console.log('[DASHBOARD] 🔄 Carregando dados do dashboard...');
     
     // ========== FASE 4: CACHE DE DASHBOARD (5 MIN TTL) ==========
-    const CACHE_KEY = 'yuna_dashboard_cache';
+    const CACHE_KEY = 'yuna_dashboard_cache_v2';
     const CACHE_TTL = 5 * 60 * 1000; // 5 minutos
     const now = Date.now();
     
@@ -3275,6 +3275,29 @@ async function carregarDadosDashboard() {
     }
 }
 
+function normalizarDepartamentoDashboard(solicitacao) {
+    // Fonte principal: equipe (mesma base da tela inicial); fallback para campos legados.
+    const bruto =
+        solicitacao?.equipe ||
+        solicitacao?.tipoServico ||
+        solicitacao?.tipo_servico ||
+        solicitacao?.departamento ||
+        '';
+
+    const texto = String(bruto)
+        .normalize('NFD')
+        .replace(/[\u0300-\u036f]/g, '')
+        .toLowerCase()
+        .trim();
+
+    if (!texto) return null;
+    if (texto.includes('manutenc')) return 'manutencao';
+    if (texto.includes('higien')) return 'higienizacao';
+    if (texto.includes('hotel')) return 'hotelaria';
+
+    return null;
+}
+
 function calcularMetricasDashboard(solicitacoes) {
     console.log('[DASHBOARD] 🧮 Calculando métricas...');
     
@@ -3293,7 +3316,7 @@ function calcularMetricasDashboard(solicitacoes) {
     
     solicitacoes.forEach(sol => {
         const status = sol.status || 'pendente';
-        const departamento = sol.tipo_servico || sol.departamento || 'manutencao';
+        const departamento = normalizarDepartamentoDashboard(sol);
         
         // Contar status geral
         if (status === 'pendente') metricas.pendentes++;
@@ -3424,12 +3447,19 @@ function renderizarGraficoDepartamentos(solicitacoes) {
         'Higienização': 0,
         'Hotelaria': 0
     };
+
+    const chaveParaNome = {
+        manutencao: 'Manutenção',
+        higienizacao: 'Higienização',
+        hotelaria: 'Hotelaria'
+    };
     
     solicitacoes.forEach(sol => {
-        const tipo = sol.tipo_servico || sol.departamento || '';
-        if (tipo.includes('manutencao')) departamentos['Manutenção']++;
-        else if (tipo.includes('higienizacao')) departamentos['Higienização']++;
-        else if (tipo.includes('hotelaria')) departamentos['Hotelaria']++;
+        const departamento = normalizarDepartamentoDashboard(sol);
+        const nomeDepartamento = chaveParaNome[departamento];
+        if (nomeDepartamento) {
+            departamentos[nomeDepartamento]++;
+        }
     });
     
     // Destruir gráfico anterior se existir
