@@ -8860,6 +8860,10 @@ function renderizarCardsEquipe(equipes) {
                     </select>
                 </div>
                 <div class="filter-group">
+                    <label for="filter-busca-${equipe}">Busca:</label>
+                    <input id="filter-busca-${equipe}" class="filter-input" type="text" placeholder="Nº da solicitação" oninput="filtrarSolicitacoesPorTexto('${equipe}', this.value)">
+                </div>
+                <div class="filter-group">
                     <button class="filter-clear-btn" onclick="limparFiltrosSolicitacoes('${equipe}')" title="Limpar filtros">
                         <i class="fas fa-refresh"></i> Limpar
                     </button>
@@ -8900,6 +8904,7 @@ function renderizarCardsEquipe(equipes) {
                         
                             return `<div class="solicitacao-card ${apenasVisualizar ? 'visualizacao-apenas' : ''}" 
                              data-id="${solicitacao.id}"
+                             data-numero-solicitacao="${solicitacao.numeroSolicitacao || ''}"
                              data-solicitacao='${JSON.stringify(solicitacao).replace(/'/g, '&apos;')}' 
                              data-equipe="${equipe}" 
                              data-index="${index}" 
@@ -8939,6 +8944,16 @@ function renderizarCardsEquipe(equipes) {
                             </div>
                             
                             <div class="card-details">
+                                ${(() => {
+                                    const numero = solicitacao.numeroSolicitacao || (solicitacao.id ? `DOC-${String(solicitacao.id).slice(-6).toUpperCase()}` : 'N/A');
+                                    return `
+                                        <div class="card-detail">
+                                            <i class="fas fa-hashtag"></i>
+                                            <span>Nº ${numero}</span>
+                                        </div>
+                                    `;
+                                })()}
+
                                 ${(solicitacao.quartoAcompanhante || solicitacao.quarto) && 
                                   (solicitacao.quartoAcompanhante || solicitacao.quarto) !== 'N/A' ? `
                                     <div class="card-detail">
@@ -13056,75 +13071,85 @@ window.forceRemoveDebugButtons = function() {
 // Filtrar solicitações por status
 window.filtrarSolicitacoesPorStatus = function(equipe, status) {
     console.log(`[FILTRO] Filtrando equipe ${equipe} por status: ${status}`);
-    
-    const content = document.getElementById(`content-${equipe}`);
-    if (!content) return;
-    
-    const cards = content.querySelectorAll('.solicitacao-card');
-    let visibleCount = 0;
-    
-    cards.forEach(card => {
-        const cardStatus = card.getAttribute('data-status') || 'pendente';
-        const cardSlaEmPausa = card.getAttribute('data-sla-pausa') === 'true';
 
-        let shouldShow = false;
-        if (status === 'todos') {
-            shouldShow = true;
-        } else if (status === 'em-pausa') {
-            shouldShow = cardStatus === 'em-andamento' && cardSlaEmPausa;
-        } else if (status === 'em-andamento') {
-            shouldShow = cardStatus === 'em-andamento' && !cardSlaEmPausa;
-        } else {
-            shouldShow = cardStatus === status;
-        }
-        
-        if (shouldShow) {
-            card.style.display = 'block';
-            visibleCount++;
-        } else {
-            card.style.display = 'none';
-        }
-    });
-    
-    // Atualizar contador
-    const badge = document.getElementById(`count-${equipe}`);
-    if (badge) {
-        badge.textContent = status === 'todos' ? cards.length : visibleCount;
+    const statusSelect = document.getElementById(`filter-status-${equipe}`);
+    if (statusSelect && statusSelect.value !== status) {
+        statusSelect.value = status;
     }
-    
-    // Mostrar empty state se necessário
-    atualizarEmptyState(equipe, visibleCount);
+
+    window.aplicarFiltrosSolicitacoes(equipe);
 };
 
 // Filtrar solicitações por prioridade
 window.filtrarSolicitacoesPorPrioridade = function(equipe, prioridade) {
     console.log(`[FILTRO] Filtrando equipe ${equipe} por prioridade: ${prioridade}`);
-    
+
+    const prioridadeSelect = document.getElementById(`filter-prioridade-${equipe}`);
+    if (prioridadeSelect && prioridadeSelect.value !== prioridade) {
+        prioridadeSelect.value = prioridade;
+    }
+
+    window.aplicarFiltrosSolicitacoes(equipe);
+};
+
+// Filtrar solicitações por número/ID
+window.filtrarSolicitacoesPorTexto = function(equipe, termoBusca) {
+    console.log(`[FILTRO] Filtrando equipe ${equipe} por texto: ${termoBusca}`);
+
+    const buscaInput = document.getElementById(`filter-busca-${equipe}`);
+    if (buscaInput && buscaInput.value !== termoBusca) {
+        buscaInput.value = termoBusca;
+    }
+
+    window.aplicarFiltrosSolicitacoes(equipe);
+};
+
+// Aplicar filtros combinados
+window.aplicarFiltrosSolicitacoes = function(equipe) {
     const content = document.getElementById(`content-${equipe}`);
     if (!content) return;
-    
+
     const cards = content.querySelectorAll('.solicitacao-card');
+    const status = (document.getElementById(`filter-status-${equipe}`)?.value || 'todos');
+    const prioridade = (document.getElementById(`filter-prioridade-${equipe}`)?.value || 'todos');
+    const termo = (document.getElementById(`filter-busca-${equipe}`)?.value || '').trim().toLowerCase();
+
     let visibleCount = 0;
-    
+
     cards.forEach(card => {
+        const cardStatus = card.getAttribute('data-status') || 'pendente';
+        const cardSlaEmPausa = card.getAttribute('data-sla-pausa') === 'true';
         const cardPrioridade = card.getAttribute('data-prioridade') || 'normal';
-        const shouldShow = prioridade === 'todos' || cardPrioridade === prioridade;
-        
-        if (shouldShow) {
+        const cardNumero = (card.getAttribute('data-numero-solicitacao') || '').toLowerCase();
+        const cardId = (card.getAttribute('data-id') || '').toLowerCase();
+
+        let statusOk = false;
+        if (status === 'todos') {
+            statusOk = true;
+        } else if (status === 'em-pausa') {
+            statusOk = cardStatus === 'em-andamento' && cardSlaEmPausa;
+        } else if (status === 'em-andamento') {
+            statusOk = cardStatus === 'em-andamento' && !cardSlaEmPausa;
+        } else {
+            statusOk = cardStatus === status;
+        }
+
+        const prioridadeOk = prioridade === 'todos' || cardPrioridade === prioridade;
+        const textoOk = !termo || cardNumero.includes(termo) || cardId.includes(termo);
+
+        if (statusOk && prioridadeOk && textoOk) {
             card.style.display = 'block';
             visibleCount++;
         } else {
             card.style.display = 'none';
         }
     });
-    
-    // Atualizar contador
+
     const badge = document.getElementById(`count-${equipe}`);
     if (badge) {
-        badge.textContent = prioridade === 'todos' ? cards.length : visibleCount;
+        badge.textContent = visibleCount;
     }
-    
-    // Mostrar empty state se necessário
+
     atualizarEmptyState(equipe, visibleCount);
 };
 
@@ -13135,26 +13160,13 @@ window.limparFiltrosSolicitacoes = function(equipe) {
     // Resetar selects
     const statusSelect = document.getElementById(`filter-status-${equipe}`);
     const prioridadeSelect = document.getElementById(`filter-prioridade-${equipe}`);
+    const buscaInput = document.getElementById(`filter-busca-${equipe}`);
     
     if (statusSelect) statusSelect.value = 'todos';
     if (prioridadeSelect) prioridadeSelect.value = 'todos';
-    
-    // Mostrar todos os cards
-    const content = document.getElementById(`content-${equipe}`);
-    if (content) {
-        const cards = content.querySelectorAll('.solicitacao-card');
-        cards.forEach(card => {
-            card.style.display = 'block';
-        });
-        
-        // Resetar contador
-        const badge = document.getElementById(`count-${equipe}`);
-        if (badge) {
-            badge.textContent = cards.length;
-        }
-        
-        atualizarEmptyState(equipe, cards.length);
-    }
+    if (buscaInput) buscaInput.value = '';
+
+    window.aplicarFiltrosSolicitacoes(equipe);
 };
 
 // Função auxiliar para mostrar/esconder empty state
@@ -13226,8 +13238,23 @@ const filterStyles = `
         font-size: 0.9rem;
         min-width: 120px;
     }
+
+    .filter-input {
+        padding: 6px 12px;
+        border: 1px solid #ced4da;
+        border-radius: 4px;
+        background: white;
+        font-size: 0.9rem;
+        min-width: 170px;
+    }
     
     .filter-select:focus {
+        outline: none;
+        border-color: #007bff;
+        box-shadow: 0 0 0 0.2rem rgba(0, 123, 255, 0.25);
+    }
+
+    .filter-input:focus {
         outline: none;
         border-color: #007bff;
         box-shadow: 0 0 0 0.2rem rgba(0, 123, 255, 0.25);
@@ -13265,6 +13292,11 @@ const filterStyles = `
         }
         
         .filter-select {
+            min-width: auto;
+            flex: 1;
+        }
+
+        .filter-input {
             min-width: auto;
             flex: 1;
         }

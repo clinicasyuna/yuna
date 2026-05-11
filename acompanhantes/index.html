@@ -2495,6 +2495,7 @@
                             ? { texto: '⏸️ SLA em Pausa', cor: '#8b5cf6' } 
                             : getStatusInfo(sol.status);
                         const tipoIcon = getTipoIcon(sol.tipo || sol.equipe);
+                        const numeroSolicitacao = sol.numeroSolicitacao || `DOC-${String(sol.id || '').slice(-6).toUpperCase()}`;
                         
                         return `
                             <div style="background: white; border-radius: 12px; padding: 20px; margin-bottom: 12px; box-shadow: 0 2px 8px rgba(0,0,0,0.1); border-left: 4px solid ${statusInfo.cor};">
@@ -2533,7 +2534,8 @@
                                     </div>
                                 ` : ''}
                                 
-                                <div style="display: flex; justify-content: space-between; align-items: center; font-size: 12px; color: #6b7280;">
+                                <div style="display: flex; justify-content: space-between; align-items: center; font-size: 12px; color: #6b7280; gap: 10px; flex-wrap: wrap;">
+                                    <span>🆔 Nº: <strong>${numeroSolicitacao}</strong></span>
                                     <span>📍 Quarto: ${sol.quarto || 'N/A'}</span>
                                     <span>👥 ${sol.equipe || 'Equipe não definida'}</span>
                                 </div>
@@ -3541,6 +3543,15 @@
             equipeSelecionada = null;
         }
 
+        function gerarNumeroSolicitacao(docId) {
+            const agora = new Date();
+            const ano = agora.getFullYear();
+            const mes = String(agora.getMonth() + 1).padStart(2, '0');
+            const dia = String(agora.getDate()).padStart(2, '0');
+            const sufixo = String(docId || '').slice(-6).toUpperCase();
+            return `SOL-${ano}${mes}${dia}-${sufixo}`;
+        }
+
         // Função para enviar solicitação
         async function enviarSolicitacao() {
             if (!currentUser || !equipeSelecionada) {
@@ -3728,8 +3739,10 @@
                         break;
                 }
                 
-                // Salvar no Firestore
-                await window.db.collection('solicitacoes').add(dadosSolicitacao);
+                // Salvar no Firestore e gerar número amigável da solicitação
+                const docRef = await window.db.collection('solicitacoes').add(dadosSolicitacao);
+                const numeroSolicitacao = gerarNumeroSolicitacao(docRef.id);
+                await docRef.update({ numeroSolicitacao });
                 
                 // Registrar auditoria de criação de solicitação
                 try {
@@ -3740,9 +3753,9 @@
                         userRole: 'acompanhante',
                         action: 'create',
                         resource: 'solicitacoes',
-                        resourceId: null,
+                        resourceId: docRef.id,
                         details: {
-                            after: { equipe: equipePadronizada, prioridade, tipo: dadosSolicitacao.tipo },
+                            after: { equipe: equipePadronizada, prioridade, tipo: dadosSolicitacao.tipo, numeroSolicitacao },
                             changes: ['create']
                         },
                         metadata: {
@@ -3754,7 +3767,7 @@
                     console.log('[AUDIT] Erro ao registrar auditoria (não crítico):', auditError);
                 }
                 
-                showToast('Sucesso!', 'Solicitação enviada com sucesso!', 'success');
+                showToast('Sucesso!', `Solicitação enviada! Número: ${numeroSolicitacao}`, 'success');
                 fecharModal();
                 
             } catch (error) {
@@ -3961,6 +3974,7 @@
                     // Determinar tipo de serviço correto
                     const tipoServico = data.equipe || data.tipoServico || 'manutencao';
                     const tituloDisplay = data.titulo || tipoServicoTexto[tipoServico] || tipoServico;
+                    const numeroSolicitacao = data.numeroSolicitacao || `DOC-${String(data.id || '').slice(-6).toUpperCase()}`;
 
                     const badgeCorMap = {
                         'pendente': '#f59e0b',
@@ -3973,8 +3987,11 @@
 
                     historicoItens += `
                         <div class="historico-item" style="border: 1px solid #e5e7eb; border-left: 4px solid ${borderCor}; border-radius: 8px; padding: 16px; margin-bottom: 12px; background: white;">
-                            <div style="display: flex; justify-content: space-between; margin-bottom: 8px;">
-                                <strong style="color: #374151;">${tituloDisplay}</strong>
+                            <div style="display: flex; justify-content: space-between; margin-bottom: 8px; gap: 8px;">
+                                <div style="display: flex; flex-direction: column; gap: 2px;">
+                                    <strong style="color: #374151;">${tituloDisplay}</strong>
+                                    <small style="color: #6b7280;"><strong>🆔 Nº:</strong> ${numeroSolicitacao}</small>
+                                </div>
                                 <span style="background: ${badgeCor}; color: white; padding: 4px 8px; border-radius: 12px; font-size: 12px; font-weight: bold;">
                                     ${statusTexto[data.status] || data.status}
                                 </span>
