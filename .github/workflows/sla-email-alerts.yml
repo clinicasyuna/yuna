@@ -1,0 +1,37 @@
+name: SLA Email Alerts
+
+on:
+  schedule:
+    - cron: '*/5 * * * *'
+  workflow_dispatch:
+
+jobs:
+  send-sla-email-alerts:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v5
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v5
+        with:
+          node-version: '20'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Send SLA email alerts
+        env:
+          FIREBASE_SERVICE_ACCOUNT_JSON: ${{ secrets.FIREBASE_SERVICE_ACCOUNT_JSON }}
+          YUNA_ADMIN_URL: ${{ secrets.YUNA_ADMIN_URL }}
+          SLA_EMAIL_ENABLED: ${{ secrets.SLA_EMAIL_ENABLED }}
+          SLA_EMAIL_WINDOW_MINUTES: ${{ secrets.SLA_EMAIL_WINDOW_MINUTES }}
+          SLA_ALERT_START_HOUR: ${{ secrets.SLA_ALERT_START_HOUR }}
+          SLA_ALERT_END_HOUR: ${{ secrets.SLA_ALERT_END_HOUR }}
+          SLA_SMTP_HOST: ${{ secrets.SLA_SMTP_HOST }}
+          SLA_SMTP_PORT: ${{ secrets.SLA_SMTP_PORT }}
+          SLA_SMTP_SECURE: ${{ secrets.SLA_SMTP_SECURE }}
+          SLA_SMTP_USER: ${{ secrets.SLA_SMTP_USER }}
+          SLA_SMTP_PASS: ${{ secrets.SLA_SMTP_PASS }}
+          SLA_EMAIL_FROM: ${{ secrets.SLA_EMAIL_FROM }}
+        run: node scripts/send-sla-email-alerts.js
