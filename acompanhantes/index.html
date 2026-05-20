@@ -3543,13 +3543,29 @@
             equipeSelecionada = null;
         }
 
-        function gerarNumeroSolicitacao(docId) {
+        async function gerarNumeroSolicitacaoSequencial() {
             const agora = new Date();
             const ano = agora.getFullYear();
             const mes = String(agora.getMonth() + 1).padStart(2, '0');
             const dia = String(agora.getDate()).padStart(2, '0');
-            const sufixo = String(docId || '').slice(-6).toUpperCase();
-            return `SOL-${ano}${mes}${dia}-${sufixo}`;
+            const dataKey = `${ano}${mes}${dia}`;
+            const contadorRef = window.db.collection('contadores_solicitacoes').doc(dataKey);
+
+            const numeroSolicitacao = await window.db.runTransaction(async (transaction) => {
+                const contadorDoc = await transaction.get(contadorRef);
+                const sequenciaAtual = contadorDoc.exists ? Number(contadorDoc.data().sequencia || 0) : 0;
+                const proximaSequencia = sequenciaAtual + 1;
+
+                transaction.set(contadorRef, {
+                    data: dataKey,
+                    sequencia: proximaSequencia,
+                    atualizadoEm: firebase.firestore.FieldValue.serverTimestamp()
+                }, { merge: true });
+
+                return `${dataKey}-${String(proximaSequencia).padStart(4, '0')}`;
+            });
+
+            return numeroSolicitacao;
         }
 
         // Função para enviar solicitação
@@ -3739,10 +3755,14 @@
                         break;
                 }
                 
-                // Salvar no Firestore e gerar número amigável da solicitação
-                const docRef = await window.db.collection('solicitacoes').add(dadosSolicitacao);
-                const numeroSolicitacao = gerarNumeroSolicitacao(docRef.id);
-                await docRef.update({ numeroSolicitacao });
+                // Gerar número sequencial no formato YYYYMMDD-0001
+                const numeroSolicitacao = await gerarNumeroSolicitacaoSequencial();
+
+                // Salvar no Firestore já com número de solicitação
+                const docRef = await window.db.collection('solicitacoes').add({
+                    ...dadosSolicitacao,
+                    numeroSolicitacao
+                });
                 
                 // Registrar auditoria de criação de solicitação
                 try {
