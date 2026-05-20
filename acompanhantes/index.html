@@ -3549,23 +3549,36 @@
             const mes = String(agora.getMonth() + 1).padStart(2, '0');
             const dia = String(agora.getDate()).padStart(2, '0');
             const dataKey = `${ano}${mes}${dia}`;
-            const contadorRef = window.db.collection('contadores_solicitacoes').doc(dataKey);
+            const inicioDia = new Date(agora.getFullYear(), agora.getMonth(), agora.getDate(), 0, 0, 0, 0);
+            const fimDia = new Date(agora.getFullYear(), agora.getMonth(), agora.getDate() + 1, 0, 0, 0, 0);
 
-            const numeroSolicitacao = await window.db.runTransaction(async (transaction) => {
-                const contadorDoc = await transaction.get(contadorRef);
-                const sequenciaAtual = contadorDoc.exists ? Number(contadorDoc.data().sequencia || 0) : 0;
-                const proximaSequencia = sequenciaAtual + 1;
+            const snapshot = await window.db.collection('solicitacoes')
+                .where('criadoEm', '>=', firebase.firestore.Timestamp.fromDate(inicioDia))
+                .where('criadoEm', '<', firebase.firestore.Timestamp.fromDate(fimDia))
+                .get();
 
-                transaction.set(contadorRef, {
-                    data: dataKey,
-                    sequencia: proximaSequencia,
-                    atualizadoEm: firebase.firestore.FieldValue.serverTimestamp()
-                }, { merge: true });
+            let maiorSequencia = 0;
 
-                return `${dataKey}-${String(proximaSequencia).padStart(4, '0')}`;
+            snapshot.forEach((doc) => {
+                const numero = String(doc.data().numeroSolicitacao || '');
+                const match = numero.match(/^(\d{8})-(\d{4})$/);
+
+                if (!match) {
+                    return;
+                }
+
+                if (match[1] !== dataKey) {
+                    return;
+                }
+
+                const sequencia = Number(match[2]);
+                if (sequencia > maiorSequencia) {
+                    maiorSequencia = sequencia;
+                }
             });
 
-            return numeroSolicitacao;
+            const proximaSequencia = maiorSequencia + 1;
+            return `${dataKey}-${String(proximaSequencia).padStart(4, '0')}`;
         }
 
         // Função para enviar solicitação
