@@ -7207,7 +7207,7 @@ async function alterarStatusSolicitacao(solicitacaoId, novoStatus) {
         }
         
         // Verificar se o status é válido
-        const statusValidos = ['pendente', 'em-andamento', 'finalizada'];
+        const statusValidos = ['pendente', 'em-andamento', 'finalizada', 'cancelada'];
         if (!statusValidos.includes(novoStatus)) {
             showToast('Erro', 'Status inválido', 'error');
             return;
@@ -7268,6 +7268,15 @@ async function alterarStatusSolicitacao(solicitacaoId, novoStatus) {
             }
         }
 
+        // Se está cancelando, registrar metadados do cancelamento
+        if (novoStatus === 'cancelada') {
+            updateData.dataCancelamento = agora.toISOString();
+            updateData.canceladoEm = firebase.firestore.FieldValue.serverTimestamp();
+            updateData.slaEmPausa = false;
+            updateData.pausaAtiva = null;
+            updateData.motivoPausa = null;
+        }
+
         await window.db.collection('solicitacoes').doc(solicitacaoId).update(updateData);
         
         showToast('Sucesso', `Status alterado para: ${novoStatus}`, 'success');
@@ -7317,6 +7326,80 @@ async function alterarStatusSolicitacao(solicitacaoId, novoStatus) {
                 errorCode: error.code
             });
         }
+    }
+}
+
+async function cancelarSolicitacao(solicitacaoId) {
+    if (!window.db || !solicitacaoId) {
+        showToast('Erro', 'Parâmetros inválidos', 'error');
+        return;
+    }
+
+    try {
+        const usuarioAdmin = window.usuarioAdmin || JSON.parse(localStorage.getItem('usuarioAdmin') || '{}');
+        const solicitacaoDoc = await window.db.collection('solicitacoes').doc(solicitacaoId).get();
+
+        if (!solicitacaoDoc.exists) {
+            showToast('Erro', 'Solicitação não encontrada', 'error');
+            return;
+        }
+
+        const solicitacaoData = solicitacaoDoc.data();
+        if (!podeVerSolicitacaoJS(usuarioAdmin, solicitacaoData)) {
+            showToast('Erro', 'Você não tem permissão para cancelar esta solicitação', 'error');
+            return;
+        }
+
+        if (solicitacaoData.status === 'finalizada' || solicitacaoData.status === 'cancelada') {
+            showToast('Aviso', 'Esta solicitação não pode mais ser cancelada', 'warning');
+            return;
+        }
+
+        const confirmou = confirm('Deseja realmente cancelar esta solicitação? Esta ação ficará registrada no histórico.');
+        if (!confirmou) {
+            return;
+        }
+
+        const motivo = prompt('Informe o motivo do cancelamento (opcional):', '');
+        const agora = new Date();
+
+        const updateData = {
+            status: 'cancelada',
+            dataAtualizacao: agora.toISOString(),
+            dataCancelamento: agora.toISOString(),
+            canceladoEm: firebase.firestore.FieldValue.serverTimestamp(),
+            canceladoPor: usuarioAdmin?.nome || usuarioAdmin?.email || 'sistema',
+            slaEmPausa: false,
+            pausaAtiva: null,
+            motivoPausa: null
+        };
+
+        if (motivo && motivo.trim()) {
+            updateData.motivoCancelamento = motivo.trim();
+        }
+
+        await window.db.collection('solicitacoes').doc(solicitacaoId).update(updateData);
+
+        if (window.registrarAcaoAuditoria) {
+            await window.registrarAcaoAuditoria({
+                action: 'update',
+                resource: 'solicitacoes',
+                resourceId: solicitacaoId,
+                success: true,
+                details: {
+                    before: { status: solicitacaoData.status },
+                    after: { status: 'cancelada', motivoCancelamento: updateData.motivoCancelamento || null },
+                    changes: ['status', 'canceladoEm', 'canceladoPor', 'motivoCancelamento']
+                }
+            });
+        }
+
+        showToast('Sucesso', 'Solicitação cancelada com sucesso', 'success');
+        fecharSolicitacaoModal();
+        recarregarSolicitacoes(0);
+    } catch (error) {
+        console.error('[ERRO] Falha ao cancelar solicitação:', error);
+        showToast('Erro', 'Não foi possível cancelar a solicitação', 'error');
     }
 }
 
@@ -7634,6 +7717,7 @@ async function confirmarFinalizacao(solicitacaoId) {
 // Expor funções globalmente para uso nos modais
 window.alterarStatusSolicitacao = alterarStatusSolicitacao;
 window.finalizarSolicitacao = finalizarSolicitacao;
+window.cancelarSolicitacao = cancelarSolicitacao;
 window.confirmarFinalizacao = confirmarFinalizacao;
 window.abrirSolicitacaoModal = abrirSolicitacaoModal;
 window.fecharSolicitacaoModal = fecharSolicitacaoModal;
@@ -9378,7 +9462,8 @@ function preencherDetalhesModal(solicitacao, dadosAcompanhante) {
         const statusInfo = {
             'pendente': { cor: '#dc2626', icone: 'clock', texto: 'Pendente' },
             'em-andamento': { cor: '#d97706', icone: 'spinner', texto: 'Em Andamento' },
-            'finalizada': { cor: '#059669', icone: 'check-circle', texto: 'Finalizada' }
+            'finalizada': { cor: '#059669', icone: 'check-circle', texto: 'Finalizada' },
+            'cancelada': { cor: '#6b7280', icone: 'times-circle', texto: 'Cancelada' }
         };
         
         const info = statusInfo[solicitacao.status] || statusInfo['pendente'];
@@ -9569,6 +9654,12 @@ function preencherDetalhesModal(solicitacao, dadosAcompanhante) {
                     <button onclick="finalizarSolicitacao('${solicitacao.id}')" 
                             style="background: #059669; color: white; border: none; padding: 6px 12px; border-radius: 4px; cursor: pointer;">
                         <i class="fas fa-check" style="margin-right: 4px;"></i>Finalizar
+                    </button>`;
+
+                botoesHTML += `
+                    <button onclick="cancelarSolicitacao('${solicitacao.id}')" 
+                            style="background: #6b7280; color: white; border: none; padding: 6px 12px; border-radius: 4px; cursor: pointer;">
+                        <i class="fas fa-ban" style="margin-right: 4px;"></i>Cancelar
                     </button>`;
             }
             
