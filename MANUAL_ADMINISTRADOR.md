@@ -30,32 +30,39 @@ Acompanhe continuamente:
 ## 6. Governanca de solicitacoes
 - Validar distribuicao adequada entre equipes.
 - Cobrar atualizacao de status em tempo real.
+- Garantir registro de motivo ao cancelar solicitacoes.
 - Evitar chamados sem responsavel.
 - Tratar gargalos recorrentes com acao corretiva.
 
-## 7. Boas praticas de operacao
+## 7. Status padrao do fluxo
+- Pendente
+- Em andamento
+- Finalizada
+- Cancelada (com motivo registrado e visivel para o acompanhante)
+
+## 8. Boas praticas de operacao
 - Revisar chamados pendentes no inicio de cada turno.
 - Definir janela de acompanhamento para urgencias.
 - Registrar ocorrencias criticas no mesmo dia.
 - Usar filtros para auditoria diaria e semanal.
 
-## 8. Seguranca e conformidade
+## 9. Seguranca e conformidade
 - Conceder apenas permissoes necessarias.
 - Revogar acessos de usuarios desligados.
 - Nao compartilhar credenciais administrativas.
 - Garantir logout ao final da sessao.
 
-## 9. Incidentes e recuperacao
+## 10. Incidentes e recuperacao
 Em falha de acesso ou comportamento anormal:
 1. Validar conectividade e status do navegador.
 2. Realizar novo login.
 3. Revisar perfil e permissao do usuario impactado.
 4. Acionar suporte tecnico quando necessario.
 
-## 10. Encerramento
+## 11. Encerramento
 O uso consistente deste manual melhora rastreabilidade, tempo de resposta e qualidade do atendimento.
 
 ---
-Versao: 1.0
-Data: 08/05/2026
+Versao: 1.1
+Data: 21/05/2026
 Sistema: YUNA - Manual do Administrador

@@ -20,7 +20,12 @@ O perfil Equipe possui acesso ao que e necessario para executar atendimentos do 
 4. Execute o atendimento.
 5. Finalize alterando para Finalizada.
 
-## 5. Priorizacao pratica
+## 5. Cancelamento correto
+1. Use cancelamento somente quando o atendimento nao puder ser executado.
+2. Registre um motivo claro e objetivo.
+3. Confirme as informacoes antes de salvar, pois o motivo sera exibido ao acompanhante.
+
+## 6. Priorizacao pratica
 Use a ordem:
 1. Urgente
 2. Alta
@@ -29,32 +34,32 @@ Use a ordem:
 
 Em empate, considere horario de abertura mais antigo.
 
-## 6. Qualidade de registro
+## 7. Qualidade de registro
 Ao finalizar, descreva:
 - O que foi feito.
 - Se houve impedimento ou dependencia externa.
 - Se necessita retorno posterior.
 
-## 7. Condutas importantes
+## 8. Condutas importantes
 - Nao cancelar solicitacao sem justificativa.
 - Nao manter chamado em andamento sem acao real.
 - Evitar duplicidade de atendimento para o mesmo pedido.
 
-## 8. Falhas e indisponibilidade
+## 9. Falhas e indisponibilidade
 Se houver lentidao ou erro:
 1. Atualize a pagina.
 2. Tente novamente apos alguns segundos.
 3. Registre o problema para o administrador.
 
-## 9. Seguranca
+## 10. Seguranca
 - Nao compartilhe seu login.
 - Nao deixe sessao aberta em estacoes compartilhadas.
 - Sempre saia do sistema ao encerrar o turno.
 
-## 10. Suporte
+## 11. Suporte
 Em caso de duvidas de processo, acione o administrador da unidade.
 
 ---
-Versao: 1.0
-Data: 08/05/2026
+Versao: 1.1
+Data: 21/05/2026
 Sistema: YUNA - Manual de Equipes
