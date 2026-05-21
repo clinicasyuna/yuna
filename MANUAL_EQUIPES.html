@@ -5,76 +5,74 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Manual - Equipes (Portal Administrativo YUNA)</title>
   <style>
-    @page { size: A4; margin: 2cm; }
-    body { font-family: "Segoe UI", Arial, sans-serif; color: #1f2937; line-height: 1.55; font-size: 12pt; margin: 0; padding: 0; }
-    .cover { background: linear-gradient(135deg, #0f766e, #115e59); color: #fff; padding: 28px; border-radius: 14px; margin-bottom: 20px; }
-    .cover h1 { margin: 0 0 10px 0; font-size: 22pt; }
-    h2 { color: #0f766e; border-bottom: 2px solid #ccfbf1; padding-bottom: 6px; margin-top: 24px; font-size: 16pt; }
-    ul, ol { margin-top: 8px; }
-    li { margin: 6px 0; }
-    .footer { margin-top: 28px; font-size: 10pt; color: #64748b; border-top: 1px solid #e2e8f0; padding-top: 10px; }
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body { font-family: "Segoe UI", Arial, sans-serif; color: #1f2937; line-height: 1.45; background: #f4f7f7; }
+    .container { max-width: 860px; margin: 0 auto; background: #fff; padding: 32px; box-shadow: 0 0 18px rgba(0,0,0,0.08); }
+    .cover { background: linear-gradient(135deg, #0f766e, #115e59); color: #fff; padding: 24px; border-radius: 14px; margin-bottom: 16px; }
+    .cover h1 { margin: 0 0 8px 0; font-size: 28px; }
+    .subtitle { font-size: 16px; opacity: 0.95; }
+    h2 { color: #0f766e; border-bottom: 1px solid #ccfbf1; padding-bottom: 5px; margin-top: 18px; margin-bottom: 8px; font-size: 22px; }
+    p { margin-bottom: 8px; }
+    ul, ol { margin-left: 20px; margin-bottom: 8px; }
+    li { margin: 4px 0; }
+
+    @media print {
+      @page { size: A4; margin: 8mm; }
+      body { background: #fff; font-size: 9.8pt; line-height: 1.22; }
+      .container { max-width: none; margin: 0; padding: 0; box-shadow: none; }
+      .cover { padding: 18px; margin-bottom: 10px; }
+      .cover h1 { font-size: 20pt; margin-bottom: 4px; }
+      .subtitle { font-size: 11pt; }
+      h2 { font-size: 13.2pt; margin-top: 10px; margin-bottom: 4px; }
+      p { margin-bottom: 4px; }
+      ul, ol { margin-left: 18px; margin-bottom: 6px; }
+      li { margin: 2px 0; }
+      h2 { break-after: avoid-page; page-break-after: avoid; }
+    }
   </style>
 </head>
 <body>
-  <section class="cover">
-    <h1>Manual de Utilizacao - Equipes</h1>
-    <p><strong>Portal Administrativo YUNA</strong></p>
-    <p>Versao 1.1 | Data: 21/05/2026</p>
-  </section>
+  <div class="container">
+    <section class="cover">
+      <h1>Manual de Equipes</h1>
+      <p class="subtitle">Portal Administrativo YUNA</p>
+    </section>
 
-  <h2>1. Objetivo</h2>
-  <p>Este manual orienta as equipes operacionais no uso do portal para atender solicitacoes com padrao, agilidade e registro correto.</p>
+    <h2>1. Objetivo</h2>
+    <p>Este manual orienta as equipes no uso do portal para atender solicitacoes com agilidade e registro correto.</p>
 
-  <h2>2. Rotina diaria recomendada</h2>
-  <ol>
-    <li>Acesse o portal no inicio do plantao.</li>
-    <li>Filtre solicitacoes por Pendente.</li>
-    <li>Priorize itens urgentes.</li>
-    <li>Assuma e inicie o atendimento.</li>
-    <li>Finalize com registro claro.</li>
-  </ol>
+    <h2>2. Rotina diaria</h2>
+    <ol>
+      <li>Acesse o portal no inicio do plantao.</li>
+      <li>Filtre as solicitacoes pendentes.</li>
+      <li>Priorize urgentes e depois as mais antigas.</li>
+      <li>Inicie o atendimento e atualize o status.</li>
+      <li>Finalize com registro claro do que foi feito.</li>
+    </ol>
 
-  <h2>3. Como atender uma solicitacao</h2>
-  <ol>
-    <li>Abra a solicitacao.</li>
-    <li>Verifique quarto, descricao e prioridade.</li>
-    <li>Mude status para Em andamento.</li>
-    <li>Execute o atendimento.</li>
-    <li>Finalize alterando para Finalizada.</li>
-  </ol>
+    <h2>3. Atendimento da solicitacao</h2>
+    <ol>
+      <li>Abra a solicitacao e confira quarto, descricao e prioridade.</li>
+      <li>Altere o status para Em andamento quando iniciar.</li>
+      <li>Ao concluir, altere para Finalizada.</li>
+    </ol>
 
-  <h2>4. Cancelamento correto</h2>
-  <ol>
-    <li>Use cancelamento somente quando o atendimento nao puder ser executado.</li>
-    <li>Registre um motivo claro e objetivo.</li>
-    <li>Confirme as informacoes antes de salvar, pois o motivo sera exibido ao acompanhante.</li>
-  </ol>
+    <h2>4. Cancelamento correto</h2>
+    <ol>
+      <li>Cancele somente quando o atendimento nao puder ser realizado.</li>
+      <li>Informe um motivo claro e objetivo.</li>
+      <li>Confirme antes de salvar, pois o motivo sera exibido ao acompanhante.</li>
+    </ol>
 
-  <h2>5. Priorizacao pratica</h2>
-  <ol>
-    <li>Urgente</li>
-    <li>Alta</li>
-    <li>Normal</li>
-    <li>Baixa</li>
-  </ol>
+    <h2>5. Registro e seguranca</h2>
+    <ul>
+      <li>Registre o que foi feito e qualquer impedimento relevante.</li>
+      <li>Nao mantenha chamado em andamento sem acao real.</li>
+      <li>Nao compartilhe login e finalize a sessao ao encerrar o turno.</li>
+    </ul>
 
-  <h2>6. Qualidade de registro</h2>
-  <ul>
-    <li>O que foi feito.</li>
-    <li>Impedimento ou dependencia externa.</li>
-    <li>Necessidade de retorno posterior.</li>
-  </ul>
-
-  <h2>7. Seguranca</h2>
-  <ul>
-    <li>Nao compartilhe login.</li>
-    <li>Finalize a sessao ao encerrar o turno.</li>
-    <li>Use o sistema apenas para operacao institucional.</li>
-  </ul>
-
-  <h2>8. Suporte</h2>
-  <p>Em caso de duvida de processo, acione o administrador da unidade.</p>
-
-  <div class="footer">Sistema YUNA - Manual de Equipes (revisado em 21/05/2026)</div>
+    <h2>6. Suporte</h2>
+    <p>Em caso de duvida de processo ou erro no sistema, acione o administrador da unidade.</p>
+  </div>
 </body>
 </html>
