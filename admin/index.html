@@ -187,6 +187,7 @@
         .modal-edicao-usuario {
             z-index: 9999999999 !important;
             position: fixed !important;
+            -webkit-backdrop-filter: blur(5px) !important;
             backdrop-filter: blur(5px) !important;
         }
         
@@ -199,6 +200,7 @@
         /* Estilos para modal arrastável */
         .drag-title-bar {
             transition: background-color 0.3s ease, box-shadow 0.2s ease;
+            -webkit-user-select: none;
             user-select: none;
             border-radius: 8px 8px 0 0 !important;
         }
@@ -981,8 +983,8 @@
                 </div>
                 
                 <div style="margin-bottom: 20px;">
-                    <label class="form-label">Selecionar arquivo Excel (.xlsx)</label>
-                    <input type="file" id="arquivo-excel" accept=".xlsx,.xls" class="form-input" style="padding: 10px;">
+                    <label class="form-label" for="arquivo-excel">Selecionar arquivo Excel (.xlsx)</label>
+                    <input type="file" id="arquivo-excel" accept=".xlsx,.xls" class="form-input" style="padding: 10px;" title="Selecionar arquivo Excel para importacao em lote">
                 </div>
                 
                 <div id="preview-dados" style="display: none; margin-top: 20px;">
