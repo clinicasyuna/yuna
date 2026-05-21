@@ -8975,6 +8975,7 @@ function renderizarCardsEquipe(equipes) {
                         <option value="em-andamento">Em Andamento</option>
                         <option value="em-pausa">Pausado</option>
                         <option value="finalizada">Finalizada</option>
+                        <option value="cancelada">Cancelada</option>
                     </select>
                 </div>
                 <div class="filter-group">
