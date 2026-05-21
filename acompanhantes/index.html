@@ -1620,6 +1620,11 @@
                         <div class="summary-value" id="concluidas-count">0</div>
                         <div class="summary-label">Concluídas</div>
                     </div>
+                    <div class="summary-card summary-danger summary-clickable" onclick="abrirModalSolicitacoesPorStatus('cancelada')" title="Clique para ver solicitações canceladas" style="background: #EDEBE8; border: 2px solid #6b7280; color: #002855;">
+                        <div class="summary-icon">🚫</div>
+                        <div class="summary-value" id="canceladas-count">0</div>
+                        <div class="summary-label">Canceladas</div>
+                    </div>
                 </div>
             </div>
 
@@ -2322,7 +2327,7 @@
                     .where('usuarioId', '==', userId)  // CORRETO: usar usuarioId
                     .get();
                 
-                let total = 0, pendentes = 0, concluidas = 0, atrasadas = 0;
+                let total = 0, pendentes = 0, concluidas = 0, canceladas = 0, atrasadas = 0;
                 const agora = new Date();
                 
                 console.log('[DEBUG-RESUMO] Documentos encontrados:', snapshot.size);
@@ -2347,6 +2352,11 @@
                     // Contar finalizadas
                     if (data.status === 'finalizada') {
                         concluidas++;
+                    }
+
+                    // Contar canceladas
+                    if (data.status === 'cancelada') {
+                        canceladas++;
                     }
                     
                     // Atrasadas: status pendente/em-andamento e tempo limite excedido
@@ -2375,6 +2385,7 @@
                     total,
                     pendentes,
                     concluidas,
+                    canceladas,
                     atrasadas
                 });
                 
@@ -2382,6 +2393,8 @@
                 document.getElementById('total-solicitacoes').textContent = total;
                 document.getElementById('pendentes-count').textContent = pendentes;
                 document.getElementById('concluidas-count').textContent = concluidas;
+                const canceladasEl = document.getElementById('canceladas-count');
+                if (canceladasEl) canceladasEl.textContent = canceladas;
                 
             } catch (error) {
                 console.error('Erro ao atualizar resumo:', error);
@@ -2444,6 +2457,11 @@
                     tituloModal = 'Solicitações Concluídas';
                     corHeader = '#10b981';
                     iconeHeader = '✅';
+                } else if (status === 'cancelada') {
+                    solicitacoesFiltradas = solicitacoes.filter(s => s.status === 'cancelada');
+                    tituloModal = 'Solicitações Canceladas';
+                    corHeader = '#6b7280';
+                    iconeHeader = '🚫';
                 } else if (status === 'atrasada') {
                     solicitacoesFiltradas = solicitacoes.filter(s => {
                         if (s.status !== 'pendente') return false;
