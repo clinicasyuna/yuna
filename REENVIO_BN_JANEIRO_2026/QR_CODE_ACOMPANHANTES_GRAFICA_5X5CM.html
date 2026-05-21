@@ -1,0 +1,250 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>QR Code Gráfica 5x5 cm - Portal dos Acompanhantes | YUNA</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        :root {
+            --logo-blue: #0b2d5b;
+            --ink: #14324d;
+            --muted: #5f7185;
+            --border: #dce6f2;
+            --surface: #ffffff;
+        }
+
+        html, body {
+            width: 100%;
+            height: 100%;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: #f2f6fb;
+            color: var(--ink);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 16px;
+        }
+
+        .sticker {
+            width: 5cm;
+            height: 5cm;
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: 0.12cm;
+            padding: 0.16cm;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: 0.1cm;
+            box-shadow: 0 6px 18px rgba(20, 50, 77, 0.08);
+        }
+
+        .brand {
+            font-size: 7.5pt;
+            font-weight: 700;
+            line-height: 1;
+            letter-spacing: 0.02em;
+            color: var(--logo-blue);
+        }
+
+        .subtitle {
+            font-size: 5.5pt;
+            color: var(--muted);
+            line-height: 1.1;
+            text-align: center;
+        }
+
+        #qrcode {
+            width: 3.72cm;
+            height: 3.72cm;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: white;
+        }
+
+        .qr-wrapper {
+            width: 3.72cm;
+            height: 3.72cm;
+            position: relative;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        #qrcode canvas,
+        #qrcode img {
+            width: 3.72cm !important;
+            height: 3.72cm !important;
+            display: block;
+        }
+
+        .qr-logo {
+            position: absolute;
+            width: 0.72cm;
+            height: 0.72cm;
+            border-radius: 0.12cm;
+            background: #ffffff;
+            border: 1px solid #dce6f2;
+            box-shadow: 0 1px 5px rgba(20, 50, 77, 0.18);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 6pt;
+            font-weight: 800;
+            line-height: 1;
+            color: var(--logo-blue);
+            letter-spacing: 0.02em;
+            pointer-events: none;
+            user-select: none;
+        }
+
+        .actions {
+            margin-top: 12px;
+            display: flex;
+            gap: 8px;
+            justify-content: center;
+        }
+
+        button {
+            border: none;
+            border-radius: 999px;
+            padding: 10px 14px;
+            font-size: 13px;
+            cursor: pointer;
+            font-weight: 700;
+        }
+
+        .btn-print {
+            background: var(--logo-blue);
+            color: white;
+        }
+
+        .btn-download {
+            background: #0f7a5a;
+            color: white;
+        }
+
+        @media print {
+            @page {
+                size: 5cm 5cm;
+                margin: 0;
+            }
+
+            body {
+                background: white;
+                padding: 0;
+                width: 5cm;
+                height: 5cm;
+                overflow: hidden;
+            }
+
+            .sticker {
+                width: 5cm;
+                height: 5cm;
+                border: none;
+                border-radius: 0;
+                box-shadow: none;
+                padding: 0.12cm;
+            }
+
+            .actions {
+                display: none;
+            }
+        }
+    </style>
+</head>
+<body>
+    <main>
+        <section class="sticker" aria-label="QR Code para o portal dos acompanhantes">
+            <div class="brand">YUNA</div>
+            <div class="subtitle">Portal dos Acompanhantes</div>
+            <div class="qr-wrapper" aria-hidden="true">
+                <div id="qrcode"></div>
+                <div class="qr-logo">YUNA</div>
+            </div>
+        </section>
+
+        <div class="actions">
+            <button class="btn-print" onclick="window.print()">Imprimir 5x5 cm</button>
+            <button class="btn-download" onclick="downloadQR()">Baixar PNG</button>
+        </div>
+    </main>
+
+    <script>
+        const url = 'https://clinicasyuna.github.io/yuna/acompanhantes/';
+        const qrSize = 372;
+
+        function generateQR() {
+            document.getElementById('qrcode').innerHTML = '';
+            new QRCode(document.getElementById('qrcode'), {
+                text: url,
+                width: qrSize,
+                height: qrSize,
+                colorDark: '#1d2f3f',
+                colorLight: '#ffffff',
+                correctLevel: QRCode.CorrectLevel.H
+            });
+        }
+
+        function downloadQR() {
+            const canvas = document.querySelector('#qrcode canvas');
+            if (!canvas) return;
+
+            const outCanvas = document.createElement('canvas');
+            outCanvas.width = qrSize;
+            outCanvas.height = qrSize;
+            const ctx = outCanvas.getContext('2d');
+
+            ctx.drawImage(canvas, 0, 0);
+
+            const logoSize = Math.round(qrSize * 0.19);
+            const logoX = Math.round((qrSize - logoSize) / 2);
+            const logoY = Math.round((qrSize - logoSize) / 2);
+
+            ctx.fillStyle = '#ffffff';
+            ctx.strokeStyle = '#dce6f2';
+            ctx.lineWidth = 2;
+
+            const radius = 10;
+            ctx.beginPath();
+            ctx.moveTo(logoX + radius, logoY);
+            ctx.lineTo(logoX + logoSize - radius, logoY);
+            ctx.quadraticCurveTo(logoX + logoSize, logoY, logoX + logoSize, logoY + radius);
+            ctx.lineTo(logoX + logoSize, logoY + logoSize - radius);
+            ctx.quadraticCurveTo(logoX + logoSize, logoY + logoSize, logoX + logoSize - radius, logoY + logoSize);
+            ctx.lineTo(logoX + radius, logoY + logoSize);
+            ctx.quadraticCurveTo(logoX, logoY + logoSize, logoX, logoY + logoSize - radius);
+            ctx.lineTo(logoX, logoY + radius);
+            ctx.quadraticCurveTo(logoX, logoY, logoX + radius, logoY);
+            ctx.closePath();
+            ctx.fill();
+            ctx.stroke();
+
+            ctx.fillStyle = '#0b2d5b';
+            ctx.font = '700 18px Segoe UI, Arial, sans-serif';
+            ctx.textAlign = 'center';
+            ctx.textBaseline = 'middle';
+            ctx.fillText('YUNA', logoX + logoSize / 2, logoY + logoSize / 2 + 1);
+
+            const link = document.createElement('a');
+            link.href = outCanvas.toDataURL('image/png');
+            link.download = 'qrcode-yuna-acompanhantes-grafica-5x5cm.png';
+            link.click();
+        }
+
+        window.addEventListener('DOMContentLoaded', generateQR);
+    </script>
+</body>
+</html>
