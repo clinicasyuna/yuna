@@ -1908,12 +1908,33 @@ window.addEventListener('DOMContentLoaded', async function() {
                         } else if (dadosAdmin.isEquipe && dadosAdmin.equipe) {
                             debugLog('[DEBUG] Usuário EQUIPE - mostrando apenas cards do departamento:', dadosAdmin.equipe);
                             // Usuário de equipe vê apenas seu departamento
-                            document.getElementById('auth-section')?.classList.add('hidden');
-                            document.getElementById('admin-panel')?.classList.remove('hidden');
+                            const authSection = document.getElementById('auth-section');
+                            const adminPanel = document.getElementById('admin-panel');
+
+                            if (authSection) {
+                                authSection.classList.add('hidden');
+                                authSection.style.display = 'none';
+                            }
+
+                            if (adminPanel) {
+                                adminPanel.classList.remove('hidden');
+                                adminPanel.style.display = 'block';
+                                adminPanel.style.visibility = 'visible';
+                            }
                             
                             // Mostrar apenas cards do departamento específico
                             const teamsGrid = document.querySelector('.teams-grid');
-                            if (teamsGrid) teamsGrid.classList.remove('hidden');
+                            if (teamsGrid) {
+                                teamsGrid.classList.remove('hidden');
+                                teamsGrid.style.display = 'grid';
+                                teamsGrid.style.visibility = 'visible';
+                            }
+
+                            // Restaurar estilos globais que podem ter sido alterados no logout
+                            document.body.style.display = 'block';
+                            document.body.style.visibility = 'visible';
+                            document.body.style.alignItems = '';
+                            document.body.style.justifyContent = '';
                             
                             // Ocultar todos os painéis primeiro
                             const allPanels = document.querySelectorAll('.team-panel, .department-card, [class*="card"]');
@@ -8854,8 +8875,8 @@ function renderizarCardsEquipe(equipes) {
         panel.innerHTML = `
             <div class="team-header ${equipe}">
                 <h3>
-                    <i class="fas fa-${icones[equipe]}"></i>
-                    ${equipesNomes[equipe]}
+                    <i class="fas fa-${icones[equipe] || 'users'}"></i>
+                    ${equipesNomes[equipe] || equipe}
                 </h3>
                 <span class="badge" id="count-${equipe}">${solicitacoes.length}</span>
             </div>
@@ -8896,8 +8917,8 @@ function renderizarCardsEquipe(equipes) {
             <div class="team-content" id="content-${equipe}">
                 ${solicitacoes.length === 0 ? `
                     <div class="empty-state">
-                        <i class="fas fa-${icones[equipe]}"></i>
-                        <p>Nenhuma solicitação de ${equipesNomes[equipe].toLowerCase()}</p>
+                        <i class="fas fa-${icones[equipe] || 'users'}"></i>
+                        <p>Nenhuma solicitação de ${(equipesNomes[equipe] || String(equipe)).toLowerCase()}</p>
                     </div>
                 ` : `
                     ${solicitacoesOrdenadas.map((solicitacao, index) => {
