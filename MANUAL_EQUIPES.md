@@ -28,3 +28,5 @@ Este manual orienta as equipes no uso do portal para atender solicitacoes com ag
 
 ## 6. Suporte
 Em caso de duvida de processo ou erro no sistema, acione o administrador da unidade.
+
+Observacao: a equipe de Higienizacao possui manual especifico para o cadastro de acompanhantes.
