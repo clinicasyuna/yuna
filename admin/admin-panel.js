@@ -454,24 +454,44 @@ function limparListenersAtivos() {
     }
 }
 
-// Função para limpar listeners ativos
+// Função para limpar estado/listeners ativos durante logout
+// Mantém o listener de autenticação para permitir novo login sem recarregar a página.
 function limparListenersAtivos() {
     try {
-        // Remover listener de autenticação
-        if (unsubscribeAuthListener) {
-            unsubscribeAuthListener();
-            unsubscribeAuthListener = null;
+        // IMPORTANTE: não remover unsubscribeAuthListener aqui.
+        // O fluxo de login depende do onAuthStateChanged já registrado.
+
+        // Remover listener de notificações
+        if (window.notificationUnsubscribe) {
+            window.notificationUnsubscribe();
+            window.notificationUnsubscribe = null;
         }
-        
-        // Limpar outros listeners se necessário
+
+        // Limpar marcações de listeners no DOM
         const elements = document.querySelectorAll('[data-listener-active]');
         elements.forEach(el => {
             el.removeAttribute('data-listener-active');
         });
-        
-        debugLog('[DEBUG] Listeners limpos com sucesso');
+
+        // Resetar estado transitório da sessão/painel
+        window.notificationListenerConfigured = false;
+        window.lastNotificationCheck = null;
+        window.isInitialLoad = false;
+        window.carregandoSolicitacoes = false;
+        window.autoUpdateInterval && clearInterval(window.autoUpdateInterval);
+        window.autoUpdateInterval = null;
+        window.slaAlertedItems = {};
+        localStorage.removeItem('yuna_sla_alerted_items');
+
+        // Limpar loader residual, se houver
+        if (window._mainLoader && typeof window._mainLoader.remove === 'function') {
+            window._mainLoader.remove();
+            window._mainLoader = null;
+        }
+
+        debugLog('[DEBUG] Estado de sessão e listeners limpos com sucesso');
     } catch (error) {
-        console.error('[ERRO] Falha ao limpar listeners:', error);
+        console.error('[ERRO] Falha ao limpar listeners/estado:', error);
     }
 }
 
@@ -2113,6 +2133,9 @@ window.addEventListener('DOMContentLoaded', async function() {
                 console.error('[ERRO] Falha no logout:', err);
                 showToast('Erro', 'Erro ao fazer logout: ' + err.message, 'error');
                 limparInterfaceCompleta();
+            } finally {
+                // Permite novos cliques de logout após conclusão/falha.
+                logoutEmAndamento = false;
             }
         };
     }

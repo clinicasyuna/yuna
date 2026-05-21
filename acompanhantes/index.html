@@ -1643,7 +1643,7 @@
                 <button onclick="fecharModal()" style="flex: 1; background: #f3f4f6; color: #374151; border: none; padding: 12px; border-radius: 8px; cursor: pointer;">
                     Cancelar
                 </button>
-                <button onclick="enviarSolicitacao()" style="flex: 1; background: #2563eb; color: white; border: none; padding: 12px; border-radius: 8px; cursor: pointer;">
+                <button id="btn-enviar-solicitacao" onclick="enviarSolicitacao()" style="flex: 1; background: #2563eb; color: white; border: none; padding: 12px; border-radius: 8px; cursor: pointer;">
                     <i class="fas fa-paper-plane"></i> Enviar
                 </button>
             </div>
@@ -3549,43 +3549,38 @@
             const mes = String(agora.getMonth() + 1).padStart(2, '0');
             const dia = String(agora.getDate()).padStart(2, '0');
             const dataKey = `${ano}${mes}${dia}`;
-            const inicioDia = new Date(agora.getFullYear(), agora.getMonth(), agora.getDate(), 0, 0, 0, 0);
-            const fimDia = new Date(agora.getFullYear(), agora.getMonth(), agora.getDate() + 1, 0, 0, 0, 0);
 
-            const snapshot = await window.db.collection('solicitacoes')
-                .where('criadoEm', '>=', firebase.firestore.Timestamp.fromDate(inicioDia))
-                .where('criadoEm', '<', firebase.firestore.Timestamp.fromDate(fimDia))
-                .get();
+            // Usa transação atômica num documento contador para evitar race condition
+            // quando múltiplas solicitações são criadas simultaneamente.
+            const contadorRef = window.db.collection('contadores_solicitacao').doc(dataKey);
 
-            let maiorSequencia = 0;
-
-            snapshot.forEach((doc) => {
-                const numero = String(doc.data().numeroSolicitacao || '');
-                const match = numero.match(/^(\d{8})-(\d{4})$/);
-
-                if (!match) {
-                    return;
-                }
-
-                if (match[1] !== dataKey) {
-                    return;
-                }
-
-                const sequencia = Number(match[2]);
-                if (sequencia > maiorSequencia) {
-                    maiorSequencia = sequencia;
-                }
+            const proximaSequencia = await window.db.runTransaction(async (transaction) => {
+                const contadorDoc = await transaction.get(contadorRef);
+                const atual = contadorDoc.exists ? (contadorDoc.data().sequencia || 0) : 0;
+                const proximo = atual + 1;
+                transaction.set(contadorRef, { sequencia: proximo, data: dataKey }, { merge: true });
+                return proximo;
             });
 
-            const proximaSequencia = maiorSequencia + 1;
             return `${dataKey}-${String(proximaSequencia).padStart(4, '0')}`;
         }
 
         // Função para enviar solicitação
         async function enviarSolicitacao() {
+            // Guard contra duplo clique / chamadas paralelas
+            if (window._enviandoSolicitacao) {
+                console.warn('[ENVIAR SOLICITACAO] Envio já em andamento, ignorando chamada duplicada.');
+                return;
+            }
+            window._enviandoSolicitacao = true;
+            const btnEnviar = document.getElementById('btn-enviar-solicitacao');
+            if (btnEnviar) { btnEnviar.disabled = true; btnEnviar.style.opacity = '0.6'; }
+
             if (!currentUser || !equipeSelecionada) {
                 showToast('Erro', 'Usuário não autenticado ou equipe não selecionada!', 'error');
                 console.error('[ENVIAR SOLICITACAO] Usuário não autenticado ou equipe não selecionada!', { currentUser, equipeSelecionada });
+                window._enviandoSolicitacao = false;
+                if (btnEnviar) { btnEnviar.disabled = false; btnEnviar.style.opacity = '1'; }
                 return;
             }
 
@@ -3806,6 +3801,10 @@
             } catch (error) {
                 console.error('Erro ao enviar solicitação:', error);
                 showToast('Erro', 'Erro ao enviar solicitação. Tente novamente.', 'error');
+            } finally {
+                window._enviandoSolicitacao = false;
+                const btnEnviarFinal = document.getElementById('btn-enviar-solicitacao');
+                if (btnEnviarFinal) { btnEnviarFinal.disabled = false; btnEnviarFinal.style.opacity = '1'; }
             }
         }
 
