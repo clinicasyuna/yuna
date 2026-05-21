@@ -12722,14 +12722,36 @@ window.limparDadosTeste = async function() {
             await batchQuartos.commit();
             console.log(`[LIMPEZA] ${quartosSnapshot.size} registros de quartos removidos`);
         }
+
+        // 3. Em limpeza completa, resetar contadores de numeração das solicitações
+        let contadoresResetados = 0;
+        if (!dataLimite) {
+            console.log('[LIMPEZA] Limpando contadores de solicitação para resetar numeração...');
+            const contadoresSnapshot = await window.db.collection('contadores_solicitacao').get();
+
+            if (!contadoresSnapshot.empty) {
+                const batchContadores = window.db.batch();
+                contadoresSnapshot.forEach(doc => {
+                    batchContadores.delete(doc.ref);
+                    contadoresResetados++;
+                    totalRemovido++;
+                });
+
+                await batchContadores.commit();
+                console.log(`[LIMPEZA] ${contadoresResetados} contadores removidos`);
+            } else {
+                console.log('[LIMPEZA] Nenhum contador encontrado para resetar');
+            }
+        }
         
-        // 3. Limpar dados de satisfação incorporados nas solicitações (já removidos com as solicitações)
+        // 4. Limpar dados de satisfação incorporados nas solicitações (já removidos com as solicitações)
         
         console.log(`[LIMPEZA] ✅ Limpeza concluída! Total de ${totalRemovido} registros removidos.`);
         
         // Mostrar resultado com informação da data
         const dataInfo = dataLimite ? `\n📅 Dados removidos: anteriores a ${dataInput}` : '\n📅 Dados removidos: TODOS os registros';
-        const successMessage = `✅ Limpeza concluída com sucesso!${dataInfo}\n\n📊 Resumo:\n- Solicitações removidas: ${solicitacoesSnapshot.size || 0}\n- Quartos liberados: ${quartosSnapshot.size || 0}\n- Total de registros: ${totalRemovido}\n\n${dataLimite ? 'Limpeza seletiva' : 'Limpeza completa'} realizada!`;
+        const linhaContador = dataLimite ? '' : `\n- Contadores resetados: ${contadoresResetados}`;
+        const successMessage = `✅ Limpeza concluída com sucesso!${dataInfo}\n\n📊 Resumo:\n- Solicitações removidas: ${solicitacoesSnapshot.size || 0}\n- Quartos liberados: ${quartosSnapshot.size || 0}${linhaContador}\n- Total de registros: ${totalRemovido}\n\n${dataLimite ? 'Limpeza seletiva' : 'Limpeza completa'} realizada!`;
         
         showToast('Sucesso', 'Limpeza concluída com sucesso!', 'success');
         alert(successMessage);
