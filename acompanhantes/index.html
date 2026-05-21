@@ -2533,6 +2533,14 @@
                                         </p>
                                     </div>
                                 ` : ''}
+
+                                ${sol.status === 'cancelada' && sol.motivoCancelamento ? `
+                                    <div style="background: #f3f4f6; padding: 10px 12px; border-radius: 8px; margin-bottom: 12px; border-left: 3px solid #6b7280;">
+                                        <p style="margin: 0; font-size: 13px; color: #374151; line-height: 1.4;">
+                                            <strong>🚫 Motivo do cancelamento:</strong> ${sol.motivoCancelamento}
+                                        </p>
+                                    </div>
+                                ` : ''}
                                 
                                 <div style="display: flex; justify-content: space-between; align-items: center; font-size: 12px; color: #6b7280; gap: 10px; flex-wrap: wrap;">
                                     <span>🆔 Nº: <strong>${numeroSolicitacao}</strong></span>
@@ -4030,6 +4038,7 @@
                             </div>
                             <p style="margin: 8px 0; color: #6b7280;"><strong>Descrição:</strong> ${descricaoTexto}</p>
                             ${statusEmPausa && data.motivoPausa ? `<p style="margin: 8px 0; color: #7c3aed; background: #f3e8ff; padding: 8px 12px; border-radius: 6px; font-size: 13px;"><strong>⏸️ Motivo da pausa:</strong> ${data.motivoPausa}</p>` : ''}
+                            ${data.status === 'cancelada' && data.motivoCancelamento ? `<p style="margin: 8px 0; color: #374151; background: #f3f4f6; padding: 8px 12px; border-radius: 6px; font-size: 13px;"><strong>🚫 Motivo do cancelamento:</strong> ${data.motivoCancelamento}</p>` : ''}
                             <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-top: 12px;">
                                 <small style="color: #9ca3af;"><strong>Criado em:</strong> ${criadoEm.toLocaleDateString('pt-BR')} às ${criadoEm.toLocaleTimeString('pt-BR')}</small>
                                 ${data.finalizadoEm ? `<small style="color: #9ca3af;"><strong>Finalizado em:</strong> ${data.finalizadoEm.toDate ? data.finalizadoEm.toDate().toLocaleDateString('pt-BR') + ' às ' + data.finalizadoEm.toDate().toLocaleTimeString('pt-BR') : new Date(data.finalizadoEm).toLocaleDateString('pt-BR')}</small>` : ''}
