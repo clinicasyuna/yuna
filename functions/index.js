@@ -34,6 +34,13 @@ const EMAIL_ALERT_CONFIG = {
     notificationWindowMinutes: Number(process.env.SLA_EMAIL_WINDOW_MINUTES || 30)
 };
 
+const HEALTH_CHECK_CONFIG = {
+    maxPendingSolicitacoes: Number(process.env.HEALTH_MAX_PENDING || 120),
+    maxEmAndamento: Number(process.env.HEALTH_MAX_IN_PROGRESS || 80),
+    maxMinutosPendenteSemMovimento: Number(process.env.HEALTH_MAX_PENDING_MINUTES || 240),
+    maxUsuariosOnline: Number(process.env.HEALTH_MAX_ONLINE_USERS || 120)
+};
+
 let emailTransporter = null;
 
 function normalizeEquipe(value) {
@@ -862,4 +869,126 @@ exports.notifySatisfactionSurvey = functions
         }
 
         return null;
+    });
+
+/**
+ * Regra preventiva automática:
+ * Executa a cada 15 minutos, mede saúde operacional e grava alertas no Firestore.
+ */
+exports.monitorSystemHealth = functions
+    .region('southamerica-east1')
+    .pubsub
+    .schedule('every 15 minutes')
+    .timeZone('America/Sao_Paulo')
+    .onRun(async () => {
+        const startedAt = new Date();
+
+        try {
+            const [pendentesSnap, emAndamentoSnap, onlineSnap, idleSnap] = await Promise.all([
+                db.collection('solicitacoes').where('status', '==', 'pendente').get(),
+                db.collection('solicitacoes').where('status', '==', 'em-andamento').get(),
+                db.collection('usuarios_online').where('status', '==', 'online').get(),
+                db.collection('usuarios_online').where('status', '==', 'idle').get()
+            ]);
+
+            const pendentes = pendentesSnap.docs.map((doc) => ({ id: doc.id, ...doc.data() }));
+            const emAndamento = emAndamentoSnap.size;
+            const usuariosOnline = onlineSnap.size + idleSnap.size;
+
+            let maiorTempoPendenteMinutos = 0;
+
+            for (const solicitacao of pendentes) {
+                const criadoEm = getSolicitacaoDataCriacao(solicitacao);
+                if (!criadoEm) {
+                    continue;
+                }
+
+                const minutosEmAberto = Math.max(0, Math.floor((startedAt.getTime() - criadoEm.getTime()) / (1000 * 60)));
+                if (minutosEmAberto > maiorTempoPendenteMinutos) {
+                    maiorTempoPendenteMinutos = minutosEmAberto;
+                }
+            }
+
+            const alertas = [];
+
+            if (pendentes.length > HEALTH_CHECK_CONFIG.maxPendingSolicitacoes) {
+                alertas.push({
+                    tipo: 'fila_pendentes_alta',
+                    severidade: 'warning',
+                    mensagem: `Fila de pendentes acima do limite: ${pendentes.length}/${HEALTH_CHECK_CONFIG.maxPendingSolicitacoes}`
+                });
+            }
+
+            if (emAndamento > HEALTH_CHECK_CONFIG.maxEmAndamento) {
+                alertas.push({
+                    tipo: 'fila_em_andamento_alta',
+                    severidade: 'warning',
+                    mensagem: `Solicitações em andamento acima do limite: ${emAndamento}/${HEALTH_CHECK_CONFIG.maxEmAndamento}`
+                });
+            }
+
+            if (maiorTempoPendenteMinutos > HEALTH_CHECK_CONFIG.maxMinutosPendenteSemMovimento) {
+                alertas.push({
+                    tipo: 'pendencia_sem_movimento',
+                    severidade: 'critical',
+                    mensagem: `Existe solicitação pendente há ${maiorTempoPendenteMinutos} min (limite ${HEALTH_CHECK_CONFIG.maxMinutosPendenteSemMovimento} min).`
+                });
+            }
+
+            if (usuariosOnline > HEALTH_CHECK_CONFIG.maxUsuariosOnline) {
+                alertas.push({
+                    tipo: 'usuarios_online_acima_limite',
+                    severidade: 'warning',
+                    mensagem: `Usuários online/idle acima do limite: ${usuariosOnline}/${HEALTH_CHECK_CONFIG.maxUsuariosOnline}`
+                });
+            }
+
+            const status = alertas.length ? 'warning' : 'ok';
+
+            const resumo = {
+                executadoEm: admin.firestore.FieldValue.serverTimestamp(),
+                metrics: {
+                    pendentes: pendentes.length,
+                    emAndamento,
+                    usuariosOnline,
+                    maiorTempoPendenteMinutos
+                },
+                limites: HEALTH_CHECK_CONFIG,
+                status,
+                alertas
+            };
+
+            await db.collection('system_health_checks').add(resumo);
+
+            if (alertas.length) {
+                const lockKey = `${startedAt.getUTCFullYear()}-${String(startedAt.getUTCMonth() + 1).padStart(2, '0')}-${String(startedAt.getUTCDate()).padStart(2, '0')}-${String(startedAt.getUTCHours()).padStart(2, '0')}-${Math.floor(startedAt.getUTCMinutes() / 15)}`;
+
+                await db.collection('system_health_alerts').doc(lockKey).set({
+                    ...resumo,
+                    lockKey,
+                    atualizadoEm: admin.firestore.FieldValue.serverTimestamp()
+                }, { merge: true });
+            }
+
+            console.log('[HEALTH] Verificação preventiva concluída:', {
+                status,
+                pendentes: pendentes.length,
+                emAndamento,
+                usuariosOnline,
+                maiorTempoPendenteMinutos,
+                alertas: alertas.length
+            });
+
+            return null;
+        } catch (error) {
+            console.error('[HEALTH] Falha na verificação preventiva:', error);
+
+            await db.collection('system_health_checks').add({
+                executadoEm: admin.firestore.FieldValue.serverTimestamp(),
+                status: 'error',
+                erro: String(error?.message || error)
+            });
+
+            return null;
+        }
     });
