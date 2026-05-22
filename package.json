@@ -22,7 +22,7 @@
     "url": "git+https://github.com/clinicasyuna/yuna.git"
   },
   "dependencies": {
-    "firebase-admin": "^13.6.0",
+    "firebase-admin": "^13.10.0",
     "nodemailer": "^8.0.7"
   }
 }

@@ -119,10 +119,6 @@ function getTransporter() {
         return null;
     }
 
-    if (!EMAIL_CONFIG.smtpHost || !EMAIL_CONFIG.smtpUser || !EMAIL_CONFIG.smtpPass) {
-        throw new Error('SLA_SMTP_HOST, SLA_SMTP_USER e SLA_SMTP_PASS sao obrigatorios para envio de e-mail.');
-    }
-
     return nodemailer.createTransport({
         host: EMAIL_CONFIG.smtpHost,
         port: EMAIL_CONFIG.smtpPort,
@@ -249,6 +245,11 @@ function montarMensagemEmailSla({ solicitacao, slaConfig, minutosConsumidos, min
 async function run() {
     if (!EMAIL_CONFIG.enabled) {
         console.log('[SLA-EMAIL] Envio desativado por SLA_EMAIL_ENABLED=false');
+        return;
+    }
+
+    if (!EMAIL_CONFIG.smtpHost || !EMAIL_CONFIG.smtpUser || !EMAIL_CONFIG.smtpPass) {
+        console.warn('[SLA-EMAIL] Execucao ignorada: SMTP nao configurado (SLA_SMTP_HOST, SLA_SMTP_USER, SLA_SMTP_PASS).');
         return;
     }
 

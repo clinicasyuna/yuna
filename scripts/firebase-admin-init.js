@@ -2,7 +2,7 @@ const fs = require('fs');
 const path = require('path');
 const admin = require('firebase-admin');
 
-const TARGET_PROJECT_ID = 'studio-5526632052-23813';
+const TARGET_PROJECT_ID = String(process.env.FIREBASE_TARGET_PROJECT_ID || '').trim();
 
 function resolveCredentialPath() {
     const envPath = process.env.FIREBASE_SERVICE_ACCOUNT_PATH;
@@ -31,7 +31,7 @@ function loadServiceAccount() {
             throw new Error('ERRO: FIREBASE_SERVICE_ACCOUNT_JSON nao contem JSON valido.');
         }
 
-        if (serviceAccount.project_id !== TARGET_PROJECT_ID) {
+        if (TARGET_PROJECT_ID && serviceAccount.project_id !== TARGET_PROJECT_ID) {
             throw new Error(
                 `ERRO: Credencial em FIREBASE_SERVICE_ACCOUNT_JSON pertence ao projeto '${serviceAccount.project_id}', mas o alvo e '${TARGET_PROJECT_ID}'.`
             );
@@ -59,7 +59,7 @@ function loadServiceAccount() {
         throw new Error(`ERRO: JSON invalido na credencial (${credentialPath}).`);
     }
 
-    if (serviceAccount.project_id !== TARGET_PROJECT_ID) {
+    if (TARGET_PROJECT_ID && serviceAccount.project_id !== TARGET_PROJECT_ID) {
         throw new Error(
             `ERRO: Credencial pertence ao projeto '${serviceAccount.project_id}', mas o alvo e '${TARGET_PROJECT_ID}'.`
         );
@@ -70,7 +70,7 @@ function loadServiceAccount() {
 
 function initFirebaseAdmin() {
     if (admin.apps.length) {
-        return { admin, projectId: TARGET_PROJECT_ID, reused: true };
+        return { admin, projectId: TARGET_PROJECT_ID || 'auto', reused: true };
     }
 
     const { serviceAccount, credentialPath } = loadServiceAccount();
@@ -79,9 +79,13 @@ function initFirebaseAdmin() {
     });
 
     console.log(`[FIREBASE-ADMIN] Inicializado com chave: ${credentialPath}`);
-    console.log(`[FIREBASE-ADMIN] Projeto validado: ${TARGET_PROJECT_ID}`);
+    if (TARGET_PROJECT_ID) {
+        console.log(`[FIREBASE-ADMIN] Projeto validado: ${TARGET_PROJECT_ID}`);
+    } else {
+        console.log(`[FIREBASE-ADMIN] Projeto validado automaticamente pela credencial.`);
+    }
 
-    return { admin, projectId: TARGET_PROJECT_ID, reused: false };
+    return { admin, projectId: TARGET_PROJECT_ID || 'auto', reused: false };
 }
 
 module.exports = {

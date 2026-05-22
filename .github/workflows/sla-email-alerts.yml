@@ -2,7 +2,7 @@ name: SLA Email Alerts
 
 on:
   schedule:
-    - cron: '*/5 * * * *'
+    - cron: '*/30 * * * *'
   workflow_dispatch:
 
 jobs:
@@ -17,17 +17,37 @@ jobs:
         with:
           node-version: '20'
 
+      - name: Validate required secrets
+        id: guard
+        env:
+          FIREBASE_SERVICE_ACCOUNT_JSON: ${{ secrets.FIREBASE_SERVICE_ACCOUNT_JSON }}
+          SLA_SMTP_HOST: ${{ secrets.SLA_SMTP_HOST }}
+          SLA_SMTP_USER: ${{ secrets.SLA_SMTP_USER }}
+          SLA_SMTP_PASS: ${{ secrets.SLA_SMTP_PASS }}
+        run: |
+          missing=""
+          [ -z "$FIREBASE_SERVICE_ACCOUNT_JSON" ] && missing="$missing FIREBASE_SERVICE_ACCOUNT_JSON"
+          [ -z "$SLA_SMTP_HOST" ] && missing="$missing SLA_SMTP_HOST"
+          [ -z "$SLA_SMTP_USER" ] && missing="$missing SLA_SMTP_USER"
+          [ -z "$SLA_SMTP_PASS" ] && missing="$missing SLA_SMTP_PASS"
+
+          if [ -n "$missing" ]; then
+            echo "[SLA-EMAIL] Skip: secrets ausentes:$missing"
+            echo "should_run=false" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+
+          echo "should_run=true" >> "$GITHUB_OUTPUT"
+
       - name: Install dependencies
+        if: steps.guard.outputs.should_run == 'true'
         run: npm ci
 
       - name: Send SLA email alerts
+        if: steps.guard.outputs.should_run == 'true'
         env:
           FIREBASE_SERVICE_ACCOUNT_JSON: ${{ secrets.FIREBASE_SERVICE_ACCOUNT_JSON }}
           YUNA_ADMIN_URL: ${{ secrets.YUNA_ADMIN_URL }}
-          SLA_EMAIL_ENABLED: ${{ secrets.SLA_EMAIL_ENABLED }}
-          SLA_EMAIL_WINDOW_MINUTES: ${{ secrets.SLA_EMAIL_WINDOW_MINUTES }}
-          SLA_ALERT_START_HOUR: ${{ secrets.SLA_ALERT_START_HOUR }}
-          SLA_ALERT_END_HOUR: ${{ secrets.SLA_ALERT_END_HOUR }}
           SLA_SMTP_HOST: ${{ secrets.SLA_SMTP_HOST }}
           SLA_SMTP_PORT: ${{ secrets.SLA_SMTP_PORT }}
           SLA_SMTP_SECURE: ${{ secrets.SLA_SMTP_SECURE }}
