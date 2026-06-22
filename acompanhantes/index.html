@@ -1900,6 +1900,7 @@
     <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-messaging-compat.js"></script>
+    <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js"></script>
     <script src="../security-audit.js"></script>
 
     <!-- 🚀 PWA Enhancement Module v2 (11/05/2026) -->
@@ -1925,6 +1926,34 @@
     <script src="./pwa-analytics.js?v=20260511-001"></script>
 
     <script>
+        const TEAM_NOTIFICATION_CONFIG = {
+            enabled: true,
+            publicKey: 'SWvc9mNKhEZ3P1GpI',
+            serviceId: 'service_fd636sf',
+            templateId: 'template_7d95vmr',
+            fromName: 'Yuna Solicite',
+            fromEmail: 'ti@yuna.com.br',
+            replyTo: 'ti@yuna.com.br',
+            teamRecipients: {
+                manutencao: ['manutencao.jardins@yuna.com.br'],
+                higienizacao: ['recepcao.jardins@yuna.com.br'],
+                hotelaria: ['caroline.chinaglia@yuna.com.br']
+            }
+        };
+
+        (function initEmailJsAcompanhantes() {
+            if (TEAM_NOTIFICATION_CONFIG.enabled && TEAM_NOTIFICATION_CONFIG.publicKey) {
+                emailjs.init({ publicKey: TEAM_NOTIFICATION_CONFIG.publicKey });
+                console.log('[EMAIL] EmailJS inicializado no portal de acompanhantes');
+                return;
+            }
+
+            console.log('[EMAIL] EmailJS não configurado no portal de acompanhantes - envio para equipes desabilitado');
+            window.emailjs = {
+                send: () => Promise.resolve({ status: 200, text: 'Mock enviado' })
+            };
+        })();
+
         // === 🚀 PWA INITIALIZATION (11/05/2026) ===
         // Registrar Service Worker para offline-first caching
         if ('serviceWorker' in navigator) {
@@ -2679,6 +2708,94 @@
                 'ar-condicionado': '❄️'
             };
             return tipoMap[tipo?.toLowerCase()] || '🔧';
+        }
+
+        function getEquipeDisplayName(equipe) {
+            const equipeMap = {
+                manutencao: 'Manutenção',
+                higienizacao: 'Higienização',
+                hotelaria: 'Hotelaria'
+            };
+
+            return equipeMap[equipe] || equipe;
+        }
+
+        function getSolicitacaoResumo(dadosSolicitacao) {
+            return (
+                dadosSolicitacao.descricao ||
+                dadosSolicitacao.observacoes ||
+                dadosSolicitacao.detalhes ||
+                'Solicitação criada sem detalhes adicionais.'
+            );
+        }
+
+        function isTeamNotificationConfigured() {
+            return Boolean(
+                TEAM_NOTIFICATION_CONFIG.enabled &&
+                TEAM_NOTIFICATION_CONFIG.publicKey &&
+                TEAM_NOTIFICATION_CONFIG.serviceId &&
+                TEAM_NOTIFICATION_CONFIG.templateId
+            );
+        }
+
+        function getTeamRecipients(equipe) {
+            const recipients = TEAM_NOTIFICATION_CONFIG.teamRecipients[equipe];
+            return Array.isArray(recipients) ? recipients.filter(Boolean) : [];
+        }
+
+        async function enviarEmailNovaSolicitacaoEquipe({ equipe, numeroSolicitacao, dadosSolicitacao }) {
+            const recipients = getTeamRecipients(equipe);
+
+            if (!recipients.length) {
+                console.warn('[EMAIL] Nenhum destinatário configurado para a equipe:', equipe);
+                return { sent: false, reason: 'no-recipients' };
+            }
+
+            if (!isTeamNotificationConfigured()) {
+                console.warn('[EMAIL] EmailJS não configurado para envio real das notificações');
+                return { sent: false, reason: 'emailjs-not-configured' };
+            }
+
+            const equipeNome = getEquipeDisplayName(equipe);
+            const templateParams = {
+                to_email: recipients.join(','),
+                to_name: equipeNome,
+                team_name: equipeNome,
+                numero_solicitacao: numeroSolicitacao,
+                request_number: numeroSolicitacao,
+                tipo_solicitacao: dadosSolicitacao.tipo || equipeNome,
+                priority: dadosSolicitacao.prioridade || 'não informada',
+                prioridade: dadosSolicitacao.prioridade || 'não informada',
+                quarto: dadosSolicitacao.quarto || 'N/A',
+                room: dadosSolicitacao.quarto || 'N/A',
+                acompanhante_nome: dadosSolicitacao.usuarioNome || 'Não informado',
+                requester_name: dadosSolicitacao.usuarioNome || 'Não informado',
+                acompanhante_email: dadosSolicitacao.usuarioEmail || 'Não informado',
+                requester_email: dadosSolicitacao.usuarioEmail || 'Não informado',
+                horario_preferencial: dadosSolicitacao.horarioPreferencial || 'Não informado',
+                preferred_time: dadosSolicitacao.horarioPreferencial || 'Não informado',
+                resumo: getSolicitacaoResumo(dadosSolicitacao),
+                description: getSolicitacaoResumo(dadosSolicitacao),
+                from_name: TEAM_NOTIFICATION_CONFIG.fromName,
+                from_email: TEAM_NOTIFICATION_CONFIG.fromEmail,
+                reply_to: TEAM_NOTIFICATION_CONFIG.replyTo,
+                created_at: dadosSolicitacao.dataAberturaLocal || new Date().toLocaleString('pt-BR')
+            };
+
+            const response = await emailjs.send(
+                TEAM_NOTIFICATION_CONFIG.serviceId,
+                TEAM_NOTIFICATION_CONFIG.templateId,
+                templateParams
+            );
+
+            console.log('[EMAIL] Notificação enviada para equipe:', {
+                equipe,
+                recipients,
+                status: response?.status,
+                text: response?.text
+            });
+
+            return { sent: true, recipients };
         }
         
         // Função para esqueci a senha (definir ANTES de expor no window)
@@ -3804,8 +3921,6 @@
                         };
                         break;
                         
-               // Adiciona tipoServico para todas as solicitações criadas
-               dadosSolicitacao.tipoServico = equipePadronizada;
                     case 'higienizacao':
                         const tipoHigienizacao = document.getElementById('tipo-higienizacao').value;
                         const observacoesHigienizacao = document.getElementById('observacoes-higienizacao').value;
@@ -3838,6 +3953,8 @@
                         };
                         break;
                 }
+
+                    dadosSolicitacao.tipoServico = equipePadronizada;
                 
                 // Gerar número sequencial no formato YYYYMMDD-0001
                 const numeroSolicitacao = await gerarNumeroSolicitacaoSequencial();
@@ -3869,6 +3986,23 @@
                     });
                 } catch (auditError) {
                     console.log('[AUDIT] Erro ao registrar auditoria (não crítico):', auditError);
+                }
+
+                try {
+                    const emailResult = await enviarEmailNovaSolicitacaoEquipe({
+                        equipe: equipePadronizada,
+                        numeroSolicitacao,
+                        dadosSolicitacao: {
+                            ...dadosSolicitacao,
+                            id: docRef.id
+                        }
+                    });
+
+                    if (!emailResult.sent && emailResult.reason === 'emailjs-not-configured') {
+                        console.warn('[EMAIL] Solicitação criada, mas o EmailJS ainda não está configurado para enviar para a equipe');
+                    }
+                } catch (emailError) {
+                    console.error('[EMAIL] Erro ao enviar notificação para equipe:', emailError);
                 }
                 
                 showToast('Sucesso!', `Solicitação enviada! Número: ${numeroSolicitacao}`, 'success');
