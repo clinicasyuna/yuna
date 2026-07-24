@@ -521,6 +521,22 @@
             gap: 0.5rem;
         }
 
+        .atendimento-info {
+            margin-top: -0.7rem;
+            margin-bottom: 1.2rem;
+            padding: 0.85rem 1rem;
+            border-radius: 12px;
+            border: 1px solid #bfdbfe;
+            background: #eff6ff;
+            color: #1e3a8a;
+            font-size: 0.92rem;
+            line-height: 1.4;
+        }
+
+        .atendimento-info strong {
+            color: #1e40af;
+        }
+
         .metrics-grid {
             display: grid;
             grid-template-columns: repeat(3, 1fr);
@@ -1629,6 +1645,9 @@
             <!-- Service Cards -->
             <div class="services-section" style="margin-top: 3rem;">
                 <h3 class="section-title">🎯 Fazer Solicitação</h3>
+                <div class="atendimento-info">
+                    <strong>Horário de atendimento das equipes:</strong> segunda a sexta-feira, em horário comercial (08:00 às 17:00).
+                </div>
                 
                 <div class="services-grid">
                     <div class="service-card manutencao" onclick="abrirSolicitacao('manutencao')">
@@ -3611,6 +3630,9 @@
                 </div>
                 <div class="form-group">
                     <label class="form-label">Horário Preferencial</label>
+                    <div class="atendimento-info" style="margin-top: 0.5rem; margin-bottom: 0.75rem; font-size: 0.88rem;">
+                        Atendimento disponível de <strong>segunda a sexta-feira</strong>, em <strong>horário comercial (08:00 às 17:00)</strong>.
+                    </div>
                     <div id="horarios-disponiveis" class="horarios-grid">
                         <!-- Horários serão preenchidos dinamicamente -->
                     </div>
@@ -3698,13 +3720,13 @@
             // Definir horários específicos por equipe
             switch(equipe) {
                 case 'manutencao':
-                    horarios = ['08:00', '09:00', '10:00', '14:00', '15:00', '16:00'];
+                    horarios = ['08:00', '09:00', '10:00', '11:00', '14:00', '15:00', '16:00', '17:00'];
                     break;
                 case 'higienizacao':
-                    horarios = ['09:00', '11:00', '13:00', '15:00', '17:00', '19:00'];
+                    horarios = ['08:00', '09:00', '10:00', '11:00', '14:00', '15:00', '16:00', '17:00'];
                     break;
                 case 'hotelaria':
-                    horarios = ['08:00', '10:00', '12:00', '14:00', '16:00', '18:00'];
+                    horarios = ['08:00', '09:00', '10:00', '11:00', '14:00', '15:00', '16:00', '17:00'];
                     break;
             }
             
