@@ -877,7 +877,7 @@ function limparInterfaceCompleta() {
         document.body.style.flexDirection = 'column';
         document.body.style.alignItems = 'center';
         document.body.style.justifyContent = 'center';
-        document.body.style.background = '#f1f5f9';
+        document.body.style.background = '';
         
         // Garantir que o html também tenha altura total
         document.documentElement.style.height = '100%';
