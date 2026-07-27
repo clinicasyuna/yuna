@@ -1,0 +1,25 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1600 1200" preserveAspectRatio="xMidYMid slice">
+  <defs>
+    <linearGradient id="sky" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#d9ecf5"/>
+      <stop offset="55%" stop-color="#c6e2f0"/>
+      <stop offset="100%" stop-color="#b8d8e9"/>
+    </linearGradient>
+    <linearGradient id="waveA" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0%" stop-color="#81b6d3" stop-opacity="0.36"/>
+      <stop offset="100%" stop-color="#6da8c8" stop-opacity="0.2"/>
+    </linearGradient>
+    <linearGradient id="waveB" x1="1" y1="0" x2="0" y2="0">
+      <stop offset="0%" stop-color="#5f9fbe" stop-opacity="0.24"/>
+      <stop offset="100%" stop-color="#83b6cf" stop-opacity="0.14"/>
+    </linearGradient>
+    <radialGradient id="sun" cx="84%" cy="16%" r="22%">
+      <stop offset="0%" stop-color="#fff4cf" stop-opacity="0.5"/>
+      <stop offset="100%" stop-color="#fff4cf" stop-opacity="0"/>
+    </radialGradient>
+  </defs>
+  <rect width="1600" height="1200" fill="url(#sky)"/>
+  <ellipse cx="1340" cy="210" rx="240" ry="150" fill="url(#sun)"/>
+  <path d="M0,830 C200,780 430,855 670,812 C910,768 1090,850 1300,812 C1450,786 1530,796 1600,782 L1600,1200 L0,1200 Z" fill="url(#waveA)"/>
+  <path d="M0,930 C220,892 450,954 700,918 C930,885 1130,944 1360,914 C1490,896 1560,900 1600,892 L1600,1200 L0,1200 Z" fill="url(#waveB)"/>
+</svg>

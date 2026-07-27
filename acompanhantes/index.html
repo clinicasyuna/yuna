@@ -30,8 +30,15 @@
         }
 
         body {
+            --portal-bg-image: url('./assets/bg-calmaria.svg');
             font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-            background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%);
+            background-color: #d8e9f0;
+            background-image:
+                linear-gradient(135deg, rgba(255, 255, 255, 0.7) 0%, rgba(241, 248, 252, 0.75) 100%),
+                var(--portal-bg-image);
+            background-repeat: no-repeat, no-repeat;
+            background-position: center, center;
+            background-size: cover, cover;
             min-height: 100vh;
             padding: 1rem;
             display: flex;
@@ -449,6 +456,148 @@
             max-width: 500px;
             max-height: 90vh;
             overflow-y: auto;
+        }
+
+        .wizard-progress {
+            margin-bottom: 1.2rem;
+        }
+
+        .wizard-progress-bar {
+            width: 100%;
+            height: 8px;
+            background: #e5e7eb;
+            border-radius: 999px;
+            overflow: hidden;
+            margin-bottom: 0.55rem;
+        }
+
+        .wizard-progress-fill {
+            height: 100%;
+            width: 33.333%;
+            background: linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%);
+            border-radius: 999px;
+            transition: width 0.25s ease;
+        }
+
+        .wizard-progress-label {
+            font-size: 0.86rem;
+            color: #6b7280;
+            text-align: right;
+        }
+
+        .wizard-step-title {
+            font-size: 1rem;
+            color: #1f2937;
+            margin-bottom: 0.85rem;
+            font-weight: 700;
+        }
+
+        .service-selector-grid {
+            display: grid;
+            gap: 0.8rem;
+            grid-template-columns: 1fr;
+        }
+
+        .service-selector-btn {
+            border: 2px solid #dbeafe;
+            border-radius: 12px;
+            background: #f8fbff;
+            color: #1f2937;
+            text-align: left;
+            padding: 0.85rem 1rem;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .service-selector-btn.active {
+            border-color: #2563eb;
+            background: #eff6ff;
+            box-shadow: 0 4px 16px rgba(37, 99, 235, 0.12);
+        }
+
+        .service-selector-name {
+            display: block;
+            font-weight: 700;
+            margin-bottom: 0.2rem;
+        }
+
+        .service-selector-desc {
+            display: block;
+            color: #64748b;
+            font-size: 0.9rem;
+        }
+
+        .confirmacao-card {
+            border: 1px solid #bfdbfe;
+            border-radius: 12px;
+            background: #f8fbff;
+            padding: 1rem;
+        }
+
+        .confirmacao-linha {
+            display: flex;
+            justify-content: space-between;
+            gap: 0.75rem;
+            padding: 0.5rem 0;
+            border-bottom: 1px dashed #dbeafe;
+            font-size: 0.92rem;
+        }
+
+        .confirmacao-linha:last-child {
+            border-bottom: none;
+        }
+
+        .confirmacao-chave {
+            color: #475569;
+            font-weight: 600;
+        }
+
+        .confirmacao-valor {
+            color: #1f2937;
+            text-align: right;
+            max-width: 60%;
+            word-break: break-word;
+        }
+
+        .confirmacao-estimativa {
+            margin-top: 0.85rem;
+            border-radius: 10px;
+            background: #ecfeff;
+            border: 1px solid #bae6fd;
+            color: #0c4a6e;
+            font-size: 0.9rem;
+            padding: 0.7rem 0.8rem;
+            line-height: 1.4;
+        }
+
+        .modal-actions {
+            display: flex;
+            gap: 0.75rem;
+            margin-top: 1.4rem;
+        }
+
+        .modal-btn {
+            flex: 1;
+            border: none;
+            border-radius: 10px;
+            cursor: pointer;
+            font-weight: 600;
+            padding: 12px;
+        }
+
+        .modal-btn-secondary {
+            background: #f3f4f6;
+            color: #374151;
+        }
+
+        .modal-btn-primary {
+            background: #2563eb;
+            color: #ffffff;
+        }
+
+        #btn-voltar-solicitacao,
+        #btn-enviar-solicitacao {
+            display: none;
         }
 
         .hidden {
@@ -1713,11 +1862,17 @@
                 <!-- Conteúdo será inserido dinamicamente -->
             </div>
             
-            <div style="display: flex; gap: 1rem; margin-top: 2rem;">
-                <button onclick="fecharModal()" style="flex: 1; background: #f3f4f6; color: #374151; border: none; padding: 12px; border-radius: 8px; cursor: pointer;">
+            <div class="modal-actions">
+                <button id="btn-cancelar-solicitacao" onclick="fecharModal()" class="modal-btn modal-btn-secondary">
                     Cancelar
                 </button>
-                <button id="btn-enviar-solicitacao" onclick="enviarSolicitacao()" style="flex: 1; background: #2563eb; color: white; border: none; padding: 12px; border-radius: 8px; cursor: pointer;">
+                <button id="btn-voltar-solicitacao" onclick="voltarPassoSolicitacao()" class="modal-btn modal-btn-secondary">
+                    Voltar
+                </button>
+                <button id="btn-avancar-solicitacao" onclick="avancarPassoSolicitacao()" class="modal-btn modal-btn-primary">
+                    Próximo
+                </button>
+                <button id="btn-enviar-solicitacao" onclick="enviarSolicitacao()" class="modal-btn modal-btn-primary">
                     <i class="fas fa-paper-plane"></i> Enviar
                 </button>
             </div>
@@ -1945,6 +2100,38 @@
     <script src="./pwa-analytics.js?v=20260511-001"></script>
 
     <script>
+        const PERIOD_BACKGROUND_MAP = {
+            manha: './assets/bg-calmaria-manha.svg',
+            tarde: './assets/bg-calmaria-tarde.svg',
+            noite: './assets/bg-calmaria-noite.svg'
+        };
+
+        function obterPeriodoAtual() {
+            const horaAtual = new Date().getHours();
+
+            if (horaAtual >= 6 && horaAtual < 12) {
+                return 'manha';
+            }
+
+            if (horaAtual >= 12 && horaAtual < 18) {
+                return 'tarde';
+            }
+
+            return 'noite';
+        }
+
+        function aplicarFundoPorPeriodo() {
+            const periodo = obterPeriodoAtual();
+            const imagem = PERIOD_BACKGROUND_MAP[periodo] || './assets/bg-calmaria.svg';
+            document.body.style.setProperty('--portal-bg-image', `url('${imagem}')`);
+            document.body.setAttribute('data-bg-periodo', periodo);
+            console.log(`[UI] Fundo de calmaria aplicado para o periodo: ${periodo}`);
+        }
+
+        // Atualiza no carregamento e a cada 15 minutos para acompanhar virada de periodo.
+        aplicarFundoPorPeriodo();
+        setInterval(aplicarFundoPorPeriodo, 15 * 60 * 1000);
+
         const TEAM_NOTIFICATION_CONFIG = {
             enabled: true,
             publicKey: 'SWvc9mNKhEZ3P1GpI',
@@ -2256,6 +2443,8 @@
 
         let currentUser = null;
         let equipeSelecionada = null;
+        let solicitacaoWizardStep = 1;
+        let solicitacaoWizardDados = {};
 
         // Monitorar estado de autenticação
         firebase.auth().onAuthStateChanged(async (user) => {
@@ -3604,6 +3793,10 @@
         // Função para abrir modal de solicitação
         function abrirSolicitacao(equipe) {
             equipeSelecionada = equipe;
+            solicitacaoWizardStep = 1;
+            solicitacaoWizardDados = {
+                equipe: equipe
+            };
             document.getElementById('solicitacao-modal').style.display = 'flex';
             configurarFormulario(equipe);
         }
@@ -3612,20 +3805,75 @@
         function configurarFormulario(equipe) {
             const titulo = document.getElementById('modal-titulo');
             const conteudo = document.getElementById('modal-conteudo');
-            
-            let tituloTexto = '';
-            let formularioHTML = '';
-            
-            // Campos comuns para todas as solicitações
+            titulo.textContent = 'Nova Solicitação';
+            conteudo.innerHTML = renderizarPassoSolicitacao(solicitacaoWizardStep, equipeSelecionada || equipe);
+            atualizarCabecalhoWizard();
+            atualizarAcoesWizard();
+
+            if (solicitacaoWizardStep === 2) {
+                carregarHorariosDisponiveis(equipeSelecionada || equipe);
+            }
+        }
+
+        function renderizarPassoSolicitacao(passo, equipe) {
+            const barra = `
+                <div class="wizard-progress">
+                    <div class="wizard-progress-bar">
+                        <div id="wizard-progress-fill" class="wizard-progress-fill"></div>
+                    </div>
+                    <div class="wizard-progress-label">Passo ${passo} de 3</div>
+                </div>
+            `;
+
+            if (passo === 1) {
+                return `${barra}
+                    <div class="wizard-step-title">Escolha o serviço</div>
+                    <div class="service-selector-grid">
+                        ${renderizarOpcaoServico('manutencao', '🔧 Manutenção', 'Problemas elétricos, hidráulicos e equipamentos', equipe)}
+                        ${renderizarOpcaoServico('higienizacao', '🧽 Higienização', 'Limpeza, desinfecção e organização do quarto', equipe)}
+                        ${renderizarOpcaoServico('hotelaria', '🏨 Hotelaria', 'Roupas de cama, toalhas e amenidades', equipe)}
+                    </div>
+                `;
+            }
+
+            if (passo === 2) {
+                return `${barra}${gerarFormularioDetalhesSolicitacao(equipe)}`;
+            }
+
+            const resumo = montarResumoConfirmacaoSolicitacao();
+            return `${barra}
+                <div class="wizard-step-title">Confira os dados antes de enviar</div>
+                <div class="confirmacao-card">
+                    ${resumo}
+                </div>
+            `;
+        }
+
+        function renderizarOpcaoServico(chave, nome, descricao, equipeAtual) {
+            const ativo = chave === equipeAtual ? 'active' : '';
+            return `
+                <button type="button" class="service-selector-btn ${ativo}" onclick="selecionarEquipeSolicitacao('${chave}')">
+                    <span class="service-selector-name">${nome}</span>
+                    <span class="service-selector-desc">${descricao}</span>
+                </button>
+            `;
+        }
+
+        function gerarFormularioDetalhesSolicitacao(equipe) {
+            const prioridadeAtual = solicitacaoWizardDados.prioridade || '';
+            const descricaoManutencao = solicitacaoWizardDados.descricao || '';
+            const observacoesHigienizacao = solicitacaoWizardDados.observacoes || '';
+            const detalhesHotelaria = solicitacaoWizardDados.detalhes || '';
+
             const camposComuns = `
                 <div class="form-group">
                     <label class="form-label">Prioridade</label>
                     <select id="prioridade-solicitacao" class="form-input" required>
                         <option value="">Selecione a prioridade</option>
-                        <option value="baixa">🟢 Baixa - Não urgente</option>
-                        <option value="media">🟡 Média - Prazo normal</option>
-                        <option value="alta">🟠 Alta - Necessário hoje</option>
-                        <option value="urgente">🔴 Urgente - Imediato</option>
+                        <option value="baixa" ${prioridadeAtual === 'baixa' ? 'selected' : ''}>🟢 Baixa - Não urgente</option>
+                        <option value="media" ${prioridadeAtual === 'media' ? 'selected' : ''}>🟡 Média - Prazo normal</option>
+                        <option value="alta" ${prioridadeAtual === 'alta' ? 'selected' : ''}>🟠 Alta - Necessário hoje</option>
+                        <option value="urgente" ${prioridadeAtual === 'urgente' ? 'selected' : ''}>🔴 Urgente - Imediato</option>
                     </select>
                 </div>
                 <div class="form-group">
@@ -3636,85 +3884,230 @@
                     <div id="horarios-disponiveis" class="horarios-grid">
                         <!-- Horários serão preenchidos dinamicamente -->
                     </div>
-                    <input type="hidden" id="horario-selecionado" required>
+                    <input type="hidden" id="horario-selecionado" value="${solicitacaoWizardDados.horarioPreferencial || ''}" required>
                 </div>
             `;
-            
-            switch(equipe) {
-                case 'manutencao':
-                    tituloTexto = '🔧 Solicitação para Manutenção';
-                    formularioHTML = `
-                        <div class="form-group">
-                            <label class="form-label">Tipo de Problema</label>
-                            <select id="tipo-manutencao" class="form-input" required>
-                                <option value="">Selecione o tipo</option>
-                                <option value="eletrico">⚡ Elétrico</option>
-                                <option value="hidraulico">🚿 Hidráulico</option>
-                                <option value="ar-condicionado">❄️ Ar Condicionado</option>
-                                <option value="moveis">🪑 Móveis e Equipamentos</option>
-                                <option value="outros">🔧 Outros</option>
-                            </select>
-                        </div>
-                        <div class="form-group">
-                            <label class="form-label">Descrição do Problema</label>
-                            <textarea id="descricao-problema" class="form-input" rows="3" placeholder="Descreva detalhadamente o problema..." required></textarea>
-                        </div>
-                        ${camposComuns}
-                    `;
-                    break;
-                    
-                case 'higienizacao':
-                    tituloTexto = '🧽 Solicitação para Higienização';
-                    formularioHTML = `
-                        <div class="form-group">
-                            <label class="form-label">Tipo de Limpeza</label>
-                            <select id="tipo-higienizacao" class="form-input" required>
-                                <option value="">Selecione o tipo</option>
-                                <option value="limpeza-quarto">🛏️ Limpeza do Quarto</option>
-                                <option value="desinfeccao">🦠 Desinfecção</option>
-                                <option value="organizacao">📦 Organização</option>
-                                <option value="limpeza-banheiro">🚿 Limpeza do Banheiro</option>
-                            </select>
-                        </div>
-                        <div class="form-group">
-                            <label class="form-label">Observações</label>
-                            <textarea id="observacoes-higienizacao" class="form-input" rows="3" placeholder="Informações adicionais..."></textarea>
-                        </div>
-                        ${camposComuns}
-                    `;
-                    break;
-                    
-                case 'hotelaria':
-                    tituloTexto = '🏨 Solicitação para Hotelaria';
-                    formularioHTML = `
-                        <div class="form-group">
-                            <label class="form-label">Tipo de Serviço</label>
-                            <select id="tipo-hotelaria" class="form-input" required>
-                                <option value="">Selecione o tipo</option>
-                                <option value="roupas-cama">🛏️ Roupas de Cama</option>
-                                <option value="toalhas">🏖️ Toalhas</option>
-                                <option value="amenidades">🧴 Amenidades</option>
-                            </select>
-                        </div>
-                        <div class="form-group">
-                            <label class="form-label">Detalhes da Solicitação</label>
-                            <textarea id="detalhes-hotelaria" class="form-input" rows="3" placeholder="Especifique sua necessidade..." required></textarea>
-                        </div>
-                        ${camposComuns}
-                    `;
-                    break;
+
+            if (equipe === 'manutencao') {
+                return `
+                    <div class="wizard-step-title">Detalhes da solicitação de manutenção</div>
+                    <div class="form-group">
+                        <label class="form-label">Tipo de Problema</label>
+                        <select id="tipo-manutencao" class="form-input" required>
+                            <option value="">Selecione o tipo</option>
+                            <option value="eletrico" ${solicitacaoWizardDados.tipo === 'eletrico' ? 'selected' : ''}>⚡ Elétrico</option>
+                            <option value="hidraulico" ${solicitacaoWizardDados.tipo === 'hidraulico' ? 'selected' : ''}>🚿 Hidráulico</option>
+                            <option value="ar-condicionado" ${solicitacaoWizardDados.tipo === 'ar-condicionado' ? 'selected' : ''}>❄️ Ar Condicionado</option>
+                            <option value="moveis" ${solicitacaoWizardDados.tipo === 'moveis' ? 'selected' : ''}>🪑 Móveis e Equipamentos</option>
+                            <option value="outros" ${solicitacaoWizardDados.tipo === 'outros' ? 'selected' : ''}>🔧 Outros</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Descrição do Problema</label>
+                        <textarea id="descricao-problema" class="form-input" rows="3" placeholder="Descreva detalhadamente o problema..." required>${descricaoManutencao}</textarea>
+                    </div>
+                    ${camposComuns}
+                `;
             }
-            
-            titulo.textContent = tituloTexto;
-            conteudo.innerHTML = formularioHTML;
-            
-            // Carregar horários disponíveis para a equipe
-            carregarHorariosDisponiveis(equipe);
+
+            if (equipe === 'higienizacao') {
+                return `
+                    <div class="wizard-step-title">Detalhes da solicitação de higienização</div>
+                    <div class="form-group">
+                        <label class="form-label">Tipo de Limpeza</label>
+                        <select id="tipo-higienizacao" class="form-input" required>
+                            <option value="">Selecione o tipo</option>
+                            <option value="limpeza-quarto" ${solicitacaoWizardDados.tipo === 'limpeza-quarto' ? 'selected' : ''}>🛏️ Limpeza do Quarto</option>
+                            <option value="desinfeccao" ${solicitacaoWizardDados.tipo === 'desinfeccao' ? 'selected' : ''}>🦠 Desinfecção</option>
+                            <option value="organizacao" ${solicitacaoWizardDados.tipo === 'organizacao' ? 'selected' : ''}>📦 Organização</option>
+                            <option value="limpeza-banheiro" ${solicitacaoWizardDados.tipo === 'limpeza-banheiro' ? 'selected' : ''}>🚿 Limpeza do Banheiro</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Observações</label>
+                        <textarea id="observacoes-higienizacao" class="form-input" rows="3" placeholder="Informações adicionais...">${observacoesHigienizacao}</textarea>
+                    </div>
+                    ${camposComuns}
+                `;
+            }
+
+            return `
+                <div class="wizard-step-title">Detalhes da solicitação de hotelaria</div>
+                <div class="form-group">
+                    <label class="form-label">Tipo de Serviço</label>
+                    <select id="tipo-hotelaria" class="form-input" required>
+                        <option value="">Selecione o tipo</option>
+                        <option value="roupas-cama" ${solicitacaoWizardDados.tipo === 'roupas-cama' ? 'selected' : ''}>🛏️ Roupas de Cama</option>
+                        <option value="toalhas" ${solicitacaoWizardDados.tipo === 'toalhas' ? 'selected' : ''}>🏖️ Toalhas</option>
+                        <option value="amenidades" ${solicitacaoWizardDados.tipo === 'amenidades' ? 'selected' : ''}>🧴 Amenidades</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Detalhes da Solicitação</label>
+                    <textarea id="detalhes-hotelaria" class="form-input" rows="3" placeholder="Especifique sua necessidade..." required>${detalhesHotelaria}</textarea>
+                </div>
+                ${camposComuns}
+            `;
+        }
+
+        function obterNomesServicoPorChave(equipe) {
+            if (equipe === 'manutencao') return 'Manutenção';
+            if (equipe === 'higienizacao') return 'Higienização';
+            return 'Hotelaria';
+        }
+
+        function obterEstimativaAtendimento(prioridade) {
+            if (prioridade === 'urgente') return 'Atendimento estimado: em até 30 minutos.';
+            if (prioridade === 'alta') return 'Atendimento estimado: em até 2 horas.';
+            if (prioridade === 'media') return 'Atendimento estimado: em até 4 horas.';
+            return 'Atendimento estimado: até o próximo turno útil.';
+        }
+
+        function montarResumoConfirmacaoSolicitacao() {
+            const equipeNome = obterNomesServicoPorChave(solicitacaoWizardDados.equipe || equipeSelecionada);
+            const detalhe = solicitacaoWizardDados.descricao || solicitacaoWizardDados.observacoes || solicitacaoWizardDados.detalhes || '-';
+            const prioridadeLabel = (solicitacaoWizardDados.prioridade || '-').toUpperCase();
+            const horario = solicitacaoWizardDados.horarioPreferencial || '-';
+
+            return `
+                <div class="confirmacao-linha">
+                    <span class="confirmacao-chave">Serviço</span>
+                    <span class="confirmacao-valor">${equipeNome}</span>
+                </div>
+                <div class="confirmacao-linha">
+                    <span class="confirmacao-chave">Tipo</span>
+                    <span class="confirmacao-valor">${solicitacaoWizardDados.tipo || '-'}</span>
+                </div>
+                <div class="confirmacao-linha">
+                    <span class="confirmacao-chave">Prioridade</span>
+                    <span class="confirmacao-valor">${prioridadeLabel}</span>
+                </div>
+                <div class="confirmacao-linha">
+                    <span class="confirmacao-chave">Horário preferencial</span>
+                    <span class="confirmacao-valor">${horario}</span>
+                </div>
+                <div class="confirmacao-linha">
+                    <span class="confirmacao-chave">Detalhes</span>
+                    <span class="confirmacao-valor">${detalhe}</span>
+                </div>
+                <div class="confirmacao-estimativa">${obterEstimativaAtendimento(solicitacaoWizardDados.prioridade)}</div>
+            `;
+        }
+
+        function atualizarCabecalhoWizard() {
+            const barra = document.getElementById('wizard-progress-fill');
+            if (barra) {
+                barra.style.width = `${(solicitacaoWizardStep / 3) * 100}%`;
+            }
+        }
+
+        function atualizarAcoesWizard() {
+            const btnCancelar = document.getElementById('btn-cancelar-solicitacao');
+            const btnVoltar = document.getElementById('btn-voltar-solicitacao');
+            const btnAvancar = document.getElementById('btn-avancar-solicitacao');
+            const btnEnviar = document.getElementById('btn-enviar-solicitacao');
+
+            if (!btnCancelar || !btnVoltar || !btnAvancar || !btnEnviar) return;
+
+            btnCancelar.style.display = solicitacaoWizardStep === 1 ? 'block' : 'none';
+            btnVoltar.style.display = solicitacaoWizardStep > 1 ? 'block' : 'none';
+            btnAvancar.style.display = solicitacaoWizardStep < 3 ? 'block' : 'none';
+            btnEnviar.style.display = solicitacaoWizardStep === 3 ? 'block' : 'none';
+        }
+
+        function selecionarEquipeSolicitacao(equipe) {
+            const equipeAnterior = solicitacaoWizardDados.equipe;
+            equipeSelecionada = equipe;
+            solicitacaoWizardDados.equipe = equipe;
+
+            if (equipeAnterior && equipeAnterior !== equipe) {
+                delete solicitacaoWizardDados.tipo;
+                delete solicitacaoWizardDados.descricao;
+                delete solicitacaoWizardDados.observacoes;
+                delete solicitacaoWizardDados.detalhes;
+            }
+
+            configurarFormulario(equipeSelecionada);
+        }
+
+        function validarESalvarPassoDetalhes() {
+            const prioridade = document.getElementById('prioridade-solicitacao')?.value || '';
+            const horarioSelecionado = document.getElementById('horario-selecionado')?.value || '';
+
+            if (!prioridade) {
+                showToast('Erro', 'Selecione a prioridade da solicitação!', 'error');
+                return false;
+            }
+
+            if (!horarioSelecionado) {
+                showToast('Erro', 'Selecione um horário preferencial!', 'error');
+                return false;
+            }
+
+            solicitacaoWizardDados.prioridade = prioridade;
+            solicitacaoWizardDados.horarioPreferencial = horarioSelecionado;
+
+            if (equipeSelecionada === 'manutencao') {
+                const tipo = document.getElementById('tipo-manutencao')?.value || '';
+                const descricao = document.getElementById('descricao-problema')?.value?.trim() || '';
+                if (!tipo || !descricao) {
+                    showToast('Erro', 'Preencha todos os campos obrigatórios!', 'error');
+                    return false;
+                }
+                solicitacaoWizardDados.tipo = tipo;
+                solicitacaoWizardDados.descricao = descricao;
+                return true;
+            }
+
+            if (equipeSelecionada === 'higienizacao') {
+                const tipo = document.getElementById('tipo-higienizacao')?.value || '';
+                const observacoes = document.getElementById('observacoes-higienizacao')?.value?.trim() || '';
+                if (!tipo) {
+                    showToast('Erro', 'Selecione o tipo de limpeza!', 'error');
+                    return false;
+                }
+                solicitacaoWizardDados.tipo = tipo;
+                solicitacaoWizardDados.observacoes = observacoes;
+                return true;
+            }
+
+            const tipoHotelaria = document.getElementById('tipo-hotelaria')?.value || '';
+            const detalhesHotelaria = document.getElementById('detalhes-hotelaria')?.value?.trim() || '';
+            if (!tipoHotelaria || !detalhesHotelaria) {
+                showToast('Erro', 'Preencha todos os campos obrigatórios!', 'error');
+                return false;
+            }
+            solicitacaoWizardDados.tipo = tipoHotelaria;
+            solicitacaoWizardDados.detalhes = detalhesHotelaria;
+            return true;
+        }
+
+        function avancarPassoSolicitacao() {
+            if (solicitacaoWizardStep === 1 && !equipeSelecionada) {
+                showToast('Erro', 'Selecione um serviço para continuar.', 'error');
+                return;
+            }
+
+            if (solicitacaoWizardStep === 2) {
+                const ok = validarESalvarPassoDetalhes();
+                if (!ok) return;
+            }
+
+            solicitacaoWizardStep = Math.min(3, solicitacaoWizardStep + 1);
+            configurarFormulario(equipeSelecionada);
+        }
+
+        function voltarPassoSolicitacao() {
+            solicitacaoWizardStep = Math.max(1, solicitacaoWizardStep - 1);
+            configurarFormulario(equipeSelecionada);
         }
 
         // Função para carregar horários disponíveis
         function carregarHorariosDisponiveis(equipe) {
             const horariosContainer = document.getElementById('horarios-disponiveis');
+            if (!horariosContainer) {
+                return;
+            }
             let horarios = [];
             
             // Definir horários específicos por equipe
@@ -3736,6 +4129,9 @@
                 slot.className = 'horario-slot';
                 slot.textContent = horario;
                 slot.onclick = () => selecionarHorario(slot, horario);
+                if (solicitacaoWizardDados.horarioPreferencial === horario) {
+                    slot.classList.add('selected');
+                }
                 horariosContainer.appendChild(slot);
             });
         }
@@ -3750,12 +4146,15 @@
             // Selecionar novo horário
             elemento.classList.add('selected');
             document.getElementById('horario-selecionado').value = horario;
+            solicitacaoWizardDados.horarioPreferencial = horario;
         }
 
         // Função para fechar modal
         function fecharModal() {
             document.getElementById('solicitacao-modal').style.display = 'none';
             equipeSelecionada = null;
+            solicitacaoWizardStep = 1;
+            solicitacaoWizardDados = {};
         }
 
         async function gerarNumeroSolicitacaoSequencial() {
@@ -3809,8 +4208,10 @@
             }
 
             // Validar campos comuns
-            const prioridade = document.getElementById('prioridade-solicitacao').value;
-            const horarioSelecionado = document.getElementById('horario-selecionado').value;
+            const prioridadeInput = document.getElementById('prioridade-solicitacao');
+            const horarioInput = document.getElementById('horario-selecionado');
+            const prioridade = prioridadeInput ? prioridadeInput.value : (solicitacaoWizardDados.prioridade || '');
+            const horarioSelecionado = horarioInput ? horarioInput.value : (solicitacaoWizardDados.horarioPreferencial || '');
 
             if (!prioridade) {
                 showToast('Erro', 'Selecione a prioridade da solicitação!', 'error');
@@ -3928,8 +4329,10 @@
                 // Coletar dados específicos baseado na equipe
                 switch(equipeSelecionada) {
                     case 'manutencao':
-                        const tipoManutencao = document.getElementById('tipo-manutencao').value;
-                        const descricaoProblema = document.getElementById('descricao-problema').value;
+                        const tipoManutencaoInput = document.getElementById('tipo-manutencao');
+                        const descricaoProblemaInput = document.getElementById('descricao-problema');
+                        const tipoManutencao = tipoManutencaoInput ? tipoManutencaoInput.value : (solicitacaoWizardDados.tipo || '');
+                        const descricaoProblema = descricaoProblemaInput ? descricaoProblemaInput.value : (solicitacaoWizardDados.descricao || '');
                         
                         if (!tipoManutencao || !descricaoProblema) {
                             showToast('Erro', 'Preencha todos os campos obrigatórios!', 'error');
@@ -3944,8 +4347,10 @@
                         break;
                         
                     case 'higienizacao':
-                        const tipoHigienizacao = document.getElementById('tipo-higienizacao').value;
-                        const observacoesHigienizacao = document.getElementById('observacoes-higienizacao').value;
+                        const tipoHigienizacaoInput = document.getElementById('tipo-higienizacao');
+                        const observacoesHigienizacaoInput = document.getElementById('observacoes-higienizacao');
+                        const tipoHigienizacao = tipoHigienizacaoInput ? tipoHigienizacaoInput.value : (solicitacaoWizardDados.tipo || '');
+                        const observacoesHigienizacao = observacoesHigienizacaoInput ? observacoesHigienizacaoInput.value : (solicitacaoWizardDados.observacoes || '');
                         
                         if (!tipoHigienizacao) {
                             showToast('Erro', 'Selecione o tipo de limpeza!', 'error');
@@ -3960,8 +4365,10 @@
                         break;
                         
                     case 'hotelaria':
-                        const tipoHotelaria = document.getElementById('tipo-hotelaria').value;
-                        const detalhesHotelaria = document.getElementById('detalhes-hotelaria').value;
+                        const tipoHotelariaInput = document.getElementById('tipo-hotelaria');
+                        const detalhesHotelariaInput = document.getElementById('detalhes-hotelaria');
+                        const tipoHotelaria = tipoHotelariaInput ? tipoHotelariaInput.value : (solicitacaoWizardDados.tipo || '');
+                        const detalhesHotelaria = detalhesHotelariaInput ? detalhesHotelariaInput.value : (solicitacaoWizardDados.detalhes || '');
                         
                         if (!tipoHotelaria || !detalhesHotelaria) {
                             showToast('Erro', 'Preencha todos os campos obrigatórios!', 'error');

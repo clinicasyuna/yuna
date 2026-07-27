@@ -820,56 +820,6 @@ exports.notifySatisfactionSurvey = functions
             return null;
         }
     });
-                        equipe: String(solicitacao.equipe || slaConfig.nome),
-                        solicitacaoId: String(solicitacao.id),
-                        minutosRestantes: String(Math.max(0, Math.ceil(minutosRestantes)))
-                    },
-                    webpush: {
-                        notification: {
-                            icon: './favicon.ico',
-                            badge: './favicon.ico',
-                            tag: `sla-${solicitacao.id}`,
-                            requireInteraction: true
-                        }
-                    }
-                });
-
-                response.responses.forEach((result, index) => {
-                    if (!result.success && isInvalidTokenError(result.error?.code)) {
-                        invalidTokens.push(destinatarios[index].id);
-                    }
-                });
-
-                await lockRef.set({
-                    enviadoEm: admin.firestore.FieldValue.serverTimestamp(),
-                    enviados: response.successCount,
-                    falhas: response.failureCount
-                }, { merge: true });
-
-                console.log('[PUSH] Notificação SLA enviada:', {
-                    solicitacaoId: solicitacao.id,
-                    equipe: slaConfig.nome,
-                    enviados: response.successCount,
-                    falhas: response.failureCount
-                });
-            } catch (error) {
-                console.error('[PUSH] Falha ao enviar notificação de SLA:', error);
-                await lockRef.delete();
-            }
-        }
-
-        if (invalidTokens.length) {
-            const batch = db.batch();
-
-            invalidTokens.forEach((docId) => {
-                batch.delete(db.collection('admin_push_tokens').doc(docId));
-            });
-
-            await batch.commit();
-        }
-
-        return null;
-    });
 
 /**
  * Regra preventiva automática:
