@@ -30,7 +30,7 @@
         }
 
         body {
-            --portal-bg-image: url('./assets/Fundo-Portal-Acompanhante.png');
+            --portal-bg-image: url('./assets/Fundo-Portal-Acompanhante.png?v=20260727-2');
             font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
             background-color: #d8e9f0;
             background-image:
@@ -2101,9 +2101,9 @@
 
     <script>
         const PERIOD_BACKGROUND_MAP = {
-            manha: './assets/Fundo-Portal-Acompanhante.png',
-            tarde: './assets/Fundo-Portal-Acompanhante.png',
-            noite: './assets/Fundo-Portal-Acompanhante.png'
+            manha: './assets/Fundo-Portal-Acompanhante.png?v=20260727-2',
+            tarde: './assets/Fundo-Portal-Acompanhante.png?v=20260727-2',
+            noite: './assets/Fundo-Portal-Acompanhante.png?v=20260727-2'
         };
 
         function obterPeriodoAtual() {
@@ -2122,7 +2122,7 @@
 
         function aplicarFundoPorPeriodo() {
             const periodo = obterPeriodoAtual();
-            const imagem = PERIOD_BACKGROUND_MAP[periodo] || './assets/Fundo-Portal-Acompanhante.png';
+            const imagem = PERIOD_BACKGROUND_MAP[periodo] || './assets/Fundo-Portal-Acompanhante.png?v=20260727-2';
             document.body.style.setProperty('--portal-bg-image', `url('${imagem}')`);
             document.body.setAttribute('data-bg-periodo', periodo);
             console.log(`[UI] Fundo de calmaria aplicado para o periodo: ${periodo}`);

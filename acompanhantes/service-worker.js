@@ -11,6 +11,7 @@ const STATIC_ASSETS = [
   './',
   './index.html',
   './manifest.json',
+  './assets/Fundo-Portal-Acompanhante.png?v=20260727-2',
   './assets/Fundo-Portal-Acompanhante.png',
   './assets/bg-calmaria.svg',
   './assets/bg-calmaria-manha.svg',
